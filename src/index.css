@@ -1,0 +1,170 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap');
+html {
+  overflow-y: scroll;
+}
+
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+@layer base {
+  html {
+    scrollbar-gutter: stable;
+  }
+  body {
+    @apply bg-slate-950 text-slate-200;
+  }
+}
+
+/* Theme Overrides */
+[data-theme="daylight"] {
+  --color-slate-950: #f8fafc;
+  --color-slate-900: #f1f5f9;
+  --color-slate-800: #e2e8f0;
+  --color-slate-700: #cbd5e1;
+  --color-slate-600: #94a3b8;
+  --color-slate-500: #64748b;
+  --color-slate-400: #475569;
+  --color-slate-300: #334155;
+  --color-slate-200: #1e293b;
+  --color-slate-100: #0f172a;
+  --color-slate-50:  #020617;
+  --color-white: #0f172a;
+  --color-black: #ffffff;
+}
+
+[data-theme="warm"] {
+  --color-slate-950: #fffbeb;
+  --color-slate-900: #fef3c7;
+  --color-slate-800: #fde68a;
+  --color-slate-700: #fcd34d;
+  --color-slate-600: #fbbf24;
+  --color-slate-500: #f59e0b;
+  --color-slate-400: #d97706;
+  --color-slate-300: #b45309;
+  --color-slate-200: #92400e;
+  --color-slate-100: #78350f;
+  --color-slate-50:  #451a03;
+  --color-white: #78350f;
+  --color-black: #fffbeb;
+  
+  --color-indigo-400: #f97316;
+  --color-indigo-500: #ea580c;
+  --color-indigo-600: #c2410c;
+}
+
+[data-theme="candy"] {
+  --color-slate-950: #fdf2f8;
+  --color-slate-900: #fce7f3;
+  --color-slate-800: #fbcfe8;
+  --color-slate-700: #f9a8d4;
+  --color-slate-600: #f472b6;
+  --color-slate-500: #ec4899;
+  --color-slate-400: #db2777;
+  --color-slate-300: #be185d;
+  --color-slate-200: #9d174d;
+  --color-slate-100: #831843;
+  --color-slate-50:  #500724;
+  --color-white: #831843;
+  --color-black: #fdf2f8;
+  
+  --color-indigo-400: #d946ef;
+  --color-indigo-500: #c026d3;
+  --color-indigo-600: #a21caf;
+}
+
+[data-theme="forest"] {
+  --color-slate-950: #022c22;
+  --color-slate-900: #134e4a;
+  --color-slate-800: #115e59;
+  --color-slate-700: #0f766e;
+  --color-slate-600: #0d9488;
+  --color-slate-500: #14b8a6;
+  --color-slate-400: #2dd4bf;
+  --color-slate-300: #5eead4;
+  --color-slate-200: #99f6e4;
+  --color-slate-100: #ccfbf1;
+  --color-slate-50:  #f0fdfa;
+  
+  --color-indigo-400: #34d399;
+  --color-indigo-500: #10b981;
+  --color-indigo-600: #059669;
+}
+
+[data-theme="ocean"] {
+  --color-slate-950: #082f49;
+  --color-slate-900: #0c4a6e;
+  --color-slate-800: #075985;
+  --color-slate-700: #0369a1;
+  --color-slate-600: #0284c7;
+  --color-slate-500: #0ea5e9;
+  --color-slate-400: #38bdf8;
+  --color-slate-300: #7dd3fc;
+  --color-slate-200: #bae6fd;
+  --color-slate-100: #e0f2fe;
+  --color-slate-50:  #f0f9ff;
+  
+  --color-indigo-400: #22d3ee;
+  --color-indigo-500: #06b6d4;
+  --color-indigo-600: #0891b2;
+}
+
+/* Fix button text colors for light themes */
+[data-theme="daylight"] .bg-indigo-600,
+[data-theme="daylight"] .bg-indigo-500,
+[data-theme="daylight"] .bg-emerald-600,
+[data-theme="daylight"] .bg-emerald-500,
+[data-theme="daylight"] .bg-amber-600,
+[data-theme="daylight"] .bg-amber-500,
+[data-theme="daylight"] .bg-rose-600,
+[data-theme="daylight"] .bg-rose-500,
+[data-theme="daylight"] .bg-purple-600,
+[data-theme="daylight"] .bg-purple-500,
+[data-theme="daylight"] .bg-blue-600,
+[data-theme="daylight"] .bg-blue-500,
+[data-theme="warm"] .bg-indigo-600,
+[data-theme="warm"] .bg-indigo-500,
+[data-theme="warm"] .bg-emerald-600,
+[data-theme="warm"] .bg-emerald-500,
+[data-theme="warm"] .bg-amber-600,
+[data-theme="warm"] .bg-amber-500,
+[data-theme="warm"] .bg-rose-600,
+[data-theme="warm"] .bg-rose-500,
+[data-theme="warm"] .bg-purple-600,
+[data-theme="warm"] .bg-purple-500,
+[data-theme="warm"] .bg-blue-600,
+[data-theme="warm"] .bg-blue-500,
+[data-theme="candy"] .bg-indigo-600,
+[data-theme="candy"] .bg-indigo-500,
+[data-theme="candy"] .bg-emerald-600,
+[data-theme="candy"] .bg-emerald-500,
+[data-theme="candy"] .bg-amber-600,
+[data-theme="candy"] .bg-amber-500,
+[data-theme="candy"] .bg-rose-600,
+[data-theme="candy"] .bg-rose-500,
+[data-theme="candy"] .bg-purple-600,
+[data-theme="candy"] .bg-purple-500,
+[data-theme="candy"] .bg-blue-600,
+[data-theme="candy"] .bg-blue-500 {
+  color: #ffffff !important;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-slate-950;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-800 rounded-full border-2 border-slate-950;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-700;
+}

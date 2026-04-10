@@ -1,0 +1,161 @@
+export type Rarity = 'common' | 'rare' | 'epic' | 'legendary';
+
+export interface RewardCard {
+  id: string;
+  name: string;
+  description: string;
+  rarity: Rarity;
+  type: 'coins' | 'xp' | 'item' | 'text';
+  amount?: number;
+  itemType?: 'double_xp' | 'double_coin' | 'talent_shard' | 'death_defying_medal' | 'xp_bonus_percent' | 'coin_bonus_percent';
+  weight: number;
+}
+
+export interface Talent {
+  id: string;
+  name: string;
+  description: string;
+  branch: 'A' | 'B' | 'C';
+  tier: 1 | 2 | 3;
+  cost: number;
+  effect: string;
+  icon: string;
+  unlocked: boolean;
+  active: boolean;
+  conflictsWith?: string[];
+}
+
+export interface DungeonReward {
+  type: 'talentPoint' | 'coins' | 'item' | 'text' | 'xp';
+  amount: number;
+  itemName?: string;
+  rewardText?: string;
+  itemType?: 'double_xp' | 'double_coin' | 'talent_shard' | 'death_defying_medal' | 'xp_bonus_percent' | 'coin_bonus_percent';
+}
+
+export interface Dungeon {
+  id: string;
+  name: string;
+  totalSessions: number;
+  completedSessions: number;
+  rewardCoins: number;
+  rewardXP: number;
+  rewardText: string;
+  rewards?: DungeonReward[];
+  isLongTerm: boolean;
+  status: 'active' | 'completed' | 'archived';
+  parentId?: string; // ID of the Major Dungeon
+  completedAt?: string;
+}
+
+export interface MajorDungeon {
+  id: string;
+  name: string;
+  description: string;
+  status: 'active' | 'completed';
+  isFinalized?: boolean;
+  rewards?: DungeonReward[];
+  completedAt?: string;
+}
+
+export interface RewardHistoryItem {
+  id: string;
+  name: string;
+  rarity: string;
+  source: 'Explore' | 'Gacha' | 'Shop' | 'LevelUp';
+  timestamp: string;
+  type: 'coins' | 'xp' | 'item' | 'text';
+  amount?: number;
+  itemType?: 'double_xp' | 'double_coin' | 'talent_shard' | 'death_defying_medal' | 'xp_bonus_percent' | 'coin_bonus_percent';
+  redeemed: boolean;
+}
+
+export interface LevelReward {
+  level: number;
+  type: 'talentPoint' | 'coins' | 'item' | 'text';
+  amount: number;
+  itemName?: string;
+  rewardText?: string;
+}
+
+export interface UserState {
+  level: number;
+  xp: number;
+  coins: number;
+  talentPoints: number;
+  talentShards: number;
+  deathDefyingMedals: number;
+  unlockedTalents: string[];
+  activeTalents: string[];
+  currentDungeonId: string | null;
+  history: StudySession[];
+  rewardHistory: RewardHistoryItem[];
+  lastStudyDate: string | null;
+  streak: number;
+  dailySessions: number;
+  lastDailyReset: string | null;
+  dailyRerollUsed: boolean; // Track if Shuffler reroll was used today
+  inventory: string[]; // IDs of functional cards active for next session
+  userName?: string;
+  userBio?: string;
+  // Developer Mode Settings
+  devModeEnabled?: boolean;
+  devBaseXP?: number;
+  devBaseCoins?: number;
+  devMinCoins?: number;
+  devMaxCoins?: number;
+  devCoinMode?: 'fixed' | 'random';
+  devCritChance?: number;
+  devCritMultiplier?: number;
+  theme?: string;
+  soundEnabled?: boolean;
+  soundVolume?: number;
+  // Editable Pools
+  rewardPool: RewardCard[];
+  shopItems: ShopItem[];
+  gachaPools: GachaPool[];
+  levelRewards?: LevelReward[];
+  lastCompletionRewards?: {
+    dungeonName: string;
+    rewards: DungeonReward[];
+  } | null;
+}
+
+export interface StudySession {
+  id: string;
+  dungeonId: string;
+  duration: number; // minutes
+  timestamp: string;
+  coinsEarned: number;
+  xpEarned: number;
+  isCrit?: boolean;
+  triggeredTalents?: {
+    flowExperience?: { xp: number; coins: number };
+    perfectTheory?: { xp: number; coins: number };
+  };
+}
+
+export interface ShopItem {
+  id: string;
+  name: string;
+  price: number;
+  description: string;
+}
+
+export interface GachaPool {
+  id: string;
+  name: string;
+  type: 'gacha' | 'ichiban';
+  cost: number;
+  weights?: {
+    SSR: number;
+    SR: number;
+    R: number;
+  };
+  items: {
+    rarity: string;
+    name: string;
+    count?: number; // For Ichiban
+    initialCount?: number; // For Ichiban
+  }[];
+}

@@ -1,0 +1,935 @@
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Dungeon, MajorDungeon, DungeonReward } from '../types';
+import { Plus, Target, Sword, CheckCircle2, ChevronRight, Trash2, FolderPlus, Folder, ChevronDown, ChevronUp, Gift, X, Edit2, Coins, Zap, Trophy, HelpCircle } from 'lucide-react';
+import { PageHeader } from './PageHeader';
+import { cn } from '../lib/utils';
+
+interface DungeonManagerProps {
+  dungeons: Dungeon[];
+  majorDungeons: MajorDungeon[];
+  currentDungeonId: string | null;
+  onSelect: (id: string) => void;
+  onCreateMajor: (name: string, description: string, rewards?: DungeonReward[]) => void;
+  onCreateSub: (dungeon: Omit<Dungeon, 'id' | 'completedSessions' | 'status'>) => void;
+  onUpdateMajor: (id: string, updates: Partial<MajorDungeon>) => void;
+  onUpdateSub: (id: string, updates: Partial<Dungeon>) => void;
+  onDeleteMajor: (id: string) => void;
+  onDeleteSub: (id: string) => void;
+  onReorderMajor: (id: string, direction: 'up' | 'down') => void;
+  onReorderSub: (id: string, direction: 'up' | 'down') => void;
+  onFinalizeMajor: (id: string) => void;
+}
+
+export const DungeonManager: React.FC<DungeonManagerProps> = ({
+  dungeons,
+  majorDungeons,
+  currentDungeonId,
+  onSelect,
+  onCreateMajor,
+  onCreateSub,
+  onUpdateMajor,
+  onUpdateSub,
+  onDeleteMajor,
+  onDeleteSub,
+  onReorderMajor,
+  onReorderSub,
+  onFinalizeMajor
+}) => {
+  const [isAddingMajor, setIsAddingMajor] = useState(false);
+  const [isAddingSub, setIsAddingSub] = useState<{ parentId: string } | null>(null);
+  const [editingMajor, setEditingMajor] = useState<MajorDungeon | null>(null);
+  const [editingSub, setEditingSub] = useState<Dungeon | null>(null);
+  const [expandedMajors, setExpandedMajors] = useState<string[]>([]);
+  const [deletingDungeon, setDeletingDungeon] = useState<{ id: string, name: string, isMajor: boolean } | null>(null);
+
+  const [newMajor, setNewMajor] = useState({ name: '', description: '', rewards: [] as DungeonReward[] });
+  const [newSub, setNewSub] = useState({
+    name: '',
+    totalSessions: 10,
+    rewardCoins: 0,
+    rewardXP: 0,
+    rewardText: '',
+    rewards: [] as DungeonReward[],
+    isLongTerm: false
+  });
+
+  const addReward = (isMajor: boolean = false) => {
+    if (isMajor) {
+      if (editingMajor) {
+        setEditingMajor({ ...editingMajor, rewards: [...(editingMajor.rewards || []), { type: 'coins', amount: 1 }] });
+      } else {
+        setNewMajor({ ...newMajor, rewards: [...newMajor.rewards, { type: 'coins', amount: 1 }] });
+      }
+    } else {
+      if (editingSub) {
+        setEditingSub({ ...editingSub, rewards: [...(editingSub.rewards || []), { type: 'coins', amount: 1 }] });
+      } else {
+        setNewSub({ ...newSub, rewards: [...newSub.rewards, { type: 'coins', amount: 1 }] });
+      }
+    }
+  };
+
+  const removeReward = (index: number, isMajor: boolean = false) => {
+    if (isMajor) {
+      if (editingMajor) {
+        setEditingMajor({ ...editingMajor, rewards: editingMajor.rewards?.filter((_, i) => i !== index) });
+      } else {
+        setNewMajor({ ...newMajor, rewards: newMajor.rewards.filter((_, i) => i !== index) });
+      }
+    } else {
+      if (editingSub) {
+        setEditingSub({ ...editingSub, rewards: editingSub.rewards?.filter((_, i) => i !== index) });
+      } else {
+        setNewSub({ ...newSub, rewards: newSub.rewards.filter((_, i) => i !== index) });
+      }
+    }
+  };
+
+  const updateReward = (index: number, field: keyof DungeonReward, value: any, isMajor: boolean = false) => {
+    if (isMajor) {
+      if (editingMajor) {
+        const updated = [...(editingMajor.rewards || [])];
+        updated[index] = { ...updated[index], [field]: value };
+        setEditingMajor({ ...editingMajor, rewards: updated });
+      } else {
+        const updated = [...newMajor.rewards];
+        updated[index] = { ...updated[index], [field]: value };
+        setNewMajor({ ...newMajor, rewards: updated });
+      }
+    } else {
+      if (editingSub) {
+        const updated = [...(editingSub.rewards || [])];
+        updated[index] = { ...updated[index], [field]: value };
+        setEditingSub({ ...editingSub, rewards: updated });
+      } else {
+        const updated = [...newSub.rewards];
+        updated[index] = { ...updated[index], [field]: value };
+        setNewSub({ ...newSub, rewards: updated });
+      }
+    }
+  };
+
+  const toggleMajor = (id: string) => {
+    setExpandedMajors(prev => 
+      prev.includes(id) ? prev.filter(m => m !== id) : [...prev, id]
+    );
+  };
+
+  const activeDungeon = dungeons.find(d => d.id === currentDungeonId);
+
+  return (
+    <div className="p-6 space-y-8">
+      <PageHeader 
+        title="Dungeon Explorer"
+        description="Manage your major campaigns and sub-quests"
+        icon={Sword}
+        stats={[
+          { label: 'Major', value: majorDungeons.length, icon: FolderPlus, color: 'text-indigo-400' },
+          { label: 'Cleared', value: majorDungeons.filter(m => m.status === 'completed').length, icon: CheckCircle2, color: 'text-emerald-400' }
+        ]}
+      >
+        <div className="flex items-center gap-4 mt-4">
+          <button
+            onClick={() => setIsAddingMajor(true)}
+            className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-colors w-fit"
+          >
+            <FolderPlus size={20} />
+            <span>New Major Dungeon</span>
+          </button>
+        </div>
+      </PageHeader>
+
+      {/* Active Dungeon Progress */}
+      {activeDungeon && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-indigo-600/10 border border-indigo-500/30 rounded-3xl p-6 relative overflow-hidden"
+        >
+          <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500" />
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-indigo-500 text-white rounded-xl shadow-lg shadow-indigo-500/20">
+                <Sword size={20} />
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Active Quest</p>
+                <h3 className="text-lg font-black text-white tracking-tight leading-none">{activeDungeon.name}</h3>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Progress</p>
+              <p className="text-lg font-black text-white leading-none">{Math.round((activeDungeon.completedSessions / activeDungeon.totalSessions) * 100)}%</p>
+            </div>
+          </div>
+          
+          <div className="relative h-2.5 bg-slate-900 rounded-full overflow-hidden border border-slate-800 mb-2">
+            <motion.div 
+              initial={{ width: 0 }}
+              animate={{ width: `${(activeDungeon.completedSessions / activeDungeon.totalSessions) * 100}%` }}
+              className="absolute top-0 left-0 h-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]"
+            />
+          </div>
+          <div className="flex justify-between">
+            <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">{activeDungeon.completedSessions} Rooms Cleared</span>
+            <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">{activeDungeon.totalSessions} Total Rooms</span>
+          </div>
+        </motion.div>
+      )}
+
+      <AnimatePresence>
+        {(editingMajor || editingSub) && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              className="bg-slate-900 border border-indigo-500/30 rounded-3xl p-6 max-w-2xl w-full shadow-2xl space-y-6 overflow-y-auto max-h-[90vh]"
+            >
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-bold text-white">Edit {editingMajor ? 'Major' : 'Sub'} Dungeon</h3>
+                <button onClick={() => { setEditingMajor(null); setEditingSub(null); }} className="text-slate-500 hover:text-white">
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Name</label>
+                    <input
+                      type="text"
+                      value={editingMajor ? editingMajor.name : editingSub?.name || ''}
+                      onChange={e => {
+                        if (editingMajor) setEditingMajor({ ...editingMajor, name: e.target.value });
+                        else if (editingSub) setEditingSub({ ...editingSub, name: e.target.value });
+                      }}
+                      className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
+                    />
+                  </div>
+                  {editingSub && (
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Total Rooms</label>
+                      <input
+                        type="number"
+                        value={editingSub.totalSessions}
+                        onChange={e => setEditingSub({ ...editingSub, totalSessions: parseInt(e.target.value) || 1 })}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
+                      />
+                    </div>
+                  )}
+                  {editingMajor && (
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Description</label>
+                      <input
+                        type="text"
+                        value={editingMajor.description}
+                        onChange={e => setEditingMajor({ ...editingMajor, description: e.target.value })}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-3">
+                  {editingMajor && (
+                    <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl space-y-2">
+                      <div className="flex items-center gap-2 text-amber-400">
+                        <Target size={18} />
+                        <span className="text-sm font-bold uppercase tracking-wider">Finalization Check</span>
+                      </div>
+                      <p className="text-xs text-slate-400 leading-relaxed">
+                        Once finalized, you cannot add more sub-dungeons or edit rewards. 
+                        Major rewards are only granted if the dungeon is finalized before completion.
+                      </p>
+                      <button
+                        onClick={() => {
+                          onFinalizeMajor(editingMajor.id);
+                          setEditingMajor(null);
+                        }}
+                        className="w-full py-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 rounded-lg text-xs font-bold uppercase transition-all border border-amber-500/30"
+                      >
+                        Finalize Now
+                      </button>
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between">
+                    <h5 className="text-sm font-bold text-slate-500 uppercase tracking-widest">Completion Rewards</h5>
+                    <button 
+                      onClick={() => addReward(!!editingMajor)}
+                      className="text-xs font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
+                    >
+                      <Plus size={14} /> Add Reward
+                    </button>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    {(editingMajor?.rewards || editingSub?.rewards || []).map((reward, idx) => (
+                      <div key={idx} className="bg-slate-800/50 p-3 rounded-xl border border-slate-700 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <select 
+                            value={reward.type}
+                            onChange={e => updateReward(idx, 'type', e.target.value, !!editingMajor)}
+                            className="flex-grow bg-slate-900 text-sm text-white border-slate-700 rounded-lg px-2 py-1.5"
+                          >
+                            <option value="coins">Coins</option>
+                            <option value="xp">XP</option>
+                            <option value="talentPoint">Talent Points</option>
+                            <option value="item">Item</option>
+                            <option value="text">Custom Text</option>
+                          </select>
+                          <input 
+                            type="number"
+                            value={reward.amount}
+                            onChange={e => updateReward(idx, 'amount', parseInt(e.target.value) || 0, !!editingMajor)}
+                            className="w-24 bg-slate-900 text-sm text-white border-slate-700 rounded-lg px-2 py-1.5"
+                            placeholder="Amt"
+                          />
+                          <button onClick={() => removeReward(idx, !!editingMajor)} className="p-1.5 text-slate-500 hover:text-red-400"><X size={16} /></button>
+                        </div>
+                        {reward.type === 'item' && (
+                          <div className="grid grid-cols-2 gap-2">
+                            <select 
+                              value={reward.itemType}
+                              onChange={e => updateReward(idx, 'itemType', e.target.value, !!editingMajor)}
+                              className="bg-slate-900 text-xs text-white border-slate-700 rounded-lg px-2 py-1.5"
+                            >
+                              <option value="talent_shard">Talent Shard</option>
+                              <option value="death_defying_medal">Medal</option>
+                              <option value="double_xp">Double XP</option>
+                              <option value="double_coin">Double Coin</option>
+                            </select>
+                            <input 
+                              type="text"
+                              placeholder="Item Name"
+                              value={reward.itemName}
+                              onChange={e => updateReward(idx, 'itemName', e.target.value, !!editingMajor)}
+                              className="bg-slate-900 text-xs text-white border-slate-700 rounded-lg px-2 py-1.5"
+                            />
+                          </div>
+                        )}
+                        {reward.type === 'text' && (
+                          <input 
+                            type="text"
+                            placeholder="Reward Message"
+                            value={reward.rewardText}
+                            onChange={e => updateReward(idx, 'rewardText', e.target.value, !!editingMajor)}
+                            className="w-full bg-slate-900 text-xs text-white border-slate-700 rounded-lg px-2 py-1.5"
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end space-x-3 pt-4 border-t border-slate-800">
+                <button onClick={() => { setEditingMajor(null); setEditingSub(null); }} className="px-4 py-2 text-slate-400">Cancel</button>
+                <button 
+                  onClick={() => {
+                    if (editingMajor) {
+                      onUpdateMajor(editingMajor.id, { name: editingMajor.name, description: editingMajor.description, rewards: editingMajor.rewards });
+                      setEditingMajor(null);
+                    } else if (editingSub) {
+                      onUpdateSub(editingSub.id, { name: editingSub.name, totalSessions: editingSub.totalSessions, rewards: editingSub.rewards });
+                      setEditingSub(null);
+                    }
+                  }}
+                  className="px-8 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {isAddingMajor && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="bg-slate-900 p-6 rounded-2xl border border-indigo-500/30 space-y-4"
+          >
+            <h3 className="text-lg font-bold text-white">Create Major Dungeon</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <input
+                type="text"
+                placeholder="Major Dungeon Name (e.g., IELTS Mastery)"
+                value={newMajor.name}
+                onChange={e => setNewMajor({ ...newMajor, name: e.target.value })}
+                className="bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-indigo-500"
+              />
+              <input
+                type="text"
+                placeholder="Description"
+                value={newMajor.description}
+                onChange={e => setNewMajor({ ...newMajor, description: e.target.value })}
+                className="bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-indigo-500"
+              />
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h5 className="text-sm font-bold text-slate-500 uppercase tracking-widest">Major Completion Rewards</h5>
+                <button 
+                  onClick={() => addReward(true)}
+                  className="text-xs font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
+                >
+                  <Plus size={14} /> Add Reward
+                </button>
+              </div>
+              
+              <div className="space-y-2">
+                {newMajor.rewards.map((reward, idx) => (
+                  <div key={idx} className="bg-slate-800/50 p-3 rounded-xl border border-slate-700 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <select 
+                        value={reward.type}
+                        onChange={e => updateReward(idx, 'type', e.target.value, true)}
+                        className="flex-grow bg-slate-900 text-sm text-white border-slate-700 rounded-lg px-2 py-1.5"
+                      >
+                        <option value="coins">Coins</option>
+                        <option value="xp">XP</option>
+                        <option value="talentPoint">Talent Points</option>
+                        <option value="item">Item</option>
+                        <option value="text">Custom Text</option>
+                      </select>
+                      <input 
+                        type="number"
+                        value={reward.amount}
+                        onChange={e => updateReward(idx, 'amount', parseInt(e.target.value), true)}
+                        className="w-24 bg-slate-900 text-sm text-white border-slate-700 rounded-lg px-2 py-1.5"
+                        placeholder="Amt"
+                      />
+                      <button onClick={() => removeReward(idx, true)} className="p-1.5 text-slate-500 hover:text-red-400"><X size={16} /></button>
+                    </div>
+                    {reward.type === 'item' && (
+                      <div className="grid grid-cols-2 gap-2">
+                        <select 
+                          value={reward.itemType}
+                          onChange={e => updateReward(idx, 'itemType', e.target.value, true)}
+                          className="bg-slate-900 text-xs text-white border-slate-700 rounded-lg px-2 py-1.5"
+                        >
+                          <option value="talent_shard">Talent Shard</option>
+                          <option value="death_defying_medal">Medal</option>
+                          <option value="double_xp">Double XP</option>
+                          <option value="double_coin">Double Coin</option>
+                        </select>
+                        <input 
+                          type="text"
+                          placeholder="Item Name"
+                          value={reward.itemName}
+                          onChange={e => updateReward(idx, 'itemName', e.target.value, true)}
+                          className="bg-slate-900 text-xs text-white border-slate-700 rounded-lg px-2 py-1.5"
+                        />
+                      </div>
+                    )}
+                    {reward.type === 'text' && (
+                      <input 
+                        type="text"
+                        placeholder="Reward Message"
+                        value={reward.rewardText}
+                        onChange={e => updateReward(idx, 'rewardText', e.target.value, true)}
+                        className="w-full bg-slate-900 text-xs text-white border-slate-700 rounded-lg px-2 py-1.5"
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-3">
+              <button onClick={() => setIsAddingMajor(false)} className="px-4 py-2 text-slate-400">Cancel</button>
+              <button 
+                onClick={() => { onCreateMajor(newMajor.name, newMajor.description, newMajor.rewards); setIsAddingMajor(false); setNewMajor({ name: '', description: '', rewards: [] }); }}
+                className="px-6 py-2 bg-indigo-600 text-white rounded-lg font-bold"
+              >
+                Create
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="space-y-6">
+        {majorDungeons.length === 0 && dungeons.filter(d => !d.parentId).length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 px-6 bg-slate-900/50 rounded-[2.5rem] border border-slate-800 border-dashed">
+            <div className="w-20 h-20 bg-slate-800 rounded-full flex items-center justify-center mb-6 text-slate-600">
+              <Sword size={40} />
+            </div>
+            <h3 className="text-xl font-bold text-white mb-2">No history yet</h3>
+            <p className="text-slate-500 text-center max-w-xs text-sm">Start your first session and conquer the challenges ahead!</p>
+            <button 
+              onClick={() => setIsAddingMajor(true)}
+              className="mt-8 px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-bold transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2 text-sm"
+            >
+              <Plus size={20} />
+              Create First Dungeon
+            </button>
+          </div>
+        ) : (
+          majorDungeons.map(major => (
+            <div key={major.id} className="bg-slate-900/50 rounded-3xl border border-slate-800 overflow-hidden">
+              <div 
+                className="p-4 sm:p-6 flex items-center justify-between cursor-pointer hover:bg-slate-800/50 transition-colors"
+                onClick={() => toggleMajor(major.id)}
+              >
+                <div className="flex items-center space-x-3 sm:space-x-4">
+                  <div className="p-2 sm:p-3 bg-indigo-500/10 text-indigo-400 rounded-xl sm:rounded-2xl shrink-0">
+                    <Folder size={20} className="sm:w-6 sm:h-6" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="text-base sm:text-xl font-bold text-white truncate">{major.name}</h3>
+                      {major.isFinalized && (
+                        <span className="text-[8px] sm:text-[10px] font-bold bg-indigo-500/20 text-indigo-400 px-1.5 py-0.5 rounded border border-indigo-500/30 uppercase tracking-widest">
+                          Finalized
+                        </span>
+                      )}
+                      {major.status === 'completed' && (
+                        <span className="text-[10px] sm:text-xs font-bold text-emerald-500 uppercase tracking-widest bg-emerald-500/10 px-2 py-0.5 rounded-full">
+                          Cleared
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs sm:text-sm text-slate-500 truncate">{major.description}</p>
+                    {major.rewards && major.rewards.length > 0 && (
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        {major.rewards.map((r, i) => (
+                          <div key={i} className="flex items-center gap-1 px-1.5 py-0.5 bg-slate-800 rounded text-[10px] text-slate-300 border border-slate-700/50">
+                            {r.type === 'coins' ? <Coins size={8} className="text-amber-400" /> : 
+                             r.type === 'xp' ? <Zap size={8} className="text-indigo-400" /> :
+                             r.type === 'talentPoint' ? <Trophy size={8} className="text-purple-400" /> :
+                             <Gift size={8} className="text-indigo-400" />}
+                            <span>
+                              {r.type === 'text' ? r.rewardText : 
+                               r.type === 'talentPoint' ? `${r.amount} PT` :
+                               `${r.amount} ${r.type === 'item' ? (r.itemName || 'Item') : r.type}`}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2 sm:space-x-4 shrink-0">
+                  <div className="hidden sm:flex flex-col gap-1">
+                    <button onClick={(e) => { e.stopPropagation(); onReorderMajor(major.id, 'up'); }} className="text-slate-600 hover:text-indigo-400"><ChevronUp size={14} /></button>
+                    <button onClick={(e) => { e.stopPropagation(); onReorderMajor(major.id, 'down'); }} className="text-slate-600 hover:text-indigo-400"><ChevronDown size={14} /></button>
+                  </div>
+                  {!major.status || major.status !== 'completed' ? (
+                    major.isFinalized ? (
+                      <div className="p-1.5 sm:p-2 bg-indigo-500/20 text-indigo-400 rounded-lg cursor-not-allowed" title="Finalized dungeons cannot be edited">
+                        <CheckCircle2 size={16} className="sm:w-5 sm:h-5" />
+                      </div>
+                    ) : (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setEditingMajor(major); }}
+                        className="p-1.5 sm:p-2 bg-slate-800 text-slate-400 hover:text-white rounded-lg transition-colors"
+                        title="Edit Major Dungeon"
+                      >
+                        <Edit2 size={16} className="sm:w-5 sm:h-5" />
+                      </button>
+                    )
+                  ) : (
+                    <div className="p-1.5 sm:p-2 bg-slate-800/30 text-slate-600 rounded-lg cursor-not-allowed" title="Completed tasks cannot be edited">
+                      <Edit2 size={16} className="sm:w-5 sm:h-5" />
+                    </div>
+                  )}
+                  <button
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
+                      if (major.isFinalized) return;
+                      setIsAddingSub({ parentId: major.id });
+                      if (!expandedMajors.includes(major.id)) {
+                        setExpandedMajors(prev => [...prev, major.id]);
+                      }
+                    }}
+                    className={cn(
+                      "p-1.5 sm:p-2 rounded-lg transition-colors",
+                      major.isFinalized 
+                        ? "bg-slate-800/30 text-slate-600 cursor-not-allowed" 
+                        : "bg-slate-800 text-slate-400 hover:text-white"
+                    )}
+                    title={major.isFinalized ? "Cannot add sub-dungeons to a finalized dungeon" : "Add Sub Dungeon"}
+                  >
+                    <Plus size={16} className="sm:w-5 sm:h-5" />
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setDeletingDungeon({ id: major.id, name: major.name, isMajor: true }); }}
+                    className="p-1.5 sm:p-2 text-slate-600 hover:text-red-400 transition-colors"
+                  >
+                    <Trash2 size={16} className="sm:w-5 sm:h-5" />
+                  </button>
+                  {expandedMajors.includes(major.id) ? <ChevronUp size={16} className="text-slate-500" /> : <ChevronDown size={16} className="text-slate-500" />}
+                </div>
+              </div>
+
+              <AnimatePresence>
+                {expandedMajors.includes(major.id) && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="px-4 sm:px-6 pb-4 sm:pb-6 space-y-4"
+                  >
+                    {isAddingSub?.parentId === major.id && (
+                      <div className="bg-slate-800/50 p-4 sm:p-6 rounded-2xl border border-indigo-500/20 space-y-4 mb-4">
+                        <h4 className="text-xs sm:text-sm font-bold text-indigo-400 uppercase tracking-widest">New Sub Dungeon</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <input
+                            type="text"
+                            placeholder="Sub Dungeon Name"
+                            value={newSub.name}
+                            onChange={e => setNewSub({ ...newSub, name: e.target.value })}
+                            className="bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white text-sm"
+                          />
+                          <input
+                            type="number"
+                            placeholder="Total Sessions"
+                            value={newSub.totalSessions}
+                            onChange={e => setNewSub({ ...newSub, totalSessions: parseInt(e.target.value) })}
+                            className="bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white text-sm"
+                          />
+                        </div>
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <h5 className="text-[10px] sm:text-sm font-bold text-slate-500 uppercase tracking-widest">Completion Rewards</h5>
+                            <button 
+                              onClick={() => addReward(false)}
+                              className="text-[10px] sm:text-xs font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
+                            >
+                              <Plus size={12} /> Add Reward
+                            </button>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            {newSub.rewards.map((reward, idx) => (
+                              <div key={idx} className="bg-slate-900/50 p-3 rounded-xl border border-slate-700 space-y-3">
+                                <div className="flex items-center gap-2">
+                                  <select 
+                                    value={reward.type}
+                                    onChange={e => updateReward(idx, 'type', e.target.value)}
+                                    className="flex-grow bg-slate-800 text-xs sm:text-sm text-white border-slate-700 rounded-lg px-2 py-1.5"
+                                  >
+                                    <option value="coins">Coins</option>
+                                    <option value="xp">XP</option>
+                                    <option value="talentPoint">Talent Point</option>
+                                    <option value="item">Advanced Item</option>
+                                    <option value="text">Custom Text</option>
+                                  </select>
+                                  <button onClick={() => removeReward(idx)} className="text-slate-500 hover:text-rose-400 p-1">
+                                    <X size={14} />
+                                  </button>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-2">
+                                  {(reward.type === 'coins' || reward.type === 'xp' || reward.type === 'talentPoint' || (reward.type === 'item' && ['talent_shard', 'death_defying_medal', 'xp_bonus_percent', 'coin_bonus_percent'].includes(reward.itemType || ''))) && (
+                                    <div className="space-y-1">
+                                      <label className="text-[10px] font-bold text-slate-500 uppercase">Amount</label>
+                                      <input 
+                                        type="number"
+                                        value={reward.amount}
+                                        onChange={e => updateReward(idx, 'amount', parseInt(e.target.value) || 0)}
+                                        className="w-full bg-slate-800 text-xs sm:text-sm text-white border-slate-700 rounded-lg px-2 py-1.5"
+                                        placeholder="Amt"
+                                      />
+                                    </div>
+                                  )}
+
+                                  {reward.type === 'item' && (
+                                    <div className="space-y-1 col-span-2">
+                                      <label className="text-[10px] font-bold text-slate-500 uppercase">Item Type</label>
+                                      <select 
+                                        value={reward.itemType || 'double_xp'}
+                                        onChange={e => updateReward(idx, 'itemType', e.target.value)}
+                                        className="w-full bg-slate-800 text-xs sm:text-sm text-white border-slate-700 rounded-lg px-2 py-1.5"
+                                      >
+                                        <option value="double_xp">Double XP Card</option>
+                                        <option value="double_coin">Double Coins Card</option>
+                                        <option value="talent_shard">Talent Shard</option>
+                                        <option value="death_defying_medal">Death Defying Gold Medal</option>
+                                        <option value="xp_bonus_percent">Next XP Bonus %</option>
+                                        <option value="coin_bonus_percent">Next Coins Bonus %</option>
+                                      </select>
+                                    </div>
+                                  )}
+
+                                  {reward.type === 'item' && (
+                                    <div className="space-y-1 col-span-2">
+                                      <label className="text-[10px] font-bold text-slate-500 uppercase">Display Name</label>
+                                      <input 
+                                        type="text"
+                                        value={reward.itemName || ''}
+                                        onChange={e => updateReward(idx, 'itemName', e.target.value)}
+                                        className="w-full bg-slate-800 text-xs sm:text-sm text-white border-slate-700 rounded-lg px-2 py-1.5"
+                                        placeholder="e.g. Rare Scroll"
+                                      />
+                                    </div>
+                                  )}
+
+                                  {reward.type === 'text' && (
+                                    <div className="space-y-1 col-span-2">
+                                      <label className="text-[10px] font-bold text-slate-500 uppercase">Custom Reward Text</label>
+                                      <input 
+                                        type="text"
+                                        value={reward.rewardText || ''}
+                                        onChange={e => updateReward(idx, 'rewardText', e.target.value)}
+                                        className="w-full bg-slate-800 text-xs sm:text-sm text-white border-slate-700 rounded-lg px-2 py-1.5"
+                                        placeholder="e.g. Watch a movie"
+                                      />
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="flex justify-end space-x-3">
+                          <button onClick={() => setIsAddingSub(null)} className="px-4 py-2 text-slate-400 text-sm">Cancel</button>
+                          <button 
+                            onClick={() => { 
+                              onCreateSub({ ...newSub, parentId: major.id }); 
+                              setIsAddingSub(null);
+                              setNewSub({
+                                name: '',
+                                totalSessions: 10,
+                                rewardCoins: 0,
+                                rewardXP: 0,
+                                rewardText: '',
+                                rewards: [],
+                                isLongTerm: false
+                              });
+                            }}
+                            className="px-6 py-2 bg-indigo-600 text-white rounded-lg font-bold text-sm"
+                          >
+                            Add Sub Quest
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="space-y-3 sm:space-y-4">
+                      {(() => {
+                        const subs = dungeons.filter(d => d.parentId === major.id);
+                        const allDone = subs.length > 0 && subs.every(s => s.status === 'completed');
+                        if (allDone && !major.isFinalized && major.status !== 'completed') {
+                          return (
+                            <div className="p-3 sm:p-4 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex items-start gap-3">
+                              <Target size={16} className="text-amber-400 shrink-0 mt-0.5" />
+                              <div className="space-y-1">
+                                <p className="text-xs sm:text-sm font-bold text-amber-400">All rooms cleared, but rewards are pending!</p>
+                                <p className="text-[10px] sm:text-xs text-slate-400">Please finalize this Major Dungeon in the settings (edit icon) to claim your rewards and lock the dungeon.</p>
+                              </div>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
+                      {dungeons.filter(d => d.parentId === major.id).map(sub => (
+                        <motion.div
+                          key={sub.id}
+                          whileHover={{ scale: 1.01 }}
+                          className={cn(
+                            "p-3 sm:p-4 rounded-2xl border transition-all cursor-pointer group",
+                            currentDungeonId === sub.id 
+                              ? "bg-indigo-500/10 border-indigo-500" 
+                              : "bg-slate-900 border-slate-800 hover:border-slate-700"
+                          )}
+                          onClick={() => onSelect(sub.id)}
+                        >
+                          <div className="flex items-center justify-between mb-2 sm:mb-3">
+                            <div className="flex items-center space-x-2 sm:space-x-3">
+                              <div className={cn(
+                                "p-1.5 sm:p-2 rounded-lg transition-colors",
+                                sub.status === 'completed' ? "bg-emerald-500/20 text-emerald-400" :
+                                currentDungeonId === sub.id ? "bg-indigo-500 text-white" : "bg-slate-800 text-slate-500"
+                              )}>
+                                {sub.status === 'completed' ? <CheckCircle2 size={14} className="sm:w-4 sm:h-4" /> : <Target size={14} className="sm:w-4 sm:h-4" />}
+                              </div>
+                              <div>
+                                <span className={cn(
+                                  "font-bold text-xs sm:text-sm transition-colors block truncate max-w-[120px] sm:max-w-none",
+                                  sub.status === 'completed' ? "text-slate-500 line-through" : "text-white"
+                                )}>{sub.name}</span>
+                                <div className="flex items-center gap-2 mt-0.5">
+                                  <span className="text-[10px] sm:text-xs text-slate-500">{sub.completedSessions}/{sub.totalSessions} Rooms</span>
+                                  {sub.status === 'completed' && (
+                                    <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">
+                                      Cleared
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1 sm:gap-2">
+                              {currentDungeonId === sub.id && (
+                                <span className="px-1.5 sm:px-2 py-0.5 bg-indigo-500 text-white text-[8px] sm:text-[10px] font-black uppercase tracking-widest rounded-full animate-pulse">Active</span>
+                              )}
+                              <div className="hidden sm:flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onClick={(e) => { e.stopPropagation(); onReorderSub(sub.id, 'up'); }} className="text-slate-600 hover:text-indigo-400 p-1"><ChevronUp size={14} /></button>
+                                <button onClick={(e) => { e.stopPropagation(); onReorderSub(sub.id, 'down'); }} className="text-slate-600 hover:text-indigo-400 p-1"><ChevronDown size={14} /></button>
+                              </div>
+                              {sub.status !== 'completed' ? (
+                                major.isFinalized ? (
+                                  <div className="text-slate-700 p-1 opacity-0 group-hover:opacity-100 transition-opacity cursor-not-allowed" title="Parent dungeon is finalized">
+                                    <Edit2 size={14} />
+                                  </div>
+                                ) : (
+                                  <button 
+                                    onClick={(e) => { e.stopPropagation(); setEditingSub(sub); }}
+                                    className="text-slate-600 hover:text-indigo-400 sm:opacity-0 group-hover:opacity-100 transition-opacity p-1"
+                                  >
+                                    <Edit2 size={14} />
+                                  </button>
+                                )
+                              ) : (
+                                <div className="text-slate-700 p-1 sm:opacity-0 group-hover:opacity-100 transition-opacity cursor-not-allowed" title="Completed tasks cannot be edited">
+                                  <Edit2 size={14} />
+                                </div>
+                              )}
+                              <button 
+                                onClick={(e) => { e.stopPropagation(); setDeletingDungeon({ id: sub.id, name: sub.name, isMajor: false }); }}
+                                className="text-slate-600 hover:text-red-400 sm:opacity-0 group-hover:opacity-100 transition-opacity p-1"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          </div>
+                          <div className="w-full h-1 bg-slate-800 rounded-full overflow-hidden mb-2 sm:mb-3">
+                            <div 
+                              className="h-full bg-indigo-500" 
+                              style={{ width: `${(sub.completedSessions/sub.totalSessions)*100}%` }}
+                            />
+                          </div>
+
+                          {sub.rewards && sub.rewards.length > 0 && (
+                            <div className="space-y-1 border-t border-slate-800 pt-2">
+                              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Rewards</p>
+                              <div className="flex flex-wrap gap-1">
+                                {sub.rewards.map((r, i) => (
+                                  <div key={i} className="flex items-center gap-1 px-1.5 py-0.5 bg-slate-800 rounded text-[10px] text-slate-300 border border-slate-700/50">
+                                    <Gift size={10} className="text-indigo-400" />
+                                    <span className="truncate max-w-[80px] sm:max-w-none">
+                                      {r.type === 'text' ? r.rewardText : 
+                                       r.type === 'talentPoint' ? `${r.amount} PT` :
+                                       `${r.amount} ${r.type === 'item' ? (r.itemName || 'Item') : r.type}`}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </motion.div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          ))
+        )}
+
+        {/* Uncategorized Dungeons */}
+        {dungeons.filter(d => !d.parentId).length > 0 && (
+          <div className="space-y-4">
+            <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest flex items-center space-x-2">
+              <Sword size={16} />
+              <span>Independent Quests</span>
+            </h3>
+            <div className="space-y-4">
+              {dungeons.filter(d => !d.parentId).map(d => (
+                <div 
+                  key={d.id}
+                  onClick={() => onSelect(d.id)}
+                  className={cn(
+                    "p-5 rounded-2xl border transition-all cursor-pointer",
+                    currentDungeonId === d.id ? "bg-indigo-500/10 border-indigo-500" : "bg-slate-900 border-slate-800"
+                  )}
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="font-bold text-white">{d.name}</h4>
+                    <button onClick={(e) => { e.stopPropagation(); onDeleteSub(d.id); }} className="text-slate-600 hover:text-red-400">
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                  <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden mb-4">
+                    <div className="h-full bg-indigo-500" style={{ width: `${(d.completedSessions/d.totalSessions)*100}%` }} />
+                  </div>
+
+                  {d.rewards && d.rewards.length > 0 && (
+                    <div className="space-y-1 border-t border-slate-800 pt-3">
+                      <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mb-1">Rewards</p>
+                      <div className="flex flex-wrap gap-1">
+                        {d.rewards.map((r, i) => (
+                          <div key={i} className="flex items-center gap-1 px-1.5 py-0.5 bg-slate-800 rounded text-[9px] text-slate-300 border border-slate-700/50">
+                            <Gift size={10} className="text-indigo-400" />
+                            <span>
+                              {r.type === 'text' ? r.rewardText : 
+                               r.type === 'talentPoint' ? `${r.amount} Talent Points` :
+                               `${r.amount} ${r.type === 'item' ? (r.itemName || 'Item') : r.type}`}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+      <AnimatePresence>
+        {deletingDungeon && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              className="bg-slate-900 border border-red-500/30 rounded-3xl p-6 max-w-sm w-full shadow-2xl space-y-6"
+            >
+              <div className="flex items-center gap-3 text-red-400">
+                <Trash2 size={24} />
+                <h3 className="text-xl font-bold">Delete Dungeon</h3>
+              </div>
+              <p className="text-slate-300">
+                Are you sure you want to delete <span className="font-bold text-white">{deletingDungeon.name}</span>? This action cannot be undone.
+              </p>
+              <div className="flex justify-end space-x-3">
+                <button onClick={() => setDeletingDungeon(null)} className="px-4 py-2 text-slate-400 hover:text-white transition-colors">Cancel</button>
+                <button 
+                  onClick={() => {
+                    if (deletingDungeon.isMajor) {
+                      onDeleteMajor(deletingDungeon.id);
+                    } else {
+                      onDeleteSub(deletingDungeon.id);
+                    }
+                    setDeletingDungeon(null);
+                  }}
+                  className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold transition-colors"
+                >
+                  Delete
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
