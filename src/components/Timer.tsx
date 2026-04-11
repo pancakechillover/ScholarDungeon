@@ -30,26 +30,43 @@ export const Timer: React.FC<TimerProps> = ({
   onRewardSelect,
   setShowCoinRain
 }) => {
-  const [timeLeft, setTimeLeft] = useState(25 * 60);
-  const [isActive, setIsActive] = useState(false);
-  const [duration, setDuration] = useState(25);
+  const [duration, setDuration] = useState(() => {
+    const saved = localStorage.getItem('timer_duration');
+    return saved ? parseInt(saved, 10) : 25;
+  });
+
+  const [isActive, setIsActive] = useState(() => {
+    return localStorage.getItem('timer_isActive') === 'true';
+  });
+
+  const [endTime, setEndTime] = useState<number | null>(() => {
+    const saved = localStorage.getItem('timer_endTime');
+    return saved ? parseInt(saved, 10) : null;
+  });
+
+  const [timeLeft, setTimeLeft] = useState(() => {
+    const saved = localStorage.getItem('timer_timeLeft');
+    return saved ? parseInt(saved, 10) : 25 * 60;
+  });
+
   const [showRewards, setShowRewards] = useState<{ session: StudySession; choices: RewardCard[] } | null>(null);
   const [showTalentPopup, setShowTalentPopup] = useState<StudySession['triggeredTalents'] | null>(null);
 
+  // Sync to localStorage
   useEffect(() => {
-    let interval: any = null;
-    if (isActive && timeLeft > 0) {
-      interval = setInterval(() => {
-        setTimeLeft(prev => prev - 1);
-      }, 1000);
-    } else if (timeLeft === 0) {
-      handleComplete();
+    localStorage.setItem('timer_duration', duration.toString());
+    localStorage.setItem('timer_isActive', isActive.toString());
+    if (endTime) {
+      localStorage.setItem('timer_endTime', endTime.toString());
+    } else {
+      localStorage.removeItem('timer_endTime');
     }
-    return () => clearInterval(interval);
-  }, [isActive, timeLeft]);
+    localStorage.setItem('timer_timeLeft', timeLeft.toString());
+  }, [duration, isActive, endTime, timeLeft]);
 
   const handleComplete = useCallback(() => {
     setIsActive(false);
+    setEndTime(null);
     const session = onComplete(duration);
     if (session) {
       // Generate choices from rewardPool
@@ -77,14 +94,48 @@ export const Timer: React.FC<TimerProps> = ({
       }
     }
     setTimeLeft(duration * 60);
-  }, [duration, onComplete, rewardPool, activeTalents]);
+  }, [duration, onComplete, rewardPool, activeTalents, setShowCoinRain]);
+
+  useEffect(() => {
+    let interval: any = null;
+    
+    const checkTime = () => {
+      if (!isActive || !endTime) return;
+      const now = Date.now();
+      const remaining = Math.max(0, Math.ceil((endTime - now) / 1000));
+      
+      setTimeLeft(remaining);
+      
+      if (remaining === 0) {
+        setIsActive(false);
+        setEndTime(null);
+        handleComplete();
+      }
+    };
+
+    if (isActive && endTime) {
+      checkTime(); // Check immediately
+      interval = setInterval(checkTime, 1000);
+    }
+    
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isActive, endTime, handleComplete]);
 
   const toggleTimer = () => {
-    setIsActive(!isActive);
+    if (isActive) {
+      setIsActive(false);
+      setEndTime(null);
+    } else {
+      setIsActive(true);
+      setEndTime(Date.now() + timeLeft * 1000);
+    }
   };
 
   const resetTimer = () => {
     setIsActive(false);
+    setEndTime(null);
     setTimeLeft(duration * 60);
   };
 
@@ -187,7 +238,7 @@ export const Timer: React.FC<TimerProps> = ({
         {[10, 25, 45, 60].map(d => (
           <button
             key={d}
-            onClick={() => { setDuration(d); setTimeLeft(d * 60); setIsActive(false); }}
+            onClick={() => { setDuration(d); setTimeLeft(d * 60); setIsActive(false); setEndTime(null); }}
             className={cn(
               "px-4 py-2 rounded-lg text-sm font-bold transition-all",
               duration === d ? "bg-slate-800 text-white border border-slate-700" : "text-slate-500 hover:text-slate-300"

@@ -224,8 +224,11 @@ export const RewardHistory: React.FC<RewardHistoryProps> = ({ history, onToggleR
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               className={cn(
-                "group relative bg-slate-900 border border-slate-800 rounded-2xl p-4 transition-all",
-                item.type === 'text' ? "hover:border-indigo-500/50" : "hover:border-slate-700"
+                "group relative border rounded-2xl p-4 transition-all",
+                item.redeemed 
+                  ? "bg-lime-500/5 border-lime-500/20" 
+                  : "bg-slate-900 border-slate-800",
+                item.type === 'text' && !item.redeemed ? "hover:border-indigo-500/50" : "hover:border-slate-700"
               )}
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -234,11 +237,11 @@ export const RewardHistory: React.FC<RewardHistoryProps> = ({ history, onToggleR
                     "w-12 h-12 rounded-xl flex items-center justify-center border shrink-0",
                     (() => {
                       const r = item.rarity.toUpperCase();
-                      if (r.includes('LASTONE')) return "bg-rose-900/30 border-rose-500/30 text-rose-400";
-                      if (r.includes('EPIC') || r.includes('SR') || r.includes('B')) return "bg-purple-900/30 border-purple-500/30 text-purple-400";
-                      if (r.includes('COMMON') || r.includes('D')) return "bg-slate-800 border-slate-700 text-slate-400";
-                      if (r.includes('RARE') || r.includes('C') || r === 'R') return "bg-blue-900/30 border-blue-500/30 text-blue-400";
-                      return "bg-amber-900/30 border-amber-500/30 text-amber-400";
+                      if (r.includes('LASTONE')) return "bg-rose-500/10 border-rose-500/20 text-rose-500";
+                      if (r.includes('EPIC') || r.includes('SR') || r.includes('B')) return "bg-purple-500/10 border-purple-500/20 text-purple-500";
+                      if (r.includes('COMMON') || r.includes('D')) return "bg-slate-500/10 border-slate-500/20 text-slate-500";
+                      if (r.includes('RARE') || r.includes('C') || r === 'R') return "bg-blue-500/10 border-blue-500/20 text-blue-500";
+                      return "bg-amber-500/10 border-amber-500/20 text-amber-500";
                     })()
                   )}>
                     {item.type === 'coins' ? <Coins size={20} className="text-amber-400" /> :
@@ -315,9 +318,9 @@ export const RewardHistory: React.FC<RewardHistoryProps> = ({ history, onToggleR
                       </span>
                     </button>
                   ) : (
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800/50 text-slate-500 rounded-full border border-slate-700/50">
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 text-emerald-500 rounded-full border border-emerald-500/20">
                       <CheckCircle2 size={14} />
-                      <span className="text-xs font-black uppercase tracking-wider italic">Auto-Redeemed</span>
+                      <span className="text-xs font-black uppercase tracking-wider italic">Completed</span>
                     </div>
                   )}
                 </div>

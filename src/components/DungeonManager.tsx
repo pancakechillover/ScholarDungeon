@@ -9,6 +9,8 @@ interface DungeonManagerProps {
   dungeons: Dungeon[];
   majorDungeons: MajorDungeon[];
   currentDungeonId: string | null;
+  isAddingMajor: boolean;
+  setIsAddingMajor: (val: boolean) => void;
   onSelect: (id: string) => void;
   onCreateMajor: (name: string, description: string, rewards?: DungeonReward[]) => void;
   onCreateSub: (dungeon: Omit<Dungeon, 'id' | 'completedSessions' | 'status'>) => void;
@@ -25,6 +27,8 @@ export const DungeonManager: React.FC<DungeonManagerProps> = ({
   dungeons,
   majorDungeons,
   currentDungeonId,
+  isAddingMajor,
+  setIsAddingMajor,
   onSelect,
   onCreateMajor,
   onCreateSub,
@@ -36,7 +40,6 @@ export const DungeonManager: React.FC<DungeonManagerProps> = ({
   onReorderSub,
   onFinalizeMajor
 }) => {
-  const [isAddingMajor, setIsAddingMajor] = useState(false);
   const [isAddingSub, setIsAddingSub] = useState<{ parentId: string } | null>(null);
   const [editingMajor, setEditingMajor] = useState<MajorDungeon | null>(null);
   const [editingSub, setEditingSub] = useState<Dungeon | null>(null);
@@ -53,6 +56,12 @@ export const DungeonManager: React.FC<DungeonManagerProps> = ({
     rewards: [] as DungeonReward[],
     isLongTerm: false
   });
+
+  React.useEffect(() => {
+    if (isAddingMajor && !editingMajor) {
+      setNewMajor({ name: '', description: '', rewards: [] });
+    }
+  }, [isAddingMajor, editingMajor]);
 
   const addReward = (isMajor: boolean = false) => {
     if (isMajor) {
@@ -119,61 +128,57 @@ export const DungeonManager: React.FC<DungeonManagerProps> = ({
   const activeDungeon = dungeons.find(d => d.id === currentDungeonId);
 
   return (
-    <div className="p-6 space-y-8">
-      <PageHeader 
-        title="Dungeon Explorer"
-        description="Manage your major campaigns and sub-quests"
-        icon={Sword}
-        stats={[
-          { label: 'Major', value: majorDungeons.length, icon: FolderPlus, color: 'text-indigo-400' },
-          { label: 'Cleared', value: majorDungeons.filter(m => m.status === 'completed').length, icon: CheckCircle2, color: 'text-emerald-400' }
-        ]}
-      >
-        <div className="flex items-center gap-4 mt-4">
-          <button
-            onClick={() => setIsAddingMajor(true)}
-            className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-colors w-fit"
-          >
-            <FolderPlus size={20} />
-            <span>New Major Dungeon</span>
-          </button>
-        </div>
-      </PageHeader>
-
+    <div className="space-y-8">
       {/* Active Dungeon Progress */}
       {activeDungeon && (
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="bg-indigo-600/10 border border-indigo-500/30 rounded-3xl p-6 relative overflow-hidden"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-slate-900 rounded-[2.5rem] border border-slate-800 p-8 relative overflow-hidden group"
         >
-          <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500" />
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-indigo-500 text-white rounded-xl shadow-lg shadow-indigo-500/20">
-                <Sword size={20} />
-              </div>
-              <div>
-                <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Active Quest</p>
-                <h3 className="text-lg font-black text-white tracking-tight leading-none">{activeDungeon.name}</h3>
-              </div>
-            </div>
-            <div className="text-right">
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Progress</p>
-              <p className="text-lg font-black text-white leading-none">{Math.round((activeDungeon.completedSessions / activeDungeon.totalSessions) * 100)}%</p>
-            </div>
+          <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+            <Sword size={120} />
           </div>
           
-          <div className="relative h-2.5 bg-slate-900 rounded-full overflow-hidden border border-slate-800 mb-2">
-            <motion.div 
-              initial={{ width: 0 }}
-              animate={{ width: `${(activeDungeon.completedSessions / activeDungeon.totalSessions) * 100}%` }}
-              className="absolute top-0 left-0 h-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]"
-            />
-          </div>
-          <div className="flex justify-between">
-            <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">{activeDungeon.completedSessions} Rooms Cleared</span>
-            <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">{activeDungeon.totalSessions} Total Rooms</span>
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-indigo-500/20 text-indigo-400 rounded-2xl border border-indigo-500/20">
+                  <Sword size={24} />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-1">Active Quest</p>
+                  <h3 className="text-2xl font-black text-white tracking-tight italic uppercase">{activeDungeon.name}</h3>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Progress</p>
+                <p className="text-3xl font-black text-white leading-none">{Math.round((activeDungeon.completedSessions / activeDungeon.totalSessions) * 100)}%</p>
+              </div>
+            </div>
+            
+            <div className="bg-slate-950/50 p-6 rounded-3xl border border-slate-800/50">
+              <div className="relative h-3 bg-slate-900 rounded-full overflow-hidden border border-slate-800 mb-4">
+                <motion.div 
+                  initial={{ width: 0 }}
+                  animate={{ width: `${(activeDungeon.completedSessions / activeDungeon.totalSessions) * 100}%` }}
+                  className="absolute top-0 left-0 h-full bg-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.5)]"
+                />
+              </div>
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-4">
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{activeDungeon.completedSessions} Rooms Cleared</span>
+                  <div className="w-1 h-1 rounded-full bg-slate-700" />
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{activeDungeon.totalSessions} Total Rooms</span>
+                </div>
+                <button 
+                  onClick={() => onSelect(activeDungeon.id)}
+                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold uppercase tracking-widest transition-all border border-slate-700"
+                >
+                  View Details
+                </button>
+              </div>
+            </div>
           </div>
         </motion.div>
       )}
@@ -459,56 +464,50 @@ export const DungeonManager: React.FC<DungeonManagerProps> = ({
         )}
       </AnimatePresence>
 
-      <div className="space-y-6">
+      <div className="space-y-4">
         {majorDungeons.length === 0 && dungeons.filter(d => !d.parentId).length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 px-6 bg-slate-900/50 rounded-[2.5rem] border border-slate-800 border-dashed">
-            <div className="w-20 h-20 bg-slate-800 rounded-full flex items-center justify-center mb-6 text-slate-600">
-              <Sword size={40} />
+          <div className="flex flex-col items-center justify-center py-20 px-6 bg-slate-900/30 rounded-[3rem] border border-slate-800 border-dashed">
+            <div className="w-24 h-24 bg-slate-900 rounded-full flex items-center justify-center mb-6 text-slate-700 border border-slate-800">
+              <Sword size={48} />
             </div>
-            <h3 className="text-xl font-bold text-white mb-2">No history yet</h3>
-            <p className="text-slate-500 text-center max-w-xs text-sm">Start your first session and conquer the challenges ahead!</p>
-            <button 
-              onClick={() => setIsAddingMajor(true)}
-              className="mt-8 px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-bold transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2 text-sm"
-            >
-              <Plus size={20} />
-              Create First Dungeon
-            </button>
+            <h3 className="text-2xl font-black text-white mb-2 uppercase italic tracking-tight">No Dungeons Found</h3>
+            <p className="text-slate-500 text-center max-w-xs text-sm font-medium">Your journey is just beginning. Create your first major dungeon to start tracking your progress!</p>
           </div>
         ) : (
           majorDungeons.map(major => (
-            <div key={major.id} className="bg-slate-900/50 rounded-3xl border border-slate-800 overflow-hidden">
+            <div key={major.id} className="bg-slate-900/40 rounded-[2rem] border border-slate-800 overflow-hidden hover:border-slate-700 transition-all group">
               <div 
-                className="p-4 sm:p-6 flex items-center justify-between cursor-pointer hover:bg-slate-800/50 transition-colors"
+                className="p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 cursor-pointer hover:bg-slate-800/30 transition-colors"
                 onClick={() => toggleMajor(major.id)}
               >
-                <div className="flex items-center space-x-3 sm:space-x-4">
-                  <div className="p-2 sm:p-3 bg-indigo-500/10 text-indigo-400 rounded-xl sm:rounded-2xl shrink-0">
-                    <Folder size={20} className="sm:w-6 sm:h-6" />
+                <div className="flex items-start sm:items-center space-x-5">
+                  <div className="p-4 bg-indigo-500/10 text-indigo-400 rounded-2xl border border-indigo-500/10 group-hover:scale-110 transition-transform shrink-0">
+                    <Folder size={28} />
                   </div>
                   <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="text-base sm:text-xl font-bold text-white truncate">{major.name}</h3>
+                    <div className="flex flex-wrap items-center gap-3 mb-1">
+                      <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight uppercase italic truncate">{major.name}</h3>
                       {major.isFinalized && (
-                        <span className="text-[8px] sm:text-[10px] font-bold bg-indigo-500/20 text-indigo-400 px-1.5 py-0.5 rounded border border-indigo-500/30 uppercase tracking-widest">
+                        <span className="text-[10px] font-black bg-indigo-500/20 text-indigo-400 px-2 py-0.5 rounded-lg border border-indigo-500/30 uppercase tracking-widest shrink-0">
                           Finalized
                         </span>
                       )}
                       {major.status === 'completed' && (
-                        <span className="text-[10px] sm:text-xs font-bold text-emerald-500 uppercase tracking-widest bg-emerald-500/10 px-2 py-0.5 rounded-full">
+                        <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest bg-emerald-500/10 px-2 py-0.5 rounded-lg border border-emerald-500/20 shrink-0">
                           Cleared
                         </span>
                       )}
                     </div>
-                    <p className="text-xs sm:text-sm text-slate-500 truncate">{major.description}</p>
+                    <p className="text-sm text-slate-500 font-medium line-clamp-2">{major.description}</p>
+                    
                     {major.rewards && major.rewards.length > 0 && (
-                      <div className="mt-2 flex flex-wrap gap-1">
+                      <div className="mt-4 flex flex-wrap gap-2">
                         {major.rewards.map((r, i) => (
-                          <div key={i} className="flex items-center gap-1 px-1.5 py-0.5 bg-slate-800 rounded text-[10px] text-slate-300 border border-slate-700/50">
-                            {r.type === 'coins' ? <Coins size={8} className="text-amber-400" /> : 
-                             r.type === 'xp' ? <Zap size={8} className="text-indigo-400" /> :
-                             r.type === 'talentPoint' ? <Trophy size={8} className="text-purple-400" /> :
-                             <Gift size={8} className="text-indigo-400" />}
+                          <div key={i} className="flex items-center gap-2 px-3 py-1 bg-slate-950/50 rounded-xl text-[10px] font-bold text-slate-300 border border-slate-800/50 uppercase tracking-widest">
+                            {r.type === 'coins' ? <Coins size={12} className="text-amber-400" /> : 
+                             r.type === 'xp' ? <Zap size={12} className="text-indigo-400" /> :
+                             r.type === 'talentPoint' ? <Trophy size={12} className="text-purple-400" /> :
+                             <Gift size={12} className="text-indigo-400" />}
                             <span>
                               {r.type === 'text' ? r.rewardText : 
                                r.type === 'talentPoint' ? `${r.amount} PT` :
@@ -520,56 +519,65 @@ export const DungeonManager: React.FC<DungeonManagerProps> = ({
                     )}
                   </div>
                 </div>
-                <div className="flex items-center space-x-2 sm:space-x-4 shrink-0">
-                  <div className="hidden sm:flex flex-col gap-1">
-                    <button onClick={(e) => { e.stopPropagation(); onReorderMajor(major.id, 'up'); }} className="text-slate-600 hover:text-indigo-400"><ChevronUp size={14} /></button>
-                    <button onClick={(e) => { e.stopPropagation(); onReorderMajor(major.id, 'down'); }} className="text-slate-600 hover:text-indigo-400"><ChevronDown size={14} /></button>
+                
+                <div className="flex items-center justify-end sm:justify-start gap-4 shrink-0">
+                  <div className="flex items-center gap-1 bg-slate-950/50 p-1 rounded-xl border border-slate-800">
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); onReorderMajor(major.id, 'up'); }} 
+                      className="p-2 text-slate-500 hover:text-indigo-400 hover:bg-slate-800 rounded-lg transition-all"
+                    >
+                      <ChevronUp size={16} />
+                    </button>
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); onReorderMajor(major.id, 'down'); }} 
+                      className="p-2 text-slate-500 hover:text-indigo-400 hover:bg-slate-800 rounded-lg transition-all"
+                    >
+                      <ChevronDown size={16} />
+                    </button>
                   </div>
-                  {!major.status || major.status !== 'completed' ? (
-                    major.isFinalized ? (
-                      <div className="p-1.5 sm:p-2 bg-indigo-500/20 text-indigo-400 rounded-lg cursor-not-allowed" title="Finalized dungeons cannot be edited">
-                        <CheckCircle2 size={16} className="sm:w-5 sm:h-5" />
-                      </div>
+                  
+                  <div className="flex items-center gap-2">
+                    {!major.status || major.status !== 'completed' ? (
+                      major.isFinalized ? (
+                        <div className="p-3 bg-indigo-500/10 text-indigo-400 rounded-xl border border-indigo-500/20 cursor-not-allowed" title="Finalized dungeons cannot be edited">
+                          <CheckCircle2 size={20} />
+                        </div>
+                      ) : (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setEditingMajor(major); }}
+                          className="p-3 bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 rounded-xl transition-all border border-slate-700"
+                          title="Edit Major Dungeon"
+                        >
+                          <Edit2 size={20} />
+                        </button>
+                      )
                     ) : (
-                      <button
-                        onClick={(e) => { e.stopPropagation(); setEditingMajor(major); }}
-                        className="p-1.5 sm:p-2 bg-slate-800 text-slate-400 hover:text-white rounded-lg transition-colors"
-                        title="Edit Major Dungeon"
-                      >
-                        <Edit2 size={16} className="sm:w-5 sm:h-5" />
-                      </button>
-                    )
-                  ) : (
-                    <div className="p-1.5 sm:p-2 bg-slate-800/30 text-slate-600 rounded-lg cursor-not-allowed" title="Completed tasks cannot be edited">
-                      <Edit2 size={16} className="sm:w-5 sm:h-5" />
-                    </div>
-                  )}
-                  <button
-                    onClick={(e) => { 
-                      e.stopPropagation(); 
-                      if (major.isFinalized) return;
-                      setIsAddingSub({ parentId: major.id });
-                      if (!expandedMajors.includes(major.id)) {
-                        setExpandedMajors(prev => [...prev, major.id]);
-                      }
-                    }}
-                    className={cn(
-                      "p-1.5 sm:p-2 rounded-lg transition-colors",
-                      major.isFinalized 
-                        ? "bg-slate-800/30 text-slate-600 cursor-not-allowed" 
-                        : "bg-slate-800 text-slate-400 hover:text-white"
+                      <div className="p-3 bg-slate-800/30 text-slate-600 rounded-xl border border-slate-800/50 cursor-not-allowed" title="Completed tasks cannot be edited">
+                        <Edit2 size={20} />
+                      </div>
                     )}
-                    title={major.isFinalized ? "Cannot add sub-dungeons to a finalized dungeon" : "Add Sub Dungeon"}
-                  >
-                    <Plus size={16} className="sm:w-5 sm:h-5" />
-                  </button>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setDeletingDungeon({ id: major.id, name: major.name, isMajor: true }); }}
-                    className="p-1.5 sm:p-2 text-slate-600 hover:text-red-400 transition-colors"
-                  >
-                    <Trash2 size={16} className="sm:w-5 sm:h-5" />
-                  </button>
-                  {expandedMajors.includes(major.id) ? <ChevronUp size={16} className="text-slate-500" /> : <ChevronDown size={16} className="text-slate-500" />}
+                    
+                    <button
+                      onClick={(e) => { 
+                        e.stopPropagation(); 
+                        if (major.isFinalized) return;
+                        setDeletingDungeon({ id: major.id, name: major.name, isMajor: true });
+                      }}
+                      className={cn(
+                        "p-3 rounded-xl transition-all border",
+                        major.isFinalized 
+                          ? "bg-slate-800/30 text-slate-600 border-slate-800/50 cursor-not-allowed" 
+                          : "bg-slate-800 text-slate-400 hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/30 border-slate-700"
+                      )}
+                      title="Delete Major Dungeon"
+                    >
+                      <Trash2 size={20} />
+                    </button>
+                  </div>
+                  
+                  <div className="p-2 text-slate-600 group-hover:text-indigo-400 transition-colors">
+                    <ChevronDown size={24} className={cn("transition-transform duration-300", expandedMajors.includes(major.id) ? "rotate-180" : "")} />
+                  </div>
                 </div>
               </div>
 
@@ -583,22 +591,31 @@ export const DungeonManager: React.FC<DungeonManagerProps> = ({
                   >
                     {isAddingSub?.parentId === major.id && (
                       <div className="bg-slate-800/50 p-4 sm:p-6 rounded-2xl border border-indigo-500/20 space-y-4 mb-4">
-                        <h4 className="text-xs sm:text-sm font-bold text-indigo-400 uppercase tracking-widest">New Sub Dungeon</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <input
-                            type="text"
-                            placeholder="Sub Dungeon Name"
-                            value={newSub.name}
-                            onChange={e => setNewSub({ ...newSub, name: e.target.value })}
-                            className="bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white text-sm"
-                          />
-                          <input
-                            type="number"
-                            placeholder="Total Sessions"
-                            value={newSub.totalSessions}
-                            onChange={e => setNewSub({ ...newSub, totalSessions: parseInt(e.target.value) })}
-                            className="bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white text-sm"
-                          />
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-xs sm:text-sm font-bold text-indigo-400 uppercase tracking-widest">New Sub Quest</h4>
+                          <button onClick={() => setIsAddingSub(null)} className="text-slate-500 hover:text-white sm:hidden"><X size={16} /></button>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase">Quest Name</label>
+                            <input
+                              type="text"
+                              placeholder="e.g. Morning Routine"
+                              value={newSub.name}
+                              onChange={e => setNewSub({ ...newSub, name: e.target.value })}
+                              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white text-sm focus:border-indigo-500 outline-none"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase">Target Rooms</label>
+                            <input
+                              type="number"
+                              placeholder="Total Sessions"
+                              value={newSub.totalSessions}
+                              onChange={e => setNewSub({ ...newSub, totalSessions: parseInt(e.target.value) || 1 })}
+                              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white text-sm focus:border-indigo-500 outline-none"
+                            />
+                          </div>
                         </div>
                         <div className="space-y-3">
                           <div className="flex items-center justify-between">
@@ -611,91 +628,94 @@ export const DungeonManager: React.FC<DungeonManagerProps> = ({
                             </button>
                           </div>
                           
-                          <div className="space-y-2">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             {newSub.rewards.map((reward, idx) => (
-                              <div key={idx} className="bg-slate-900/50 p-3 rounded-xl border border-slate-700 space-y-3">
-                                <div className="flex items-center gap-2">
-                                  <select 
-                                    value={reward.type}
-                                    onChange={e => updateReward(idx, 'type', e.target.value)}
-                                    className="flex-grow bg-slate-800 text-xs sm:text-sm text-white border-slate-700 rounded-lg px-2 py-1.5"
-                                  >
-                                    <option value="coins">Coins</option>
-                                    <option value="xp">XP</option>
-                                    <option value="talentPoint">Talent Point</option>
-                                    <option value="item">Advanced Item</option>
-                                    <option value="text">Custom Text</option>
-                                  </select>
-                                  <button onClick={() => removeReward(idx)} className="text-slate-500 hover:text-rose-400 p-1">
-                                    <X size={14} />
-                                  </button>
-                                </div>
+                              <div key={idx} className="bg-slate-900/50 p-3 rounded-xl border border-slate-700 space-y-3 relative">
+                                <button onClick={() => removeReward(idx)} className="absolute top-2 right-2 text-slate-500 hover:text-rose-400 p-1">
+                                  <X size={14} />
+                                </button>
+                                <div className="space-y-2">
+                                  <div className="space-y-1">
+                                    <label className="text-[9px] font-bold text-slate-500 uppercase">Reward Type</label>
+                                    <select 
+                                      value={reward.type}
+                                      onChange={e => updateReward(idx, 'type', e.target.value)}
+                                      className="w-full bg-slate-800 text-xs text-white border-slate-700 rounded-lg px-2 py-1.5 outline-none"
+                                    >
+                                      <option value="coins">Coins</option>
+                                      <option value="xp">XP</option>
+                                      <option value="talentPoint">Talent Point</option>
+                                      <option value="item">Advanced Item</option>
+                                      <option value="text">Custom Text</option>
+                                    </select>
+                                  </div>
 
-                                <div className="grid grid-cols-2 gap-2">
-                                  {(reward.type === 'coins' || reward.type === 'xp' || reward.type === 'talentPoint' || (reward.type === 'item' && ['talent_shard', 'death_defying_medal', 'xp_bonus_percent', 'coin_bonus_percent'].includes(reward.itemType || ''))) && (
-                                    <div className="space-y-1">
-                                      <label className="text-[10px] font-bold text-slate-500 uppercase">Amount</label>
-                                      <input 
-                                        type="number"
-                                        value={reward.amount}
-                                        onChange={e => updateReward(idx, 'amount', parseInt(e.target.value) || 0)}
-                                        className="w-full bg-slate-800 text-xs sm:text-sm text-white border-slate-700 rounded-lg px-2 py-1.5"
-                                        placeholder="Amt"
-                                      />
-                                    </div>
-                                  )}
+                                  <div className="grid grid-cols-1 gap-2">
+                                    {(reward.type === 'coins' || reward.type === 'xp' || reward.type === 'talentPoint' || (reward.type === 'item' && ['talent_shard', 'death_defying_medal', 'xp_bonus_percent', 'coin_bonus_percent'].includes(reward.itemType || ''))) && (
+                                      <div className="space-y-1">
+                                        <label className="text-[9px] font-bold text-slate-500 uppercase">Amount</label>
+                                        <input 
+                                          type="number"
+                                          value={reward.amount}
+                                          onChange={e => updateReward(idx, 'amount', parseInt(e.target.value) || 0)}
+                                          className="w-full bg-slate-800 text-xs text-white border-slate-700 rounded-lg px-2 py-1.5 outline-none"
+                                          placeholder="Amt"
+                                        />
+                                      </div>
+                                    )}
 
-                                  {reward.type === 'item' && (
-                                    <div className="space-y-1 col-span-2">
-                                      <label className="text-[10px] font-bold text-slate-500 uppercase">Item Type</label>
-                                      <select 
-                                        value={reward.itemType || 'double_xp'}
-                                        onChange={e => updateReward(idx, 'itemType', e.target.value)}
-                                        className="w-full bg-slate-800 text-xs sm:text-sm text-white border-slate-700 rounded-lg px-2 py-1.5"
-                                      >
-                                        <option value="double_xp">Double XP Card</option>
-                                        <option value="double_coin">Double Coins Card</option>
-                                        <option value="talent_shard">Talent Shard</option>
-                                        <option value="death_defying_medal">Death Defying Gold Medal</option>
-                                        <option value="xp_bonus_percent">Next XP Bonus %</option>
-                                        <option value="coin_bonus_percent">Next Coins Bonus %</option>
-                                      </select>
-                                    </div>
-                                  )}
+                                    {reward.type === 'item' && (
+                                      <div className="space-y-1">
+                                        <label className="text-[9px] font-bold text-slate-500 uppercase">Item Type</label>
+                                        <select 
+                                          value={reward.itemType || 'double_xp'}
+                                          onChange={e => updateReward(idx, 'itemType', e.target.value)}
+                                          className="w-full bg-slate-800 text-xs text-white border-slate-700 rounded-lg px-2 py-1.5 outline-none"
+                                        >
+                                          <option value="double_xp">Double XP Card</option>
+                                          <option value="double_coin">Double Coins Card</option>
+                                          <option value="talent_shard">Talent Shard</option>
+                                          <option value="death_defying_medal">Death Defying Gold Medal</option>
+                                          <option value="xp_bonus_percent">Next XP Bonus %</option>
+                                          <option value="coin_bonus_percent">Next Coins Bonus %</option>
+                                        </select>
+                                      </div>
+                                    )}
 
-                                  {reward.type === 'item' && (
-                                    <div className="space-y-1 col-span-2">
-                                      <label className="text-[10px] font-bold text-slate-500 uppercase">Display Name</label>
-                                      <input 
-                                        type="text"
-                                        value={reward.itemName || ''}
-                                        onChange={e => updateReward(idx, 'itemName', e.target.value)}
-                                        className="w-full bg-slate-800 text-xs sm:text-sm text-white border-slate-700 rounded-lg px-2 py-1.5"
-                                        placeholder="e.g. Rare Scroll"
-                                      />
-                                    </div>
-                                  )}
+                                    {reward.type === 'item' && (
+                                      <div className="space-y-1">
+                                        <label className="text-[9px] font-bold text-slate-500 uppercase">Display Name</label>
+                                        <input 
+                                          type="text"
+                                          value={reward.itemName || ''}
+                                          onChange={e => updateReward(idx, 'itemName', e.target.value)}
+                                          className="w-full bg-slate-800 text-xs text-white border-slate-700 rounded-lg px-2 py-1.5 outline-none"
+                                          placeholder="e.g. Rare Scroll"
+                                        />
+                                      </div>
+                                    )}
 
-                                  {reward.type === 'text' && (
-                                    <div className="space-y-1 col-span-2">
-                                      <label className="text-[10px] font-bold text-slate-500 uppercase">Custom Reward Text</label>
-                                      <input 
-                                        type="text"
-                                        value={reward.rewardText || ''}
-                                        onChange={e => updateReward(idx, 'rewardText', e.target.value)}
-                                        className="w-full bg-slate-800 text-xs sm:text-sm text-white border-slate-700 rounded-lg px-2 py-1.5"
-                                        placeholder="e.g. Watch a movie"
-                                      />
-                                    </div>
-                                  )}
+                                    {reward.type === 'text' && (
+                                      <div className="space-y-1">
+                                        <label className="text-[9px] font-bold text-slate-500 uppercase">Custom Reward Text</label>
+                                        <input 
+                                          type="text"
+                                          value={reward.rewardText || ''}
+                                          onChange={e => updateReward(idx, 'rewardText', e.target.value)}
+                                          className="w-full bg-slate-800 text-xs text-white border-slate-700 rounded-lg px-2 py-1.5 outline-none"
+                                          placeholder="e.g. Watch a movie"
+                                        />
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
                             ))}
                           </div>
                         </div>
 
-                        <div className="flex justify-end space-x-3">
-                          <button onClick={() => setIsAddingSub(null)} className="px-4 py-2 text-slate-400 text-sm">Cancel</button>
+                        <div className="flex justify-end space-x-3 pt-2">
+                          <button onClick={() => setIsAddingSub(null)} className="hidden sm:block px-4 py-2 text-slate-400 text-sm">Cancel</button>
                           <button 
                             onClick={() => { 
                               onCreateSub({ ...newSub, parentId: major.id }); 
@@ -710,7 +730,7 @@ export const DungeonManager: React.FC<DungeonManagerProps> = ({
                                 isLongTerm: false
                               });
                             }}
-                            className="px-6 py-2 bg-indigo-600 text-white rounded-lg font-bold text-sm"
+                            className="w-full sm:w-auto px-6 py-2 bg-indigo-600 text-white rounded-lg font-bold text-sm shadow-lg shadow-indigo-500/20"
                           >
                             Add Sub Quest
                           </button>
@@ -738,95 +758,103 @@ export const DungeonManager: React.FC<DungeonManagerProps> = ({
                       {dungeons.filter(d => d.parentId === major.id).map(sub => (
                         <motion.div
                           key={sub.id}
-                          whileHover={{ scale: 1.01 }}
+                          whileHover={{ scale: 1.005 }}
                           className={cn(
-                            "p-3 sm:p-4 rounded-2xl border transition-all cursor-pointer group",
+                            "p-4 sm:p-5 rounded-[1.5rem] border transition-all cursor-pointer group",
                             currentDungeonId === sub.id 
-                              ? "bg-indigo-500/10 border-indigo-500" 
-                              : "bg-slate-900 border-slate-800 hover:border-slate-700"
+                              ? "bg-indigo-500/10 border-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.1)]" 
+                              : "bg-slate-950/30 border-slate-800 hover:border-slate-700"
                           )}
                           onClick={() => onSelect(sub.id)}
                         >
-                          <div className="flex items-center justify-between mb-2 sm:mb-3">
-                            <div className="flex items-center space-x-2 sm:space-x-3">
+                          <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center space-x-4">
                               <div className={cn(
-                                "p-1.5 sm:p-2 rounded-lg transition-colors",
-                                sub.status === 'completed' ? "bg-emerald-500/20 text-emerald-400" :
-                                currentDungeonId === sub.id ? "bg-indigo-500 text-white" : "bg-slate-800 text-slate-500"
+                                "w-10 h-10 rounded-xl flex items-center justify-center border transition-all",
+                                sub.status === 'completed' ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" :
+                                currentDungeonId === sub.id ? "bg-indigo-500 text-white border-indigo-400" : "bg-slate-800 border-slate-700 text-slate-500"
                               )}>
-                                {sub.status === 'completed' ? <CheckCircle2 size={14} className="sm:w-4 sm:h-4" /> : <Target size={14} className="sm:w-4 sm:h-4" />}
+                                {sub.status === 'completed' ? <CheckCircle2 size={18} /> : <Target size={18} />}
                               </div>
                               <div>
                                 <span className={cn(
-                                  "font-bold text-xs sm:text-sm transition-colors block truncate max-w-[120px] sm:max-w-none",
-                                  sub.status === 'completed' ? "text-slate-500 line-through" : "text-white"
+                                  "font-black text-sm sm:text-base uppercase italic tracking-tight transition-colors block truncate max-w-[150px] sm:max-w-none",
+                                  sub.status === 'completed' ? "text-slate-600 line-through" : "text-white"
                                 )}>{sub.name}</span>
-                                <div className="flex items-center gap-2 mt-0.5">
-                                  <span className="text-[10px] sm:text-xs text-slate-500">{sub.completedSessions}/{sub.totalSessions} Rooms</span>
+                                <div className="flex items-center gap-3 mt-1">
+                                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{sub.completedSessions}/{sub.totalSessions} Rooms</span>
                                   {sub.status === 'completed' && (
-                                    <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">
+                                    <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest bg-emerald-500/10 px-2 py-0.5 rounded-lg border border-emerald-500/20">
                                       Cleared
                                     </span>
                                   )}
                                 </div>
                               </div>
                             </div>
-                            <div className="flex items-center gap-1 sm:gap-2">
+                            <div className="flex items-center gap-3">
                               {currentDungeonId === sub.id && (
-                                <span className="px-1.5 sm:px-2 py-0.5 bg-indigo-500 text-white text-[8px] sm:text-[10px] font-black uppercase tracking-widest rounded-full animate-pulse">Active</span>
+                                <span className="px-2 py-1 bg-indigo-500 text-white text-[8px] font-black uppercase tracking-widest rounded-lg animate-pulse shadow-lg shadow-indigo-500/20">Active</span>
                               )}
-                              <div className="hidden sm:flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button onClick={(e) => { e.stopPropagation(); onReorderSub(sub.id, 'up'); }} className="text-slate-600 hover:text-indigo-400 p-1"><ChevronUp size={14} /></button>
-                                <button onClick={(e) => { e.stopPropagation(); onReorderSub(sub.id, 'down'); }} className="text-slate-600 hover:text-indigo-400 p-1"><ChevronDown size={14} /></button>
-                              </div>
-                              {sub.status !== 'completed' ? (
-                                major.isFinalized ? (
-                                  <div className="text-slate-700 p-1 opacity-0 group-hover:opacity-100 transition-opacity cursor-not-allowed" title="Parent dungeon is finalized">
-                                    <Edit2 size={14} />
-                                  </div>
-                                ) : (
-                                  <button 
-                                    onClick={(e) => { e.stopPropagation(); setEditingSub(sub); }}
-                                    className="text-slate-600 hover:text-indigo-400 sm:opacity-0 group-hover:opacity-100 transition-opacity p-1"
-                                  >
-                                    <Edit2 size={14} />
-                                  </button>
-                                )
-                              ) : (
-                                <div className="text-slate-700 p-1 sm:opacity-0 group-hover:opacity-100 transition-opacity cursor-not-allowed" title="Completed tasks cannot be edited">
-                                  <Edit2 size={14} />
+                              
+                              <div className="flex items-center gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all">
+                                <div className="flex items-center gap-1 bg-slate-950/50 p-1 rounded-xl border border-slate-800">
+                                  <button onClick={(e) => { e.stopPropagation(); onReorderSub(sub.id, 'up'); }} className="text-slate-500 hover:text-indigo-400 p-1.5 transition-colors"><ChevronUp size={14} /></button>
+                                  <button onClick={(e) => { e.stopPropagation(); onReorderSub(sub.id, 'down'); }} className="text-slate-500 hover:text-indigo-400 p-1.5 transition-colors"><ChevronDown size={14} /></button>
                                 </div>
-                              )}
-                              <button 
-                                onClick={(e) => { e.stopPropagation(); setDeletingDungeon({ id: sub.id, name: sub.name, isMajor: false }); }}
-                                className="text-slate-600 hover:text-red-400 sm:opacity-0 group-hover:opacity-100 transition-opacity p-1"
-                              >
-                                <Trash2 size={14} />
-                              </button>
+                                
+                                {sub.status !== 'completed' ? (
+                                  major.isFinalized ? (
+                                    <div className="p-2 text-slate-700 cursor-not-allowed" title="Parent dungeon is finalized">
+                                      <Edit2 size={16} />
+                                    </div>
+                                  ) : (
+                                    <button 
+                                      onClick={(e) => { e.stopPropagation(); setEditingSub(sub); }}
+                                      className="p-2 bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 rounded-xl transition-all border border-slate-700"
+                                      title="Edit Sub Dungeon"
+                                    >
+                                      <Edit2 size={16} />
+                                    </button>
+                                  )
+                                ) : (
+                                  <div className="p-2 bg-slate-800/30 text-slate-700 rounded-xl border border-slate-800/50 cursor-not-allowed" title="Completed tasks cannot be edited">
+                                    <Edit2 size={16} />
+                                  </div>
+                                )}
+                                
+                                <button 
+                                  onClick={(e) => { e.stopPropagation(); setDeletingDungeon({ id: sub.id, name: sub.name, isMajor: false }); }}
+                                  className="p-2 bg-slate-800 text-slate-400 hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/30 rounded-xl transition-all border border-slate-700"
+                                  title="Delete Sub Dungeon"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              </div>
                             </div>
                           </div>
-                          <div className="w-full h-1 bg-slate-800 rounded-full overflow-hidden mb-2 sm:mb-3">
+                          
+                          <div className="w-full h-2 bg-slate-950 rounded-full overflow-hidden mb-4 border border-slate-800">
                             <div 
-                              className="h-full bg-indigo-500" 
+                              className={cn("h-full transition-all shadow-[0_0_8px_rgba(99,102,241,0.4)]", sub.status === 'completed' ? "bg-emerald-500" : "bg-indigo-500")}
                               style={{ width: `${(sub.completedSessions/sub.totalSessions)*100}%` }}
                             />
                           </div>
-
+                          
                           {sub.rewards && sub.rewards.length > 0 && (
-                            <div className="space-y-1 border-t border-slate-800 pt-2">
-                              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Rewards</p>
-                              <div className="flex flex-wrap gap-1">
-                                {sub.rewards.map((r, i) => (
-                                  <div key={i} className="flex items-center gap-1 px-1.5 py-0.5 bg-slate-800 rounded text-[10px] text-slate-300 border border-slate-700/50">
-                                    <Gift size={10} className="text-indigo-400" />
-                                    <span className="truncate max-w-[80px] sm:max-w-none">
-                                      {r.type === 'text' ? r.rewardText : 
-                                       r.type === 'talentPoint' ? `${r.amount} PT` :
-                                       `${r.amount} ${r.type === 'item' ? (r.itemName || 'Item') : r.type}`}
-                                    </span>
-                                  </div>
-                                ))}
-                              </div>
+                            <div className="flex flex-wrap gap-2 pt-3 border-t border-slate-800/50">
+                              {sub.rewards.map((r, i) => (
+                                <div key={i} className="flex items-center gap-2 px-3 py-1 bg-slate-950/50 rounded-xl text-[10px] font-bold text-slate-300 border border-slate-800/50 uppercase tracking-widest">
+                                  {r.type === 'coins' ? <Coins size={12} className="text-amber-400" /> : 
+                                   r.type === 'xp' ? <Zap size={12} className="text-indigo-400" /> :
+                                   r.type === 'talentPoint' ? <Trophy size={12} className="text-purple-400" /> :
+                                   <Gift size={12} className="text-indigo-400" />}
+                                  <span className="truncate max-w-[100px] sm:max-w-none">
+                                    {r.type === 'text' ? r.rewardText : 
+                                     r.type === 'talentPoint' ? `${r.amount} PT` :
+                                     `${r.amount} ${r.type === 'item' ? (r.itemName || 'Item') : r.type}`}
+                                  </span>
+                                </div>
+                              ))}
                             </div>
                           )}
                         </motion.div>
@@ -852,17 +880,30 @@ export const DungeonManager: React.FC<DungeonManagerProps> = ({
                   key={d.id}
                   onClick={() => onSelect(d.id)}
                   className={cn(
-                    "p-5 rounded-2xl border transition-all cursor-pointer",
+                    "p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer group",
                     currentDungeonId === d.id ? "bg-indigo-500/10 border-indigo-500" : "bg-slate-900 border-slate-800"
                   )}
                 >
-                  <div className="flex items-center justify-between mb-4">
-                    <h4 className="font-bold text-white">{d.name}</h4>
-                    <button onClick={(e) => { e.stopPropagation(); onDeleteSub(d.id); }} className="text-slate-600 hover:text-red-400">
-                      <Trash2 size={18} />
-                    </button>
+                  <div className="flex items-center justify-between mb-3 sm:mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className={cn(
+                        "p-2 rounded-lg",
+                        currentDungeonId === d.id ? "bg-indigo-500 text-white" : "bg-slate-800 text-slate-500"
+                      )}>
+                        <Sword size={16} />
+                      </div>
+                      <h4 className="font-bold text-white text-sm sm:text-base">{d.name}</h4>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); onDeleteSub(d.id); }} 
+                        className="text-slate-600 hover:text-red-400 p-1 sm:opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                   </div>
-                  <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden mb-4">
+                  <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden mb-3 sm:mb-4">
                     <div className="h-full bg-indigo-500" style={{ width: `${(d.completedSessions/d.totalSessions)*100}%` }} />
                   </div>
 
@@ -872,10 +913,13 @@ export const DungeonManager: React.FC<DungeonManagerProps> = ({
                       <div className="flex flex-wrap gap-1">
                         {d.rewards.map((r, i) => (
                           <div key={i} className="flex items-center gap-1 px-1.5 py-0.5 bg-slate-800 rounded text-[9px] text-slate-300 border border-slate-700/50">
-                            <Gift size={10} className="text-indigo-400" />
+                            {r.type === 'coins' ? <Coins size={10} className="text-amber-400" /> : 
+                             r.type === 'xp' ? <Zap size={10} className="text-indigo-400" /> :
+                             r.type === 'talentPoint' ? <Trophy size={10} className="text-purple-400" /> :
+                             <Gift size={10} className="text-indigo-400" />}
                             <span>
                               {r.type === 'text' ? r.rewardText : 
-                               r.type === 'talentPoint' ? `${r.amount} Talent Points` :
+                               r.type === 'talentPoint' ? `${r.amount} PT` :
                                `${r.amount} ${r.type === 'item' ? (r.itemName || 'Item') : r.type}`}
                             </span>
                           </div>

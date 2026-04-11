@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { RewardCard, ShopItem, GachaPool, Rarity } from '../types';
 import { INITIAL_GACHA } from '../constants';
-import { Plus, Trash2, Save, Edit2, X, ChevronRight, Coins, Zap, Sparkles, Trophy, Timer as TimerIcon, Package, Flame, AlertTriangle, Scroll, Volume2, VolumeX } from 'lucide-react';
+import { Plus, Trash2, Save, Edit2, X, ChevronRight, Coins, Zap, Sparkles, Trophy, Timer as TimerIcon, Package, Flame, AlertTriangle, Scroll, Volume2, VolumeX, Sun, Moon, Settings as SettingsIcon, ShoppingBag, Trees, Waves, Database, Download, Upload, Target, Gift } from 'lucide-react';
 import { cn, getXPForLevel, getDefaultRewardForLevel } from '../lib/utils';
 import { playSound } from '../lib/sound';
 
@@ -163,7 +163,7 @@ const LevelRewardsSettings = ({ state, setState }: { state: any, setState: (fn: 
       {createPortal(
         <AnimatePresence>
           {isAddingNew && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
               <motion.div
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
@@ -206,7 +206,7 @@ const LevelRewardsSettings = ({ state, setState }: { state: any, setState: (fn: 
       {createPortal(
         <AnimatePresence>
           {editing && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
               <motion.div
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
@@ -284,14 +284,14 @@ const LevelRewardsSettings = ({ state, setState }: { state: any, setState: (fn: 
   );
 };
 
-const GeneralSettings = ({ state, setState }: { state: any, setState: (fn: (prev: any) => any) => void }) => {
+const GeneralSettings = ({ state, setState, setShowClearConfirm }: { state: any, setState: (fn: (prev: any) => any) => void, setShowClearConfirm: (show: boolean) => void }) => {
   const themes = [
-    { id: 'night', name: 'Night', color: 'bg-slate-950' },
-    { id: 'daylight', name: 'Daylight', color: 'bg-slate-100' },
-    { id: 'warm', name: 'Warm Sun', color: 'bg-amber-50' },
-    { id: 'candy', name: 'Candy', color: 'bg-pink-50' },
-    { id: 'forest', name: 'Forest', color: 'bg-teal-950' },
-    { id: 'ocean', name: 'Ocean', color: 'bg-sky-950' },
+    { id: 'night', name: 'Night', color: '#020617', icon: Moon, iconColor: '#ffffff' },
+    { id: 'daylight', name: 'Daylight', color: '#f8fafc', icon: Sun, iconColor: '#0f172a' },
+    { id: 'warm', name: 'Warm Sun', color: '#ea580c', icon: Sun, iconColor: '#ffffff' },
+    { id: 'candy', name: 'Candy', color: '#ec4899', icon: Sparkles, iconColor: '#ffffff' },
+    { id: 'forest', name: 'Forest', color: '#34d399', icon: Trees, iconColor: '#064e3b' },
+    { id: 'ocean', name: 'Ocean', color: '#38bdf8', icon: Waves, iconColor: '#0c4a6e' },
   ];
 
   const soundEnabled = state.soundEnabled ?? true;
@@ -311,6 +311,38 @@ const GeneralSettings = ({ state, setState }: { state: any, setState: (fn: (prev
     if (newEnabled) {
       playSound('click', soundVolume, true);
     }
+  };
+
+  const handleExport = () => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", "scholars_dungeon_save.json");
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+  };
+
+  const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const importedState = JSON.parse(e.target?.result as string);
+        if (importedState && typeof importedState === 'object') {
+          localStorage.setItem('scholars_dungeon_state', JSON.stringify(importedState));
+          window.location.reload();
+        } else {
+          alert('Invalid save file format.');
+        }
+      } catch (error) {
+        alert('Error parsing save file.');
+        console.error(error);
+      }
+    };
+    reader.readAsText(file);
   };
 
   return (
@@ -337,7 +369,12 @@ const GeneralSettings = ({ state, setState }: { state: any, setState: (fn: (prev
                       : "bg-slate-900 border-slate-800 hover:border-slate-700"
                   )}
                 >
-                  <div className={cn("w-12 h-12 rounded-full border-2 border-slate-700/50 shadow-inner", theme.color)} />
+                  <div 
+                    className="w-12 h-12 rounded-full border-2 border-slate-700/50 shadow-inner flex items-center justify-center"
+                    style={{ backgroundColor: theme.color }}
+                  >
+                    <theme.icon size={20} style={{ color: theme.iconColor }} />
+                  </div>
                   <span className={cn("text-xs font-bold", isActive ? "text-indigo-400" : "text-slate-400")}>
                     {theme.name}
                   </span>
@@ -400,6 +437,122 @@ const GeneralSettings = ({ state, setState }: { state: any, setState: (fn: (prev
           )}
         </div>
       </div>
+
+      <div className="space-y-6 pt-6 border-t border-slate-800">
+        <div className="flex items-center gap-2 text-amber-400 mb-6">
+          <Target size={18} />
+          <h4 className="font-bold uppercase text-sm tracking-widest">Quests & Notifications</h4>
+        </div>
+
+        <div className="space-y-4">
+          <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Completion Notification</label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <button
+              onClick={() => setState(prev => ({ ...prev, questNotificationStyle: 'red_dot' }))}
+              className={cn(
+                "flex items-center gap-4 p-4 rounded-2xl border-2 transition-all text-left",
+                state.questNotificationStyle === 'red_dot' 
+                  ? "bg-amber-500/10 border-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.2)]" 
+                  : "bg-slate-900 border-slate-800 hover:border-slate-700"
+              )}
+            >
+              <div className="relative p-2 bg-slate-800 rounded-xl text-slate-400">
+                <Target size={20} />
+                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-indigo-500 rounded-full border-2 border-slate-950" />
+              </div>
+              <div>
+                <div className={cn("font-bold", state.questNotificationStyle === 'red_dot' ? "text-amber-400" : "text-white")}>Red Dot</div>
+                <div className="text-[10px] text-slate-500">Show indicator on tab icon</div>
+              </div>
+            </button>
+
+            <button
+              onClick={() => setState(prev => ({ ...prev, questNotificationStyle: 'popup' }))}
+              className={cn(
+                "flex items-center gap-4 p-4 rounded-2xl border-2 transition-all text-left",
+                state.questNotificationStyle === 'popup' 
+                  ? "bg-amber-500/10 border-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.2)]" 
+                  : "bg-slate-900 border-slate-800 hover:border-slate-700"
+              )}
+            >
+              <div className="p-2 bg-slate-800 rounded-xl text-slate-400">
+                <Gift size={20} />
+              </div>
+              <div>
+                <div className={cn("font-bold", state.questNotificationStyle === 'popup' ? "text-amber-400" : "text-white")}>Instant Popup</div>
+                <div className="text-[10px] text-slate-500">Show reward window immediately</div>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-6 pt-6 border-t border-slate-800">
+        <div className="flex items-center gap-2 text-blue-400 mb-6">
+          <Database size={18} />
+          <h4 className="font-bold uppercase text-sm tracking-widest">Data Management</h4>
+        </div>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="p-6 bg-slate-900/50 rounded-2xl border border-slate-800 space-y-4">
+            <div className="flex items-center gap-3 text-white font-bold">
+              <Download size={20} className="text-blue-400" />
+              Export Data
+            </div>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Save your current progress, inventory, and settings to a file.
+            </p>
+            <button
+              onClick={handleExport}
+              className="w-full px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-all text-sm"
+            >
+              Export JSON
+            </button>
+          </div>
+
+          <div className="p-6 bg-slate-900/50 rounded-2xl border border-slate-800 space-y-4">
+            <div className="flex items-center gap-3 text-white font-bold">
+              <Upload size={20} className="text-blue-400" />
+              Import Data
+            </div>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Restore your progress from a previously exported file.
+            </p>
+            <input
+              type="file"
+              accept=".json"
+              onChange={handleImport}
+              className="hidden"
+              id="import-data"
+            />
+            <label
+              htmlFor="import-data"
+              className="w-full px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-all text-sm cursor-pointer flex items-center justify-center"
+            >
+              Import JSON
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-6 pt-6 border-t border-slate-800">
+        <div className="flex items-center gap-2 text-red-400 mb-6">
+          <AlertTriangle size={18} />
+          <h4 className="font-bold uppercase text-sm tracking-widest">Danger Zone</h4>
+        </div>
+        <div className="space-y-4">
+          <p className="text-xs text-slate-400 leading-relaxed font-medium">
+            Clearing all data will reset your progress, inventory, and settings. This action is irreversible.
+          </p>
+          <button
+            onClick={() => setShowClearConfirm(true)}
+            className="w-full sm:w-auto px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2"
+          >
+            <Trash2 size={16} />
+            Clear All Data
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
@@ -438,26 +591,28 @@ export const Settings: React.FC<SettingsProps> = ({
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2 p-2 bg-slate-900/80 backdrop-blur rounded-3xl w-full lg:w-fit border border-slate-800">
-        {(['general', 'rewards', 'levelRewards', 'shop', 'gacha', 'dev'] as const).map(tab => (
-          <button
-            key={tab}
-            onClick={() => setActiveSection(tab)}
-            className={cn(
-              "flex-1 sm:flex-none px-5 py-3 rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] transition-all whitespace-nowrap",
-              activeSection === tab 
-                ? "bg-indigo-600 text-white shadow-xl shadow-indigo-600/30 scale-105 z-10" 
-                : "text-slate-500 hover:text-slate-300 hover:bg-slate-800/50"
-            )}
-          >
-            {tab === 'dev' ? 'Developer' : tab === 'levelRewards' ? 'Level Rewards' : tab}
-          </button>
-        ))}
+      <div className="flex flex-nowrap gap-2 p-2 bg-slate-900/80 backdrop-blur rounded-3xl w-full border border-slate-800 overflow-x-auto">
+        {(['general', 'rewards', 'levelRewards', 'shop', 'gacha', 'dev'] as const).map(tab => {
+          return (
+            <button
+              key={tab}
+              onClick={() => setActiveSection(tab)}
+              className={cn(
+                "px-5 py-3 rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] transition-all whitespace-nowrap",
+                activeSection === tab 
+                  ? "bg-indigo-600 text-white shadow-xl shadow-indigo-600/30 scale-105 z-10" 
+                  : "text-slate-500 hover:text-slate-300 hover:bg-slate-800/50"
+              )}
+            >
+              {tab === 'dev' ? 'Developer' : tab === 'levelRewards' ? 'Level Rewards' : tab}
+            </button>
+          );
+        })}
       </div>
 
       <div className="bg-slate-900/50 rounded-3xl border border-slate-800 p-8 backdrop-blur-sm">
         {activeSection === 'general' && (
-          <GeneralSettings state={state} setState={setState} />
+          <GeneralSettings state={state} setState={setState} setShowClearConfirm={setShowClearConfirm} />
         )}
         {activeSection === 'rewards' && (
           <RewardSettings pool={rewardPool} onUpdate={onUpdateRewards} />
@@ -637,40 +792,6 @@ export const Settings: React.FC<SettingsProps> = ({
                       onSub={(amount) => setState(prev => ({ ...prev, streak: Math.max(0, prev.streak - amount) }))}
                       icon={<Flame size={14} className="text-orange-500" />}
                     />
-                    <DevResourceControl 
-                      label="Shards" 
-                      value={state.talentShards} 
-                      onAdd={(amount) => setState(prev => ({ ...prev, talentShards: Math.min(3, prev.talentShards + amount) }))}
-                      onSub={(amount) => setState(prev => ({ ...prev, talentShards: Math.max(0, prev.talentShards - amount) }))}
-                      icon={<Zap size={14} className="text-indigo-300" />}
-                    />
-                    <DevResourceControl 
-                      label="Talent Pts" 
-                      value={state.talentPoints} 
-                      onAdd={(amount) => setState(prev => ({ ...prev, talentPoints: prev.talentPoints + amount }))}
-                      onSub={(amount) => setState(prev => ({ ...prev, talentPoints: Math.max(0, prev.talentPoints - amount) }))}
-                      icon={<Zap size={14} className="text-indigo-400" />}
-                    />
-                  </div>
-                </div>
-
-                {/* Section 4: Danger Zone */}
-                <div className="space-y-6 pt-6 border-t border-slate-800">
-                  <div className="flex items-center gap-2 text-red-400">
-                    <AlertTriangle size={18} />
-                    <h4 className="font-bold uppercase text-sm tracking-widest">Danger Zone</h4>
-                  </div>
-                  <div className="relative z-10">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setShowClearConfirm(true);
-                      }}
-                      className="w-full sm:w-auto px-6 py-3 bg-red-900/20 text-red-400 hover:bg-red-900/40 border border-red-500/30 rounded-xl font-bold transition-all flex items-center justify-center gap-2"
-                    >
-                      <Trash2 size={16} />
-                      Clear All Data
-                    </button>
                   </div>
                 </div>
               </div>
@@ -681,14 +802,14 @@ export const Settings: React.FC<SettingsProps> = ({
       {createPortal(
         <AnimatePresence>
           {showClearConfirm && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
               <motion.div
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
-                className="bg-slate-900 w-full max-w-md rounded-3xl border border-red-500/30 overflow-hidden shadow-2xl"
+                className="bg-slate-900 w-full max-w-md rounded-3xl border border-red-500/30 overflow-hidden"
               >
-                <div className="p-6 border-b border-slate-800 flex justify-between items-center bg-red-900/20">
+                <div className="p-6 border-b border-slate-800 flex justify-between items-center">
                   <h3 className="text-xl font-bold text-white flex items-center gap-2">
                     <AlertTriangle className="text-red-400" />
                     Warning: Irreversible Action
@@ -736,12 +857,12 @@ const DevResourceControl = ({ label, value, onAdd, onSub, icon, defaultAmount = 
   return (
     <div className="bg-slate-800/40 border border-slate-700/50 p-5 rounded-3xl space-y-4 transition-all hover:bg-slate-800/60">
       <div className="flex items-center justify-between">
-        <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">{label}</span>
-        <div className="p-2 bg-slate-900/50 rounded-xl">
-          {icon}
+        <span className="text-xs font-black text-slate-500 uppercase tracking-[0.2em]">{label}</span>
+        <div className="p-3 bg-slate-900/50 rounded-xl">
+          {React.cloneElement(icon as React.ReactElement, { size: 24 })}
         </div>
       </div>
-      <div className="text-2xl font-black text-white tracking-tighter">
+      <div className="text-4xl font-black text-white tracking-tighter">
         {value.toLocaleString()}
       </div>
       <div className="flex items-center gap-2 pt-2">

@@ -78,6 +78,32 @@ export interface LevelReward {
   rewardText?: string;
 }
 
+export type QuestType = 'daily_sessions' | 'weekly_sessions' | 'monthly_sessions' | 'consecutive_days' | 'total_sessions';
+
+export interface QuestReward {
+  type: 'coins' | 'xp' | 'talentPoint' | 'item' | 'text';
+  amount: number;
+  itemName?: string;
+  rewardText?: string;
+}
+
+export interface Quest {
+  id: string;
+  title: string;
+  description: string;
+  type: QuestType;
+  target: number;
+  progress: number;
+  reward: QuestReward;
+  completed: boolean;
+  claimed?: boolean;
+  lastReset?: string;
+  order: number;
+  isAchievement: boolean;
+  isSpecial?: boolean;
+  talentRequired?: string;
+}
+
 export interface UserState {
   level: number;
   xp: number;
@@ -94,10 +120,16 @@ export interface UserState {
   streak: number;
   dailySessions: number;
   lastDailyReset: string | null;
+  lastWeeklyReset?: string | null;
+  lastMonthlyReset?: string | null;
   dailyRerollUsed: boolean; // Track if Shuffler reroll was used today
   inventory: string[]; // IDs of functional cards active for next session
   userName?: string;
   userBio?: string;
+  // Quests & Achievements
+  quests: Quest[];
+  questNotificationStyle: 'red_dot' | 'popup';
+  unclaimedQuests: number;
   // Developer Mode Settings
   devModeEnabled?: boolean;
   devBaseXP?: number;
@@ -117,6 +149,7 @@ export interface UserState {
   levelRewards?: LevelReward[];
   lastCompletionRewards?: {
     dungeonName: string;
+    type: 'dungeon' | 'quest' | 'achievement';
     rewards: DungeonReward[];
   } | null;
 }

@@ -228,10 +228,9 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({ results, onC
         >
           <button
             onClick={onClose}
-            className="group relative px-8 sm:px-16 py-3 sm:py-5 bg-white text-slate-950 rounded-xl sm:rounded-2xl font-black uppercase tracking-[0.2em] text-xs sm:text-base hover:bg-indigo-500 hover:text-white transition-all shadow-[0_20px_50px_rgba(0,0,0,0.3)] hover:shadow-indigo-500/40 overflow-hidden"
+            className="group relative px-8 sm:px-16 py-3 sm:py-5 bg-indigo-600 text-white rounded-xl sm:rounded-2xl font-black uppercase tracking-[0.2em] text-xs sm:text-base hover:bg-indigo-500 transition-all shadow-[0_20px_50px_rgba(0,0,0,0.3)] hover:shadow-indigo-500/40 overflow-hidden"
           >
             <span className="relative z-10">Claim All Rewards</span>
-            <div className="absolute inset-0 bg-indigo-600 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
           </button>
           <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">Click anywhere to dismiss</p>
         </motion.div>

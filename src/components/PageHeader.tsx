@@ -29,8 +29,8 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   return (
     <div className={cn("flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8", className)}>
       <div className="flex-1">
-        <h2 className="text-4xl font-black text-white tracking-tighter uppercase italic flex items-center gap-3">
-          <Icon className="text-indigo-500" size={32} />
+        <h2 className="text-xl sm:text-3xl font-black text-white tracking-tighter uppercase italic flex items-center gap-2 sm:gap-3">
+          <Icon className="text-indigo-500 w-5 h-5 sm:w-7 sm:h-7" />
           {title}
         </h2>
         <p className="text-slate-500 text-sm mt-1 font-medium">{description}</p>
@@ -38,13 +38,13 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
       </div>
       
       {stats && (
-        <div className="flex gap-4 w-full md:w-auto justify-between md:justify-start">
+        <div className="flex flex-wrap gap-2 sm:gap-4 w-full md:w-auto justify-start">
           {stats.map((stat, idx) => (
-            <div key={idx} className="px-4 py-2 bg-slate-900/50 rounded-2xl border border-slate-800 flex items-center gap-3">
-              <stat.icon className={cn(stat.color, "w-[18px] h-[18px] md:w-6 md:h-6")} />
-              <div>
-                <p className="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest">{stat.label}</p>
-                <p className="text-lg md:text-xl font-black text-white leading-none">{stat.value}</p>
+            <div key={idx} className="flex-1 sm:flex-none px-3 py-2 sm:px-4 sm:py-2 bg-slate-900/50 rounded-2xl border border-slate-800 flex items-center gap-2 sm:gap-3 min-w-0">
+              <stat.icon className={cn(stat.color, "w-4 h-4 sm:w-6 sm:h-6 shrink-0")} />
+              <div className="min-w-0">
+                <p className="text-[8px] sm:text-xs font-bold text-slate-500 uppercase tracking-widest truncate">{stat.label}</p>
+                <p className="text-base sm:text-xl font-black text-white leading-none truncate">{stat.value}</p>
               </div>
             </div>
           ))}

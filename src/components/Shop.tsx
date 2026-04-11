@@ -17,6 +17,7 @@ interface ShopProps {
 
 export const Shop: React.FC<ShopProps> = ({ coins, shopItems, gachaPools, onPurchase, onDrawGacha, onResetIchiban, onShowCoinGuide }) => {
   const [activeTab, setActiveTab] = useState<'shop' | 'gacha' | 'ichiban'>('shop');
+  const [showProbabilities, setShowProbabilities] = useState(false);
   
   const gachaPool = gachaPools.find(p => p.type === 'gacha') || gachaPools[0];
   const ichibanPool = gachaPools.find(p => p.type === 'ichiban') || gachaPools[1];
@@ -31,9 +32,6 @@ export const Shop: React.FC<ShopProps> = ({ coins, shopItems, gachaPools, onPurc
         title="Merchant's Outpost"
         description="Exchange your hard-earned gold"
         icon={ShoppingBag}
-        stats={[
-          { label: 'Gold Coins', value: coins.toLocaleString(), icon: Coins, color: 'text-amber-500' }
-        ]}
       >
         <div className="flex items-center gap-4 mt-4">
           <button 
@@ -107,41 +105,87 @@ export const Shop: React.FC<ShopProps> = ({ coins, shopItems, gachaPools, onPurc
               <div className="relative mx-auto w-32 h-32 flex items-center justify-center bg-indigo-500/20 rounded-full border-2 border-indigo-500 animate-pulse">
                 <Sparkles size={64} className="text-indigo-400" />
               </div>
-              <div>
+              <div className="flex items-center justify-center gap-3">
                 <h3 className="text-2xl font-bold text-white">{gachaPool.name}</h3>
-                <p className="text-slate-400">Try your luck for high-tier rewards!</p>
+                <button 
+                  onClick={() => setShowProbabilities(!showProbabilities)}
+                  className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-full transition-colors"
+                >
+                  <HelpCircle size={18} />
+                </button>
               </div>
-              <div className="grid grid-cols-3 gap-2 text-xs font-bold uppercase tracking-tighter">
-                <div className="p-2 bg-amber-500/10 text-amber-500 rounded border border-amber-500/30">SSR: {gachaPool.weights?.SSR || 5}%</div>
-                <div className="p-2 bg-purple-500/10 text-purple-500 rounded border border-purple-500/30">SR: {gachaPool.weights?.SR || 15}%</div>
-                <div className="p-2 bg-blue-500/10 text-blue-500 rounded border border-blue-500/30">R: {gachaPool.weights?.R || 80}%</div>
-              </div>
+              <p className="text-slate-400">Try your luck for high-tier rewards!</p>
+            
+              <AnimatePresence>
+                {showProbabilities && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="space-y-4 pb-6">
+                      <div className="grid grid-cols-3 gap-2 text-xs font-bold uppercase tracking-tighter">
+                        <div className="p-2 bg-amber-500/10 text-amber-500 rounded border border-amber-500/30">SSR: {gachaPool.weights?.SSR || 5}%</div>
+                        <div className="p-2 bg-purple-500/10 text-purple-500 rounded border border-purple-500/30">SR: {gachaPool.weights?.SR || 15}%</div>
+                        <div className="p-2 bg-blue-500/10 text-blue-500 rounded border border-blue-500/30">R: {gachaPool.weights?.R || 80}%</div>
+                      </div>
+                      
+                      <div className="text-left bg-slate-950/50 rounded-2xl p-4 border border-slate-800">
+                        <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Available Rewards</h4>
+                        <div className="space-y-2">
+                          {['SSR', 'SR', 'R'].map(rarity => {
+                            const items = gachaPool.items.filter(i => i.rarity === rarity);
+                            if (items.length === 0) return null;
+                            return (
+                              <div key={rarity} className="flex flex-wrap gap-1.5 items-center">
+                                <span className={cn(
+                                  "text-[9px] font-black px-1.5 py-0.5 rounded uppercase",
+                                  rarity === 'SSR' ? "bg-amber-500 text-slate-950" :
+                                  rarity === 'SR' ? "bg-purple-600 text-white" :
+                                  "bg-blue-600 text-white"
+                                )}>
+                                  {rarity}
+                                </span>
+                                <span className="text-xs text-slate-400">
+                                  {items.map(i => i.name).join(', ')}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               <div className="flex gap-4">
-                <button
-                  onClick={() => onDrawGacha(gachaPool.id, 1)}
-                  disabled={coins < gachaPool.cost}
-                  className={cn(
-                    "flex-1 py-4 rounded-2xl font-bold text-lg transition-all flex items-center justify-center space-x-2",
-                    coins >= gachaPool.cost 
-                      ? "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-lg shadow-indigo-500/20" 
-                      : "bg-slate-800 text-slate-600 cursor-not-allowed"
-                  )}
-                >
-                  <span>Pull 1x ({gachaPool.cost.toLocaleString()})</span>
-                </button>
-                <button
-                  onClick={() => onDrawGacha(gachaPool.id, 10)}
-                  disabled={coins < gachaPool.cost * 10}
-                  className={cn(
-                    "flex-1 py-4 rounded-2xl font-bold text-lg transition-all flex items-center justify-center space-x-2",
-                    coins >= gachaPool.cost * 10
-                      ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-900 shadow-lg shadow-amber-500/20" 
-                      : "bg-slate-800 text-slate-600 cursor-not-allowed"
-                  )}
-                >
-                  <span>Pull 10x ({(gachaPool.cost * 10).toLocaleString()})</span>
-                </button>
-              </div>
+              <button
+                onClick={() => onDrawGacha(gachaPool.id, 1)}
+                disabled={coins < gachaPool.cost}
+                className={cn(
+                  "flex-1 py-4 rounded-2xl font-bold text-lg transition-all flex items-center justify-center space-x-2",
+                  coins >= gachaPool.cost 
+                    ? "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-[#ffffff] shadow-lg shadow-indigo-500/20" 
+                    : "bg-slate-800 text-slate-600 cursor-not-allowed"
+                )}
+              >
+                <span>Pull 1x ({gachaPool.cost.toLocaleString()})</span>
+              </button>
+              <button
+                onClick={() => onDrawGacha(gachaPool.id, 10)}
+                disabled={coins < gachaPool.cost * 10}
+                className={cn(
+                  "flex-1 py-4 rounded-2xl font-bold text-lg transition-all flex items-center justify-center space-x-2",
+                  coins >= gachaPool.cost * 10
+                    ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-[#ffffff] shadow-lg shadow-amber-500/20" 
+                    : "bg-slate-800 text-slate-600 cursor-not-allowed"
+                )}
+              >
+                <span>Pull 10x ({(gachaPool.cost * 10).toLocaleString()})</span>
+              </button>
+            </div>
             </div>
           </motion.div>
         )}

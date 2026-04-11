@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -24,10 +24,13 @@ import {
   Gem,
   Star,
   HelpCircle,
-  CheckCircle2
+  CheckCircle2,
+  FolderPlus,
+  Plus
 } from 'lucide-react';
 import { Timer } from './components/Timer';
 import { DungeonManager } from './components/DungeonManager';
+import { QuestManager } from './components/QuestManager';
 import { TalentTree } from './components/TalentTree';
 import { Shop } from './components/Shop';
 import { Stats } from './components/Stats';
@@ -64,8 +67,17 @@ const getNextTalentLevel = (currentLvl: number, levelRewards?: any[]) => {
 
 function App() {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'explore' | 'dungeons' | 'talents' | 'shop' | 'stats' | 'settings' | 'vault'>('dashboard');
+  const [dungeonSubTab, setDungeonSubTab] = useState<'list' | 'quests' | 'achievements'>('list');
+  const [isAddingMajor, setIsAddingMajor] = useState(false);
+  const [isAddingQuest, setIsAddingQuest] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    return localStorage.getItem('sidebar_collapsed') === 'true';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('sidebar_collapsed', isSidebarCollapsed.toString());
+  }, [isSidebarCollapsed]);
   const [isActiveTalentsCollapsed, setIsActiveTalentsCollapsed] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [editName, setEditName] = useState('');
@@ -73,7 +85,7 @@ function App() {
   const [drawResult, setDrawResult] = useState<{item: string, rarity: string}[] | null>(null);
   const [showCoinRain, setShowCoinRain] = useState(false);
   const [showBuildDetails, setShowBuildDetails] = useState(false);
-  const [showLevelUp, setShowLevelUp] = useState<number | null>(null);
+  const [showLevelUp, setShowLevelUp] = useState<number[] | null>(null);
   const [showXPGuide, setShowXPGuide] = useState(false);
   const [showCoinGuide, setShowCoinGuide] = useState(false);
   const [showTalentGuide, setShowTalentGuide] = useState(false);
@@ -96,7 +108,9 @@ function App() {
     setState,
     reorderMajorDungeon,
     reorderSubDungeon,
-    finalizeMajorDungeon
+    finalizeMajorDungeon,
+    updateQuests,
+    claimQuestReward
   } = useGameState();
 
   React.useEffect(() => {
@@ -111,7 +125,11 @@ function App() {
 
   React.useEffect(() => {
     if (state.level > prevLevel) {
-      setShowLevelUp(state.level);
+      const levelsGained = [];
+      for (let l = prevLevel + 1; l <= state.level; l++) {
+        levelsGained.push(l);
+      }
+      setShowLevelUp(levelsGained);
       triggerSimpleConfetti();
       playSound('levelUp', state.soundVolume, state.soundEnabled);
       setPrevLevel(state.level);
@@ -138,6 +156,8 @@ function App() {
     }));
     setIsEditingProfile(false);
   };
+
+  const currentLevelUp = showLevelUp?.[0];
 
   const openProfile = () => {
     setEditName(state.userName || 'Scholar');
@@ -298,6 +318,9 @@ function App() {
 
   const progressToNextLevel = (state.xp / getXPForLevel(state.level)) * 100;
 
+  const unclaimedQuestsCount = state.quests.filter(q => !q.isAchievement && q.completed && !q.claimed).length;
+  const unclaimedAchievementsCount = state.quests.filter(q => q.isAchievement && q.completed && !q.claimed).length;
+
   const navItems = [
     { id: 'dashboard', label: 'Sanctum', icon: LayoutDashboard },
     { id: 'explore', label: 'Explore', icon: TimerIcon },
@@ -314,7 +337,7 @@ function App() {
       {/* Sidebar Navigation - Hidden on mobile, visible on tablet/desktop */}
       <nav className={cn(
         "hidden md:flex fixed left-0 top-0 h-[100dvh] bg-slate-900 border-r border-slate-800 z-[70] flex-col transition-all duration-300",
-        isSidebarCollapsed ? "w-20" : "w-56"
+        isSidebarCollapsed ? "w-20" : "w-64"
       )}>
         <div className={cn(
           "p-4 md:p-5 flex items-center",
@@ -323,7 +346,7 @@ function App() {
           <div className="flex items-center space-x-3 overflow-hidden">
             {!isSidebarCollapsed && (
               <div className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20 shrink-0">
-                <Sword className="text-white" size={20} />
+                <Sword className="text-[#ffffff]" size={20} />
               </div>
             )}
             {!isSidebarCollapsed && (
@@ -353,6 +376,7 @@ function App() {
               icon={<item.icon size={22} />} 
               label={item.label} 
               collapsed={isSidebarCollapsed}
+              showDot={item.id === 'dungeons' && state.unclaimedQuests > 0 && state.questNotificationStyle === 'red_dot'}
             />
           ))}
         </div>
@@ -385,7 +409,7 @@ function App() {
       {/* Main Content - Adjust margin based on sidebar visibility */}
       <main className={cn(
         "min-h-[100dvh] pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0 transition-all duration-300",
-        isSidebarCollapsed ? "md:ml-20" : "md:ml-56"
+        isSidebarCollapsed ? "md:ml-20" : "md:ml-64"
       )}>
         <header className="sticky top-0 z-40 bg-slate-950/80 backdrop-blur-md border-b border-slate-800 px-4 sm:px-8 py-2 flex items-center justify-between">
           <div className="flex items-center space-x-4">
@@ -399,7 +423,7 @@ function App() {
               "items-center gap-2 w-24 sm:w-32",
               isSidebarCollapsed ? "hidden sm:flex" : "hidden lg:flex"
             )} title="Experience">
-              <span className="text-[10px] sm:text-xs font-black text-indigo-400 italic">LV.{state.level}</span>
+              <span className="text-[10px] sm:text-xs font-black text-white bg-indigo-600 px-2 py-0.5 rounded-lg italic">LV.{state.level}</span>
               <div className="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden">
                 <div className="h-full bg-indigo-500" style={{ width: `${(state.xp / getXPForLevel(state.level)) * 100}%` }} />
               </div>
@@ -527,20 +551,6 @@ function App() {
                       </div>
                     </div>
 
-                    <div className="bg-slate-900 rounded-3xl border border-slate-800 p-6">
-                      <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-4">Active Talents</h3>
-                      <div className="flex flex-wrap gap-2">
-                        {state.activeTalents.length > 0 ? (
-                          state.activeTalents.map(id => (
-                            <div key={id} className="px-3 py-1 bg-indigo-500/10 text-indigo-400 rounded-lg text-xs font-bold border border-indigo-500/20">
-                              {id.toUpperCase()}
-                            </div>
-                          ))
-                        ) : (
-                          <span className="text-xs text-slate-600 italic">No talents active</span>
-                        )}
-                      </div>
-                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -748,7 +758,7 @@ function App() {
       {createPortal(
         <AnimatePresence>
           {showBuildDetails && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
               <motion.div
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
@@ -839,22 +849,122 @@ function App() {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
+                className="p-6 lg:p-8 space-y-8"
               >
-                <DungeonManager 
-                  dungeons={dungeons}
-                  majorDungeons={majorDungeons}
-                  currentDungeonId={state.currentDungeonId}
-                  onSelect={(id) => setState(prev => ({ ...prev, currentDungeonId: id }))}
-                  onCreateMajor={handleCreateMajor}
-                  onCreateSub={handleCreateSub}
-                  onUpdateMajor={handleUpdateMajor}
-                  onUpdateSub={handleUpdateSub}
-                  onDeleteMajor={handleDeleteMajor}
-                  onDeleteSub={handleDeleteSub}
-                  onReorderMajor={reorderMajorDungeon}
-                  onReorderSub={reorderSubDungeon}
-                  onFinalizeMajor={finalizeMajorDungeon}
-                />
+                <PageHeader 
+                  title={dungeonSubTab === 'list' ? "Dungeon Explorer" : dungeonSubTab === 'quests' ? "Quest Board" : "Achievements"} 
+                  description={dungeonSubTab === 'list' ? "Manage your study challenges" : dungeonSubTab === 'quests' ? "Complete tasks for extra rewards" : "Your legendary milestones"} 
+                  icon={dungeonSubTab === 'list' ? Sword : dungeonSubTab === 'quests' ? Target : Trophy} 
+                  stats={dungeonSubTab === 'list' ? [
+                    { label: 'Major', value: majorDungeons.length, icon: FolderPlus, color: 'text-indigo-400' },
+                    { label: 'Cleared', value: majorDungeons.filter(m => m.status === 'completed').length, icon: CheckCircle2, color: 'text-emerald-400' }
+                  ] : dungeonSubTab === 'quests' ? [
+                    { label: 'Quests', value: state.quests.filter(q => !q.isAchievement).length, icon: Target, color: 'text-indigo-400' },
+                    { label: 'Unclaimed', value: state.unclaimedQuests, icon: Gift, color: 'text-amber-400' }
+                  ] : [
+                    { label: 'Achievements', value: state.quests.filter(q => q.isAchievement).length, icon: Trophy, color: 'text-amber-400' },
+                    { label: 'Completed', value: state.quests.filter(q => q.isAchievement && q.completed).length, icon: CheckCircle2, color: 'text-emerald-400' }
+                  ]}
+                >
+                  <div className="flex flex-wrap items-center gap-3 mt-4">
+                    <div className="flex gap-1 bg-slate-900 p-1 rounded-xl border border-slate-800">
+                      <button
+                        onClick={() => setDungeonSubTab('list')}
+                        className={cn(
+                          "px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-[10px] sm:text-xs font-bold transition-all flex items-center gap-1.5 sm:gap-2",
+                          dungeonSubTab === 'list' ? "bg-indigo-500/20 text-indigo-400" : "text-slate-500 hover:text-slate-300"
+                        )}
+                      >
+                        <Sword size={14} className="sm:w-4 sm:h-4" />
+                        Dungeons
+                      </button>
+                      <button
+                        onClick={() => setDungeonSubTab('quests')}
+                        className={cn(
+                          "px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-[10px] sm:text-xs font-bold transition-all flex items-center gap-1.5 sm:gap-2 relative",
+                          dungeonSubTab === 'quests' ? "bg-indigo-500/20 text-indigo-400" : "text-slate-500 hover:text-slate-300"
+                        )}
+                      >
+                        <Target size={14} className="sm:w-4 sm:h-4" />
+                        Quests
+                        {unclaimedQuestsCount > 0 && state.questNotificationStyle === 'red_dot' && (
+                          <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-indigo-500 rounded-full border-2 border-slate-950" />
+                        )}
+                      </button>
+                      <button
+                        onClick={() => setDungeonSubTab('achievements')}
+                        className={cn(
+                          "px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-[10px] sm:text-xs font-bold transition-all flex items-center gap-1.5 sm:gap-2 relative",
+                          dungeonSubTab === 'achievements' ? "bg-amber-500/20 text-amber-400" : "text-slate-500 hover:text-slate-300"
+                        )}
+                      >
+                        <Trophy size={14} className="sm:w-4 sm:h-4" />
+                        Achievements
+                        {unclaimedAchievementsCount > 0 && state.questNotificationStyle === 'red_dot' && (
+                          <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-indigo-500 rounded-full border-2 border-slate-950" />
+                        )}
+                      </button>
+                    </div>
+
+                    {dungeonSubTab === 'list' && (
+                      <button
+                        onClick={() => setIsAddingMajor(true)}
+                        className="flex items-center gap-2 px-4 py-1.5 sm:py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-all shadow-lg shadow-indigo-500/20 text-[10px] sm:text-xs font-bold"
+                      >
+                        <Plus size={14} className="sm:w-4 sm:h-4" />
+                        New Major Dungeon
+                      </button>
+                    )}
+
+                    {dungeonSubTab === 'quests' && (
+                      <button
+                        onClick={() => setIsAddingQuest(true)}
+                        className="flex items-center gap-2 px-4 py-1.5 sm:py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-all shadow-lg shadow-indigo-500/20 text-[10px] sm:text-xs font-bold"
+                      >
+                        <Plus size={14} className="sm:w-4 sm:h-4" />
+                        Add Task
+                      </button>
+                    )}
+                  </div>
+                </PageHeader>
+
+                {dungeonSubTab === 'list' ? (
+                  <DungeonManager 
+                    dungeons={dungeons}
+                    majorDungeons={majorDungeons}
+                    currentDungeonId={state.currentDungeonId}
+                    isAddingMajor={isAddingMajor}
+                    setIsAddingMajor={setIsAddingMajor}
+                    onSelect={(id) => setState(prev => ({ ...prev, currentDungeonId: id }))}
+                    onCreateMajor={handleCreateMajor}
+                    onCreateSub={handleCreateSub}
+                    onUpdateMajor={handleUpdateMajor}
+                    onUpdateSub={handleUpdateSub}
+                    onDeleteMajor={handleDeleteMajor}
+                    onDeleteSub={handleDeleteSub}
+                    onReorderMajor={reorderMajorDungeon}
+                    onReorderSub={reorderSubDungeon}
+                    onFinalizeMajor={finalizeMajorDungeon}
+                  />
+                ) : dungeonSubTab === 'quests' ? (
+                  <QuestManager 
+                    quests={state.quests}
+                    isAdding={isAddingQuest}
+                    setIsAdding={setIsAddingQuest}
+                    onUpdateQuests={(quests) => setState(prev => ({ ...prev, quests }))}
+                    onClaimReward={claimQuestReward}
+                    forceTab="quests"
+                  />
+                ) : (
+                  <QuestManager 
+                    quests={state.quests}
+                    isAdding={isAddingQuest}
+                    setIsAdding={setIsAddingQuest}
+                    onUpdateQuests={(quests) => setState(prev => ({ ...prev, quests }))}
+                    onClaimReward={claimQuestReward}
+                    forceTab="achievements"
+                  />
+                )}
               </motion.div>
             )}
 
@@ -947,22 +1057,24 @@ function App() {
       {createPortal(
         <AnimatePresence>
           {showProfile && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
               <motion.div
                 initial={{ scale: 0.9, opacity: 0, y: 20 }}
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 exit={{ scale: 0.9, opacity: 0, y: 20 }}
                 className="bg-slate-950 w-full max-w-xl rounded-[2.5rem] border border-slate-800 overflow-hidden shadow-2xl max-h-[90vh] flex flex-col relative"
               >
-                <div className="relative p-4 sm:p-8 flex justify-between items-start shrink-0">
+                <div className="relative p-4 sm:p-8 pr-12 sm:pr-24 flex justify-between items-start shrink-0">
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 w-full">
                     <div className="relative group shrink-0">
                       <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-3xl bg-slate-900 border-2 border-slate-800 flex items-center justify-center text-indigo-400 shadow-2xl relative overflow-hidden">
                         <User className="w-10 h-10 sm:w-14 sm:h-14" />
                         <div className="absolute inset-0 bg-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                       </div>
-                      <div className="absolute -bottom-2 -right-2 sm:-bottom-3 sm:-right-3 w-8 h-8 sm:w-12 sm:h-12 bg-indigo-600 rounded-xl sm:rounded-2xl border-2 sm:border-4 border-slate-950 flex items-center justify-center shadow-lg">
-                        <span className="text-white font-black text-sm sm:text-lg">{state.level}</span>
+                      <div className="absolute -bottom-2 -right-2 sm:-bottom-3 sm:-right-3 w-8 h-8 sm:w-12 sm:h-12 bg-slate-950 rounded-xl sm:rounded-2xl border-2 sm:border-4 border-slate-950 flex items-center justify-center shadow-lg">
+                        <span className="text-white font-black text-sm sm:text-lg">
+                          {state.level}
+                        </span>
                       </div>
                     </div>
                     
@@ -982,15 +1094,15 @@ function App() {
                             className="bg-transparent border-b border-slate-700 text-sm sm:text-base text-slate-400 font-medium focus:outline-none w-full mt-1"
                             placeholder="Your Signature"
                           />
-                          <div className="flex gap-2 pt-1">
-                            <button onClick={handleSaveProfile} className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black uppercase tracking-widest rounded-lg transition-all">Save</button>
-                            <button onClick={() => setIsEditingProfile(false)} className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-400 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all">Cancel</button>
+                          <div className="flex gap-2 pt-1 w-full max-w-xs">
+                            <button onClick={handleSaveProfile} className="flex-1 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black uppercase tracking-widest rounded-lg transition-all">Save</button>
+                            <button onClick={() => setIsEditingProfile(false)} className="flex-1 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-400 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all">Cancel</button>
                           </div>
                         </div>
                       ) : (
                         <div className="group">
-                          <div className="flex items-center gap-3">
-                            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight italic uppercase truncate max-w-[200px] sm:max-w-none">
+                          <div className="flex items-center justify-between gap-3 w-full">
+                            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight italic uppercase truncate flex-grow">
                               {state.userName || 'Scholar'}
                             </h2>
                             <button 
@@ -1016,7 +1128,7 @@ function App() {
                   
                   <button 
                     onClick={() => setShowProfile(false)}
-                    className="absolute top-4 right-4 sm:relative sm:top-auto sm:right-auto p-2 sm:p-3 bg-slate-900 hover:bg-slate-800 text-slate-500 hover:text-white rounded-xl sm:rounded-2xl transition-all border border-slate-800 shrink-0"
+                    className="absolute top-4 right-4 sm:top-8 sm:right-8 p-2 sm:p-3 bg-slate-900 hover:bg-slate-800 text-slate-500 hover:text-white rounded-xl sm:rounded-2xl transition-all border border-slate-800 shrink-0 z-10"
                   >
                     <X size={20} className="sm:w-6 sm:h-6" />
                   </button>
@@ -1165,7 +1277,11 @@ function App() {
                     <div className="w-24 h-24 bg-indigo-500 rounded-3xl mx-auto mb-6 flex items-center justify-center shadow-2xl shadow-indigo-500/40 rotate-12">
                       <Trophy size={48} className="text-white -rotate-12" />
                     </div>
-                    <h2 className="text-sm font-black text-indigo-400 uppercase tracking-[0.3em] mb-2">Dungeon Cleared!</h2>
+                    <h2 className="text-sm font-black text-indigo-400 uppercase tracking-[0.3em] mb-2">
+                      {state.lastCompletionRewards.type === 'dungeon' ? 'Dungeon Cleared!' : 
+                       state.lastCompletionRewards.type === 'quest' ? 'Quest Completed!' : 
+                       'Achievement Unlocked!'}
+                    </h2>
                     <h3 className="text-3xl font-black text-white tracking-tighter mb-8 italic uppercase">{state.lastCompletionRewards.dungeonName}</h3>
                   </motion.div>
                   <div className="space-y-3 mb-10">
@@ -1187,15 +1303,23 @@ function App() {
                     </div>
                   </div>
                   <div className="flex flex-col gap-3">
-                    <button onClick={() => setState(s => ({ ...s, lastCompletionRewards: null }))} className="w-full py-5 bg-white text-slate-900 rounded-2xl font-black uppercase tracking-widest hover:bg-indigo-400 transition-colors shadow-xl">Claim Rewards</button>
+                    <button onClick={() => setState(s => ({ ...s, lastCompletionRewards: null }))} className="w-full py-5 bg-white text-slate-900 rounded-2xl font-black uppercase tracking-widest hover:bg-indigo-400 transition-colors shadow-xl">
+                      {state.lastCompletionRewards.type === 'dungeon' ? 'Claim Dungeon Rewards' : 
+                       state.lastCompletionRewards.type === 'quest' ? 'Claim Quest Rewards' : 
+                       'Claim Achievement Rewards'}
+                    </button>
                     <button 
                       onClick={() => {
                         setState(s => ({ ...s, lastCompletionRewards: null }));
                         setActiveTab('dungeons');
+                        if (state.lastCompletionRewards?.type === 'quest') setDungeonSubTab('quests');
+                        if (state.lastCompletionRewards?.type === 'achievement') setDungeonSubTab('achievements');
                       }} 
                       className="w-full py-4 bg-slate-800 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-slate-700 transition-colors"
                     >
-                      Select Next Dungeon
+                      {state.lastCompletionRewards.type === 'dungeon' ? 'Select Next Dungeon' : 
+                       state.lastCompletionRewards.type === 'quest' ? 'View Quests' : 
+                       'View Achievements'}
                     </button>
                   </div>
                 </div>
@@ -1214,6 +1338,7 @@ function App() {
             active={activeTab === item.id} 
             onClick={() => setActiveTab(item.id as any)} 
             icon={<item.icon size={20} />} 
+            showDot={item.id === 'dungeons' && state.unclaimedQuests > 0 && state.questNotificationStyle === 'red_dot'}
           />
         ))}
       </div>
@@ -1223,7 +1348,7 @@ function App() {
       {createPortal(
         <AnimatePresence>
           {showXPGuide && (
-            <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+            <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
               <motion.div 
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -1285,7 +1410,7 @@ function App() {
       {createPortal(
         <AnimatePresence>
           {showCoinGuide && (
-            <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+            <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
               <motion.div 
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -1351,7 +1476,7 @@ function App() {
       {createPortal(
         <AnimatePresence>
           {showTalentGuide && (
-            <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+            <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
               <motion.div 
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -1425,20 +1550,21 @@ function App() {
 
       {createPortal(
         <AnimatePresence>
-          {showLevelUp && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          {showLevelUp && currentLevelUp && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
               <motion.div
+                key={currentLevelUp}
                 initial={{ scale: 0.9, opacity: 0, y: 20 }}
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 exit={{ scale: 0.9, opacity: 0, y: -20 }}
-                className="bg-slate-900 w-full max-w-md rounded-3xl border border-emerald-500/30 overflow-hidden shadow-2xl text-center"
+                className="bg-slate-900 w-full max-w-md rounded-3xl border border-indigo-500/30 overflow-hidden text-center"
               >
-                <div className="p-8 bg-gradient-to-b from-emerald-900/40 to-transparent">
-                  <div className="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <Trophy className="text-emerald-400 w-10 h-10" />
+                <div className="p-8 bg-gradient-to-b from-indigo-500/10 to-transparent">
+                  <div className="w-20 h-20 bg-indigo-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <Trophy className="text-indigo-400 w-10 h-10" />
                   </div>
-                  <h2 className="text-3xl font-black text-white mb-2">Level Up!</h2>
-                  <p className="text-emerald-400 font-bold text-xl mb-6">You reached Level {showLevelUp}</p>
+                  <h2 className="text-3xl font-black text-slate-50 mb-2">Level Up!</h2>
+                  <p className="text-indigo-400 font-bold text-xl mb-6">You reached Level {currentLevelUp}</p>
                   
                   <div className="bg-slate-800/50 rounded-2xl p-6 border border-slate-700/50 mb-8">
                     <div className="flex items-center justify-between mb-4">
@@ -1452,17 +1578,17 @@ function App() {
                       </button>
                     </div>
                     <div className="flex flex-col items-center justify-center gap-2 text-lg font-bold text-white">
-                      {state.levelRewards?.find(r => r.level === showLevelUp) ? (
+                      {state.levelRewards?.find(r => r.level === currentLevelUp) ? (
                         <div className="w-full space-y-3">
                           {(() => {
-                            const reward = state.levelRewards.find(r => r.level === showLevelUp);
+                            const reward = state.levelRewards.find(r => r.level === currentLevelUp);
                             if (reward?.type === 'text') {
                               return (
                                 <div className="flex flex-col items-center gap-3 py-2">
                                   <div className="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center">
                                     <Scroll className="text-emerald-400" size={24} />
                                   </div>
-                                  <span className="text-xl font-black text-white text-center leading-tight">
+                                  <span className="text-xl font-black text-slate-50 text-center leading-tight">
                                     {reward.rewardText}
                                   </span>
                                 </div>
@@ -1484,7 +1610,7 @@ function App() {
                         </div>
                       ) : (
                         <>
-                          {isTalentLevel(showLevelUp) ? (
+                          {isTalentLevel(currentLevelUp) ? (
                             <>
                               <div className="flex items-center gap-2">
                                 <Zap size={20} className="text-indigo-400" />
@@ -1496,7 +1622,7 @@ function App() {
                             <div className="flex flex-col items-center gap-2">
                               <span className="text-slate-500 text-sm">No specific reward for this level</span>
                               <span className="text-indigo-400/80 text-xs font-medium">
-                                Next Talent Point in {getNextTalentLevel(showLevelUp, state.levelRewards) - showLevelUp} level(s)
+                                Next Talent Point in {getNextTalentLevel(currentLevelUp, state.levelRewards) - currentLevelUp} level(s)
                               </span>
                             </div>
                           )}
@@ -1506,10 +1632,15 @@ function App() {
                   </div>
 
                   <button
-                    onClick={() => setShowLevelUp(null)}
-                    className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-bold transition-all shadow-lg shadow-emerald-900/20"
+                    onClick={() => {
+                      setShowLevelUp(prev => {
+                        if (!prev || prev.length <= 1) return null;
+                        return prev.slice(1);
+                      });
+                    }}
+                    className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-black uppercase tracking-widest rounded-2xl transition-all"
                   >
-                    Awesome!
+                    {showLevelUp.length > 1 ? `Next Level (${showLevelUp.length - 1} more)` : 'Claim Rewards'}
                   </button>
                 </div>
               </motion.div>
@@ -1534,21 +1665,24 @@ function App() {
   );
 }
 
-function NavItem({ active, onClick, icon, label, collapsed }: { active: boolean; onClick: () => void; icon: React.ReactNode; label: string; collapsed?: boolean; key?: string }) {
+function NavItem({ active, onClick, icon, label, collapsed, showDot }: { active: boolean; onClick: () => void; icon: React.ReactNode; label: string; collapsed?: boolean; showDot?: boolean; key?: string }) {
   return (
     <button
       onClick={onClick}
       title={collapsed ? label : undefined}
       className={cn(
-        "w-full flex items-center p-3 rounded-xl transition-all group",
+        "w-full flex items-center p-3 rounded-xl transition-all group relative",
         collapsed ? "justify-center" : "space-x-3",
         active 
           ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" 
           : "text-slate-500 hover:bg-slate-800 hover:text-slate-200"
       )}
     >
-      <div className={cn("transition-transform group-hover:scale-110 shrink-0", active ? "scale-110" : "")}>
+      <div className={cn("transition-transform group-hover:scale-110 shrink-0 relative", active ? "scale-110" : "")}>
         {icon}
+        {showDot && (
+          <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-indigo-500 rounded-full border-2 border-slate-950" />
+        )}
       </div>
       {!collapsed && (
         <span className="font-bold text-sm tracking-wide whitespace-nowrap overflow-hidden">
@@ -1559,16 +1693,21 @@ function NavItem({ active, onClick, icon, label, collapsed }: { active: boolean;
   );
 }
 
-function MobileNavItem({ active, onClick, icon }: { active: boolean; onClick: () => void; icon: React.ReactNode; key?: string }) {
+function MobileNavItem({ active, onClick, icon, showDot }: { active: boolean; onClick: () => void; icon: React.ReactNode; showDot?: boolean; key?: string }) {
   return (
     <button
       onClick={onClick}
       className={cn(
-        "p-3 rounded-xl transition-all",
+        "p-3 rounded-xl transition-all relative",
         active ? "bg-indigo-600 text-white" : "text-slate-500"
       )}
     >
-      {icon}
+      <div className="relative">
+        {icon}
+        {showDot && (
+          <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-indigo-500 rounded-full border-2 border-slate-950" />
+        )}
+      </div>
     </button>
   );
 }

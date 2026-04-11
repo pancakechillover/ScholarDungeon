@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { UserState, Dungeon, StudySession, Talent, RewardCard, MajorDungeon, RewardHistoryItem, DungeonReward } from '../types';
-import { TALENTS, INITIAL_REWARD_POOL, INITIAL_GACHA } from '../constants';
+import { UserState, Dungeon, StudySession, Talent, RewardCard, MajorDungeon, RewardHistoryItem, DungeonReward, Quest } from '../types';
+import { TALENTS, INITIAL_REWARD_POOL, INITIAL_GACHA, DEFAULT_QUESTS } from '../constants';
 import { format, isSameDay, parseISO, differenceInDays } from 'date-fns';
 
 import { getXPForLevel, getDefaultRewardForLevel } from '../lib/utils';
@@ -30,6 +30,9 @@ export function useGameState() {
       inventory: [],
       userName: 'Scholar',
       userBio: 'Master of the Study Dungeon',
+      quests: DEFAULT_QUESTS,
+      questNotificationStyle: 'red_dot',
+      unclaimedQuests: 0,
       devModeEnabled: false,
       devBaseXP: 100,
       devBaseCoins: 10,
@@ -184,17 +187,60 @@ export function useGameState() {
   useEffect(() => {
     const now = new Date();
     const todayStr = format(now, 'yyyy-MM-dd');
+    const currentWeekStr = format(now, 'yyyy-' + Math.ceil(now.getDate() / 7)); // Simple weekly grouping, or use date-fns getISOWeek
+    const currentMonthStr = format(now, 'yyyy-MM');
+
+    let needsUpdate = false;
+    let updates: Partial<UserState> = {};
+
     if (state.lastDailyReset !== todayStr) {
-      setState(prev => ({
-        ...prev,
-        dailySessions: 0,
-        dailyRerollUsed: false,
-        lastDailyReset: todayStr,
-        // Check streak
-        streak: prev.lastStudyDate ? (differenceInDays(now, parseISO(prev.lastStudyDate)) <= 1 ? prev.streak : 0) : 0
-      }));
+      needsUpdate = true;
+      updates.dailySessions = 0;
+      updates.dailyRerollUsed = false;
+      updates.lastDailyReset = todayStr;
+      updates.streak = state.lastStudyDate ? (differenceInDays(now, parseISO(state.lastStudyDate)) <= 1 ? state.streak : 0) : 0;
+      
+      // Reset daily quests
+      if (state.quests) {
+        updates.quests = state.quests.map(q => {
+          if (q.type === 'daily_sessions') {
+            return { ...q, progress: 0, completed: false };
+          }
+          return q;
+        });
+      }
     }
-  }, [state.lastDailyReset, state.lastStudyDate, state.streak]);
+
+    if (state.lastWeeklyReset !== currentWeekStr) {
+      needsUpdate = true;
+      updates.lastWeeklyReset = currentWeekStr;
+      if (state.quests) {
+        updates.quests = (updates.quests || state.quests).map(q => {
+          if (q.type === 'weekly_sessions') {
+            return { ...q, progress: 0, completed: false };
+          }
+          return q;
+        });
+      }
+    }
+
+    if (state.lastMonthlyReset !== currentMonthStr) {
+      needsUpdate = true;
+      updates.lastMonthlyReset = currentMonthStr;
+      if (state.quests) {
+        updates.quests = (updates.quests || state.quests).map(q => {
+          if (q.type === 'monthly_sessions') {
+            return { ...q, progress: 0, completed: false };
+          }
+          return q;
+        });
+      }
+    }
+
+    if (needsUpdate) {
+      setState(prev => ({ ...prev, ...updates }));
+    }
+  }, [state.lastDailyReset, state.lastWeeklyReset, state.lastMonthlyReset, state.lastStudyDate, state.streak, state.quests]);
 
   // Helper functions for state updates
   const processXP = (state: UserState, amount: number): UserState => {
@@ -335,6 +381,7 @@ export function useGameState() {
             ...s,
             lastCompletionRewards: {
               dungeonName: `MAJOR CLEAR: ${major.name}`,
+              type: 'dungeon',
               rewards: major.rewards || []
             }
           }));
@@ -457,6 +504,105 @@ export function useGameState() {
         inventory: [] // Clear inventory after session
       };
 
+      // Process Quests
+      if (newState.quests) {
+        let questsUpdated = false;
+        let newlyCompletedQuests = 0;
+        const updatedQuests = newState.quests.map(q => {
+          if (q.completed) return q;
+
+          // Check if special quest is unlocked by talent
+          if (q.isSpecial && q.talentRequired && !newState.activeTalents.includes(q.talentRequired)) {
+            return q;
+          }
+
+          let newProgress = q.progress;
+          if (q.type === 'daily_sessions' || q.type === 'weekly_sessions' || q.type === 'monthly_sessions' || q.type === 'total_sessions') {
+            newProgress += 1;
+          } else if (q.type === 'consecutive_days') {
+            newProgress = newStreak;
+          }
+
+          if (newProgress !== q.progress) {
+            questsUpdated = true;
+            if (newProgress >= q.target) {
+              newlyCompletedQuests += 1;
+              return { ...q, progress: newProgress, completed: true };
+            }
+            return { ...q, progress: newProgress };
+          }
+          return q;
+        });
+
+        if (questsUpdated) {
+          newState.quests = updatedQuests;
+          if (newlyCompletedQuests > 0) {
+            newState.unclaimedQuests = (newState.unclaimedQuests || 0) + newlyCompletedQuests;
+            
+            // Handle instant popup
+            if (newState.questNotificationStyle === 'popup') {
+              const completedQuests = updatedQuests.filter(q => q.completed && !q.claimed && prev.quests.find(oldQ => oldQ.id === q.id && !oldQ.completed));
+              const questRewards: DungeonReward[] = completedQuests.map(q => ({
+                type: q.reward.type as any,
+                amount: q.reward.amount,
+                itemName: q.reward.itemName,
+                rewardText: q.reward.rewardText
+              }));
+
+              if (questRewards.length > 0) {
+                newState.lastCompletionRewards = {
+                  dungeonName: newlyCompletedQuests === 1 ? `QUEST COMPLETE: ${completedQuests[0].title}` : `${newlyCompletedQuests} QUESTS COMPLETED`,
+                  type: completedQuests.some(q => q.isAchievement) ? 'achievement' : 'quest',
+                  rewards: questRewards
+                };
+                
+                // Auto-claim and apply rewards
+                completedQuests.forEach(q => {
+                  const r = q.reward;
+                  if (r.type === 'coins') {
+                    newState.coins += r.amount;
+                  } else if (r.type === 'xp') {
+                    newState = processXP(newState, r.amount);
+                  } else if (r.type === 'talentPoint') {
+                    newState.talentPoints += r.amount;
+                  } else if (r.type === 'item') {
+                    if (r.itemName === 'Talent Shard') {
+                      newState = processShards(newState, r.amount);
+                    } else if (r.itemName === 'Death Defying Gold Medal') {
+                      newState.deathDefyingMedals += r.amount;
+                    }
+                  }
+                  
+                  // Add to history
+                  newState.rewardHistory = [{
+                    id: Math.random().toString(36).substr(2, 9),
+                    name: r.type === 'text' ? (r.rewardText || 'Quest Reward') : 
+                          r.type === 'talentPoint' ? `+${r.amount} Talent Points` :
+                          r.type === 'coins' ? `+${r.amount} Gold Coins` :
+                          r.type === 'xp' ? `+${r.amount} Experience` :
+                          (r.itemName || 'Item'),
+                    rarity: q.isAchievement ? 'epic' : 'rare',
+                    source: 'Explore',
+                    timestamp: new Date().toISOString(),
+                    type: r.type === 'text' ? 'text' : (r.type === 'coins' ? 'coins' : (r.type === 'xp' ? 'xp' : 'item')),
+                    amount: r.amount,
+                    redeemed: r.type !== 'item' && r.type !== 'text'
+                  }, ...newState.rewardHistory];
+                });
+
+                newState.quests = newState.quests.map(q => {
+                  if (completedQuests.find(cq => cq.id === q.id)) {
+                    return { ...q, claimed: true };
+                  }
+                  return q;
+                });
+                newState.unclaimedQuests = Math.max(0, newState.unclaimedQuests - newlyCompletedQuests);
+              }
+            }
+          }
+        }
+      }
+
       return processXP(newState, Math.floor(baseXP));
     });
 
@@ -497,6 +643,7 @@ export function useGameState() {
                 ...s,
                 lastCompletionRewards: {
                   dungeonName: d.name,
+                  type: 'dungeon',
                   rewards: allRewards
                 }
               }));
@@ -534,6 +681,7 @@ export function useGameState() {
                         ...s,
                         lastCompletionRewards: {
                           dungeonName: `MAJOR CLEAR: ${major.name}`,
+                          type: 'dungeon',
                           rewards: major.rewards || []
                         }
                       }));
@@ -781,6 +929,61 @@ export function useGameState() {
     });
   }, []);
 
+  const updateQuests = useCallback((quests: Quest[]) => {
+    setState(prev => ({ ...prev, quests }));
+  }, []);
+
+  const claimQuestReward = useCallback((questId: string) => {
+    setState(prev => {
+      const quest = prev.quests.find(q => q.id === questId);
+      if (!quest || !quest.completed || quest.claimed) return prev;
+
+      const reward = quest.reward;
+      
+      // Add to history
+      const newItem: RewardHistoryItem = {
+        id: Math.random().toString(36).substr(2, 9),
+        name: reward.type === 'text' ? (reward.rewardText || 'Quest Reward') : 
+              reward.type === 'talentPoint' ? `+${reward.amount} Talent Points` :
+              reward.type === 'coins' ? `+${reward.amount} Gold Coins` :
+              reward.type === 'xp' ? `+${reward.amount} Experience` :
+              (reward.itemName || 'Item'),
+        rarity: quest.isAchievement ? 'epic' : 'rare',
+        source: 'Explore',
+        timestamp: new Date().toISOString(),
+        type: reward.type === 'text' ? 'text' : (reward.type === 'coins' ? 'coins' : (reward.type === 'xp' ? 'xp' : 'item')),
+        amount: reward.amount,
+        redeemed: reward.type !== 'item' && reward.type !== 'text'
+      };
+
+      let newState = { 
+        ...prev, 
+        rewardHistory: [newItem, ...prev.rewardHistory],
+        quests: prev.quests.map(q => q.id === questId ? { ...q, claimed: true } : q),
+        unclaimedQuests: Math.max(0, (prev.unclaimedQuests || 0) - 1)
+      };
+
+      // Apply rewards immediately if not item/text
+      if (reward.type === 'coins') {
+        newState.coins += reward.amount;
+      } else if (reward.type === 'xp') {
+        newState = processXP(newState, reward.amount);
+      } else if (reward.type === 'talentPoint') {
+        newState.talentPoints += reward.amount;
+      } else if (reward.type === 'item') {
+        if (reward.itemName === 'Talent Shard') {
+          newState = processShards(newState, reward.amount);
+          newItem.redeemed = true;
+        } else if (reward.itemName === 'Death Defying Gold Medal') {
+          newState.deathDefyingMedals += reward.amount;
+          newItem.redeemed = true;
+        }
+      }
+
+      return newState;
+    });
+  }, []);
+
   return {
     state,
     dungeons,
@@ -799,6 +1002,8 @@ export function useGameState() {
     setState,
     reorderMajorDungeon,
     reorderSubDungeon,
-    finalizeMajorDungeon
+    finalizeMajorDungeon,
+    updateQuests,
+    claimQuestReward
   };
 }
