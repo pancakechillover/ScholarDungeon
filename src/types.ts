@@ -83,6 +83,7 @@ export type QuestType = 'daily_sessions' | 'weekly_sessions' | 'monthly_sessions
 export interface QuestReward {
   type: 'coins' | 'xp' | 'talentPoint' | 'item' | 'text';
   amount: number;
+  itemType?: 'talent_shard' | 'death_defying_medal' | 'double_xp' | 'double_coin';
   itemName?: string;
   rewardText?: string;
 }
@@ -95,6 +96,7 @@ export interface Quest {
   target: number;
   progress: number;
   reward: QuestReward;
+  rewards?: QuestReward[];
   completed: boolean;
   claimed?: boolean;
   lastReset?: string;

@@ -184,7 +184,7 @@ export const DungeonManager: React.FC<DungeonManagerProps> = ({
       )}
 
       <AnimatePresence>
-        {(editingMajor || editingSub) && (
+        {(editingMajor || editingSub || isAddingMajor) && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -198,8 +198,10 @@ export const DungeonManager: React.FC<DungeonManagerProps> = ({
               className="bg-slate-900 border border-indigo-500/30 rounded-3xl p-6 max-w-2xl w-full shadow-2xl space-y-6 overflow-y-auto max-h-[90vh]"
             >
               <div className="flex items-center justify-between">
-                <h3 className="text-xl font-bold text-white">Edit {editingMajor ? 'Major' : 'Sub'} Dungeon</h3>
-                <button onClick={() => { setEditingMajor(null); setEditingSub(null); }} className="text-slate-500 hover:text-white">
+                <h3 className="text-xl font-bold text-white">
+                  {isAddingMajor ? 'Create Major Dungeon' : `Edit ${editingMajor ? 'Major' : 'Sub'} Dungeon`}
+                </h3>
+                <button onClick={() => { setEditingMajor(null); setEditingSub(null); setIsAddingMajor(false); }} className="text-slate-500 hover:text-white">
                   <X size={24} />
                 </button>
               </div>
@@ -210,12 +212,14 @@ export const DungeonManager: React.FC<DungeonManagerProps> = ({
                     <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Name</label>
                     <input
                       type="text"
-                      value={editingMajor ? editingMajor.name : editingSub?.name || ''}
+                      value={isAddingMajor ? newMajor.name : (editingMajor ? editingMajor.name : editingSub?.name || '')}
                       onChange={e => {
-                        if (editingMajor) setEditingMajor({ ...editingMajor, name: e.target.value });
+                        if (isAddingMajor) setNewMajor({ ...newMajor, name: e.target.value });
+                        else if (editingMajor) setEditingMajor({ ...editingMajor, name: e.target.value });
                         else if (editingSub) setEditingSub({ ...editingSub, name: e.target.value });
                       }}
                       className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
+                      placeholder={isAddingMajor ? "Major Dungeon Name (e.g., IELTS Mastery)" : ""}
                     />
                   </div>
                   {editingSub && (
@@ -229,21 +233,25 @@ export const DungeonManager: React.FC<DungeonManagerProps> = ({
                       />
                     </div>
                   )}
-                  {editingMajor && (
+                  {(editingMajor || isAddingMajor) && (
                     <div className="space-y-1">
                       <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Description</label>
                       <input
                         type="text"
-                        value={editingMajor.description}
-                        onChange={e => setEditingMajor({ ...editingMajor, description: e.target.value })}
+                        value={isAddingMajor ? newMajor.description : editingMajor?.description || ''}
+                        onChange={e => {
+                          if (isAddingMajor) setNewMajor({ ...newMajor, description: e.target.value });
+                          else if (editingMajor) setEditingMajor({ ...editingMajor, description: e.target.value });
+                        }}
                         className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
+                        placeholder={isAddingMajor ? "Description" : ""}
                       />
                     </div>
                   )}
                 </div>
 
                 <div className="space-y-3">
-                  {editingMajor && (
+                  {editingMajor && dungeons.some(d => d.parentId === editingMajor.id) && (
                     <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl space-y-2">
                       <div className="flex items-center gap-2 text-amber-400">
                         <Target size={18} />
@@ -268,7 +276,7 @@ export const DungeonManager: React.FC<DungeonManagerProps> = ({
                   <div className="flex items-center justify-between">
                     <h5 className="text-sm font-bold text-slate-500 uppercase tracking-widest">Completion Rewards</h5>
                     <button 
-                      onClick={() => addReward(!!editingMajor)}
+                      onClick={() => addReward(isAddingMajor || !!editingMajor)}
                       className="text-xs font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
                     >
                       <Plus size={14} /> Add Reward
@@ -276,12 +284,12 @@ export const DungeonManager: React.FC<DungeonManagerProps> = ({
                   </div>
                   
                   <div className="space-y-2">
-                    {(editingMajor?.rewards || editingSub?.rewards || []).map((reward, idx) => (
+                    {(isAddingMajor ? newMajor.rewards : (editingMajor?.rewards || editingSub?.rewards || [])).map((reward, idx) => (
                       <div key={idx} className="bg-slate-800/50 p-3 rounded-xl border border-slate-700 space-y-3">
                         <div className="flex items-center gap-2">
                           <select 
                             value={reward.type}
-                            onChange={e => updateReward(idx, 'type', e.target.value, !!editingMajor)}
+                            onChange={e => updateReward(idx, 'type', e.target.value, isAddingMajor || !!editingMajor)}
                             className="flex-grow bg-slate-900 text-sm text-white border-slate-700 rounded-lg px-2 py-1.5"
                           >
                             <option value="coins">Coins</option>
@@ -293,17 +301,17 @@ export const DungeonManager: React.FC<DungeonManagerProps> = ({
                           <input 
                             type="number"
                             value={reward.amount}
-                            onChange={e => updateReward(idx, 'amount', parseInt(e.target.value) || 0, !!editingMajor)}
+                            onChange={e => updateReward(idx, 'amount', parseInt(e.target.value) || 0, isAddingMajor || !!editingMajor)}
                             className="w-24 bg-slate-900 text-sm text-white border-slate-700 rounded-lg px-2 py-1.5"
                             placeholder="Amt"
                           />
-                          <button onClick={() => removeReward(idx, !!editingMajor)} className="p-1.5 text-slate-500 hover:text-red-400"><X size={16} /></button>
+                          <button onClick={() => removeReward(idx, isAddingMajor || !!editingMajor)} className="p-1.5 text-slate-500 hover:text-red-400"><X size={16} /></button>
                         </div>
                         {reward.type === 'item' && (
                           <div className="grid grid-cols-2 gap-2">
                             <select 
                               value={reward.itemType}
-                              onChange={e => updateReward(idx, 'itemType', e.target.value, !!editingMajor)}
+                              onChange={e => updateReward(idx, 'itemType', e.target.value, isAddingMajor || !!editingMajor)}
                               className="bg-slate-900 text-xs text-white border-slate-700 rounded-lg px-2 py-1.5"
                             >
                               <option value="talent_shard">Talent Shard</option>
@@ -315,7 +323,7 @@ export const DungeonManager: React.FC<DungeonManagerProps> = ({
                               type="text"
                               placeholder="Item Name"
                               value={reward.itemName}
-                              onChange={e => updateReward(idx, 'itemName', e.target.value, !!editingMajor)}
+                              onChange={e => updateReward(idx, 'itemName', e.target.value, isAddingMajor || !!editingMajor)}
                               className="bg-slate-900 text-xs text-white border-slate-700 rounded-lg px-2 py-1.5"
                             />
                           </div>
@@ -325,7 +333,7 @@ export const DungeonManager: React.FC<DungeonManagerProps> = ({
                             type="text"
                             placeholder="Reward Message"
                             value={reward.rewardText}
-                            onChange={e => updateReward(idx, 'rewardText', e.target.value, !!editingMajor)}
+                            onChange={e => updateReward(idx, 'rewardText', e.target.value, isAddingMajor || !!editingMajor)}
                             className="w-full bg-slate-900 text-xs text-white border-slate-700 rounded-lg px-2 py-1.5"
                           />
                         )}
@@ -336,10 +344,13 @@ export const DungeonManager: React.FC<DungeonManagerProps> = ({
               </div>
 
               <div className="flex justify-end space-x-3 pt-4 border-t border-slate-800">
-                <button onClick={() => { setEditingMajor(null); setEditingSub(null); }} className="px-4 py-2 text-slate-400">Cancel</button>
+                <button onClick={() => { setEditingMajor(null); setEditingSub(null); setIsAddingMajor(false); }} className="px-4 py-2 text-slate-400 font-bold hover:text-white transition-colors">Cancel</button>
                 <button 
                   onClick={() => {
-                    if (editingMajor) {
+                    if (isAddingMajor) {
+                      onCreateMajor(newMajor.name, newMajor.description, newMajor.rewards);
+                      setIsAddingMajor(false);
+                    } else if (editingMajor) {
                       onUpdateMajor(editingMajor.id, { name: editingMajor.name, description: editingMajor.description, rewards: editingMajor.rewards });
                       setEditingMajor(null);
                     } else if (editingSub) {
@@ -349,119 +360,14 @@ export const DungeonManager: React.FC<DungeonManagerProps> = ({
                   }}
                   className="px-8 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors"
                 >
-                  Save Changes
+                  {isAddingMajor ? 'Create Dungeon' : 'Save Changes'}
                 </button>
               </div>
             </motion.div>
           </motion.div>
         )}
 
-        {isAddingMajor && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="bg-slate-900 p-6 rounded-2xl border border-indigo-500/30 space-y-4"
-          >
-            <h3 className="text-lg font-bold text-white">Create Major Dungeon</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input
-                type="text"
-                placeholder="Major Dungeon Name (e.g., IELTS Mastery)"
-                value={newMajor.name}
-                onChange={e => setNewMajor({ ...newMajor, name: e.target.value })}
-                className="bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-indigo-500"
-              />
-              <input
-                type="text"
-                placeholder="Description"
-                value={newMajor.description}
-                onChange={e => setNewMajor({ ...newMajor, description: e.target.value })}
-                className="bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-indigo-500"
-              />
-            </div>
 
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <h5 className="text-sm font-bold text-slate-500 uppercase tracking-widest">Major Completion Rewards</h5>
-                <button 
-                  onClick={() => addReward(true)}
-                  className="text-xs font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
-                >
-                  <Plus size={14} /> Add Reward
-                </button>
-              </div>
-              
-              <div className="space-y-2">
-                {newMajor.rewards.map((reward, idx) => (
-                  <div key={idx} className="bg-slate-800/50 p-3 rounded-xl border border-slate-700 space-y-3">
-                    <div className="flex items-center gap-2">
-                      <select 
-                        value={reward.type}
-                        onChange={e => updateReward(idx, 'type', e.target.value, true)}
-                        className="flex-grow bg-slate-900 text-sm text-white border-slate-700 rounded-lg px-2 py-1.5"
-                      >
-                        <option value="coins">Coins</option>
-                        <option value="xp">XP</option>
-                        <option value="talentPoint">Talent Points</option>
-                        <option value="item">Item</option>
-                        <option value="text">Custom Text</option>
-                      </select>
-                      <input 
-                        type="number"
-                        value={reward.amount}
-                        onChange={e => updateReward(idx, 'amount', parseInt(e.target.value), true)}
-                        className="w-24 bg-slate-900 text-sm text-white border-slate-700 rounded-lg px-2 py-1.5"
-                        placeholder="Amt"
-                      />
-                      <button onClick={() => removeReward(idx, true)} className="p-1.5 text-slate-500 hover:text-red-400"><X size={16} /></button>
-                    </div>
-                    {reward.type === 'item' && (
-                      <div className="grid grid-cols-2 gap-2">
-                        <select 
-                          value={reward.itemType}
-                          onChange={e => updateReward(idx, 'itemType', e.target.value, true)}
-                          className="bg-slate-900 text-xs text-white border-slate-700 rounded-lg px-2 py-1.5"
-                        >
-                          <option value="talent_shard">Talent Shard</option>
-                          <option value="death_defying_medal">Medal</option>
-                          <option value="double_xp">Double XP</option>
-                          <option value="double_coin">Double Coin</option>
-                        </select>
-                        <input 
-                          type="text"
-                          placeholder="Item Name"
-                          value={reward.itemName}
-                          onChange={e => updateReward(idx, 'itemName', e.target.value, true)}
-                          className="bg-slate-900 text-xs text-white border-slate-700 rounded-lg px-2 py-1.5"
-                        />
-                      </div>
-                    )}
-                    {reward.type === 'text' && (
-                      <input 
-                        type="text"
-                        placeholder="Reward Message"
-                        value={reward.rewardText}
-                        onChange={e => updateReward(idx, 'rewardText', e.target.value, true)}
-                        className="w-full bg-slate-900 text-xs text-white border-slate-700 rounded-lg px-2 py-1.5"
-                      />
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex justify-end space-x-3">
-              <button onClick={() => setIsAddingMajor(false)} className="px-4 py-2 text-slate-400">Cancel</button>
-              <button 
-                onClick={() => { onCreateMajor(newMajor.name, newMajor.description, newMajor.rewards); setIsAddingMajor(false); setNewMajor({ name: '', description: '', rewards: [] }); }}
-                className="px-6 py-2 bg-indigo-600 text-white rounded-lg font-bold"
-              >
-                Create
-              </button>
-            </div>
-          </motion.div>
-        )}
       </AnimatePresence>
 
       <div className="space-y-4">
@@ -486,7 +392,7 @@ export const DungeonManager: React.FC<DungeonManagerProps> = ({
                   </div>
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-3 mb-1">
-                      <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight uppercase italic truncate">{major.name}</h3>
+                      <h3 className="text-lg sm:text-xl font-black text-white tracking-tight uppercase italic truncate pr-2">{major.name}</h3>
                       {major.isFinalized && (
                         <span className="text-[10px] font-black bg-indigo-500/20 text-indigo-400 px-2 py-0.5 rounded-lg border border-indigo-500/30 uppercase tracking-widest shrink-0">
                           Finalized
@@ -760,7 +666,7 @@ export const DungeonManager: React.FC<DungeonManagerProps> = ({
                           key={sub.id}
                           whileHover={{ scale: 1.005 }}
                           className={cn(
-                            "p-4 sm:p-5 rounded-[1.5rem] border transition-all cursor-pointer group",
+                            "p-6 sm:p-8 rounded-[2rem] border transition-all cursor-pointer group",
                             currentDungeonId === sub.id 
                               ? "bg-indigo-500/10 border-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.1)]" 
                               : "bg-slate-950/30 border-slate-800 hover:border-slate-700"
@@ -770,15 +676,15 @@ export const DungeonManager: React.FC<DungeonManagerProps> = ({
                           <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center space-x-4">
                               <div className={cn(
-                                "w-10 h-10 rounded-xl flex items-center justify-center border transition-all",
+                                "w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center border transition-all shrink-0",
                                 sub.status === 'completed' ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" :
                                 currentDungeonId === sub.id ? "bg-indigo-500 text-white border-indigo-400" : "bg-slate-800 border-slate-700 text-slate-500"
                               )}>
-                                {sub.status === 'completed' ? <CheckCircle2 size={18} /> : <Target size={18} />}
+                                {sub.status === 'completed' ? <CheckCircle2 size={24} /> : <Target size={24} />}
                               </div>
                               <div>
                                 <span className={cn(
-                                  "font-black text-sm sm:text-base uppercase italic tracking-tight transition-colors block truncate max-w-[150px] sm:max-w-none",
+                                  "font-black text-base sm:text-lg uppercase italic tracking-tight transition-colors block truncate max-w-[150px] sm:max-w-none",
                                   sub.status === 'completed' ? "text-slate-600 line-through" : "text-white"
                                 )}>{sub.name}</span>
                                 <div className="flex items-center gap-3 mt-1">

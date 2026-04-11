@@ -909,20 +909,30 @@ function App() {
                     {dungeonSubTab === 'list' && (
                       <button
                         onClick={() => setIsAddingMajor(true)}
-                        className="flex items-center gap-2 px-4 py-1.5 sm:py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-all shadow-lg shadow-indigo-500/20 text-[10px] sm:text-xs font-bold"
+                        className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-all shadow-lg shadow-indigo-500/20"
+                        title="New Major Dungeon"
                       >
-                        <Plus size={14} className="sm:w-4 sm:h-4" />
-                        New Major Dungeon
+                        <Plus size={18} />
                       </button>
                     )}
 
                     {dungeonSubTab === 'quests' && (
                       <button
                         onClick={() => setIsAddingQuest(true)}
-                        className="flex items-center gap-2 px-4 py-1.5 sm:py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-all shadow-lg shadow-indigo-500/20 text-[10px] sm:text-xs font-bold"
+                        className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-all shadow-lg shadow-indigo-500/20"
+                        title="Add Quest"
                       >
-                        <Plus size={14} className="sm:w-4 sm:h-4" />
-                        Add Task
+                        <Plus size={18} />
+                      </button>
+                    )}
+
+                    {dungeonSubTab === 'achievements' && (
+                      <button
+                        onClick={() => setIsAddingQuest(true)}
+                        className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-amber-600 hover:bg-amber-700 text-white rounded-xl transition-all shadow-lg shadow-amber-500/20"
+                        title="Add Achievement"
+                      >
+                        <Plus size={18} />
                       </button>
                     )}
                   </div>
@@ -949,6 +959,7 @@ function App() {
                 ) : dungeonSubTab === 'quests' ? (
                   <QuestManager 
                     quests={state.quests}
+                    activeTalents={state.activeTalents}
                     isAdding={isAddingQuest}
                     setIsAdding={setIsAddingQuest}
                     onUpdateQuests={(quests) => setState(prev => ({ ...prev, quests }))}
@@ -958,6 +969,7 @@ function App() {
                 ) : (
                   <QuestManager 
                     quests={state.quests}
+                    activeTalents={state.activeTalents}
                     isAdding={isAddingQuest}
                     setIsAdding={setIsAddingQuest}
                     onUpdateQuests={(quests) => setState(prev => ({ ...prev, quests }))}

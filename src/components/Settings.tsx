@@ -792,6 +792,20 @@ export const Settings: React.FC<SettingsProps> = ({
                       onSub={(amount) => setState(prev => ({ ...prev, streak: Math.max(0, prev.streak - amount) }))}
                       icon={<Flame size={14} className="text-orange-500" />}
                     />
+                    <DevResourceControl 
+                      label="Talent Pt" 
+                      value={state.talentPoints} 
+                      onAdd={(amount) => setState(prev => ({ ...prev, talentPoints: prev.talentPoints + amount }))}
+                      onSub={(amount) => setState(prev => ({ ...prev, talentPoints: Math.max(0, prev.talentPoints - amount) }))}
+                      icon={<Zap size={14} className="text-indigo-400" />}
+                    />
+                    <DevResourceControl 
+                      label="Shards" 
+                      value={state.talentShards} 
+                      onAdd={(amount) => setState(prev => ({ ...prev, talentShards: prev.talentShards + amount }))}
+                      onSub={(amount) => setState(prev => ({ ...prev, talentShards: Math.max(0, prev.talentShards - amount) }))}
+                      icon={<Sparkles size={14} className="text-indigo-300" />}
+                    />
                   </div>
                 </div>
               </div>

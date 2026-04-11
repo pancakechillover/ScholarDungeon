@@ -511,8 +511,8 @@ export function useGameState() {
         const updatedQuests = newState.quests.map(q => {
           if (q.completed) return q;
 
-          // Check if special quest is unlocked by talent
-          if (q.isSpecial && q.talentRequired && !newState.activeTalents.includes(q.talentRequired)) {
+          // Check if quest is locked by talent
+          if (q.talentRequired && !newState.activeTalents.includes(q.talentRequired)) {
             return q;
           }
 
@@ -938,47 +938,50 @@ export function useGameState() {
       const quest = prev.quests.find(q => q.id === questId);
       if (!quest || !quest.completed || quest.claimed) return prev;
 
-      const reward = quest.reward;
+      const rewards = quest.rewards || [quest.reward];
       
-      // Add to history
-      const newItem: RewardHistoryItem = {
-        id: Math.random().toString(36).substr(2, 9),
-        name: reward.type === 'text' ? (reward.rewardText || 'Quest Reward') : 
-              reward.type === 'talentPoint' ? `+${reward.amount} Talent Points` :
-              reward.type === 'coins' ? `+${reward.amount} Gold Coins` :
-              reward.type === 'xp' ? `+${reward.amount} Experience` :
-              (reward.itemName || 'Item'),
-        rarity: quest.isAchievement ? 'epic' : 'rare',
-        source: 'Explore',
-        timestamp: new Date().toISOString(),
-        type: reward.type === 'text' ? 'text' : (reward.type === 'coins' ? 'coins' : (reward.type === 'xp' ? 'xp' : 'item')),
-        amount: reward.amount,
-        redeemed: reward.type !== 'item' && reward.type !== 'text'
-      };
-
       let newState = { 
         ...prev, 
-        rewardHistory: [newItem, ...prev.rewardHistory],
         quests: prev.quests.map(q => q.id === questId ? { ...q, claimed: true } : q),
         unclaimedQuests: Math.max(0, (prev.unclaimedQuests || 0) - 1)
       };
 
-      // Apply rewards immediately if not item/text
-      if (reward.type === 'coins') {
-        newState.coins += reward.amount;
-      } else if (reward.type === 'xp') {
-        newState = processXP(newState, reward.amount);
-      } else if (reward.type === 'talentPoint') {
-        newState.talentPoints += reward.amount;
-      } else if (reward.type === 'item') {
-        if (reward.itemName === 'Talent Shard') {
-          newState = processShards(newState, reward.amount);
-          newItem.redeemed = true;
-        } else if (reward.itemName === 'Death Defying Gold Medal') {
-          newState.deathDefyingMedals += reward.amount;
-          newItem.redeemed = true;
+      rewards.forEach(reward => {
+        // Add to history
+        const newItem: RewardHistoryItem = {
+          id: Math.random().toString(36).substr(2, 9),
+          name: reward.type === 'text' ? (reward.rewardText || 'Quest Reward') : 
+                reward.type === 'talentPoint' ? `+${reward.amount} Talent Points` :
+                reward.type === 'coins' ? `+${reward.amount} Gold Coins` :
+                reward.type === 'xp' ? `+${reward.amount} Experience` :
+                (reward.itemName || 'Item'),
+          rarity: quest.isAchievement ? 'epic' : 'rare',
+          source: 'Explore',
+          timestamp: new Date().toISOString(),
+          type: reward.type === 'text' ? 'text' : (reward.type === 'coins' ? 'coins' : (reward.type === 'xp' ? 'xp' : 'item')),
+          amount: reward.amount,
+          redeemed: reward.type !== 'item' && reward.type !== 'text'
+        };
+
+        newState.rewardHistory = [newItem, ...newState.rewardHistory];
+
+        // Apply rewards immediately if not item/text
+        if (reward.type === 'coins') {
+          newState.coins += reward.amount;
+        } else if (reward.type === 'xp') {
+          newState = processXP(newState, reward.amount);
+        } else if (reward.type === 'talentPoint') {
+          newState.talentPoints += reward.amount;
+        } else if (reward.type === 'item') {
+          if (reward.itemName === 'Talent Shard') {
+            newState = processShards(newState, reward.amount);
+            newItem.redeemed = true;
+          } else if (reward.itemName === 'Death Defying Gold Medal') {
+            newState.deathDefyingMedals += reward.amount;
+            newItem.redeemed = true;
+          }
         }
-      }
+      });
 
       return newState;
     });
