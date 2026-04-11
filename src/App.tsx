@@ -340,10 +340,10 @@ function App() {
         isSidebarCollapsed ? "w-20" : "w-64"
       )}>
         <div className={cn(
-          "p-4 md:p-5 flex items-center",
+          "p-4 md:px-5 md:py-5 flex items-center",
           isSidebarCollapsed ? "justify-center" : "justify-between"
         )}>
-          <div className="flex items-center space-x-3 overflow-hidden">
+          <div className="flex items-center space-x-3">
             {!isSidebarCollapsed && (
               <div className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20 shrink-0">
                 <Sword className="text-[#ffffff]" size={20} />

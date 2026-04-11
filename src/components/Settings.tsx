@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { RewardCard, ShopItem, GachaPool, Rarity } from '../types';
 import { INITIAL_GACHA } from '../constants';
-import { Plus, Trash2, Save, Edit2, X, ChevronRight, Coins, Zap, Sparkles, Trophy, Timer as TimerIcon, Package, Flame, AlertTriangle, Scroll, Volume2, VolumeX, Sun, Moon, Settings as SettingsIcon, ShoppingBag, Trees, Waves, Database, Download, Upload, Target, Gift } from 'lucide-react';
+import { Plus, Trash2, Save, Edit2, X, ChevronRight, Coins, Zap, Sparkles, Trophy, Timer as TimerIcon, Package, Flame, AlertTriangle, Scroll, Volume2, VolumeX, Sun, Moon, Settings as SettingsIcon, ShoppingBag, Trees, Waves, Database, Download, Upload, Target, Gift, User, Sword } from 'lucide-react';
 import { cn, getXPForLevel, getDefaultRewardForLevel } from '../lib/utils';
 import { playSound } from '../lib/sound';
 
@@ -568,7 +568,7 @@ export const Settings: React.FC<SettingsProps> = ({
   onUpdateGacha,
   addXP
 }) => {
-  const [activeSection, setActiveSection] = useState<'general' | 'rewards' | 'shop' | 'gacha' | 'dev' | 'levelRewards'>('general');
+  const [activeSection, setActiveSection] = useState<'general' | 'rewards' | 'shop' | 'gacha' | 'dev' | 'levelRewards' | 'about'>('general');
   const [devPassword, setDevPassword] = useState('');
   const [isDevUnlocked, setIsDevUnlocked] = useState(state.devModeEnabled || false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -592,7 +592,7 @@ export const Settings: React.FC<SettingsProps> = ({
       </div>
 
       <div className="flex flex-nowrap gap-2 p-2 bg-slate-900/80 backdrop-blur rounded-3xl w-full border border-slate-800 overflow-x-auto">
-        {(['general', 'rewards', 'levelRewards', 'shop', 'gacha', 'dev'] as const).map(tab => {
+        {(['general', 'rewards', 'levelRewards', 'shop', 'gacha', 'dev', 'about'] as const).map(tab => {
           return (
             <button
               key={tab}
@@ -604,7 +604,7 @@ export const Settings: React.FC<SettingsProps> = ({
                   : "text-slate-500 hover:text-slate-300 hover:bg-slate-800/50"
               )}
             >
-              {tab === 'dev' ? 'Developer' : tab === 'levelRewards' ? 'Level Rewards' : tab}
+              {tab === 'dev' ? 'Developer' : tab === 'levelRewards' ? 'Level Rewards' : tab === 'about' ? 'About' : tab}
             </button>
           );
         })}
@@ -810,6 +810,77 @@ export const Settings: React.FC<SettingsProps> = ({
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {activeSection === 'about' && (
+          <div className="space-y-8 py-4">
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center shadow-2xl shadow-indigo-600/20">
+                <SettingsIcon size={40} className="text-white" />
+              </div>
+              <div>
+                <h3 className="text-3xl font-black text-white tracking-tight">Scholar's Dungeon</h3>
+                <p className="text-indigo-400 font-bold tracking-widest uppercase text-xs mt-1">Version 1.0.0</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-slate-800/30 p-8 rounded-3xl border border-slate-700/50 space-y-4">
+                <h4 className="text-lg font-bold text-white flex items-center gap-2">
+                  <Scroll className="text-indigo-400" size={20} />
+                  Project Info
+                </h4>
+                <p className="text-slate-400 leading-relaxed">
+                  Scholar's Dungeon is a gamified learning system designed to turn study sessions into an immersive Roguelike adventure. 
+                  By combining the Pomodoro technique with RPG progression, it helps students and lifelong learners maintain focus and motivation.
+                </p>
+              </div>
+
+              <div className="bg-slate-800/30 p-8 rounded-3xl border border-slate-700/50 space-y-6">
+                <h4 className="text-lg font-bold text-white flex items-center gap-2">
+                  <User size={20} className="text-indigo-400" />
+                  Author & Links
+                </h4>
+                
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500 text-sm font-bold uppercase tracking-wider">Author</span>
+                    <span className="text-white font-bold">Karakn</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500 text-sm font-bold uppercase tracking-wider">Email</span>
+                    <a href="mailto:pankechill@outlool.com" className="text-indigo-400 hover:text-indigo-300 transition-colors font-mono text-sm">pankechill@outlool.com</a>
+                  </div>
+                  <div className="pt-4 space-y-3">
+                    <a 
+                      href="https://github.com/pancakechillover/ScholarDungeon" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between p-3 bg-slate-900 rounded-xl border border-slate-700 hover:border-indigo-500 transition-all group"
+                    >
+                      <span className="text-slate-300 text-sm font-bold">GitHub Repository</span>
+                      <ChevronRight size={16} className="text-slate-500 group-hover:text-indigo-400 transition-colors" />
+                    </a>
+                    <a 
+                      href="https://github.com/pancakechillover/ScholarDungeon/blob/main/README.md" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between p-3 bg-slate-900 rounded-xl border border-slate-700 hover:border-indigo-500 transition-all group"
+                    >
+                      <span className="text-slate-300 text-sm font-bold">Documentation (README)</span>
+                      <ChevronRight size={16} className="text-slate-500 group-hover:text-indigo-400 transition-colors" />
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="text-center pt-4">
+              <p className="text-slate-600 text-[10px] uppercase tracking-[0.3em] font-bold">
+                Built with Passion for Learning & Gaming
+              </p>
+            </div>
           </div>
         )}
 
