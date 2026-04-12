@@ -99,7 +99,7 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
           }}
           className="text-amber-400 hover:scale-110 transition-transform"
         >
-          {isFull ? <Star size={32} fill="currentColor" /> : isHalf ? <StarHalf size={32} fill="currentColor" /> : <Star size={32} />}
+          {isFull ? <Star className="w-8 h-8 sm:w-10 sm:h-10" fill="currentColor" /> : isHalf ? <StarHalf className="w-8 h-8 sm:w-10 sm:h-10" fill="currentColor" /> : <Star className="w-8 h-8 sm:w-10 sm:h-10" />}
         </button>
       );
     }
@@ -120,17 +120,17 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
         className="bg-slate-900 border border-indigo-500/30 rounded-[2.5rem] w-full max-w-2xl shadow-2xl overflow-hidden my-8"
       >
         {/* Header */}
-        <div className="p-8 border-b border-slate-800 flex justify-between items-center bg-gradient-to-r from-indigo-500/10 to-transparent">
+        <div className="p-5 sm:p-8 border-b border-slate-800 flex justify-between items-center bg-gradient-to-r from-indigo-500/10 to-transparent">
           <div>
-            <h2 className="text-3xl font-black text-white tracking-tighter uppercase italic">End of the Day</h2>
-            <p className="text-slate-400 font-medium">Reflect on your progress and rest for tomorrow.</p>
+            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tighter uppercase italic">End of the Day</h2>
+            <p className="text-sm sm:text-base text-slate-400 font-medium">Reflect on your progress and rest for tomorrow.</p>
           </div>
           <button onClick={onClose} className="p-2 text-slate-500 hover:text-white rounded-full hover:bg-slate-800 transition-all">
             <X size={24} />
           </button>
         </div>
 
-        <div className="p-8 space-y-8 max-h-[70vh] overflow-y-auto custom-scrollbar">
+        <div className="p-5 sm:p-8 space-y-6 sm:space-y-8 max-h-[80vh] sm:max-h-[70vh] overflow-y-auto custom-scrollbar">
           {/* Summary Stats */}
           <div className="space-y-4">
             <button 
@@ -196,15 +196,15 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
           {/* Efficiency Rating */}
           <div className="space-y-4">
             <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Efficiency Rating</h3>
-            <div className="flex justify-center gap-2 p-6 bg-slate-950/50 rounded-3xl border border-slate-800">
+            <div className="flex justify-center gap-1 sm:gap-2 p-4 sm:p-6 bg-slate-950/50 rounded-3xl border border-slate-800">
               {renderStars()}
             </div>
           </div>
 
           {/* Daily Reflection */}
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0">
+              <div className="flex items-center justify-between sm:justify-start gap-4">
                 <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Daily Reflection</h3>
                 <div className="flex items-center gap-2">
                   <button
@@ -294,7 +294,7 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
         </div>
 
         {/* Footer */}
-        <div className="p-8 bg-slate-950/50 border-t border-slate-800">
+        <div className="p-5 sm:p-8 bg-slate-950/50 border-t border-slate-800">
           <button
             onClick={() => {
               onSave(today, rating, reflection);

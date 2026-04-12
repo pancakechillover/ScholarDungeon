@@ -147,7 +147,7 @@ export const DungeonManager: React.FC<DungeonManagerProps> = ({
                   <Sword size={24} />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-1">Active Quest</p>
+                  <p className="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-1">Active Dungeon</p>
                   <h3 className="text-2xl font-black text-white tracking-tight italic uppercase">{activeDungeon.name}</h3>
                 </div>
               </div>
@@ -498,12 +498,12 @@ export const DungeonManager: React.FC<DungeonManagerProps> = ({
                     {isAddingSub?.parentId === major.id && (
                       <div className="bg-slate-800/50 p-4 sm:p-6 rounded-2xl border border-indigo-500/20 space-y-4 mb-4">
                         <div className="flex items-center justify-between">
-                          <h4 className="text-xs sm:text-sm font-bold text-indigo-400 uppercase tracking-widest">New Sub Quest</h4>
+                          <h4 className="text-xs sm:text-sm font-bold text-indigo-400 uppercase tracking-widest">New Sub Dungeon</h4>
                           <button onClick={() => setIsAddingSub(null)} className="text-slate-500 hover:text-white sm:hidden"><X size={16} /></button>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div className="space-y-1">
-                            <label className="text-[10px] font-bold text-slate-500 uppercase">Quest Name</label>
+                            <label className="text-[10px] font-bold text-slate-500 uppercase">Dungeon Name</label>
                             <input
                               type="text"
                               placeholder="e.g. Morning Routine"
@@ -638,7 +638,7 @@ export const DungeonManager: React.FC<DungeonManagerProps> = ({
                             }}
                             className="w-full sm:w-auto px-6 py-2 bg-indigo-600 text-white rounded-lg font-bold text-sm shadow-lg shadow-indigo-500/20"
                           >
-                            Add Sub Quest
+                            Add Sub Dungeon
                           </button>
                         </div>
                       </div>
@@ -666,7 +666,7 @@ export const DungeonManager: React.FC<DungeonManagerProps> = ({
                           key={sub.id}
                           whileHover={{ scale: 1.005 }}
                           className={cn(
-                            "p-6 sm:p-8 rounded-[2rem] border transition-all cursor-pointer group",
+                            "p-4 sm:p-6 rounded-3xl border transition-all cursor-pointer group",
                             currentDungeonId === sub.id 
                               ? "bg-indigo-500/10 border-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.1)]" 
                               : "bg-slate-950/30 border-slate-800 hover:border-slate-700"
@@ -676,15 +676,15 @@ export const DungeonManager: React.FC<DungeonManagerProps> = ({
                           <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center space-x-4">
                               <div className={cn(
-                                "w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center border transition-all shrink-0",
+                                "w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center border transition-all shrink-0",
                                 sub.status === 'completed' ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" :
                                 currentDungeonId === sub.id ? "bg-indigo-500 text-white border-indigo-400" : "bg-slate-800 border-slate-700 text-slate-500"
                               )}>
-                                {sub.status === 'completed' ? <CheckCircle2 size={24} /> : <Target size={24} />}
+                                {sub.status === 'completed' ? <CheckCircle2 size={20} /> : <Target size={20} />}
                               </div>
                               <div>
                                 <span className={cn(
-                                  "font-black text-base sm:text-lg uppercase italic tracking-tight transition-colors block truncate max-w-[150px] sm:max-w-none",
+                                  "font-black text-sm sm:text-base uppercase italic tracking-tight transition-colors block truncate max-w-[150px] sm:max-w-none",
                                   sub.status === 'completed' ? "text-slate-600 line-through" : "text-white"
                                 )}>{sub.name}</span>
                                 <div className="flex items-center gap-3 mt-1">
@@ -765,6 +765,15 @@ export const DungeonManager: React.FC<DungeonManagerProps> = ({
                           )}
                         </motion.div>
                       ))}
+                      {!major.isFinalized && major.status !== 'completed' && isAddingSub?.parentId !== major.id && (
+                        <button
+                          onClick={() => setIsAddingSub({ parentId: major.id })}
+                          className="w-full py-4 border-2 border-dashed border-slate-800 hover:border-indigo-500/50 rounded-[2rem] text-slate-500 hover:text-indigo-400 transition-all flex items-center justify-center gap-2 font-bold uppercase tracking-widest text-xs"
+                        >
+                          <Plus size={16} />
+                          Add Sub Dungeon
+                        </button>
+                      )}
                     </div>
                   </motion.div>
                 )}
@@ -778,7 +787,7 @@ export const DungeonManager: React.FC<DungeonManagerProps> = ({
           <div className="space-y-4">
             <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest flex items-center space-x-2">
               <Sword size={16} />
-              <span>Independent Quests</span>
+              <span>Independent Dungeons</span>
             </h3>
             <div className="space-y-4">
               {dungeons.filter(d => !d.parentId).map(d => (

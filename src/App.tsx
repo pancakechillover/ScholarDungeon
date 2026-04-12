@@ -27,7 +27,10 @@ import {
   CheckCircle2,
   FolderPlus,
   Plus,
-  Calendar
+  Calendar,
+  Maximize,
+  Minimize,
+  RefreshCw
 } from 'lucide-react';
 import { Timer } from './components/Timer';
 import { DungeonManager } from './components/DungeonManager';
@@ -95,6 +98,7 @@ function App() {
   const [showTalentGuide, setShowTalentGuide] = useState(false);
   const [showDailySummary, setShowDailySummary] = useState(false);
   const [showCloudSync, setShowCloudSync] = useState(false);
+  const [isFullscreenExplore, setIsFullscreenExplore] = useState(false);
   
   const { 
     state, 
@@ -130,6 +134,32 @@ function App() {
     unbindFromCloud
   } = useCloudSync(state, setState, setDungeons, setMajorDungeons);
 
+  const [hasUnsyncedChanges, setHasUnsyncedChanges] = useState(() => {
+    return localStorage.getItem('scholars_dungeon_unsynced') === 'true';
+  });
+
+  React.useEffect(() => {
+    localStorage.setItem('scholars_dungeon_unsynced', hasUnsyncedChanges.toString());
+  }, [hasUnsyncedChanges]);
+
+  const isInitialMount = React.useRef(true);
+  React.useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    setHasUnsyncedChanges(true);
+  }, [state, dungeons, majorDungeons]);
+
+  const isInitialMountSync = React.useRef(true);
+  React.useEffect(() => {
+    if (isInitialMountSync.current) {
+      isInitialMountSync.current = false;
+      return;
+    }
+    setHasUnsyncedChanges(false);
+  }, [state.lastUpdated]);
+
   React.useEffect(() => {
     if (state.theme) {
       document.documentElement.setAttribute('data-theme', state.theme);
@@ -137,6 +167,16 @@ function App() {
       document.documentElement.removeAttribute('data-theme');
     }
   }, [state.theme]);
+
+  React.useEffect(() => {
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement) {
+        setIsFullscreenExplore(false);
+      }
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
 
   const [prevLevel, setPrevLevel] = useState(state.level);
 
@@ -352,10 +392,11 @@ function App() {
   return (
     <div className="min-h-[100dvh] bg-slate-950 text-slate-200 font-sans selection:bg-indigo-500/30">
       {/* Sidebar Navigation - Hidden on mobile, visible on tablet/desktop */}
-      <nav className={cn(
-        "hidden md:flex fixed left-0 top-0 h-[100dvh] bg-slate-900 border-r border-slate-800 z-[70] flex-col transition-all duration-300",
-        isSidebarCollapsed ? "w-20" : "w-64"
-      )}>
+      {!isFullscreenExplore && (
+        <nav className={cn(
+          "hidden md:flex fixed left-0 top-0 h-[100dvh] bg-slate-900 border-r border-slate-800 z-[70] flex-col transition-all duration-300",
+          isSidebarCollapsed ? "w-20" : "w-64"
+        )}>
         <div className={cn(
           "p-4 md:px-5 md:py-5 flex items-center",
           isSidebarCollapsed ? "justify-center" : "justify-between"
@@ -422,13 +463,15 @@ function App() {
           </button>
         </div>
       </nav>
+      )}
 
       {/* Main Content - Adjust margin based on sidebar visibility */}
       <main className={cn(
         "min-h-[100dvh] pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0 transition-all duration-300",
-        isSidebarCollapsed ? "md:ml-20" : "md:ml-64"
+        isFullscreenExplore ? "m-0 p-0" : (isSidebarCollapsed ? "md:ml-20" : "md:ml-64")
       )}>
-        <header className="sticky top-0 z-40 bg-slate-950/80 backdrop-blur-md border-b border-slate-800 px-4 sm:px-8 py-2 flex items-center justify-between">
+        {!isFullscreenExplore && (
+          <header className="sticky top-0 z-40 bg-slate-950/80 backdrop-blur-md border-b border-slate-800 px-4 sm:px-8 py-2 flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <h1 className="text-lg font-bold text-white capitalize">{activeTab}</h1>
           </div>
@@ -456,10 +499,7 @@ function App() {
             </div>
 
             {/* Talent Points */}
-            <div className={cn(
-              "items-center space-x-1.5",
-              isSidebarCollapsed ? "hidden sm:flex" : "hidden md:flex"
-            )} title="Talent Points">
+            <div className="flex items-center space-x-1.5" title="Talent Points">
               <Zap className="text-emerald-400" size={16} />
               <span className="font-bold text-white text-sm">{state.talentPoints}</span>
             </div>
@@ -499,8 +539,9 @@ function App() {
             </div>
           </div>
         </header>
+        )}
 
-        <div className="max-w-[1600px] mx-auto">
+        <div className={cn("max-w-[1600px] mx-auto", isFullscreenExplore ? "h-[100dvh] flex flex-col justify-center" : "")}>
           <AnimatePresence mode="wait">
             {activeTab === 'dashboard' && (
               <motion.div
@@ -595,27 +636,55 @@ function App() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                className="p-8 space-y-12"
+                className={cn("p-8 space-y-12", isFullscreenExplore ? "h-[100dvh] flex flex-col items-center justify-center p-0 m-0 space-y-0" : "")}
               >
-                <PageHeader 
-                  title="Explore"
-                  description="Venture into the unknown and sharpen your mind"
-                  icon={TimerIcon}
-                  stats={[
-                    { label: 'Level', value: state.level, icon: Trophy, color: 'text-amber-400' },
-                    { label: 'Streak', value: `${state.streak} Days`, icon: Flame, color: 'text-rose-500' }
-                  ]}
-                >
-                  <div className="flex items-center gap-4 mt-4">
-                    <button 
-                      onClick={() => setShowXPGuide(true)}
-                      className="flex items-center gap-2 px-4 py-2 bg-slate-900/50 border border-slate-800 rounded-xl text-slate-400 hover:text-indigo-400 transition-colors text-sm font-bold uppercase tracking-widest"
-                    >
-                      <HelpCircle size={18} />
-                      How to get XP
-                    </button>
-                  </div>
-                </PageHeader>
+                {!isFullscreenExplore && (
+                  <PageHeader 
+                    title="Explore"
+                    description="Venture into the unknown and sharpen your mind"
+                    icon={TimerIcon}
+                    stats={[
+                      { label: 'Level', value: state.level, icon: Trophy, color: 'text-amber-400' },
+                      { label: 'Streak', value: `${state.streak} Days`, icon: Flame, color: 'text-rose-500' }
+                    ]}
+                  >
+                    <div className="flex items-center gap-4 mt-4">
+                      <button 
+                        onClick={() => {
+                          setIsFullscreenExplore(true);
+                          if (document.documentElement.requestFullscreen) {
+                            document.documentElement.requestFullscreen().catch(() => {});
+                          }
+                        }}
+                        className="flex items-center gap-2 px-4 py-2 bg-slate-900/50 border border-slate-800 rounded-xl text-slate-400 hover:text-indigo-400 transition-colors text-sm font-bold uppercase tracking-widest"
+                      >
+                        <Maximize size={18} />
+                        Fullscreen
+                      </button>
+                      <button 
+                        onClick={() => setShowXPGuide(true)}
+                        className="flex items-center gap-2 px-4 py-2 bg-slate-900/50 border border-slate-800 rounded-xl text-slate-400 hover:text-indigo-400 transition-colors text-sm font-bold uppercase tracking-widest"
+                      >
+                        <HelpCircle size={18} />
+                        How to get XP
+                      </button>
+                    </div>
+                  </PageHeader>
+                )}
+
+                {isFullscreenExplore && (
+                  <button
+                    onClick={() => {
+                      setIsFullscreenExplore(false);
+                      if (document.fullscreenElement) {
+                        document.exitFullscreen().catch(() => {});
+                      }
+                    }}
+                    className="fixed top-6 right-6 z-50 p-3 bg-slate-900/80 backdrop-blur-md border border-slate-800 rounded-xl text-slate-400 hover:text-indigo-400 hover:bg-slate-800 transition-all shadow-lg"
+                  >
+                    <Minimize size={24} />
+                  </button>
+                )}
 
                 <div className="flex flex-col items-center space-y-12">
                   {/* Center Column: Timer */}
@@ -624,21 +693,28 @@ function App() {
                     <div className="flex flex-col items-center gap-4">
                       <div 
                         onClick={() => setActiveTab('dungeons')}
-                        className="w-full bg-slate-900/50 rounded-2xl border border-slate-800 p-6 space-y-4 cursor-pointer hover:border-indigo-500/50 transition-all group"
+                        className={cn(
+                          "w-full space-y-4 cursor-pointer transition-all group",
+                          isFullscreenExplore 
+                            ? "bg-transparent p-2 text-center flex flex-col items-center" 
+                            : "bg-slate-900/50 rounded-2xl border border-slate-800 p-6 hover:border-indigo-500/50"
+                        )}
                       >
-                        <div className="flex justify-between items-center">
+                        <div className={cn("flex items-center", isFullscreenExplore ? "justify-center flex-col gap-2" : "justify-between")}>
                           <div className="flex items-center gap-3">
-                            <div className="p-2 bg-indigo-500/10 text-indigo-400 rounded-lg group-hover:bg-indigo-500 group-hover:text-white transition-colors">
-                              <Sword size={18} />
-                            </div>
-                            <h3 className="text-lg font-bold text-white">{currentDungeon.name}</h3>
+                            {!isFullscreenExplore && (
+                              <div className="p-2 bg-indigo-500/10 text-indigo-400 rounded-lg group-hover:bg-indigo-500 group-hover:text-white transition-colors">
+                                <Sword size={18} />
+                              </div>
+                            )}
+                            <h3 className={cn("font-bold text-white", isFullscreenExplore ? "text-2xl tracking-widest uppercase" : "text-lg")}>{currentDungeon.name}</h3>
                           </div>
-                          <div className="text-right">
-                            <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest block">Active Quest</span>
-                            <span className="text-xs font-bold text-slate-500 uppercase">{currentDungeon.completedSessions} / {currentDungeon.totalSessions} Rooms</span>
+                          <div className={cn(isFullscreenExplore ? "text-center" : "text-right")}>
+                            {!isFullscreenExplore && <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest block">Active Dungeon</span>}
+                            <span className={cn("font-bold uppercase", isFullscreenExplore ? "text-sm text-indigo-400" : "text-xs text-slate-500")}>{currentDungeon.completedSessions} / {currentDungeon.totalSessions} Rooms</span>
                           </div>
                         </div>
-                        <div className="relative h-3 bg-slate-950 rounded-full overflow-hidden border border-slate-800">
+                        <div className={cn("relative bg-slate-950 rounded-full overflow-hidden border border-slate-800", isFullscreenExplore ? "h-1.5 w-48 mx-auto" : "h-3 w-full")}>
                           <motion.div 
                             initial={{ width: 0 }}
                             animate={{ width: `${(currentDungeon.completedSessions / currentDungeon.totalSessions) * 100}%` }}
@@ -671,6 +747,9 @@ function App() {
                       }
                       return result;
                     }}
+                    onRestComplete={() => {
+                      playSound('success', state.soundVolume, state.soundEnabled);
+                    }}
                     onInventoryAdd={(id) => setState(prev => ({ ...prev, inventory: [...prev.inventory, id] }))}
                     onReroll={() => setState(prev => ({ ...prev, dailyRerollUsed: true }))}
                     onRewardSelect={(reward) => {
@@ -685,13 +764,15 @@ function App() {
                       playSound('reward', state.soundVolume, state.soundEnabled);
                     }}
                     setShowCoinRain={setShowCoinRain}
+                    isFullscreen={isFullscreenExplore}
                   />
                 </div>
 
                 {/* Status & Talents Row (Below Timer) */}
-                <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {/* Active Talents */}
-                  <div className="bg-slate-900/50 rounded-3xl border border-slate-800 p-6 backdrop-blur-sm">
+                {!isFullscreenExplore && (
+                  <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {/* Active Talents */}
+                    <div className="bg-slate-900/50 rounded-3xl border border-slate-800 p-6 backdrop-blur-sm">
                     <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2 mb-6">
                       <Zap size={14} className="text-indigo-400" />
                       Active Talents
@@ -790,6 +871,7 @@ function App() {
                     </div>
                   </div>
                 </div>
+                )}
 
       {createPortal(
         <AnimatePresence>
@@ -1288,7 +1370,7 @@ function App() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                     <div className="space-y-2 sm:space-y-4">
                       <h4 className="text-[10px] sm:text-xs font-black text-slate-500 uppercase tracking-[0.2em] px-2">Account Status</h4>
-                      <div className="p-4 sm:p-6 bg-slate-900/30 rounded-2xl sm:rounded-[2rem] border border-slate-800 space-y-3 sm:space-y-4">
+                      <div className="p-4 sm:p-6 bg-slate-900 rounded-2xl sm:rounded-[2rem] border border-slate-800 space-y-3 sm:space-y-4">
                         <div className="flex items-center justify-between">
                           <span className="text-xs sm:text-sm text-slate-400">Cloud Sync</span>
                           <button 
@@ -1303,9 +1385,30 @@ function App() {
                             {state.secretCode ? 'Active' : 'Connect'}
                           </button>
                         </div>
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-4">
+                          <span className="text-xs sm:text-sm text-slate-400 whitespace-nowrap">Sync Time</span>
+                          <span className="text-[10px] sm:text-xs font-bold text-slate-300 text-right">
+                            {state.lastUpdated ? new Date(state.lastUpdated).toLocaleString() : 'Never'}
+                          </span>
+                        </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-xs sm:text-sm text-slate-400">Data Version</span>
-                          <span className="text-xs sm:text-sm font-bold text-white tracking-widest">v2.4.0</span>
+                          <span className="text-xs sm:text-sm text-slate-400">Sync Status</span>
+                          <span className="text-[10px] sm:text-xs font-bold text-right flex items-center gap-1">
+                            {!state.secretCode ? (
+                              <span className="text-slate-500">Not connected</span>
+                            ) : isSyncing ? (
+                              <>
+                                <RefreshCw size={12} className="animate-spin text-indigo-400" />
+                                <span className="text-indigo-400">Syncing...</span>
+                              </>
+                            ) : hasUnsyncedChanges ? (
+                              <span className="text-amber-400">Not sync yet</span>
+                            ) : state.lastUpdated ? (
+                              <span className="text-emerald-400">Up to date</span>
+                            ) : (
+                              <span className="text-slate-500">No cloud save</span>
+                            )}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -1405,17 +1508,19 @@ function App() {
       )}
 
       {/* Mobile Bottom Navigation - Only visible on small screens */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900/90 backdrop-blur-md border-t border-slate-800 px-6 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] flex justify-between items-center z-50 overflow-x-auto scrollbar-hide">
-        {navItems.filter(i => i.id !== 'settings').map(item => (
-          <MobileNavItem 
-            key={item.id}
-            active={activeTab === item.id} 
-            onClick={() => setActiveTab(item.id as any)} 
-            icon={<item.icon size={20} />} 
-            showDot={item.id === 'dungeons' && state.unclaimedQuests > 0 && state.questNotificationStyle === 'red_dot'}
-          />
-        ))}
-      </div>
+      {!isFullscreenExplore && (
+        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900/90 backdrop-blur-md border-t border-slate-800 px-6 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] flex justify-between items-center z-50 overflow-x-auto scrollbar-hide">
+          {navItems.filter(i => i.id !== 'settings').map(item => (
+            <MobileNavItem 
+              key={item.id}
+              active={activeTab === item.id} 
+              onClick={() => setActiveTab(item.id as any)} 
+              icon={<item.icon size={20} />} 
+              showDot={item.id === 'dungeons' && state.unclaimedQuests > 0 && state.questNotificationStyle === 'red_dot'}
+            />
+          ))}
+        </div>
+      )}
       <CoinRain active={showCoinRain} onComplete={() => setShowCoinRain(false)} />
 
       {/* Cloud Sync Modal */}

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Cloud, Key, X, AlertTriangle, Check, Loader2, Database, Sparkles, HelpCircle, Unlink, Info } from 'lucide-react';
+import { Cloud, Key, X, AlertTriangle, Check, Loader2, Database, Sparkles, HelpCircle, Unlink, Info, Eye, EyeOff } from 'lucide-react';
 
 interface CloudSyncModalProps {
   isOpen: boolean;
@@ -33,6 +33,7 @@ export function CloudSyncModal({
 }: CloudSyncModalProps) {
   const [inputCode, setInputCode] = useState(secretCode || '');
   const [showHelp, setShowHelp] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   if (!isOpen) return null;
 
@@ -178,12 +179,19 @@ export function CloudSyncModal({
                 <div className="space-y-2">
                   <div className="relative">
                     <input 
-                      type="password"
+                      type={showPassword ? "text" : "password"}
                       value={inputCode}
                       onChange={(e) => setInputCode(e.target.value)}
                       placeholder="Enter your Brave's Code"
-                      className="w-full bg-slate-950/50 border-b-2 border-slate-800 py-4 px-4 text-center text-lg text-white placeholder:text-slate-600 focus:outline-none focus:border-indigo-500 transition-all font-medium tracking-widest"
+                      className="w-full bg-slate-950/50 border-b-2 border-slate-800 py-4 px-4 pr-12 text-center text-lg text-white placeholder:text-slate-600 focus:outline-none focus:border-indigo-500 transition-all font-medium tracking-widest"
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                    >
+                      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
                   </div>
                 </div>
 

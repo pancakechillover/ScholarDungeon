@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Sword, Play, Pause, RotateCcw, SkipForward, Trophy, Coins, Zap, Scroll, Flame } from 'lucide-react';
+import { Sword, Play, Pause, RotateCcw, SkipForward, Trophy, Coins, Zap, Scroll, Flame, Settings2, RefreshCw, Coffee } from 'lucide-react';
 import { RewardCard, StudySession, Dungeon } from '../types';
 import { cn } from '../lib/utils';
 import { triggerSimpleConfetti } from '../lib/effects';
@@ -12,10 +12,12 @@ interface TimerProps {
   dailyRerollUsed: boolean;
   history: StudySession[];
   onComplete: (duration: number) => StudySession | null;
+  onRestComplete?: () => void;
   onInventoryAdd: (id: string) => void;
   onReroll: () => void;
   onRewardSelect: (reward: RewardCard) => void;
   setShowCoinRain: (show: boolean) => void;
+  isFullscreen?: boolean;
 }
 
 export const Timer: React.FC<TimerProps> = ({ 
@@ -25,11 +27,19 @@ export const Timer: React.FC<TimerProps> = ({
   dailyRerollUsed,
   history,
   onComplete, 
+  onRestComplete,
   onInventoryAdd,
   onReroll,
   onRewardSelect,
-  setShowCoinRain
+  setShowCoinRain,
+  isFullscreen = false
 }) => {
+  const [focusDuration, setFocusDuration] = useState(() => parseInt(localStorage.getItem('timer_focusDuration') || '25', 10));
+  const [restDuration, setRestDuration] = useState(() => parseInt(localStorage.getItem('timer_restDuration') || '5', 10));
+  const [enableRest, setEnableRest] = useState(() => localStorage.getItem('timer_enableRest') === 'true');
+  const [isLooping, setIsLooping] = useState(() => localStorage.getItem('timer_isLooping') === 'true');
+  const [isResting, setIsResting] = useState(() => localStorage.getItem('timer_isResting') === 'true');
+
   const [duration, setDuration] = useState(() => {
     const saved = localStorage.getItem('timer_duration');
     return saved ? parseInt(saved, 10) : 25;
@@ -51,9 +61,15 @@ export const Timer: React.FC<TimerProps> = ({
 
   const [showRewards, setShowRewards] = useState<{ session: StudySession; choices: RewardCard[] } | null>(null);
   const [showTalentPopup, setShowTalentPopup] = useState<StudySession['triggeredTalents'] | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
 
   // Sync to localStorage
   useEffect(() => {
+    localStorage.setItem('timer_focusDuration', focusDuration.toString());
+    localStorage.setItem('timer_restDuration', restDuration.toString());
+    localStorage.setItem('timer_enableRest', enableRest.toString());
+    localStorage.setItem('timer_isLooping', isLooping.toString());
+    localStorage.setItem('timer_isResting', isResting.toString());
     localStorage.setItem('timer_duration', duration.toString());
     localStorage.setItem('timer_isActive', isActive.toString());
     if (endTime) {
@@ -62,39 +78,55 @@ export const Timer: React.FC<TimerProps> = ({
       localStorage.removeItem('timer_endTime');
     }
     localStorage.setItem('timer_timeLeft', timeLeft.toString());
-  }, [duration, isActive, endTime, timeLeft]);
+  }, [focusDuration, restDuration, enableRest, isLooping, isResting, duration, isActive, endTime, timeLeft]);
 
   const handleComplete = useCallback(() => {
     setIsActive(false);
     setEndTime(null);
-    const session = onComplete(duration);
-    if (session) {
-      // Generate choices from rewardPool
-      const choices: RewardCard[] = [];
-      const pool = [...rewardPool];
-      const count = activeTalents.includes('c1') ? 4 : 3; // Extra Chance
+    
+    if (isResting) {
+      // Finished rest
+      setIsResting(false);
+      setDuration(focusDuration);
+      setTimeLeft(focusDuration * 60);
+      
+      if (onRestComplete) {
+        onRestComplete();
+      }
+      
+      // Automatically start the next loop
+      setIsActive(true);
+      setEndTime(Date.now() + focusDuration * 60 * 1000);
+    } else {
+      // Finished focus
+      const session = onComplete(duration);
+      if (session) {
+        // Generate choices from rewardPool
+        const choices: RewardCard[] = [];
+        const pool = [...rewardPool];
+        const count = activeTalents.includes('c1') ? 4 : 3; // Extra Chance
 
-      for (let i = 0; i < Math.min(count, pool.length); i++) {
-        const totalWeight = pool.reduce((acc, r) => acc + r.weight, 0);
-        let rand = Math.random() * totalWeight;
-        for (let j = 0; j < pool.length; j++) {
-          rand -= pool[j].weight;
-          if (rand <= 0) {
-            choices.push(pool[j]);
-            pool.splice(j, 1);
-            break;
+        for (let i = 0; i < Math.min(count, pool.length); i++) {
+          const totalWeight = pool.reduce((acc, r) => acc + r.weight, 0);
+          let rand = Math.random() * totalWeight;
+          for (let j = 0; j < pool.length; j++) {
+            rand -= pool[j].weight;
+            if (rand <= 0) {
+              choices.push(pool[j]);
+              pool.splice(j, 1);
+              break;
+            }
           }
         }
-      }
 
-      setShowRewards({ session, choices });
-      triggerSimpleConfetti();
-      if (session.isCrit) {
-        setShowCoinRain(true);
+        setShowRewards({ session, choices });
+        triggerSimpleConfetti();
+        if (session.isCrit) {
+          setShowCoinRain(true);
+        }
       }
     }
-    setTimeLeft(duration * 60);
-  }, [duration, onComplete, rewardPool, activeTalents, setShowCoinRain]);
+  }, [duration, isResting, focusDuration, restDuration, enableRest, isLooping, onComplete, onRestComplete, rewardPool, activeTalents, setShowCoinRain]);
 
   useEffect(() => {
     let interval: any = null;
@@ -136,7 +168,35 @@ export const Timer: React.FC<TimerProps> = ({
   const resetTimer = () => {
     setIsActive(false);
     setEndTime(null);
-    setTimeLeft(duration * 60);
+    setIsResting(false);
+    setDuration(focusDuration);
+    setTimeLeft(focusDuration * 60);
+  };
+
+  const applyPreset = (focus: number, rest: number) => {
+    setFocusDuration(focus);
+    setRestDuration(rest);
+    setIsResting(false);
+    setDuration(focus);
+    setTimeLeft(focus * 60);
+    setIsActive(false);
+    setEndTime(null);
+  };
+
+  const handleCustomChange = (focus: number, rest: number) => {
+    const safeFocus = Math.max(1, focus);
+    const safeRest = Math.max(1, rest);
+    setFocusDuration(safeFocus);
+    setRestDuration(safeRest);
+    if (!isActive) {
+      if (isResting) {
+        setDuration(safeRest);
+        setTimeLeft(safeRest * 60);
+      } else {
+        setDuration(safeFocus);
+        setTimeLeft(safeFocus * 60);
+      }
+    }
   };
 
   const handleReroll = () => {
@@ -172,7 +232,7 @@ export const Timer: React.FC<TimerProps> = ({
   };
 
   return (
-    <div className="relative flex flex-col items-center space-y-8">
+    <div className="relative flex flex-col items-center space-y-8 w-full">
       {/* Timer Display */}
       <div className="relative w-full max-w-[320px] sm:max-w-[400px] lg:max-w-[480px] aspect-square">
         <svg viewBox="0 0 320 320" className="w-full h-full transform -rotate-90">
@@ -195,15 +255,19 @@ export const Timer: React.FC<TimerProps> = ({
             strokeDasharray={2 * Math.PI * 150}
             initial={{ strokeDashoffset: (2 * Math.PI * 150) * (1 - timeLeft / ((duration || 25) * 60)) }}
             animate={{ strokeDashoffset: (2 * Math.PI * 150) * (1 - timeLeft / ((duration || 25) * 60)) }}
-            className="text-indigo-500"
+            className={isResting ? "text-emerald-500" : "text-indigo-500"}
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span className="text-6xl sm:text-7xl lg:text-8xl font-black font-mono text-white tracking-tighter">
             {formatTime(timeLeft)}
           </span>
-          <span className="text-slate-500 font-bold uppercase tracking-widest text-xs mt-2">
-            {isActive ? 'Exploring...' : 'Ready to Delve'}
+          <span className={cn(
+            "font-bold uppercase tracking-widest text-xs mt-2 flex items-center gap-2",
+            isResting ? "text-emerald-500" : "text-slate-500"
+          )}>
+            {isResting ? <Coffee size={14} /> : null}
+            {isResting ? (isActive ? 'Resting...' : 'Ready to Rest') : (isActive ? 'Exploring...' : 'Ready to Delve')}
           </span>
         </div>
       </div>
@@ -213,6 +277,7 @@ export const Timer: React.FC<TimerProps> = ({
         <button
           onClick={resetTimer}
           className="p-4 bg-slate-900 text-slate-400 hover:text-white rounded-full border border-slate-800 transition-all"
+          title="Reset Timer"
         >
           <RotateCcw size={24} />
         </button>
@@ -220,7 +285,9 @@ export const Timer: React.FC<TimerProps> = ({
           onClick={toggleTimer}
           className={cn(
             "w-24 h-24 rounded-full flex items-center justify-center transition-all shadow-2xl",
-            isActive ? "bg-slate-900 text-indigo-500 border-2 border-indigo-500" : "bg-indigo-600 text-white hover:bg-indigo-500"
+            isActive 
+              ? (isResting ? "bg-slate-900 text-emerald-500 border-2 border-emerald-500" : "bg-slate-900 text-indigo-500 border-2 border-indigo-500") 
+              : (isResting ? "bg-emerald-600 text-white hover:bg-emerald-500" : "bg-indigo-600 text-white hover:bg-indigo-500")
           )}
         >
           {isActive ? <Pause size={40} fill="currentColor" /> : <Play size={40} fill="currentColor" className="ml-2" />}
@@ -228,26 +295,136 @@ export const Timer: React.FC<TimerProps> = ({
         <button
           onClick={handleComplete}
           className="p-4 bg-slate-900 text-slate-400 hover:text-white rounded-full border border-slate-800 transition-all"
+          title="Skip Session"
         >
           <SkipForward size={24} />
         </button>
       </div>
 
-      {/* Duration Selector */}
-      <div className="flex space-x-4">
-        {[10, 25, 45, 60].map(d => (
-          <button
-            key={d}
-            onClick={() => { setDuration(d); setTimeLeft(d * 60); setIsActive(false); setEndTime(null); }}
-            className={cn(
-              "px-4 py-2 rounded-lg text-sm font-bold transition-all",
-              duration === d ? "bg-slate-800 text-white border border-slate-700" : "text-slate-500 hover:text-slate-300"
-            )}
-          >
-            {d}m
-          </button>
-        ))}
+      {/* Timer Settings & Presets */}
+      {!isFullscreen && (
+        <div className="w-full max-w-md bg-slate-900/50 border border-slate-800 rounded-3xl p-6 space-y-6">
+          <div className="flex items-center justify-between">
+          <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+            <Settings2 size={16} />
+            Timer Settings
+          </h3>
+          <div className="flex items-center gap-4">
+            <label className="flex items-center gap-2 text-sm font-bold text-slate-300 cursor-pointer group">
+              <div className={cn(
+                "w-8 h-5 rounded-full transition-colors relative",
+                enableRest ? "bg-emerald-500" : "bg-slate-700"
+              )}>
+                <div className={cn(
+                  "absolute top-1 left-1 w-3 h-3 rounded-full bg-white transition-transform",
+                  enableRest ? "translate-x-3" : "translate-x-0"
+                )} />
+              </div>
+              <input 
+                type="checkbox" 
+                className="hidden"
+                checked={enableRest}
+                onChange={(e) => {
+                  setEnableRest(e.target.checked);
+                  if (!e.target.checked && isResting) {
+                    setIsResting(false);
+                    setDuration(focusDuration);
+                    setTimeLeft(focusDuration * 60);
+                    setIsActive(false);
+                    setEndTime(null);
+                  }
+                }}
+              />
+              Rest
+            </label>
+            <label className="flex items-center gap-2 text-sm font-bold text-slate-300 cursor-pointer group">
+              <div className={cn(
+                "w-8 h-5 rounded-full transition-colors relative",
+                isLooping ? "bg-indigo-500" : "bg-slate-700"
+              )}>
+                <div className={cn(
+                  "absolute top-1 left-1 w-3 h-3 rounded-full bg-white transition-transform",
+                  isLooping ? "translate-x-3" : "translate-x-0"
+                )} />
+              </div>
+              <input 
+                type="checkbox" 
+                className="hidden"
+                checked={isLooping}
+                onChange={(e) => setIsLooping(e.target.checked)}
+              />
+              <RefreshCw size={14} className={isLooping ? "text-indigo-400" : "text-slate-500"} />
+              Loop
+            </label>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap justify-center gap-3">
+          {enableRest ? (
+            <>
+              <button
+                onClick={() => applyPreset(25, 5)}
+                className={cn(
+                  "px-4 py-2 rounded-xl text-sm font-bold transition-all border",
+                  focusDuration === 25 && restDuration === 5 ? "bg-indigo-600/20 text-indigo-400 border-indigo-500/30" : "bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700 hover:text-white"
+                )}
+              >
+                25 + 5
+              </button>
+              <button
+                onClick={() => applyPreset(50, 10)}
+                className={cn(
+                  "px-4 py-2 rounded-xl text-sm font-bold transition-all border",
+                  focusDuration === 50 && restDuration === 10 ? "bg-indigo-600/20 text-indigo-400 border-indigo-500/30" : "bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700 hover:text-white"
+                )}
+              >
+                50 + 10
+              </button>
+            </>
+          ) : (
+            <>
+              {[10, 25, 45, 60].map(d => (
+                <button
+                  key={d}
+                  onClick={() => applyPreset(d, restDuration)}
+                  className={cn(
+                    "px-4 py-2 rounded-xl text-sm font-bold transition-all border",
+                    focusDuration === d ? "bg-indigo-600/20 text-indigo-400 border-indigo-500/30" : "bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700 hover:text-white"
+                  )}
+                >
+                  {d} min
+                </button>
+              ))}
+            </>
+          )}
+        </div>
+
+        <div className="pt-4 border-t border-slate-800 flex items-center justify-center gap-6">
+          <div className="flex flex-col items-center gap-2">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Focus (min)</span>
+            <input 
+              type="number" 
+              min="1"
+              value={focusDuration} 
+              onChange={(e) => handleCustomChange(parseInt(e.target.value) || 1, restDuration)}
+              className="w-20 bg-slate-950 border border-slate-700 rounded-xl py-2 text-center text-white font-mono focus:outline-none focus:border-indigo-500 transition-colors"
+            />
+          </div>
+          {enableRest && (
+            <div className="flex flex-col items-center gap-2">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Rest (min)</span>
+              <input 
+                type="number" 
+                min="1"
+                value={restDuration} 
+                onChange={(e) => handleCustomChange(focusDuration, parseInt(e.target.value) || 1)}
+                className="w-20 bg-slate-950 border border-slate-700 rounded-xl py-2 text-center text-emerald-400 font-mono focus:outline-none focus:border-emerald-500 transition-colors"
+              />
+            </div>
+          )}
+        </div>
       </div>
+      )}
 
       {/* Reward Modal */}
       <AnimatePresence>
@@ -334,6 +511,20 @@ export const Timer: React.FC<TimerProps> = ({
                           setShowTalentPopup(showRewards.session.triggeredTalents);
                         }
                         setShowRewards(null);
+                        
+                        // Automatically start rest or next loop
+                        if (enableRest) {
+                          setIsResting(true);
+                          setDuration(restDuration);
+                          setTimeLeft(restDuration * 60);
+                          setIsActive(true);
+                          setEndTime(Date.now() + restDuration * 60 * 1000);
+                        } else if (isLooping) {
+                          setDuration(focusDuration);
+                          setTimeLeft(focusDuration * 60);
+                          setIsActive(true);
+                          setEndTime(Date.now() + focusDuration * 60 * 1000);
+                        }
                       }}
                       className={cn(
                         "relative p-5 md:p-6 rounded-2xl md:rounded-3xl border-2 text-left transition-all h-full flex flex-col",

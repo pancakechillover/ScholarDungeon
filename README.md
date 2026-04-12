@@ -1,83 +1,146 @@
-# 📚 学海秘境 (Scholar's Dungeon) - Roguelike 沉浸式学习系统
+# Scholar's Dungeon
 
-> **“将枯燥的知识探索，转化为一场惊心动魄的地牢冒险。”**
+![Scholar's Dungeon](https://img.shields.io/badge/Status-Active-success)
+![License](https://img.shields.io/badge/License-MIT-blue)
+![React](https://img.shields.io/badge/React-18-blue)
+![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue)
+![TailwindCSS](https://img.shields.io/badge/TailwindCSS-Styled-blue)
 
-## 🌌 项目理念：为什么是 Roguelike？
+## 📖 About The Project
 
-传统的学习打卡往往枯燥且难以坚持。**学海秘境**的核心理念是将“学习”这一行为完全抽象为 Roguelike 游戏中的“地牢探索”：
-
-*   **单局学习 = 探索房间**：每一次番茄钟计时，都是你在秘境中深入了一个房间。
-*   **小副本 = 阶段目标**：将大目标拆解为数个关卡，每完成一个阶段即通关一层地牢。
-*   **大副本 = 最终 Boss**：你的长期目标（如雅思、考研、完成论文）就是地牢最深处的领主。
-*   **天赋与金币 = 局外成长**：学习获得的不仅是知识，还有可以提升效率的“圣遗物”和“天赋”，让你在下一局“探索”中更强大。
-
----
-
-## 🎮 功能指南
-
-### 1. 核心探索循环 (The Core Loop)
-*   **秘境计时器**：支持 10-120 分钟自定义。默认 25 分钟（番茄钟）。
-*   **战利品掉落**：每局结束必得 **5~15 金币** 和 **100 经验值**（基础值）。
-*   **三选一奖励卡**：随机抽取增益卡片（如：下局经验+20%、专注药水等）。
-*   **暴击机制**：解锁特定天赋后，结算金币有概率触发 **5 倍暴击**。
-
-### 2. 副本任务系统 (Goal System)
-*   **大副本 (Major Dungeon)**：设定你的终极目标。
-*   **小副本 (Sub-Quest)**：在大副本下创建具体的执行步骤。
-*   **实时追踪**：通过进度条直观查看当前副本的攻略进度。
-
-### 3. 全局天赋树 (Talent Tree)
-三大支路决定你的进化方向：
-*   **【真理之冠】**：侧重等级与效率。解锁“思维润滑”、“心流体验-α”等，大幅提升经验获取。
-*   **【黄金律法】**：专注于资源获取。提升基础金币收益，解锁连续通关的“赏金敕令”。
-*   **【命运骰子】**：增强随机性。增加战利品选项，提供每日洗牌机会，触发金币暴击。
-
-### 4. 局外养成与商店 (Meta Progression)
-*   **等级系统**：随着经验提升，你将获得宝贵的天赋点。
-*   **欲望清单 (Gacha)**：自定义你的奖励池。支持“普通抽奖”与“一番赏”模式。
-*   **战况统计**：通过热力图（Heatmap）查看你的学习密度。
+**Scholar's Dungeon** is a gamified productivity application that transforms your study or work sessions into an epic RPG adventure. By utilizing the Pomodoro technique, users can focus on their tasks to earn experience points (EXP), gold, and mana, leveling up their character and unlocking new mystical dungeons to explore. 
 
 ---
 
-## 📈 游戏阶段收益与成长指导
+## ✨ Core Features
 
-本系统鼓励长期稳定的学习产出。以下是不同阶段在不同学习强度下的收益预估表（假设单局为 30 分钟）：
+### ⏱️ Gamified Focus Timer
+- **Customizable Sessions:** Set your focus and rest durations to match your workflow.
+- **Dynamic States:** Seamlessly transition between "Focusing" (Combat/Exploration) and "Resting" (Camp) states.
+- **Session Tracking:** Automatically tracks completed sessions and calculates rewards based on the time spent.
+- **Auto-Looping:** Automatically starts the rest timer after claiming rewards, and seamlessly transitions into the next focus session when rest is complete.
 
-| 阶段 | 单局经验 | 单局金币 | 4h (8局) 经验 | 4h (8局) 金币 | 6h (12局) 经验 | 6h (12局) 金币 | 8h (16局) 经验 | 8h (16局) 金币 | 连胜天数 |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **前期** (0天赋) | 100 | 10 | 800 | 80 | 1200 | 120 | 1600 | 160 | - |
-| **中期** (解锁T1) | 110 | 12 | 880 | 96 | 1320 | 144 | 1760 | 192 | - |
-| **中后期** (解锁心流) | 110 | 12 | 880 | 96 | 1320 | 144 | **1960** | **242** | - |
-| **大后期** (解锁无伤) | 110 | 12 | 880 | 96 | 1320 | 144 | 1960 | 242 | 1 |
-| | 110 | 12 | **920** | **116** | 1360 | 164 | 2000 | 262 | 2 |
-| | 110 | 12 | **940** | **126** | 1380 | 174 | 2020 | 272 | 3 |
-| | 110 | 12 | **960** | **136** | 1400 | 184 | 2040 | 282 | 4 |
-| | 110 | 12 | **980** | **146** | 1420 | 194 | 2060 | 292 | 5 |
-| | 110 | 12 | **1000** | **156** | 1440 | 204 | 2080 | 302 | 6 |
-| | 110 | 12 | **1020** | **166** | 1460 | 214 | 2100 | 312 | 7 |
-| | 110 | 12 | **1040** | **176** | 1480 | 224 | 2120 | 322 | 8 |
-| | 110 | 12 | **1060** | **186** | 1500 | 234 | 2140 | 332 | 9 |
-| | 110 | 12 | **2080** | **296** | **2520** | **344** | **3160** | **442** | **10** |
+### ⚔️ RPG Progression System
+- **Level Up:** Gain EXP from focusing to level up your "Scholar" character.
+- **Resource Gathering:** Earn Gold and Mana to unlock new areas and features.
+- **Account Status:** View your current level, stats, and progress in a beautifully designed dashboard.
 
-### 💡 收益逻辑说明：
-1.  **中期 (T1)**：解锁“思维润滑”与“点金秘术”，单局收益获得永久提升（经验+10%, 金币+2）。
-2.  **中后期 (心流)**：解锁“心流体验”，每日完成 16 局（8小时）将获得巨额额外奖励（+200经验, +50金币）。
-3.  **大后期 (无伤)**：解锁“完美学说”与“赏金敕令”，开启 10 天循环奖励。
-    *   **连胜加成**：每天完成 8 局，额外奖励随天数增加（经验 +20*n, 金币 +10*n）。
-    *   **第 10 天大奖**：完成 8 局即可获得终极爆发奖励（+1000经验, +100金币），随后重置循环。
+### 🗺️ Dungeon Exploration
+- **Unlockable Areas:** Spend Gold and Mana to unlock new dungeons (e.g., *The Whispering Library*, *The Clockwork Tower*).
+- **Major Dungeons (Bosses):** Face ultimate challenges that require high levels and specific resources to conquer.
+- **Visual Progression:** Each dungeon features unique lore, requirements, and visual indicators of your exploration progress.
 
----
+### ☁️ The Astral Archives - Cloud Sync
+- **Cross-Device Play:** Sync your save data across multiple devices using a unique "Brave's Secret Code".
+- **Smart Conflict Resolution:** Automatically detects version conflicts between local and cloud saves, allowing the user to choose whether to "Keep Local" or "Download Cloud".
+- **Auto-Sync:** Automatically inscribes your progress to the cloud after every successful study session.
+- **Secure & Private:** Uses a custom code-based authentication system to partition and protect your data.
 
-## ⚖️ 奖励平衡参考 (建议设置)
-
-为了保证系统的长期生命力，建议如下设置奖励价值：
-
-| 奖励等级 | 建议金币价格 | 现实对应示例 |
-| :--- | :--- | :--- |
-| **R (常规)** | 100 - 200 | 喝一杯奶茶 / 玩 1 小时游戏 |
-| **SR (稀有)** | 500 - 800 | 看一场电影 / 吃一顿大餐 |
-| **SSR (传说)** | 2000+ | 买一个心仪已久的乐高 / 旅行一天 |
+### 🎨 Immersive UI/UX
+- **Mystical Aesthetic:** A dark, magical theme with glowing accents, glassmorphism effects, and smooth animations.
+- **Responsive Design:** Fully optimized for both desktop and mobile experiences.
 
 ---
 
-**“勇士，欢迎来到学海秘境。你的笔杆就是你的长剑，书本就是你的盾牌。开始你的攻略吧！”**
+## 📖 User Manual & Recommended Settings
+
+### How to Play
+1. **Choose Your Destination:** Go to the "Dungeons" tab and select an unlocked dungeon to explore. Each dungeon represents a study/work session.
+2. **Start the Timer:** Head to the "Explore" tab. Set your desired focus time and start the timer. Avoid leaving the page or losing focus!
+3. **Claim Rewards:** Upon completing a session, you will earn EXP, Coins, and potentially rare items. 
+4. **Upgrade & Unlock:** Use your earned resources in the "Talents" tree to gain passive buffs, or visit the "Shop" to buy items and unlock new Dungeons.
+5. **Cloud Sync:** Go to "Settings" -> "Account Status" -> "Cloud Sync". Enter a unique "Brave's Secret Code" to back up your progress.
+
+### Recommended Balanced Settings
+To get the best experience without burning out or breaking the game economy, we recommend the following settings:
+
+- **Focus Duration:** 
+  - *Classic Pomodoro:* 25 minutes focus + 5 minutes rest. Best for reading or standard tasks.
+  - *Deep Work:* 50 minutes focus + 10 minutes rest. Best for coding, writing, or complex problem-solving.
+- **Resource Management:** 
+  - Do not spend all your coins on the Gacha early on. Save your gold to unlock the first few Sub-Dungeons, which yield better base rewards.
+- **Talent Priority:** 
+  - Prioritize the **"Wealth"** or **"Wisdom"** branches early on to increase your passive Coin and EXP gain. This will snowball your progression.
+
+---
+
+## 🛠️ Tech Stack
+
+### Frontend
+- **[React 18](https://reactjs.org/)**: UI Library
+- **[Vite](https://vitejs.dev/)**: Fast build tool and development server
+- **[TypeScript](https://www.typescriptlang.org/)**: Static typing for robust code
+- **[Tailwind CSS](https://tailwindcss.com/)**: Utility-first CSS framework for styling
+- **[Framer Motion](https://www.framer.com/motion/)**: For fluid, physics-based animations
+- **[Lucide React](https://lucide.dev/)**: Beautiful, consistent icon set
+
+### Backend & Infrastructure
+- **[Node.js](https://nodejs.org/) & [Express](https://expressjs.com/)**: Custom server for handling API requests
+- **[Redis](https://redis.io/)**: High-performance key-value store used for the Cloud Sync backend (via `redis` npm package)
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js (v18 or higher)
+- npm or yarn
+- A running Redis instance (Local or Cloud, e.g., Upstash, Vercel KV)
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/scholars-dungeon.git
+   cd scholars-dungeon
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Environment Setup**
+   Create a `.env` file in the root directory and add your Redis connection URL:
+   ```env
+   # .env
+   REDIS_URL=redis://default:your_password@your_redis_host:port
+   ```
+
+4. **Run the development server**
+   ```bash
+   npm run dev
+   ```
+   The app will be available at `http://localhost:3000`.
+
+### Building for Production
+```bash
+npm run build
+npm start
+```
+
+---
+
+## 📂 Project Structure
+
+```text
+├── src/
+│   ├── components/       # Reusable UI components (CloudSyncModal, Timer, etc.)
+│   ├── hooks/            # Custom React hooks (useGameState, useCloudSync)
+│   ├── lib/              # Utility functions
+│   ├── types.ts          # Global TypeScript interfaces and types
+│   ├── App.tsx           # Main application component
+│   ├── main.tsx          # React entry point
+│   └── index.css         # Global styles and Tailwind configuration
+├── server.ts             # Express backend server and Redis API logic
+├── package.json          # Project dependencies and scripts
+└── vite.config.ts        # Vite configuration
+```
+
+---
+
+## 🤝 Contributing
+Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/yourusername/scholars-dungeon/issues).
+
+## 📄 License
+This project is licensed under the MIT License.
