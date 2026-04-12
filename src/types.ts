@@ -144,6 +144,7 @@ export interface UserState {
   theme?: string;
   soundEnabled?: boolean;
   soundVolume?: number;
+  defaultMarkdownEnabled?: boolean;
   // Editable Pools
   rewardPool: RewardCard[];
   shopItems: ShopItem[];
@@ -154,6 +155,14 @@ export interface UserState {
     type: 'dungeon' | 'quest' | 'achievement';
     rewards: DungeonReward[];
   } | null;
+  dailyLogs?: {
+    [date: string]: {
+      rating: number;
+      reflection: string;
+    };
+  };
+  lastUpdated?: string;
+  secretCode?: string;
 }
 
 export interface StudySession {

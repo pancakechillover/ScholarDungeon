@@ -5,21 +5,46 @@ import {
   startOfMonth, endOfMonth, startOfYear, endOfYear, addMonths, subMonths, addYears, subYears,
   parseISO
 } from 'date-fns';
-import { StudySession } from '../types';
+import { StudySession, UserState } from '../types';
 import { cn } from '../lib/utils';
-import { BarChart2, Zap, Coins, ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
+import { BarChart2, Zap, Coins, ChevronLeft, ChevronRight, Calendar, Star, StarHalf, Edit2, Save, X, Eye, EyeOff, LineChart as LineChartIcon } from 'lucide-react';
 import { PageHeader } from './PageHeader';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, Legend, LineChart, Line, CartesianGrid } from 'recharts';
+import Markdown from 'react-markdown';
 
 interface StatsProps {
-  history: StudySession[];
+  state: UserState;
+  saveDailyLog: (date: string, rating: number, reflection: string) => void;
 }
 
-export const Stats: React.FC<StatsProps> = ({ history }) => {
+export const Stats: React.FC<StatsProps> = ({ state, saveDailyLog }) => {
+  const history = state.history;
+  const dailyLogs = state.dailyLogs || {};
+  
   const [dailyDate, setDailyDate] = useState(new Date());
   const [weeklyDate, setWeeklyDate] = useState(new Date());
   const [heatmapMode, setHeatmapMode] = useState<'30days' | 'month' | 'year'>('30days');
+  const [heatmapMetric, setHeatmapMetric] = useState<'time' | 'efficiency'>('time');
   const [heatmapDate, setHeatmapDate] = useState(new Date());
+
+  const [isEditingLog, setIsEditingLog] = useState(false);
+  const [editRating, setEditRating] = useState(0);
+  const [editReflection, setEditReflection] = useState('');
+  const [isMarkdownPreview, setIsMarkdownPreview] = useState(true);
+
+  const dailyDateStr = format(dailyDate, 'yyyy-MM-dd');
+  const currentLog = dailyLogs[dailyDateStr];
+
+  const startEditing = () => {
+    setEditRating(currentLog?.rating || 0);
+    setEditReflection(currentLog?.reflection || '');
+    setIsEditingLog(true);
+  };
+
+  const saveLog = () => {
+    saveDailyLog(dailyDateStr, editRating, editReflection);
+    setIsEditingLog(false);
+  };
 
   const dailyInputRef = useRef<HTMLInputElement>(null);
   const weeklyInputRef = useRef<HTMLInputElement>(null);
@@ -55,9 +80,11 @@ export const Stats: React.FC<StatsProps> = ({ history }) => {
       maxPeriod = p;
     }
   });
-  const highestEnergyPrompt = maxCount > 0 
-    ? `Your highest energy period today is ${maxPeriod}!` 
-    : "No sessions recorded during main periods today.";
+  const highestEnergyPrompt = dailySessions.length > 0 
+    ? (maxCount > 0 
+        ? `Your highest energy period today is ${maxPeriod}!` 
+        : "No sessions recorded during main periods today.")
+    : "The archives are silent for today. Embark on a new journey to begin your record.";
 
   // --- Weekly Data ---
   const weekStart = startOfWeek(weeklyDate, { weekStartsOn: 1 });
@@ -90,18 +117,27 @@ export const Stats: React.FC<StatsProps> = ({ history }) => {
   }
 
   const getIntensity = (date: Date) => {
-    const count = history.filter(s => isSameDay(new Date(s.timestamp), date)).length;
-    if (count === 0) return 'bg-slate-800/50';
-    if (count < 2) return 'bg-indigo-900';
-    if (count < 4) return 'bg-indigo-700';
-    if (count < 8) return 'bg-indigo-500';
-    return 'bg-indigo-300';
+    if (heatmapMetric === 'time') {
+      const count = history.filter(s => isSameDay(new Date(s.timestamp), date)).length;
+      if (count === 0) return 'bg-slate-800/50';
+      if (count < 2) return 'bg-indigo-500/20';
+      if (count < 4) return 'bg-indigo-500/40';
+      if (count < 8) return 'bg-indigo-500/70';
+      return 'bg-indigo-500';
+    } else {
+      const log = dailyLogs[format(date, 'yyyy-MM-dd')];
+      if (!log || log.rating === 0) return 'bg-slate-800/50';
+      if (log.rating < 2) return 'bg-amber-500/20';
+      if (log.rating < 3.5) return 'bg-amber-500/50';
+      if (log.rating < 4.5) return 'bg-amber-500/80';
+      return 'bg-amber-500';
+    }
   };
 
   return (
     <div className="p-6 space-y-8">
       <PageHeader 
-        title="Chronicle"
+        title="Record"
         description="Your journey through the dungeon"
         icon={BarChart2}
         stats={[
@@ -113,8 +149,8 @@ export const Stats: React.FC<StatsProps> = ({ history }) => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         
         {/* Daily Activity */}
-        <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800 flex flex-col">
-          <div className="flex items-center justify-between mb-6">
+        <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800 flex flex-col space-y-6">
+          <div className="flex items-center justify-between">
             <h3 className="text-lg font-bold text-white">Daily Activity</h3>
             <div className="flex items-center gap-2 bg-slate-800/50 rounded-lg p-1">
               <button onClick={() => setDailyDate(subDays(dailyDate, 1))} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-white"><ChevronLeft size={16} /></button>
@@ -136,7 +172,8 @@ export const Stats: React.FC<StatsProps> = ({ history }) => {
               <button onClick={() => setDailyDate(addDays(dailyDate, 1))} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-white"><ChevronRight size={16} /></button>
             </div>
           </div>
-          <div className="h-64 mb-4">
+
+          <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={dailyData}>
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10 }} />
@@ -153,14 +190,119 @@ export const Stats: React.FC<StatsProps> = ({ history }) => {
               </BarChart>
             </ResponsiveContainer>
           </div>
-          <div className="mt-auto p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-xl text-center">
-            <p className="text-sm font-bold text-indigo-400">{highestEnergyPrompt}</p>
+
+          {/* Daily Log Section */}
+          <div className="bg-slate-950/50 border border-slate-800/50 rounded-2xl p-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Star className="text-amber-400 fill-amber-400" size={16} />
+                <span className="text-xs font-black text-slate-500 uppercase tracking-widest">Efficiency & Reflection</span>
+              </div>
+              {!isEditingLog ? (
+                <button 
+                  onClick={startEditing}
+                  className="p-1.5 text-slate-500 hover:text-indigo-400 hover:bg-indigo-500/10 rounded-lg transition-all"
+                >
+                  <Edit2 size={14} />
+                </button>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={() => setIsMarkdownPreview(!isMarkdownPreview)}
+                    className={cn(
+                      "p-1.5 rounded-lg transition-all",
+                      isMarkdownPreview ? "text-indigo-400 bg-indigo-500/10" : "text-slate-500 hover:text-white"
+                    )}
+                  >
+                    {isMarkdownPreview ? <Eye size={14} /> : <EyeOff size={14} />}
+                  </button>
+                  <button 
+                    onClick={saveLog}
+                    className="p-1.5 text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-all"
+                  >
+                    <Save size={14} />
+                  </button>
+                  <button 
+                    onClick={() => setIsEditingLog(false)}
+                    className="p-1.5 text-rose-400 hover:bg-rose-500/10 rounded-lg transition-all"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {isEditingLog ? (
+              <div className="space-y-4">
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: 5 }).map((_, i) => {
+                    const val = i + 1;
+                    const isFull = editRating >= val;
+                    const isHalf = editRating >= val - 0.5 && editRating < val;
+                    return (
+                      <button
+                        key={val}
+                        onClick={() => setEditRating(isFull ? val - 0.5 : isHalf ? val - 1 : val)}
+                        className="p-0.5 transition-transform hover:scale-110"
+                      >
+                        {isFull ? (
+                          <Star size={16} className="text-amber-400 fill-amber-400" />
+                        ) : isHalf ? (
+                          <StarHalf size={16} className="text-amber-400 fill-amber-400" />
+                        ) : (
+                          <Star size={16} className="text-slate-700" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className={cn("grid gap-4", isMarkdownPreview ? "grid-cols-1" : "grid-cols-1")}>
+                  <textarea
+                    value={editReflection}
+                    onChange={(e) => setEditReflection(e.target.value)}
+                    className="w-full h-32 bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-indigo-500 transition-all resize-none"
+                    placeholder="Reflect on your day..."
+                  />
+                  {isMarkdownPreview && editReflection && (
+                    <div className="p-3 bg-slate-900/50 border border-slate-800 rounded-xl overflow-y-auto max-h-32 custom-scrollbar">
+                      <div className="prose prose-invert prose-sm max-w-none">
+                        <Markdown>{editReflection}</Markdown>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="flex items-center gap-1">
+                  {currentLog ? (
+                    Array.from({ length: 5 }).map((_, i) => {
+                      const val = i + 1;
+                      if (val <= currentLog.rating) return <Star key={i} size={16} className="text-amber-400 fill-amber-400" />;
+                      if (val - 0.5 === currentLog.rating) return <StarHalf key={i} size={16} className="text-amber-400 fill-amber-400" />;
+                      return <Star key={i} size={16} className="text-slate-800" />;
+                    })
+                  ) : (
+                    <span className="text-xs text-slate-600 italic">No rating recorded</span>
+                  )}
+                </div>
+                <div className="text-sm text-slate-300 leading-relaxed">
+                  {currentLog?.reflection ? (
+                    <div className="prose prose-invert prose-sm max-w-none">
+                      <Markdown>{currentLog.reflection}</Markdown>
+                    </div>
+                  ) : (
+                    <p className="italic text-slate-600">The day's reflections are yet to be chronicled.</p>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Weekly Activity */}
-        <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800 flex flex-col">
-          <div className="flex items-center justify-between mb-6">
+        <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800 flex flex-col space-y-6">
+          <div className="flex items-center justify-between">
             <h3 className="text-lg font-bold text-white">Weekly Activity</h3>
             <div className="flex items-center gap-2 bg-slate-800/50 rounded-lg p-1">
               <button onClick={() => setWeeklyDate(subWeeks(weeklyDate, 1))} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-white"><ChevronLeft size={16} /></button>
@@ -182,29 +324,84 @@ export const Stats: React.FC<StatsProps> = ({ history }) => {
               <button onClick={() => setWeeklyDate(addWeeks(weeklyDate, 1))} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-white"><ChevronRight size={16} /></button>
             </div>
           </div>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={weeklyData}>
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '8px' }}
-                  itemStyle={{ color: '#e2e8f0' }}
-                  cursor={{ fill: '#1e293b' }}
-                />
-                <Legend wrapperStyle={{ fontSize: '12px' }} />
-                <Bar dataKey="Morning" stackId="a" fill="#fde047" />
-                <Bar dataKey="Afternoon" stackId="a" fill="#f97316" />
-                <Bar dataKey="Night" stackId="a" fill="#6366f1" />
-                <Bar dataKey="Other" stackId="a" fill="#64748b" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+          
+          <div className="space-y-8">
+            <div className="h-40">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={weeklyData}>
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10 }} />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '8px' }}
+                    itemStyle={{ color: '#e2e8f0' }}
+                    cursor={{ fill: '#1e293b' }}
+                  />
+                  <Bar dataKey="Morning" stackId="a" fill="#fde047" />
+                  <Bar dataKey="Afternoon" stackId="a" fill="#f97316" />
+                  <Bar dataKey="Night" stackId="a" fill="#6366f1" />
+                  <Bar dataKey="Other" stackId="a" fill="#64748b" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <LineChartIcon className="text-indigo-400" size={16} />
+                <span className="text-xs font-black text-slate-500 uppercase tracking-widest">Efficiency Trend</span>
+              </div>
+              <div className="h-32">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={weeklyDays.map(date => ({
+                    name: format(date, 'EEE'),
+                    efficiency: dailyLogs[format(date, 'yyyy-MM-dd')]?.rating || 0
+                  }))}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10 }} />
+                    <YAxis hide domain={[0, 5]} />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '8px' }}
+                      itemStyle={{ color: '#6366f1' }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="efficiency" 
+                      stroke="#6366f1" 
+                      strokeWidth={3} 
+                      dot={{ fill: '#6366f1', strokeWidth: 2, r: 4 }}
+                      activeDot={{ r: 6, strokeWidth: 0 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Study Heatmap */}
         <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800 lg:col-span-2">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-            <h3 className="text-lg font-bold text-white">Study Heatmap</h3>
+            <div className="flex items-center gap-4">
+              <h3 className="text-lg font-bold text-white">Heatmap</h3>
+              <div className="flex bg-slate-800/50 p-1 rounded-lg">
+                <button
+                  onClick={() => setHeatmapMetric('time')}
+                  className={cn(
+                    "px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-md transition-all",
+                    heatmapMetric === 'time' ? "bg-indigo-600 text-white" : "text-slate-400 hover:text-slate-200"
+                  )}
+                >
+                  Study Time
+                </button>
+                <button
+                  onClick={() => setHeatmapMetric('efficiency')}
+                  className={cn(
+                    "px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-md transition-all",
+                    heatmapMetric === 'efficiency' ? "bg-amber-600 text-white" : "text-slate-400 hover:text-slate-200"
+                  )}
+                >
+                  Efficiency
+                </button>
+              </div>
+            </div>
             <div className="flex flex-wrap items-center gap-2 sm:gap-4">
               <div className="flex bg-slate-800/50 p-1 rounded-lg w-full sm:w-auto overflow-x-auto">
                 {(['30days', 'month', 'year'] as const).map(mode => (
@@ -261,30 +458,29 @@ export const Stats: React.FC<StatsProps> = ({ history }) => {
           </div>
           
           <div className={cn(
-            "gap-[2vw] sm:gap-1.5",
-            (heatmapMode === '30days' || heatmapMode === 'month') ? "grid grid-cols-10 w-full" : "flex flex-wrap justify-center gap-1"
+            "gap-[2vw] sm:gap-1.5 grid w-full",
+            heatmapMode === 'year' 
+              ? "grid-cols-[repeat(15,minmax(0,1fr))] md:grid-cols-[repeat(30,minmax(0,1fr))] max-w-4xl mx-auto" 
+              : "grid-cols-10"
           )}>
             {heatmapDays.map((date, i) => (
               <div
                 key={i}
                 title={`${format(date, 'MMM d, yyyy')}: ${history.filter(s => isSameDay(new Date(s.timestamp), date)).length} sessions`}
                 className={cn(
-                  "rounded-sm transition-colors aspect-square", 
-                  getIntensity(date),
-                  heatmapMode === 'year' 
-                    ? "w-[12px] sm:w-[14px]" 
-                    : "w-full"
+                  "rounded-sm transition-colors aspect-square w-full", 
+                  getIntensity(date)
                 )}
               />
             ))}
           </div>
           <div className="mt-6 flex items-center justify-end space-x-2 text-[10px] text-slate-500 uppercase font-bold">
             <span>Less</span>
-            <div className="w-3 h-3 bg-slate-800/50 rounded-sm" />
-            <div className="w-3 h-3 bg-indigo-900 rounded-sm" />
-            <div className="w-3 h-3 bg-indigo-700 rounded-sm" />
-            <div className="w-3 h-3 bg-indigo-500 rounded-sm" />
-            <div className="w-3 h-3 bg-indigo-300 rounded-sm" />
+            <div className={cn("w-3 h-3 rounded-sm", heatmapMetric === 'time' ? "bg-slate-800/50" : "bg-slate-800/50")} />
+            <div className={cn("w-3 h-3 rounded-sm", heatmapMetric === 'time' ? "bg-indigo-500/20" : "bg-amber-500/20")} />
+            <div className={cn("w-3 h-3 rounded-sm", heatmapMetric === 'time' ? "bg-indigo-500/40" : "bg-amber-500/50")} />
+            <div className={cn("w-3 h-3 rounded-sm", heatmapMetric === 'time' ? "bg-indigo-500/70" : "bg-amber-500/80")} />
+            <div className={cn("w-3 h-3 rounded-sm", heatmapMetric === 'time' ? "bg-indigo-500" : "bg-amber-500")} />
             <span>More</span>
           </div>
         </div>

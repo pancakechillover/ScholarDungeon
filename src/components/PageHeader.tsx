@@ -43,8 +43,8 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
             <div key={idx} className="flex-1 sm:flex-none px-3 py-2 sm:px-4 sm:py-2 bg-slate-900/50 rounded-2xl border border-slate-800 flex items-center gap-2 sm:gap-3 min-w-0">
               <stat.icon className={cn(stat.color, "w-4 h-4 sm:w-6 sm:h-6 shrink-0")} />
               <div className="min-w-0">
-                <p className="text-[8px] sm:text-xs font-bold text-slate-500 uppercase tracking-widest truncate">{stat.label}</p>
-                <p className="text-base sm:text-xl font-black text-white leading-none truncate">{stat.value}</p>
+                <p className="text-[8px] sm:text-xs font-bold text-white uppercase tracking-widest truncate">{stat.label}</p>
+                <p className="text-base sm:text-xl font-black text-slate-500 leading-none truncate">{stat.value}</p>
               </div>
             </div>
           ))}

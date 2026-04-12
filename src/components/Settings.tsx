@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { RewardCard, ShopItem, GachaPool, Rarity } from '../types';
 import { INITIAL_GACHA } from '../constants';
-import { Plus, Trash2, Save, Edit2, X, ChevronRight, Coins, Zap, Sparkles, Trophy, Timer as TimerIcon, Package, Flame, AlertTriangle, Scroll, Volume2, VolumeX, Sun, Moon, Settings as SettingsIcon, ShoppingBag, Trees, Waves, Database, Download, Upload, Target, Gift, User, Sword } from 'lucide-react';
+import { Plus, Trash2, Save, Edit2, X, ChevronRight, Coins, Zap, Sparkles, Trophy, Timer as TimerIcon, Package, Flame, AlertTriangle, Scroll, Volume2, VolumeX, Sun, Moon, Settings as SettingsIcon, ShoppingBag, Trees, Waves, Database, Download, Upload, Target, Gift, User, Sword, Eye, Palette, Check } from 'lucide-react';
 import { cn, getXPForLevel, getDefaultRewardForLevel } from '../lib/utils';
 import { playSound } from '../lib/sound';
 
@@ -296,6 +296,7 @@ const GeneralSettings = ({ state, setState, setShowClearConfirm }: { state: any,
 
   const soundEnabled = state.soundEnabled ?? true;
   const soundVolume = state.soundVolume ?? 0.5;
+  const defaultMarkdownEnabled = state.defaultMarkdownEnabled ?? true;
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newVolume = parseFloat(e.target.value);
@@ -435,6 +436,41 @@ const GeneralSettings = ({ state, setState, setShowClearConfirm }: { state: any,
               />
             </div>
           )}
+        </div>
+      </div>
+
+      <div className="space-y-6 pt-6 border-t border-slate-800">
+        <div className="flex items-center gap-2 text-indigo-400 mb-6">
+          <Eye size={18} />
+          <h4 className="font-bold uppercase text-sm tracking-widest">Features</h4>
+        </div>
+
+        <div className="space-y-4">
+          <div className="flex items-center justify-between p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
+            <div className="flex items-center gap-3">
+              <div className={cn("p-2 rounded-xl", defaultMarkdownEnabled ? "bg-indigo-500/10 text-indigo-400" : "bg-slate-800 text-slate-500")}>
+                <Eye size={20} />
+              </div>
+              <div>
+                <div className="font-bold text-white">Default Markdown</div>
+                <div className="text-xs text-slate-500">Enable Markdown in Daily Reflection by default</div>
+              </div>
+            </div>
+            <button
+              onClick={() => setState(prev => ({ ...prev, defaultMarkdownEnabled: !defaultMarkdownEnabled }))}
+              className={cn(
+                "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
+                defaultMarkdownEnabled ? "bg-indigo-500" : "bg-slate-700"
+              )}
+            >
+              <span
+                className={cn(
+                  "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+                  defaultMarkdownEnabled ? "translate-x-6" : "translate-x-1"
+                )}
+              />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -768,7 +804,7 @@ export const Settings: React.FC<SettingsProps> = ({
                       defaultAmount={100}
                       onAdd={(amount) => setState(prev => ({ ...prev, coins: prev.coins + amount }))}
                       onSub={(amount) => setState(prev => ({ ...prev, coins: Math.max(0, prev.coins - amount) }))}
-                      icon={<Coins size={14} className="text-amber-400" />}
+                      icon={<Coins size={24} className="text-amber-400" />}
                     />
                     <DevResourceControl 
                       label="XP" 
@@ -776,35 +812,35 @@ export const Settings: React.FC<SettingsProps> = ({
                       defaultAmount={500}
                       onAdd={(amount) => addXP(amount)}
                       onSub={(amount) => setState(prev => ({ ...prev, xp: Math.max(0, prev.xp - amount) }))}
-                      icon={<Zap size={14} className="text-indigo-400" />}
+                      icon={<Zap size={24} className="text-indigo-400" />}
                     />
                     <DevResourceControl 
                       label="Medals" 
                       value={state.deathDefyingMedals} 
                       onAdd={(amount) => setState(prev => ({ ...prev, deathDefyingMedals: prev.deathDefyingMedals + amount }))}
                       onSub={(amount) => setState(prev => ({ ...prev, deathDefyingMedals: Math.max(0, prev.deathDefyingMedals - amount) }))}
-                      icon={<Trophy size={14} className="text-amber-500" />}
+                      icon={<Trophy size={24} className="text-amber-500" />}
                     />
                     <DevResourceControl 
                       label="Streak" 
                       value={state.streak} 
                       onAdd={(amount) => setState(prev => ({ ...prev, streak: prev.streak + amount }))}
                       onSub={(amount) => setState(prev => ({ ...prev, streak: Math.max(0, prev.streak - amount) }))}
-                      icon={<Flame size={14} className="text-orange-500" />}
+                      icon={<Flame size={24} className="text-orange-500" />}
                     />
                     <DevResourceControl 
                       label="Talent Pt" 
                       value={state.talentPoints} 
                       onAdd={(amount) => setState(prev => ({ ...prev, talentPoints: prev.talentPoints + amount }))}
                       onSub={(amount) => setState(prev => ({ ...prev, talentPoints: Math.max(0, prev.talentPoints - amount) }))}
-                      icon={<Zap size={14} className="text-indigo-400" />}
+                      icon={<Zap size={24} className="text-indigo-400" />}
                     />
                     <DevResourceControl 
                       label="Shards" 
                       value={state.talentShards} 
                       onAdd={(amount) => setState(prev => ({ ...prev, talentShards: prev.talentShards + amount }))}
                       onSub={(amount) => setState(prev => ({ ...prev, talentShards: Math.max(0, prev.talentShards - amount) }))}
-                      icon={<Sparkles size={14} className="text-indigo-300" />}
+                      icon={<Sparkles size={24} className="text-indigo-300" />}
                     />
                   </div>
                 </div>
@@ -944,7 +980,7 @@ const DevResourceControl = ({ label, value, onAdd, onSub, icon, defaultAmount = 
       <div className="flex items-center justify-between">
         <span className="text-xs font-black text-slate-500 uppercase tracking-[0.2em]">{label}</span>
         <div className="p-3 bg-slate-900/50 rounded-xl">
-          {React.cloneElement(icon as React.ReactElement, { size: 24 })}
+          {icon}
         </div>
       </div>
       <div className="text-4xl font-black text-white tracking-tighter">

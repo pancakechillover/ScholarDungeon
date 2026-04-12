@@ -26,7 +26,8 @@ import {
   HelpCircle,
   CheckCircle2,
   FolderPlus,
-  Plus
+  Plus,
+  Calendar
 } from 'lucide-react';
 import { Timer } from './components/Timer';
 import { DungeonManager } from './components/DungeonManager';
@@ -36,16 +37,19 @@ import { Shop } from './components/Shop';
 import { Stats } from './components/Stats';
 import { Settings } from './components/Settings';
 import { RewardHistory } from './components/RewardHistory';
+import { DailySummaryModal } from './components/DailySummaryModal';
 import { CoinRain } from './components/CoinRain';
 import { GachaResultModal } from './components/GachaResultModal';
 import { PageHeader } from './components/PageHeader';
 import { useGameState } from './hooks/useGameState';
+import { useCloudSync } from './hooks/useCloudSync';
 import { triggerSimpleConfetti } from './lib/effects';
 import { TALENTS } from './constants';
 import { TalentIcon } from './components/TalentIcon';
 import { cn, getXPForLevel } from './lib/utils';
 import { playSound } from './lib/sound';
 import { StudySession, Dungeon, RewardCard, MajorDungeon, DungeonReward } from './types';
+import { CloudSyncModal } from './components/CloudSyncModal';
 
 const isTalentLevel = (lvl: number) => {
   if (lvl <= 4) return true;
@@ -89,6 +93,8 @@ function App() {
   const [showXPGuide, setShowXPGuide] = useState(false);
   const [showCoinGuide, setShowCoinGuide] = useState(false);
   const [showTalentGuide, setShowTalentGuide] = useState(false);
+  const [showDailySummary, setShowDailySummary] = useState(false);
+  const [showCloudSync, setShowCloudSync] = useState(false);
   
   const { 
     state, 
@@ -110,8 +116,18 @@ function App() {
     reorderSubDungeon,
     finalizeMajorDungeon,
     updateQuests,
-    claimQuestReward
+    claimQuestReward,
+    saveDailyLog
   } = useGameState();
+
+  const {
+    isSyncing,
+    syncError,
+    conflictData,
+    syncToCloud,
+    resolveConflict,
+    fetchFromCloud
+  } = useCloudSync(state, setState, setDungeons, setMajorDungeons);
 
   React.useEffect(() => {
     if (state.theme) {
@@ -323,12 +339,12 @@ function App() {
 
   const navItems = [
     { id: 'dashboard', label: 'Sanctum', icon: LayoutDashboard },
-    { id: 'explore', label: 'Explore', icon: TimerIcon },
-    { id: 'vault', label: 'Vault', icon: Package },
     { id: 'dungeons', label: 'Dungeons', icon: Sword },
+    { id: 'explore', label: 'Explore', icon: TimerIcon },
     { id: 'talents', label: 'Talents', icon: Zap },
     { id: 'shop', label: 'Merchant', icon: ShoppingBag },
-    { id: 'stats', label: 'Chronicle', icon: BarChart3 },
+    { id: 'vault', label: 'Vault', icon: Package },
+    { id: 'stats', label: 'Record', icon: BarChart3 },
     { id: 'settings', label: 'Settings', icon: SettingsIcon },
   ];
 
@@ -498,8 +514,14 @@ function App() {
                     <div className="absolute top-0 right-0 p-8 opacity-10">
                       <Sword size={120} />
                     </div>
-                    <h2 className="text-3xl font-bold text-white mb-2">Welcome back, Seeker.</h2>
-                    <p className="text-slate-400 mb-8 max-w-md">Your journey through the Scholar's Dungeon continues. Ready for the next room?</p>
+                    <h2 className="text-3xl font-bold text-white mb-2">
+                      {state.history.length === 0 ? "Welcome, Brave Seeker." : "Welcome back, Seeker."}
+                    </h2>
+                    <p className="text-slate-400 mb-8 max-w-md">
+                      {state.history.length === 0 
+                        ? "A new legend is about to be written. Are you ready to begin your first exploration?" 
+                        : "Your journey through the Scholar's Dungeon continues. Ready for the next room?"}
+                    </p>
                     
                     {currentDungeon ? (
                       <div className="bg-slate-950/50 p-6 rounded-2xl border border-indigo-500/20">
@@ -525,12 +547,12 @@ function App() {
                       </div>
                     ) : (
                       <div className="p-8 text-center border-2 border-dashed border-slate-800 rounded-3xl">
-                        <p className="text-slate-500 mb-4">No active quest selected.</p>
+                        <p className="text-slate-500 mb-4">No active dungeon exploration.</p>
                         <button 
                           onClick={() => setActiveTab('dungeons')}
                           className="px-6 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-colors"
                         >
-                          Select a Quest
+                          {state.history.length === 0 ? "Start Your First Journey" : "Delve into Dungeon"}
                         </button>
                       </div>
                     )}
@@ -543,12 +565,22 @@ function App() {
                         <span className="text-2xl font-bold text-white">{state.dailySessions}</span>
                         <span className="text-slate-500 text-xs">/ 16 Sessions</span>
                       </div>
-                      <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                      <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden mb-6">
                         <div 
                           className="h-full bg-emerald-500" 
                           style={{ width: `${Math.min((state.dailySessions / 16) * 100, 100)}%` }}
                         />
                       </div>
+                      <button
+                        onClick={() => {
+                          setShowDailySummary(true);
+                          playSound('success', state.soundVolume, state.soundEnabled);
+                        }}
+                        className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold uppercase tracking-widest transition-all border border-slate-700 flex items-center justify-center gap-2"
+                      >
+                        <Calendar size={14} className="text-indigo-400" />
+                        End the Day
+                      </button>
                     </div>
 
                   </div>
@@ -633,6 +665,9 @@ function App() {
                     onComplete={(duration) => {
                       const result = completeSession(state.currentDungeonId || null, duration);
                       playSound('success', state.soundVolume, state.soundEnabled);
+                      if (result && state.secretCode) {
+                        syncToCloud(true);
+                      }
                       return result;
                     }}
                     onInventoryAdd={(id) => setState(prev => ({ ...prev, inventory: [...prev.inventory, id] }))}
@@ -1037,7 +1072,7 @@ function App() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
               >
-                <Stats history={state.history} />
+                <Stats state={state} saveDailyLog={saveDailyLog} />
               </motion.div>
             )}
 
@@ -1064,6 +1099,22 @@ function App() {
           </AnimatePresence>
         </div>
       </main>
+
+      <AnimatePresence>
+        {showDailySummary && (
+          <DailySummaryModal 
+            state={state}
+            dungeons={dungeons}
+            majorDungeons={majorDungeons}
+            onClose={() => setShowDailySummary(false)}
+            onNavigateToStats={() => {
+              setShowDailySummary(false);
+              setActiveTab('stats');
+            }}
+            onSave={saveDailyLog}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Profile Modal */}
       {createPortal(
@@ -1239,7 +1290,17 @@ function App() {
                       <div className="p-4 sm:p-6 bg-slate-900/30 rounded-2xl sm:rounded-[2rem] border border-slate-800 space-y-3 sm:space-y-4">
                         <div className="flex items-center justify-between">
                           <span className="text-xs sm:text-sm text-slate-400">Cloud Sync</span>
-                          <span className="px-2 py-1 bg-emerald-500/10 text-emerald-400 text-[8px] sm:text-[10px] font-black uppercase rounded-lg border border-emerald-500/20">Active</span>
+                          <button 
+                            onClick={() => setShowCloudSync(true)}
+                            className={cn(
+                              "px-3 py-1.5 text-[10px] sm:text-xs font-black uppercase rounded-lg border transition-colors",
+                              state.secretCode 
+                                ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20" 
+                                : "bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700 hover:text-white"
+                            )}
+                          >
+                            {state.secretCode ? 'Active' : 'Connect'}
+                          </button>
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-xs sm:text-sm text-slate-400">Data Version</span>
@@ -1343,7 +1404,7 @@ function App() {
       )}
 
       {/* Mobile Bottom Navigation - Only visible on small screens */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900/90 backdrop-blur-md border-t border-slate-800 px-6 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] flex justify-between items-center z-50">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900/90 backdrop-blur-md border-t border-slate-800 px-6 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] flex justify-between items-center z-50 overflow-x-auto scrollbar-hide">
         {navItems.filter(i => i.id !== 'settings').map(item => (
           <MobileNavItem 
             key={item.id}
@@ -1355,6 +1416,26 @@ function App() {
         ))}
       </div>
       <CoinRain active={showCoinRain} onComplete={() => setShowCoinRain(false)} />
+
+      {/* Cloud Sync Modal */}
+      {createPortal(
+        <AnimatePresence>
+          {showCloudSync && (
+            <CloudSyncModal
+              isOpen={showCloudSync}
+              onClose={() => setShowCloudSync(false)}
+              secretCode={state.secretCode}
+              isSyncing={isSyncing}
+              syncError={syncError}
+              conflictData={conflictData}
+              onConnect={fetchFromCloud}
+              onResolveConflict={resolveConflict}
+              onManualSync={() => syncToCloud(true)}
+            />
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
       {/* XP Guide Modal */}
       {createPortal(

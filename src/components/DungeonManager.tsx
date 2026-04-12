@@ -381,18 +381,18 @@ export const DungeonManager: React.FC<DungeonManagerProps> = ({
           </div>
         ) : (
           majorDungeons.map(major => (
-            <div key={major.id} className="bg-slate-900/40 rounded-[2rem] border border-slate-800 overflow-hidden hover:border-slate-700 transition-all group">
+            <div key={major.id} className="bg-slate-900/40 rounded-2xl border border-slate-800 overflow-hidden hover:border-slate-700 transition-all group">
               <div 
-                className="p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 cursor-pointer hover:bg-slate-800/30 transition-colors"
+                className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer hover:bg-slate-800/30 transition-colors"
                 onClick={() => toggleMajor(major.id)}
               >
-                <div className="flex items-start sm:items-center space-x-5">
-                  <div className="p-4 bg-indigo-500/10 text-indigo-400 rounded-2xl border border-indigo-500/10 group-hover:scale-110 transition-transform shrink-0">
-                    <Folder size={28} />
+                <div className="flex items-start sm:items-center space-x-4">
+                  <div className="p-2.5 bg-indigo-500/10 text-indigo-400 rounded-xl border border-indigo-500/10 group-hover:scale-110 transition-transform shrink-0">
+                    <Folder size={20} />
                   </div>
                   <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-3 mb-1">
-                      <h3 className="text-lg sm:text-xl font-black text-white tracking-tight uppercase italic truncate pr-2">{major.name}</h3>
+                    <div className="flex flex-wrap items-center gap-2 mb-1">
+                      <h3 className="text-base font-bold text-white tracking-tight truncate pr-2">{major.name}</h3>
                       {major.isFinalized && (
                         <span className="text-[10px] font-black bg-indigo-500/20 text-indigo-400 px-2 py-0.5 rounded-lg border border-indigo-500/30 uppercase tracking-widest shrink-0">
                           Finalized
@@ -426,40 +426,40 @@ export const DungeonManager: React.FC<DungeonManagerProps> = ({
                   </div>
                 </div>
                 
-                <div className="flex items-center justify-end sm:justify-start gap-4 shrink-0">
-                  <div className="flex items-center gap-1 bg-slate-950/50 p-1 rounded-xl border border-slate-800">
+                <div className="flex items-center justify-end sm:justify-start gap-2 shrink-0">
+                  <div className="flex items-center gap-1 bg-slate-950/50 p-1 rounded-lg border border-slate-800">
                     <button 
                       onClick={(e) => { e.stopPropagation(); onReorderMajor(major.id, 'up'); }} 
-                      className="p-2 text-slate-500 hover:text-indigo-400 hover:bg-slate-800 rounded-lg transition-all"
+                      className="p-1.5 text-slate-500 hover:text-indigo-400 hover:bg-slate-800 rounded-md transition-all"
                     >
-                      <ChevronUp size={16} />
+                      <ChevronUp size={14} />
                     </button>
                     <button 
                       onClick={(e) => { e.stopPropagation(); onReorderMajor(major.id, 'down'); }} 
-                      className="p-2 text-slate-500 hover:text-indigo-400 hover:bg-slate-800 rounded-lg transition-all"
+                      className="p-1.5 text-slate-500 hover:text-indigo-400 hover:bg-slate-800 rounded-md transition-all"
                     >
-                      <ChevronDown size={16} />
+                      <ChevronDown size={14} />
                     </button>
                   </div>
                   
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5">
                     {!major.status || major.status !== 'completed' ? (
                       major.isFinalized ? (
-                        <div className="p-3 bg-indigo-500/10 text-indigo-400 rounded-xl border border-indigo-500/20 cursor-not-allowed" title="Finalized dungeons cannot be edited">
-                          <CheckCircle2 size={20} />
+                        <div className="p-2 bg-indigo-500/10 text-indigo-400 rounded-lg border border-indigo-500/20 cursor-not-allowed" title="Finalized dungeons cannot be edited">
+                          <CheckCircle2 size={16} />
                         </div>
                       ) : (
                         <button
                           onClick={(e) => { e.stopPropagation(); setEditingMajor(major); }}
-                          className="p-3 bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 rounded-xl transition-all border border-slate-700"
+                          className="p-2 bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-all border border-slate-700"
                           title="Edit Major Dungeon"
                         >
-                          <Edit2 size={20} />
+                          <Edit2 size={16} />
                         </button>
                       )
                     ) : (
-                      <div className="p-3 bg-slate-800/30 text-slate-600 rounded-xl border border-slate-800/50 cursor-not-allowed" title="Completed tasks cannot be edited">
-                        <Edit2 size={20} />
+                      <div className="p-2 bg-slate-800/30 text-slate-600 rounded-lg border border-slate-800/50 cursor-not-allowed" title="Completed tasks cannot be edited">
+                        <Edit2 size={16} />
                       </div>
                     )}
                     
@@ -470,19 +470,19 @@ export const DungeonManager: React.FC<DungeonManagerProps> = ({
                         setDeletingDungeon({ id: major.id, name: major.name, isMajor: true });
                       }}
                       className={cn(
-                        "p-3 rounded-xl transition-all border",
+                        "p-2 rounded-lg transition-all border",
                         major.isFinalized 
                           ? "bg-slate-800/30 text-slate-600 border-slate-800/50 cursor-not-allowed" 
                           : "bg-slate-800 text-slate-400 hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/30 border-slate-700"
                       )}
                       title="Delete Major Dungeon"
                     >
-                      <Trash2 size={20} />
+                      <Trash2 size={16} />
                     </button>
                   </div>
                   
-                  <div className="p-2 text-slate-600 group-hover:text-indigo-400 transition-colors">
-                    <ChevronDown size={24} className={cn("transition-transform duration-300", expandedMajors.includes(major.id) ? "rotate-180" : "")} />
+                  <div className="p-1 text-slate-600 group-hover:text-indigo-400 transition-colors ml-2">
+                    <ChevronDown size={20} className={cn("transition-transform duration-300", expandedMajors.includes(major.id) ? "rotate-180" : "")} />
                   </div>
                 </div>
               </div>

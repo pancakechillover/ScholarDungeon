@@ -41,6 +41,8 @@ export function useGameState() {
       devCoinMode: 'random',
       devCritChance: 0.05,
       devCritMultiplier: 5,
+      defaultMarkdownEnabled: true,
+      dailyLogs: {},
       rewardPool: INITIAL_REWARD_POOL,
       shopItems: [
         { id: '1', name: 'Watch a Movie', price: 500, description: 'Treat yourself to a cinema experience' },
@@ -692,7 +694,7 @@ export function useGameState() {
                 });
               }
 
-              return { ...d, completedSessions: newCompleted, status: 'completed', completedAt: new Date().toISOString() };
+              return { ...d, completedSessions: newCompleted, status: 'completed' as const, completedAt: new Date().toISOString() };
             }
             return { ...d, completedSessions: newCompleted };
           }
@@ -987,6 +989,16 @@ export function useGameState() {
     });
   }, []);
 
+  const saveDailyLog = useCallback((date: string, rating: number, reflection: string) => {
+    setState(prev => ({
+      ...prev,
+      dailyLogs: {
+        ...(prev.dailyLogs || {}),
+        [date]: { rating, reflection }
+      }
+    }));
+  }, []);
+
   return {
     state,
     dungeons,
@@ -1007,6 +1019,7 @@ export function useGameState() {
     reorderSubDungeon,
     finalizeMajorDungeon,
     updateQuests,
-    claimQuestReward
+    claimQuestReward,
+    saveDailyLog
   };
 }
