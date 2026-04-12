@@ -15,7 +15,7 @@ interface QuestManagerProps {
   forceTab?: 'quests' | 'achievements';
 }
 
-export const QuestManager: React.FC<QuestManagerProps> = ({ quests, activeTalents, isAdding, setIsAdding, onUpdateQuests, onClaimReward, forceTab }) => {
+export const QuestManager = React.memo<QuestManagerProps>(({ quests, activeTalents, isAdding, setIsAdding, onUpdateQuests, onClaimReward, forceTab }) => {
   const [activeTab, setActiveTab] = useState<'quests' | 'achievements'>(forceTab || 'quests');
 
   React.useEffect(() => {
@@ -425,4 +425,4 @@ export const QuestManager: React.FC<QuestManagerProps> = ({ quests, activeTalent
       </div>
     </div>
   );
-};
+});

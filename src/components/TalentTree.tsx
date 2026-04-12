@@ -26,7 +26,7 @@ interface TalentTreeProps {
   onToggle: (id: string) => void;
 }
 
-export const TalentTree: React.FC<TalentTreeProps> = ({
+export const TalentTree = React.memo<TalentTreeProps>(({
   points,
   shards,
   unlockedIds,
@@ -300,4 +300,4 @@ export const TalentTree: React.FC<TalentTreeProps> = ({
       </div>
     </div>
   );
-};
+});

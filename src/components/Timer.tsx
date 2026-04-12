@@ -20,7 +20,7 @@ interface TimerProps {
   isFullscreen?: boolean;
 }
 
-export const Timer: React.FC<TimerProps> = ({ 
+export const Timer = React.memo<TimerProps>(({ 
   currentDungeon, 
   rewardPool, 
   activeTalents,
@@ -622,4 +622,4 @@ export const Timer: React.FC<TimerProps> = ({
       </AnimatePresence>
     </div>
   );
-};
+});

@@ -23,7 +23,7 @@ interface DungeonManagerProps {
   onFinalizeMajor: (id: string) => void;
 }
 
-export const DungeonManager: React.FC<DungeonManagerProps> = ({
+export const DungeonManager = React.memo<DungeonManagerProps>(({
   dungeons,
   majorDungeons,
   currentDungeonId,
@@ -891,4 +891,4 @@ export const DungeonManager: React.FC<DungeonManagerProps> = ({
       </AnimatePresence>
     </div>
   );
-};
+});

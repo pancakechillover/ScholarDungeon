@@ -17,7 +17,7 @@ interface StatsProps {
   saveDailyLog: (date: string, rating: number, reflection: string) => void;
 }
 
-export const Stats: React.FC<StatsProps> = ({ state, saveDailyLog }) => {
+export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
   const history = state.history;
   const dailyLogs = state.dailyLogs || {};
   
@@ -488,4 +488,4 @@ export const Stats: React.FC<StatsProps> = ({ state, saveDailyLog }) => {
       </div>
     </div>
   );
-};
+});

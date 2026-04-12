@@ -593,7 +593,7 @@ const GeneralSettings = ({ state, setState, setShowClearConfirm }: { state: any,
   );
 };
 
-export const Settings: React.FC<SettingsProps> = ({
+export const Settings = React.memo<SettingsProps>(({
   state,
   setState,
   rewardPool,
@@ -857,7 +857,14 @@ export const Settings: React.FC<SettingsProps> = ({
               </div>
               <div>
                 <h3 className="text-3xl font-black text-white tracking-tight">Scholar's Dungeon</h3>
-                <p className="text-indigo-400 font-bold tracking-widest uppercase text-xs mt-1">Version 1.0.0</p>
+                <div className="flex flex-col items-center gap-1 mt-2">
+                  <span className="px-3 py-1 bg-indigo-500/20 text-indigo-400 rounded-full font-bold tracking-widest uppercase text-xs border border-indigo-500/30">
+                    Version 1.2.0
+                  </span>
+                  <span className="text-slate-500 text-xs font-medium">
+                    Updated: 2026-04-12
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -970,7 +977,7 @@ export const Settings: React.FC<SettingsProps> = ({
       </div>
     </div>
   );
-};
+});
 
 const DevResourceControl = ({ label, value, onAdd, onSub, icon, defaultAmount = 1 }: { label: string, value: number, onAdd: (amount: number) => void, onSub: (amount: number) => void, icon: React.ReactNode, defaultAmount?: number }) => {
   const [amount, setAmount] = useState(defaultAmount);

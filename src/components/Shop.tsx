@@ -15,7 +15,7 @@ interface ShopProps {
   onShowCoinGuide?: () => void;
 }
 
-export const Shop: React.FC<ShopProps> = ({ coins, shopItems, gachaPools, onPurchase, onDrawGacha, onResetIchiban, onShowCoinGuide }) => {
+export const Shop = React.memo<ShopProps>(({ coins, shopItems, gachaPools, onPurchase, onDrawGacha, onResetIchiban, onShowCoinGuide }) => {
   const [activeTab, setActiveTab] = useState<'shop' | 'gacha' | 'ichiban'>('shop');
   const [showProbabilities, setShowProbabilities] = useState(false);
   
@@ -308,4 +308,4 @@ export const Shop: React.FC<ShopProps> = ({ coins, shopItems, gachaPools, onPurc
       </AnimatePresence>
     </div>
   );
-};
+});
