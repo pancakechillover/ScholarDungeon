@@ -123,10 +123,11 @@ function App() {
   const {
     isSyncing,
     syncError,
-    conflictData,
+    syncCheckResult,
     syncToCloud,
     resolveConflict,
-    fetchFromCloud
+    fetchFromCloud,
+    unbindFromCloud
   } = useCloudSync(state, setState, setDungeons, setMajorDungeons);
 
   React.useEffect(() => {
@@ -1427,10 +1428,11 @@ function App() {
               secretCode={state.secretCode}
               isSyncing={isSyncing}
               syncError={syncError}
-              conflictData={conflictData}
+              syncCheckResult={syncCheckResult}
               onConnect={fetchFromCloud}
               onResolveConflict={resolveConflict}
               onManualSync={() => syncToCloud(true)}
+              onUnbind={unbindFromCloud}
             />
           )}
         </AnimatePresence>,

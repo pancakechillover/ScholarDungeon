@@ -9,7 +9,11 @@ export function useCloudSync(
 ) {
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
-  const [conflictData, setConflictData] = useState<any | null>(null);
+  const [syncCheckResult, setSyncCheckResult] = useState<{
+    status: 'no_save' | 'cloud_newer' | 'local_newer';
+    cloudData?: any;
+    code: string;
+  } | null>(null);
 
   const syncToCloud = useCallback(async (forceOverwrite = false, specificState?: UserState) => {
     const currentState = specificState || state;
@@ -45,13 +49,17 @@ export function useCloudSync(
       const data = await response.json();
 
       if (response.status === 409) {
-        setConflictData(data.cloudData);
+        setSyncCheckResult({
+          status: 'cloud_newer',
+          cloudData: data.cloudData,
+          code: currentState.secretCode
+        });
       } else if (!response.ok) {
         throw new Error(data.error || 'Failed to sync');
       } else {
         // Update local lastUpdated
         setState(prev => ({ ...prev, lastUpdated: data.cloudData.lastUpdated }));
-        setConflictData(null);
+        setSyncCheckResult(null);
       }
     } catch (err: any) {
       setSyncError(err.message);
@@ -60,23 +68,26 @@ export function useCloudSync(
     }
   }, [state, setState]);
 
-  const resolveConflict = useCallback((useCloud: boolean) => {
-    if (useCloud && conflictData) {
+  const resolveConflict = useCallback(async (useCloud: boolean) => {
+    if (!syncCheckResult) return;
+
+    if (useCloud && syncCheckResult.cloudData) {
       // Apply cloud data
-      setState(conflictData.state);
-      setDungeons(conflictData.dungeons);
-      setMajorDungeons(conflictData.majorDungeons);
+      setState(syncCheckResult.cloudData.state);
+      setDungeons(syncCheckResult.cloudData.dungeons);
+      setMajorDungeons(syncCheckResult.cloudData.majorDungeons);
       
       // Save to local storage
-      localStorage.setItem('scholars_dungeon_state', JSON.stringify(conflictData.state));
-      localStorage.setItem('scholars_dungeon_dungeons', JSON.stringify(conflictData.dungeons));
-      localStorage.setItem('scholars_dungeon_major_dungeons', JSON.stringify(conflictData.majorDungeons));
+      localStorage.setItem('scholars_dungeon_state', JSON.stringify(syncCheckResult.cloudData.state));
+      localStorage.setItem('scholars_dungeon_dungeons', JSON.stringify(syncCheckResult.cloudData.dungeons));
+      localStorage.setItem('scholars_dungeon_major_dungeons', JSON.stringify(syncCheckResult.cloudData.majorDungeons));
     } else if (!useCloud) {
       // Force overwrite cloud with local
-      syncToCloud(true);
+      setState(prev => ({ ...prev, secretCode: syncCheckResult.code }));
+      await syncToCloud(true, { ...state, secretCode: syncCheckResult.code });
     }
-    setConflictData(null);
-  }, [conflictData, setState, setDungeons, setMajorDungeons, syncToCloud]);
+    setSyncCheckResult(null);
+  }, [syncCheckResult, setState, setDungeons, setMajorDungeons, syncToCloud, state]);
 
   const fetchFromCloud = useCallback(async (code: string) => {
     setIsSyncing(true);
@@ -98,35 +109,35 @@ export function useCloudSync(
       }
 
       if (data.cloudData) {
-        // We have cloud data, check if we should apply it
         const cloudTime = new Date(data.cloudData.lastUpdated || 0).getTime();
         const localTime = new Date(state.lastUpdated || 0).getTime();
 
         if (cloudTime > localTime) {
-          setConflictData(data.cloudData);
+          setSyncCheckResult({ status: 'cloud_newer', cloudData: data.cloudData, code });
         } else {
-          // Local is newer or same, just update secret code
-          setState(prev => ({ ...prev, secretCode: code }));
-          syncToCloud(true, { ...state, secretCode: code });
+          setSyncCheckResult({ status: 'local_newer', cloudData: data.cloudData, code });
         }
       } else {
-        // No cloud data exists yet for this code, set it and sync
-        setState(prev => ({ ...prev, secretCode: code }));
-        syncToCloud(true, { ...state, secretCode: code });
+        setSyncCheckResult({ status: 'no_save', code });
       }
     } catch (err: any) {
       setSyncError(err.message);
     } finally {
       setIsSyncing(false);
     }
-  }, [state, setState, syncToCloud]);
+  }, [state.lastUpdated]);
+
+  const unbindFromCloud = useCallback(() => {
+    setState(prev => ({ ...prev, secretCode: undefined }));
+  }, [setState]);
 
   return {
     isSyncing,
     syncError,
-    conflictData,
+    syncCheckResult,
     syncToCloud,
     resolveConflict,
-    fetchFromCloud
+    fetchFromCloud,
+    unbindFromCloud
   };
 }

@@ -42,7 +42,8 @@ async function startServer() {
       const key = `scholar_sync_${secretCode}`;
       
       // Get existing cloud data
-      const cloudDataString = await redisClient.get(key);
+      const cloudDataRaw = await redisClient.get(key);
+      const cloudDataString = cloudDataRaw ? cloudDataRaw.toString() : null;
       const cloudData = cloudDataString ? JSON.parse(cloudDataString) : null;
 
       // If no local data provided, just return cloud data (GET equivalent)
