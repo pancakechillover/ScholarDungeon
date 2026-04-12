@@ -26,8 +26,8 @@ async function startServer() {
     res.json({ status: "ok" });
   });
 
-  // Sync API
-  app.post("/api/sync", async (req, res) => {
+  // Sync API - Handle both /api/sync and /api/sync/
+  const syncHandler = async (req: express.Request, res: express.Response) => {
     try {
       const { secretCode, localData } = req.body;
       
@@ -79,10 +79,13 @@ async function startServer() {
       console.error("Sync error:", error);
       res.status(500).json({ error: "Failed to commune with the ancient archives." });
     }
-  });
+  };
+
+  app.post("/api/sync", syncHandler);
+  app.post("/api/sync/", syncHandler);
 
   // Delete API
-  app.delete("/api/sync", async (req, res) => {
+  const deleteHandler = async (req: express.Request, res: express.Response) => {
     try {
       const { secretCode } = req.body;
       if (!secretCode) {
@@ -98,7 +101,10 @@ async function startServer() {
       console.error("Delete error:", error);
       res.status(500).json({ error: "Failed to delete from the archives." });
     }
-  });
+  };
+
+  app.delete("/api/sync", deleteHandler);
+  app.delete("/api/sync/", deleteHandler);
 
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {

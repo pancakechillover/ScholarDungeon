@@ -54,6 +54,13 @@ export function useCloudSync(
         body: JSON.stringify(payload)
       });
 
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('Non-JSON response received:', text);
+        throw new Error(`Server returned non-JSON response (${response.status}). This usually means the API route was not found.`);
+      }
+
       const data = await response.json();
 
       if (response.status === 409) {
@@ -114,6 +121,13 @@ export function useCloudSync(
         body: JSON.stringify({ secretCode: code })
       });
 
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('Non-JSON response received:', text);
+        throw new Error(`Server returned non-JSON response (${response.status}).`);
+      }
+
       const data = await response.json();
 
       if (!response.ok) {
@@ -161,6 +175,14 @@ export function useCloudSync(
         },
         body: JSON.stringify({ secretCode: code })
       });
+
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('Non-JSON response received:', text);
+        throw new Error(`Server returned non-JSON response (${response.status}).`);
+      }
+
       const data = await response.json();
       if (!response.ok) {
         throw new Error(data.error || 'Failed to delete cloud data');

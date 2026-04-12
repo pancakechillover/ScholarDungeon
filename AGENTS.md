@@ -11,10 +11,12 @@ Whenever you complete a task or make changes to the application:
 3. Update the version number and release date in `src/components/Settings.tsx` (under the 'about' section) to match the new version and date.
 
 ## Current Status
-- **Current Version:** v1.2.0
+- **Current Version:** v1.2.2
 - **Last Update Date:** 2026-04-12
 
 ## Task History
+- **v1.2.2 (2026-04-12):** Fixed mobile sync and import issues. Added trailing slash support to API routes, improved JSON response validation in frontend, and expanded file picker `accept` types for JSON import.
+- **v1.2.1 (2026-04-12):** Diagnosed mobile sync and import issues. Identified root causes: 404 HTML response for cloud sync (routing/trailing slash issues) and file picker restrictions for JSON import on mobile.
 - **v1.2.0 (2026-04-12):** Performance & UI Polish. Fixed bottom bar jittering (AnimatePresence mode="wait"). Implemented elegant overlay scrollbars. Optimized performance using React.memo for heavy components.
 - **v1.1.0 (2026-04-12):** Created project tracker (`AGENTS.md`). Added version and release date to Settings -> About page.
 - **v1.0.1 (2026-04-12):** Upgraded PWA installation experience (sword icon, splash screen animation).
