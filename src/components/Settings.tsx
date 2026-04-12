@@ -548,9 +548,55 @@ const GeneralSettings = ({ state, setState, setShowClearConfirm }: { state: any,
       </div>
 
       <div className="space-y-6 pt-6 border-t border-slate-800">
+        <div className="flex items-center gap-2 text-indigo-400 mb-6">
+          <Bell size={18} />
+          <h4 className="font-bold uppercase text-sm tracking-widest">System Notifications</h4>
+        </div>
+
+        <div className="space-y-4">
+          <div className="flex items-center justify-between p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
+            <div className="flex items-center gap-3">
+              <div className={cn("p-2 rounded-xl", state.pushEnabled ? "bg-indigo-500/10 text-indigo-400" : "bg-slate-800 text-slate-500")}>
+                {state.pushEnabled ? <Bell size={20} /> : <BellOff size={20} />}
+              </div>
+              <div>
+                <div className="font-bold text-white">Push Notifications</div>
+                <div className="text-xs text-slate-500">Alerts for timer ends and rest periods</div>
+              </div>
+            </div>
+            <button
+              onClick={handleNotificationToggle}
+              disabled={isSubscribing}
+              className={cn(
+                "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
+                state.pushEnabled ? "bg-indigo-500" : "bg-slate-700",
+                isSubscribing && "opacity-50 cursor-not-allowed"
+              )}
+            >
+              {isSubscribing ? (
+                <RefreshCw size={12} className="animate-spin text-white mx-auto" />
+              ) : (
+                <span
+                  className={cn(
+                    "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+                    state.pushEnabled ? "translate-x-6" : "translate-x-1"
+                  )}
+                />
+              )}
+            </button>
+          </div>
+          {!state.pushEnabled && (
+            <p className="text-[10px] text-slate-500 px-4 italic">
+              Requires PWA installation on iOS. Make sure to allow permissions when prompted.
+            </p>
+          )}
+        </div>
+      </div>
+
+      <div className="space-y-6 pt-6 border-t border-slate-800">
         <div className="flex items-center gap-2 text-amber-400 mb-6">
           <Target size={18} />
-          <h4 className="font-bold uppercase text-sm tracking-widest">Quests & Notifications</h4>
+          <h4 className="font-bold uppercase text-sm tracking-widest">Quest UI Notifications</h4>
         </div>
 
         <div className="space-y-4">
@@ -603,38 +649,6 @@ const GeneralSettings = ({ state, setState, setShowClearConfirm }: { state: any,
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="p-6 bg-slate-900/50 rounded-2xl border border-slate-800 space-y-4">
-            <div className="flex items-center gap-3 text-white font-bold">
-              <Bell size={20} className="text-indigo-400" />
-              Notifications
-            </div>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Receive alerts when your timer or rest period ends. (Requires PWA installation on iOS)
-            </p>
-            <button
-              onClick={handleNotificationToggle}
-              disabled={isSubscribing}
-              className={cn(
-                "w-full px-4 py-2 rounded-xl font-bold transition-all text-sm flex items-center justify-center gap-2",
-                state.pushEnabled 
-                  ? "bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/30" 
-                  : "bg-indigo-600 hover:bg-indigo-700 text-white"
-              )}
-            >
-              {isSubscribing ? (
-                <RefreshCw size={16} className="animate-spin" />
-              ) : state.pushEnabled ? (
-                <>
-                  <BellOff size={16} /> Disable Notifications
-                </>
-              ) : (
-                <>
-                  <Bell size={16} /> Enable Notifications
-                </>
-              )}
-            </button>
-          </div>
-
           <div className="p-6 bg-slate-900/50 rounded-2xl border border-slate-800 space-y-4">
             <div className="flex items-center gap-3 text-white font-bold">
               <Download size={20} className="text-blue-400" />
@@ -964,7 +978,7 @@ export const Settings = React.memo<SettingsProps>(({
                 <h3 className="text-3xl font-black text-white tracking-tight">Scholar's Dungeon</h3>
                 <div className="flex flex-col items-center gap-1 mt-2">
                   <span className="px-3 py-1 bg-indigo-500/20 text-indigo-400 rounded-full font-bold tracking-widest uppercase text-xs border border-indigo-500/30">
-                    Version 1.3.1
+                    Version 1.4.2
                   </span>
                   <span className="text-slate-500 text-xs font-medium">
                     Updated: 2026-04-12

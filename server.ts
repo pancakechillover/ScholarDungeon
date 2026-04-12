@@ -1,5 +1,4 @@
 import express from "express";
-import { createServer as createViteServer } from "vite";
 import path from "path";
 import { createClient } from "redis";
 import dotenv from "dotenv";
@@ -18,137 +17,147 @@ try {
   console.error("Failed to set VAPID details:", err);
 }
 
-async function startServer() {
-  const app = express();
-  const PORT = 3000;
+const app = express();
+const PORT = 3000;
 
-  // Eager listen to pass health checks immediately
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server listening on port ${PORT}`);
-  });
-
-  // Initialize Redis client
-  let redisClient: any = null;
+// Initialize Redis client lazily
+let redisClient: any = null;
+const getRedisClient = async () => {
+  if (redisClient) return redisClient;
   if (process.env.REDIS_URL) {
     try {
       redisClient = createClient({ url: process.env.REDIS_URL });
       redisClient.on('error', (err: any) => console.error('Redis Client Error', err));
-      redisClient.connect().catch((err: any) => console.error("Redis connect error:", err));
-      console.log("Redis client initialized");
+      await redisClient.connect();
+      console.log("Redis client connected");
+      return redisClient;
     } catch (err) {
       console.error("Redis initialization error:", err);
+      return null;
     }
   }
+  return null;
+};
 
-  app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: '10mb' }));
 
-  // Request logging
-  app.use((req, res, next) => {
-    console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
-    next();
-  });
+// Request logging
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+  next();
+});
 
-  // Sync API Handler
-  const syncHandler = async (req: express.Request, res: express.Response) => {
-    try {
-      const { secretCode, localData } = req.body;
-      if (!secretCode) return res.status(400).json({ error: "Secret code is required" });
-      if (!redisClient) return res.status(500).json({ error: "Cloud sync is not configured." });
+// Sync API Handler
+const syncHandler = async (req: express.Request, res: express.Response) => {
+  try {
+    const { secretCode, localData } = req.body;
+    if (!secretCode) return res.status(400).json({ error: "Secret code is required" });
+    
+    const client = await getRedisClient();
+    if (!client) return res.status(500).json({ error: "Cloud sync is not configured." });
 
-      const key = `scholar_sync_${secretCode}`;
-      const cloudDataRaw = await redisClient.get(key);
-      const cloudData = cloudDataRaw ? JSON.parse(cloudDataRaw.toString()) : null;
+    const key = `scholar_sync_${secretCode}`;
+    const cloudDataRaw = await client.get(key);
+    const cloudData = cloudDataRaw ? JSON.parse(cloudDataRaw.toString()) : null;
 
-      if (!localData) return res.json({ cloudData });
+    if (!localData) return res.json({ cloudData });
 
-      if (cloudData && cloudData.lastUpdated) {
-        const cloudTime = new Date(cloudData.lastUpdated).getTime();
-        const localTime = new Date(localData.lastUpdated || 0).getTime();
-        if (cloudTime > localTime && !req.body.forceOverwrite) {
-          return res.status(409).json({ conflict: true, cloudData });
-        }
+    if (cloudData && cloudData.lastUpdated) {
+      const cloudTime = new Date(cloudData.lastUpdated).getTime();
+      const localTime = new Date(localData.lastUpdated || 0).getTime();
+      if (cloudTime > localTime && !req.body.forceOverwrite) {
+        return res.status(409).json({ conflict: true, cloudData });
       }
-
-      if (!localData.lastUpdated) localData.lastUpdated = new Date().toISOString();
-      await redisClient.set(key, JSON.stringify(localData));
-      res.json({ success: true, cloudData: localData });
-    } catch (error) {
-      console.error("Sync error:", error);
-      res.status(500).json({ error: "Sync failed" });
     }
-  };
 
-  const deleteHandler = async (req: express.Request, res: express.Response) => {
-    try {
-      const { secretCode } = req.body;
-      if (!secretCode) return res.status(400).json({ error: "Secret code is required" });
-      if (!redisClient) return res.status(500).json({ error: "Cloud sync is not configured." });
-      const key = `scholar_sync_${secretCode}`;
-      await redisClient.del(key);
-      res.json({ success: true });
-    } catch (error) {
-      console.error("Delete error:", error);
-      res.status(500).json({ error: "Delete failed" });
-    }
-  };
+    if (!localData.lastUpdated) localData.lastUpdated = new Date().toISOString();
+    await client.set(key, JSON.stringify(localData));
+    res.json({ success: true, cloudData: localData });
+  } catch (error) {
+    console.error("Sync error:", error);
+    res.status(500).json({ error: "Sync failed" });
+  }
+};
 
-  app.post("/api/sync", syncHandler);
-  app.post("/api/sync/", syncHandler);
-  app.delete("/api/sync", deleteHandler);
-  app.delete("/api/sync/", deleteHandler);
+const deleteHandler = async (req: express.Request, res: express.Response) => {
+  try {
+    const { secretCode } = req.body;
+    if (!secretCode) return res.status(400).json({ error: "Secret code is required" });
+    
+    const client = await getRedisClient();
+    if (!client) return res.status(500).json({ error: "Cloud sync is not configured." });
+    
+    const key = `scholar_sync_${secretCode}`;
+    await client.del(key);
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Delete error:", error);
+    res.status(500).json({ error: "Delete failed" });
+  }
+};
 
-  // Push Notification Routes
-  app.post("/api/push/subscribe", async (req, res) => {
-    try {
-      const { secretCode, subscription } = req.body;
-      if (!secretCode || !subscription || !redisClient) return res.status(400).json({ error: "Invalid request" });
-      const key = `scholar_push_sub_${secretCode}`;
-      await redisClient.set(key, JSON.stringify(subscription));
-      res.json({ success: true });
-    } catch (error) {
-      res.status(500).json({ error: "Subscribe failed" });
-    }
-  });
+app.post("/api/sync", syncHandler);
+app.post("/api/sync/", syncHandler);
+app.delete("/api/sync", deleteHandler);
+app.delete("/api/sync/", deleteHandler);
 
-  app.post("/api/push/schedule", async (req, res) => {
-    try {
-      const { secretCode, delayMinutes, title, body, type } = req.body;
-      if (!secretCode || delayMinutes === undefined || !redisClient) return res.status(400).json({ error: "Invalid request" });
-      const targetTime = Date.now() + (delayMinutes * 60 * 1000);
-      const task = { secretCode, title, body, type, targetTime };
-      await redisClient.zAdd('scholar_push_tasks', { score: targetTime, value: JSON.stringify(task) });
-      res.json({ success: true, targetTime });
-    } catch (error) {
-      res.status(500).json({ error: "Schedule failed" });
-    }
-  });
+// Push Notification Routes
+app.post("/api/push/subscribe", async (req, res) => {
+  try {
+    const { secretCode, subscription } = req.body;
+    const client = await getRedisClient();
+    if (!secretCode || !subscription || !client) return res.status(400).json({ error: "Invalid request" });
+    const key = `scholar_push_sub_${secretCode}`;
+    await client.set(key, JSON.stringify(subscription));
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: "Subscribe failed" });
+  }
+});
 
-  app.post("/api/push/cancel", async (req, res) => {
-    try {
-      const { secretCode } = req.body;
-      if (!secretCode || !redisClient) return res.status(400).json({ error: "Invalid request" });
-      const tasks = await redisClient.zRange('scholar_push_tasks', 0, -1);
-      for (const taskStr of tasks) {
-        const task = JSON.parse(taskStr.toString());
-        if (task.secretCode === secretCode) {
-          await redisClient.zRem('scholar_push_tasks', taskStr.toString());
-        }
+app.post("/api/push/schedule", async (req, res) => {
+  try {
+    const { secretCode, delayMinutes, title, body, type } = req.body;
+    const client = await getRedisClient();
+    if (!secretCode || delayMinutes === undefined || !client) return res.status(400).json({ error: "Invalid request" });
+    const targetTime = Date.now() + (delayMinutes * 60 * 1000);
+    const task = { secretCode, title, body, type, targetTime };
+    await client.zAdd('scholar_push_tasks', { score: targetTime, value: JSON.stringify(task) });
+    res.json({ success: true, targetTime });
+  } catch (error) {
+    res.status(500).json({ error: "Schedule failed" });
+  }
+});
+
+app.post("/api/push/cancel", async (req, res) => {
+  try {
+    const { secretCode } = req.body;
+    const client = await getRedisClient();
+    if (!secretCode || !client) return res.status(400).json({ error: "Invalid request" });
+    const tasks = await client.zRange('scholar_push_tasks', 0, -1);
+    for (const taskStr of tasks) {
+      const task = JSON.parse(taskStr.toString());
+      if (task.secretCode === secretCode) {
+        await client.zRem('scholar_push_tasks', taskStr.toString());
       }
-      res.json({ success: true });
-    } catch (error) {
-      res.status(500).json({ error: "Cancel failed" });
     }
-  });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: "Cancel failed" });
+  }
+});
 
-  // Polling loop for scheduled tasks
-  if (redisClient) {
+// Polling loop for scheduled tasks (Only in non-Vercel environments)
+const startScheduler = async () => {
+  const client = await getRedisClient();
+  if (client && !process.env.VERCEL) {
     setInterval(async () => {
       try {
         const now = Date.now();
-        const tasks = await redisClient.zRangeByScore('scholar_push_tasks', 0, now);
+        const tasks = await client.zRangeByScore('scholar_push_tasks', 0, now);
         for (const taskStr of tasks) {
           const task = JSON.parse(taskStr.toString());
-          const subStr = await redisClient.get(`scholar_push_sub_${task.secretCode}`);
+          const subStr = await client.get(`scholar_push_sub_${task.secretCode}`);
           if (subStr) {
             const subscription = JSON.parse(subStr.toString());
             try {
@@ -159,24 +168,27 @@ async function startServer() {
               }));
             } catch (err: any) {
               if (err.statusCode === 410 || err.statusCode === 404) {
-                await redisClient.del(`scholar_push_sub_${task.secretCode}`);
+                await client.del(`scholar_push_sub_${task.secretCode}`);
               }
             }
           }
-          await redisClient.zRem('scholar_push_tasks', taskStr.toString());
+          await client.zRem('scholar_push_tasks', taskStr.toString());
         }
       } catch (error) {
         console.error("Scheduler error:", error);
       }
     }, 10000);
   }
+};
 
-  // Health check
-  app.get("/api/health", (req, res) => res.json({ status: "ok" }));
+// Health check
+app.get("/api/health", (req, res) => res.json({ status: "ok" }));
 
+async function startServer() {
   // Vite middleware
   try {
     if (process.env.NODE_ENV !== "production") {
+      const { createServer: createViteServer } = await import("vite");
       const vite = await createViteServer({
         server: { middlewareMode: true },
         appType: "spa",
@@ -190,6 +202,20 @@ async function startServer() {
   } catch (err) {
     console.error("Vite/Static middleware error:", err);
   }
+
+  // Start scheduler for non-Vercel environments
+  startScheduler();
+
+  // Only listen if not on Vercel
+  if (!process.env.VERCEL) {
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`Server listening on port ${PORT}`);
+    });
+  }
 }
 
-startServer().catch(err => console.error("Fatal startup error:", err));
+if (!process.env.VERCEL) {
+  startServer().catch(err => console.error("Fatal startup error:", err));
+}
+
+export default app;
