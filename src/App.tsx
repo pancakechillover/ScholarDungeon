@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -1673,6 +1674,7 @@ function App() {
         </AnimatePresence>,
         document.body
       )}
+      <Analytics />
     </div>
   );
 }
