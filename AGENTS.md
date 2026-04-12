@@ -11,10 +11,11 @@ Whenever you complete a task or make changes to the application:
 3. Update the version number and release date in `src/components/Settings.tsx` (under the 'about' section) to match the new version and date.
 
 ## Current Status
-- **Current Version:** v1.4.2
+- **Current Version:** v1.4.3
 - **Last Update Date:** 2026-04-12
 
 ## Task History
+- **v1.4.3 (2026-04-12):** Refactored API to use standalone Vercel Serverless Functions. Created api/sync.ts, api/push.ts, and api/health.ts to resolve ESM module resolution errors on Vercel.
 - **v1.4.2 (2026-04-12):** Improved Redis connection handling for Vercel serverless environments. Implemented lazy connection and simplified vercel.json routing.
 - **v1.4.1 (2026-04-12):** Added Vercel deployment support. Created vercel.json for API routing, refactored server.ts to export the app for serverless functions, and added api/index.ts entry point.
 - **v1.4.0 (2026-04-12):** Refactored notification settings. Created a dedicated "System Notifications" section in General Settings and replaced the button-based toggle with a switch component.
