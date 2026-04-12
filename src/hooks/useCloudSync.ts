@@ -46,7 +46,7 @@ export function useCloudSync(
         forceOverwrite
       };
 
-      const response = await fetch('/api/sync', {
+      const response = await fetch('/api/sync/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -113,7 +113,7 @@ export function useCloudSync(
     setSyncError(null);
 
     try {
-      const response = await fetch('/api/sync', {
+      const response = await fetch('/api/sync/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -168,7 +168,7 @@ export function useCloudSync(
     setIsSyncing(true);
     setSyncError(null);
     try {
-      const response = await fetch('/api/sync', {
+      const response = await fetch('/api/sync/', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

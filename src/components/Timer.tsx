@@ -18,6 +18,8 @@ interface TimerProps {
   onRewardSelect: (reward: RewardCard) => void;
   setShowCoinRain: (show: boolean) => void;
   isFullscreen?: boolean;
+  secretCode?: string;
+  pushEnabled?: boolean;
 }
 
 export const Timer = React.memo<TimerProps>(({ 
@@ -32,7 +34,9 @@ export const Timer = React.memo<TimerProps>(({
   onReroll,
   onRewardSelect,
   setShowCoinRain,
-  isFullscreen = false
+  isFullscreen = false,
+  secretCode,
+  pushEnabled
 }) => {
   const [focusDuration, setFocusDuration] = useState(() => parseInt(localStorage.getItem('timer_focusDuration') || '25', 10));
   const [restDuration, setRestDuration] = useState(() => parseInt(localStorage.getItem('timer_restDuration') || '5', 10));
@@ -79,6 +83,35 @@ export const Timer = React.memo<TimerProps>(({
     }
     localStorage.setItem('timer_timeLeft', timeLeft.toString());
   }, [focusDuration, restDuration, enableRest, isLooping, isResting, duration, isActive, endTime, timeLeft]);
+
+  // Push Notification Scheduling
+  useEffect(() => {
+    if (!pushEnabled || !secretCode) return;
+
+    if (isActive && endTime) {
+      const delayMinutes = (endTime - Date.now()) / (60 * 1000);
+      if (delayMinutes > 0) {
+        fetch('/api/push/schedule', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            secretCode,
+            delayMinutes,
+            title: isResting ? "Rest Over!" : "Focus Over!",
+            body: isResting ? "Time to return to the dungeon." : "You have cleared the room. Take a rest?",
+            type: isResting ? 'rest_end' : 'timer_end'
+          })
+        }).catch(err => console.error('Failed to schedule push:', err));
+      }
+    } else {
+      // Cancel when paused or stopped
+      fetch('/api/push/cancel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ secretCode })
+      }).catch(err => console.error('Failed to cancel push:', err));
+    }
+  }, [isActive, endTime, pushEnabled, secretCode, isResting]);
 
   const handleComplete = useCallback(() => {
     setIsActive(false);

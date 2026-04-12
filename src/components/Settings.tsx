@@ -3,9 +3,25 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { RewardCard, ShopItem, GachaPool, Rarity } from '../types';
 import { INITIAL_GACHA } from '../constants';
-import { Plus, Trash2, Save, Edit2, X, ChevronRight, Coins, Zap, Sparkles, Trophy, Timer as TimerIcon, Package, Flame, AlertTriangle, Scroll, Volume2, VolumeX, Sun, Moon, Settings as SettingsIcon, ShoppingBag, Trees, Waves, Database, Download, Upload, Target, Gift, User, Sword, Eye, Palette, Check } from 'lucide-react';
+import { Plus, Trash2, Save, Edit2, X, ChevronRight, Coins, Zap, Sparkles, Trophy, Timer as TimerIcon, Package, Flame, AlertTriangle, Scroll, Volume2, VolumeX, Sun, Moon, Settings as SettingsIcon, ShoppingBag, Trees, Waves, Database, Download, Upload, Target, Gift, User, Sword, Eye, Palette, Check, Bell, BellOff, RefreshCw } from 'lucide-react';
 import { cn, getXPForLevel, getDefaultRewardForLevel } from '../lib/utils';
 import { playSound } from '../lib/sound';
+
+// Helper to convert VAPID key
+function urlBase64ToUint8Array(base64String: string) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding)
+    .replace(/-/g, '+')
+    .replace(/_/g, '/');
+
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
 
 interface SettingsProps {
   state: any;
@@ -314,6 +330,63 @@ const GeneralSettings = ({ state, setState, setShowClearConfirm }: { state: any,
     }
   };
 
+  const [isSubscribing, setIsSubscribing] = useState(false);
+
+  const handleNotificationToggle = async () => {
+    if (state.pushEnabled) {
+      // Unsubscribe
+      try {
+        const registration = await navigator.serviceWorker.ready;
+        const subscription = await registration.pushManager.getSubscription();
+        if (subscription) {
+          await subscription.unsubscribe();
+        }
+        setState(prev => ({ ...prev, pushEnabled: false, pushSubscription: null }));
+      } catch (error) {
+        console.error('Failed to unsubscribe:', error);
+      }
+      return;
+    }
+
+    // Subscribe
+    setIsSubscribing(true);
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') {
+        alert('Notification permission denied. Please enable it in your browser settings.');
+        return;
+      }
+
+      const registration = await navigator.serviceWorker.ready;
+      const vapidPublicKey = (process.env as any).VAPID_PUBLIC_KEY;
+      const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
+
+      const subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: convertedVapidKey
+      });
+
+      // Save to server if secretCode exists
+      if (state.secretCode) {
+        await fetch('/api/push/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            secretCode: state.secretCode,
+            subscription
+          })
+        });
+      }
+
+      setState(prev => ({ ...prev, pushEnabled: true, pushSubscription: subscription }));
+    } catch (error) {
+      console.error('Failed to subscribe:', error);
+      alert('Failed to enable notifications. Make sure you are using a supported browser and have added the app to your home screen if on iOS.');
+    } finally {
+      setIsSubscribing(false);
+    }
+  };
+
   const handleExport = () => {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
     const downloadAnchorNode = document.createElement('a');
@@ -530,6 +603,38 @@ const GeneralSettings = ({ state, setState, setShowClearConfirm }: { state: any,
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="p-6 bg-slate-900/50 rounded-2xl border border-slate-800 space-y-4">
+            <div className="flex items-center gap-3 text-white font-bold">
+              <Bell size={20} className="text-indigo-400" />
+              Notifications
+            </div>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Receive alerts when your timer or rest period ends. (Requires PWA installation on iOS)
+            </p>
+            <button
+              onClick={handleNotificationToggle}
+              disabled={isSubscribing}
+              className={cn(
+                "w-full px-4 py-2 rounded-xl font-bold transition-all text-sm flex items-center justify-center gap-2",
+                state.pushEnabled 
+                  ? "bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/30" 
+                  : "bg-indigo-600 hover:bg-indigo-700 text-white"
+              )}
+            >
+              {isSubscribing ? (
+                <RefreshCw size={16} className="animate-spin" />
+              ) : state.pushEnabled ? (
+                <>
+                  <BellOff size={16} /> Disable Notifications
+                </>
+              ) : (
+                <>
+                  <Bell size={16} /> Enable Notifications
+                </>
+              )}
+            </button>
+          </div>
+
           <div className="p-6 bg-slate-900/50 rounded-2xl border border-slate-800 space-y-4">
             <div className="flex items-center gap-3 text-white font-bold">
               <Download size={20} className="text-blue-400" />
@@ -859,7 +964,7 @@ export const Settings = React.memo<SettingsProps>(({
                 <h3 className="text-3xl font-black text-white tracking-tight">Scholar's Dungeon</h3>
                 <div className="flex flex-col items-center gap-1 mt-2">
                   <span className="px-3 py-1 bg-indigo-500/20 text-indigo-400 rounded-full font-bold tracking-widest uppercase text-xs border border-indigo-500/30">
-                    Version 1.2.2
+                    Version 1.3.1
                   </span>
                   <span className="text-slate-500 text-xs font-medium">
                     Updated: 2026-04-12

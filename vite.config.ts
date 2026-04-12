@@ -11,6 +11,9 @@ export default defineConfig(({mode}) => {
       react(), 
       tailwindcss(),
       VitePWA({
+        strategies: 'injectManifest',
+        srcDir: 'src',
+        filename: 'sw.ts',
         registerType: 'autoUpdate',
         includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
         manifest: {
@@ -33,6 +36,7 @@ export default defineConfig(({mode}) => {
     ],
     define: {
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
+      'process.env.VAPID_PUBLIC_KEY': JSON.stringify(env.VAPID_PUBLIC_KEY || "BH5OwZMBM9P55jCf-14OfpwDhWfOw7wxirim8bzKlyGZaRD61hdtRVW6nIlURIzD9ZHXKWfsgdNH3Gzrx3MTgyw"),
     },
     resolve: {
       alias: {

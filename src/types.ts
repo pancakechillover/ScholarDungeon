@@ -168,6 +168,8 @@ export interface UserState {
     code: string;
     timestamp: string;
   }[];
+  pushEnabled?: boolean;
+  pushSubscription?: any;
 }
 
 export interface StudySession {

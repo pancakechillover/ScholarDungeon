@@ -775,6 +775,8 @@ function App() {
                     }}
                     setShowCoinRain={setShowCoinRain}
                     isFullscreen={isFullscreenExplore}
+                    secretCode={state.secretCode}
+                    pushEnabled={state.pushEnabled}
                   />
                 </div>
 

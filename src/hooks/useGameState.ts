@@ -34,6 +34,8 @@ export function useGameState() {
       questNotificationStyle: 'red_dot',
       unclaimedQuests: 0,
       devModeEnabled: false,
+      pushEnabled: false,
+      pushSubscription: null,
       devBaseXP: 100,
       devBaseCoins: 10,
       devMinCoins: 5,

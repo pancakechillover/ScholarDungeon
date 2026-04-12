@@ -3,127 +3,193 @@ import { createServer as createViteServer } from "vite";
 import path from "path";
 import { createClient } from "redis";
 import dotenv from "dotenv";
+import webpush from "web-push";
 
 dotenv.config();
+
+// Configure Web Push
+const vapidPublicKey = process.env.VAPID_PUBLIC_KEY || "BH5OwZMBM9P55jCf-14OfpwDhWfOw7wxirim8bzKlyGZaRD61hdtRVW6nIlURIzD9ZHXKWfsgdNH3Gzrx3MTgyw";
+const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY || "Xiz1jQ_9n7iCw-VbjJjF4CPCdrMFszNj6Z1Ja6hXe58";
+const vapidEmail = process.env.VAPID_EMAIL || "mailto:iz.karakarakarakan@gmail.com";
+
+try {
+  webpush.setVapidDetails(vapidEmail, vapidPublicKey, vapidPrivateKey);
+} catch (err) {
+  console.error("Failed to set VAPID details:", err);
+}
 
 async function startServer() {
   const app = express();
   const PORT = 3000;
 
+  // Eager listen to pass health checks immediately
+  app.listen(PORT, "0.0.0.0", () => {
+    console.log(`Server listening on port ${PORT}`);
+  });
+
   // Initialize Redis client
-  let redisClient: ReturnType<typeof createClient> | null = null;
+  let redisClient: any = null;
   if (process.env.REDIS_URL) {
-    redisClient = createClient({ url: process.env.REDIS_URL });
-    redisClient.on('error', (err) => console.error('Redis Client Error', err));
-    await redisClient.connect().catch(console.error);
-    console.log("Connected to Redis via REDIS_URL");
+    try {
+      redisClient = createClient({ url: process.env.REDIS_URL });
+      redisClient.on('error', (err: any) => console.error('Redis Client Error', err));
+      redisClient.connect().catch((err: any) => console.error("Redis connect error:", err));
+      console.log("Redis client initialized");
+    } catch (err) {
+      console.error("Redis initialization error:", err);
+    }
   }
 
   app.use(express.json({ limit: '10mb' }));
 
-  // API routes FIRST
-  app.get("/api/health", (req, res) => {
-    res.json({ status: "ok" });
+  // Request logging
+  app.use((req, res, next) => {
+    console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+    next();
   });
 
-  // Sync API - Handle both /api/sync and /api/sync/
+  // Sync API Handler
   const syncHandler = async (req: express.Request, res: express.Response) => {
     try {
       const { secretCode, localData } = req.body;
-      
-      if (!secretCode) {
-        return res.status(400).json({ error: "Secret code is required" });
-      }
-
-      if (!redisClient) {
-        return res.status(500).json({ error: "Cloud sync is not configured on the server (Missing REDIS_URL)." });
-      }
+      if (!secretCode) return res.status(400).json({ error: "Secret code is required" });
+      if (!redisClient) return res.status(500).json({ error: "Cloud sync is not configured." });
 
       const key = `scholar_sync_${secretCode}`;
-      
-      // Get existing cloud data
       const cloudDataRaw = await redisClient.get(key);
-      const cloudDataString = cloudDataRaw ? cloudDataRaw.toString() : null;
-      const cloudData = cloudDataString ? JSON.parse(cloudDataString) : null;
+      const cloudData = cloudDataRaw ? JSON.parse(cloudDataRaw.toString()) : null;
 
-      // If no local data provided, just return cloud data (GET equivalent)
-      if (!localData) {
-        return res.json({ cloudData });
-      }
+      if (!localData) return res.json({ cloudData });
 
-      // Conflict Resolution
-      if (cloudData && (cloudData as any).lastUpdated) {
-        const cloudTime = new Date((cloudData as any).lastUpdated).getTime();
+      if (cloudData && cloudData.lastUpdated) {
+        const cloudTime = new Date(cloudData.lastUpdated).getTime();
         const localTime = new Date(localData.lastUpdated || 0).getTime();
-
-        // If cloud is newer and we are not forcing overwrite
         if (cloudTime > localTime && !req.body.forceOverwrite) {
-          return res.status(409).json({ 
-            conflict: true, 
-            cloudData,
-            message: "The cloud remembers a different path."
-          });
+          return res.status(409).json({ conflict: true, cloudData });
         }
       }
 
-      // Ensure lastUpdated is set
-      if (!localData.lastUpdated) {
-        localData.lastUpdated = new Date().toISOString();
-      }
-
-      // Save to KV
+      if (!localData.lastUpdated) localData.lastUpdated = new Date().toISOString();
       await redisClient.set(key, JSON.stringify(localData));
-      
       res.json({ success: true, cloudData: localData });
     } catch (error) {
       console.error("Sync error:", error);
-      res.status(500).json({ error: "Failed to commune with the ancient archives." });
+      res.status(500).json({ error: "Sync failed" });
     }
   };
 
-  app.post("/api/sync", syncHandler);
-  app.post("/api/sync/", syncHandler);
-
-  // Delete API
   const deleteHandler = async (req: express.Request, res: express.Response) => {
     try {
       const { secretCode } = req.body;
-      if (!secretCode) {
-        return res.status(400).json({ error: "Secret code is required" });
-      }
-      if (!redisClient) {
-        return res.status(500).json({ error: "Cloud sync is not configured on the server." });
-      }
+      if (!secretCode) return res.status(400).json({ error: "Secret code is required" });
+      if (!redisClient) return res.status(500).json({ error: "Cloud sync is not configured." });
       const key = `scholar_sync_${secretCode}`;
       await redisClient.del(key);
       res.json({ success: true });
     } catch (error) {
       console.error("Delete error:", error);
-      res.status(500).json({ error: "Failed to delete from the archives." });
+      res.status(500).json({ error: "Delete failed" });
     }
   };
 
+  app.post("/api/sync", syncHandler);
+  app.post("/api/sync/", syncHandler);
   app.delete("/api/sync", deleteHandler);
   app.delete("/api/sync/", deleteHandler);
 
-  // Vite middleware for development
-  if (process.env.NODE_ENV !== "production") {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: "spa",
-    });
-    app.use(vite.middlewares);
-  } else {
-    const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
-    app.get('*', (req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
-    });
+  // Push Notification Routes
+  app.post("/api/push/subscribe", async (req, res) => {
+    try {
+      const { secretCode, subscription } = req.body;
+      if (!secretCode || !subscription || !redisClient) return res.status(400).json({ error: "Invalid request" });
+      const key = `scholar_push_sub_${secretCode}`;
+      await redisClient.set(key, JSON.stringify(subscription));
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Subscribe failed" });
+    }
+  });
+
+  app.post("/api/push/schedule", async (req, res) => {
+    try {
+      const { secretCode, delayMinutes, title, body, type } = req.body;
+      if (!secretCode || delayMinutes === undefined || !redisClient) return res.status(400).json({ error: "Invalid request" });
+      const targetTime = Date.now() + (delayMinutes * 60 * 1000);
+      const task = { secretCode, title, body, type, targetTime };
+      await redisClient.zAdd('scholar_push_tasks', { score: targetTime, value: JSON.stringify(task) });
+      res.json({ success: true, targetTime });
+    } catch (error) {
+      res.status(500).json({ error: "Schedule failed" });
+    }
+  });
+
+  app.post("/api/push/cancel", async (req, res) => {
+    try {
+      const { secretCode } = req.body;
+      if (!secretCode || !redisClient) return res.status(400).json({ error: "Invalid request" });
+      const tasks = await redisClient.zRange('scholar_push_tasks', 0, -1);
+      for (const taskStr of tasks) {
+        const task = JSON.parse(taskStr.toString());
+        if (task.secretCode === secretCode) {
+          await redisClient.zRem('scholar_push_tasks', taskStr.toString());
+        }
+      }
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Cancel failed" });
+    }
+  });
+
+  // Polling loop for scheduled tasks
+  if (redisClient) {
+    setInterval(async () => {
+      try {
+        const now = Date.now();
+        const tasks = await redisClient.zRangeByScore('scholar_push_tasks', 0, now);
+        for (const taskStr of tasks) {
+          const task = JSON.parse(taskStr.toString());
+          const subStr = await redisClient.get(`scholar_push_sub_${task.secretCode}`);
+          if (subStr) {
+            const subscription = JSON.parse(subStr.toString());
+            try {
+              await webpush.sendNotification(subscription, JSON.stringify({
+                title: task.title,
+                body: task.body,
+                data: { type: task.type }
+              }));
+            } catch (err: any) {
+              if (err.statusCode === 410 || err.statusCode === 404) {
+                await redisClient.del(`scholar_push_sub_${task.secretCode}`);
+              }
+            }
+          }
+          await redisClient.zRem('scholar_push_tasks', taskStr.toString());
+        }
+      } catch (error) {
+        console.error("Scheduler error:", error);
+      }
+    }, 10000);
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-  });
+  // Health check
+  app.get("/api/health", (req, res) => res.json({ status: "ok" }));
+
+  // Vite middleware
+  try {
+    if (process.env.NODE_ENV !== "production") {
+      const vite = await createViteServer({
+        server: { middlewareMode: true },
+        appType: "spa",
+      });
+      app.use(vite.middlewares);
+    } else {
+      const distPath = path.join(process.cwd(), 'dist');
+      app.use(express.static(distPath));
+      app.get('*', (req, res) => res.sendFile(path.join(distPath, 'index.html')));
+    }
+  } catch (err) {
+    console.error("Vite/Static middleware error:", err);
+  }
 }
 
-startServer();
+startServer().catch(err => console.error("Fatal startup error:", err));
