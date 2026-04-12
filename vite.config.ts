@@ -14,7 +14,7 @@ export default defineConfig(({mode}) => {
         registerType: 'autoUpdate',
         includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
         manifest: {
-          name: 'Dungeon Explorer',
+          name: "Scholar's Dungeon",
           short_name: 'Dungeon',
           description: 'A gamified productivity app',
           theme_color: '#0f172a',

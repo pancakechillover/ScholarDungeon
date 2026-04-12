@@ -81,6 +81,25 @@ async function startServer() {
     }
   });
 
+  // Delete API
+  app.delete("/api/sync", async (req, res) => {
+    try {
+      const { secretCode } = req.body;
+      if (!secretCode) {
+        return res.status(400).json({ error: "Secret code is required" });
+      }
+      if (!redisClient) {
+        return res.status(500).json({ error: "Cloud sync is not configured on the server." });
+      }
+      const key = `scholar_sync_${secretCode}`;
+      await redisClient.del(key);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Delete error:", error);
+      res.status(500).json({ error: "Failed to delete from the archives." });
+    }
+  });
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({

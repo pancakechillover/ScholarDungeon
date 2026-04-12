@@ -163,6 +163,11 @@ export interface UserState {
   };
   lastUpdated?: string;
   secretCode?: string;
+  syncHistory?: {
+    type: 'login' | 'force_sync' | 'local_to_cloud' | 'cloud_to_local' | 'cancel_login' | 'unbind_local' | 'delete_cloud';
+    code: string;
+    timestamp: string;
+  }[];
 }
 
 export interface StudySession {

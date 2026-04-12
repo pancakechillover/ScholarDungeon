@@ -53,6 +53,7 @@ import { cn, getXPForLevel } from './lib/utils';
 import { playSound } from './lib/sound';
 import { StudySession, Dungeon, RewardCard, MajorDungeon, DungeonReward } from './types';
 import { CloudSyncModal } from './components/CloudSyncModal';
+import { SplashScreen } from './components/SplashScreen';
 
 const isTalentLevel = (lvl: number) => {
   if (lvl <= 4) return true;
@@ -73,6 +74,7 @@ const getNextTalentLevel = (currentLvl: number, levelRewards?: any[]) => {
 };
 
 function App() {
+  const [appReady, setAppReady] = useState(false);
   const [activeTab, setActiveTab] = useState<'dashboard' | 'explore' | 'dungeons' | 'talents' | 'shop' | 'stats' | 'settings' | 'vault'>('dashboard');
   const [dungeonSubTab, setDungeonSubTab] = useState<'list' | 'quests' | 'achievements'>('list');
   const [isAddingMajor, setIsAddingMajor] = useState(false);
@@ -131,7 +133,10 @@ function App() {
     syncToCloud,
     resolveConflict,
     fetchFromCloud,
-    unbindFromCloud
+    unbindFromCloud,
+    deleteCloudData,
+    setSyncCheckResult,
+    logSyncEvent
   } = useCloudSync(state, setState, setDungeons, setMajorDungeons);
 
   const [hasUnsyncedChanges, setHasUnsyncedChanges] = useState(() => {
@@ -390,7 +395,12 @@ function App() {
   ];
 
   return (
-    <div className="min-h-[100dvh] bg-slate-950 text-slate-200 font-sans selection:bg-indigo-500/30">
+    <>
+      <AnimatePresence>
+        {!appReady && <SplashScreen key="splash" onComplete={() => setAppReady(true)} />}
+      </AnimatePresence>
+
+      <div className="min-h-[100dvh] bg-slate-950 text-slate-200 font-sans selection:bg-indigo-500/30">
       {/* Sidebar Navigation - Hidden on mobile, visible on tablet/desktop */}
       {!isFullscreenExplore && (
         <nav className={cn(
@@ -1536,8 +1546,14 @@ function App() {
               syncCheckResult={syncCheckResult}
               onConnect={fetchFromCloud}
               onResolveConflict={resolveConflict}
+              onCancelConnect={(code) => {
+                setSyncCheckResult(null);
+                logSyncEvent('cancel_login', code);
+              }}
               onManualSync={() => syncToCloud(true)}
               onUnbind={unbindFromCloud}
+              onDeleteCloudData={deleteCloudData}
+              syncHistory={state.syncHistory}
             />
           )}
         </AnimatePresence>,
@@ -1862,6 +1878,7 @@ function App() {
         document.body
       )}
     </div>
+    </>
   );
 }
 
