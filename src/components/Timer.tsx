@@ -127,9 +127,11 @@ export const Timer = React.memo<TimerProps>(({
         onRestComplete();
       }
       
-      // Automatically start the next loop
-      setIsActive(true);
-      setEndTime(Date.now() + focusDuration * 60 * 1000);
+      if (isLooping) {
+        // Automatically start the next loop
+        setIsActive(true);
+        setEndTime(Date.now() + focusDuration * 60 * 1000);
+      }
     } else {
       // Finished focus
       const session = onComplete(duration);
@@ -266,6 +268,34 @@ export const Timer = React.memo<TimerProps>(({
 
   return (
     <div className="relative flex flex-col items-center space-y-8 w-full">
+      {/* Dungeon Progress in Fullscreen */}
+      {isFullscreen && currentDungeon && (
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-2xl px-6 py-4 bg-slate-900/50 backdrop-blur-md border border-slate-800 rounded-3xl flex items-center gap-6"
+        >
+          <div className="p-3 bg-indigo-500/20 text-indigo-400 rounded-2xl border border-indigo-500/20 shrink-0">
+            <Sword size={20} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex justify-between items-end mb-2">
+              <h4 className="text-sm font-black text-white uppercase italic tracking-tight truncate">{currentDungeon.name}</h4>
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                {currentDungeon.completedSessions}/{currentDungeon.totalSessions}
+              </span>
+            </div>
+            <div className="h-2 bg-slate-950 rounded-full overflow-hidden border border-slate-800">
+              <motion.div 
+                initial={{ width: 0 }}
+                animate={{ width: `${(currentDungeon.completedSessions / currentDungeon.totalSessions) * 100}%` }}
+                className="h-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]"
+              />
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       {/* Timer Display */}
       <div className="relative w-full max-w-[320px] sm:max-w-[400px] lg:max-w-[480px] aspect-square">
         <svg viewBox="0 0 320 320" className="w-full h-full transform -rotate-90">
@@ -550,6 +580,8 @@ export const Timer = React.memo<TimerProps>(({
                           setIsResting(true);
                           setDuration(restDuration);
                           setTimeLeft(restDuration * 60);
+                          // If loop is on, start rest immediately. 
+                          // If loop is off but rest is on, we still start rest automatically as requested.
                           setIsActive(true);
                           setEndTime(Date.now() + restDuration * 60 * 1000);
                         } else if (isLooping) {
@@ -557,6 +589,10 @@ export const Timer = React.memo<TimerProps>(({
                           setTimeLeft(focusDuration * 60);
                           setIsActive(true);
                           setEndTime(Date.now() + focusDuration * 60 * 1000);
+                        } else {
+                          // Reset timer if not looping and no rest
+                          setDuration(focusDuration);
+                          setTimeLeft(focusDuration * 60);
                         }
                       }}
                       className={cn(

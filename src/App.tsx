@@ -394,11 +394,36 @@ function App() {
     { id: 'settings', label: 'Settings', icon: SettingsIcon },
   ];
 
+  useEffect(() => {
+    if (appReady && state.secretCode) {
+      // Auto check sync on load if logged in
+      fetchFromCloud(state.secretCode);
+    }
+  }, [appReady]); // Only run once when app becomes ready
+
   return (
     <>
       <AnimatePresence>
         {!appReady && <SplashScreen key="splash" onComplete={() => setAppReady(true)} />}
       </AnimatePresence>
+
+      {syncCheckResult && (
+        <CloudSyncModal 
+          isOpen={true}
+          onClose={() => setSyncCheckResult(null)}
+          secretCode={state.secretCode}
+          isSyncing={isSyncing}
+          syncError={syncError}
+          syncCheckResult={syncCheckResult}
+          onConnect={fetchFromCloud}
+          onResolveConflict={resolveConflict}
+          onCancelConnect={() => setSyncCheckResult(null)}
+          onManualSync={() => syncToCloud(true)}
+          onUnbind={unbindFromCloud}
+          onDeleteCloudData={deleteCloudData}
+          syncHistory={state.syncHistory}
+        />
+      )}
 
       <div className="min-h-[100dvh] bg-slate-950 text-slate-200 font-sans selection:bg-indigo-500/30">
       {/* Sidebar Navigation - Hidden on mobile, visible on tablet/desktop */}
@@ -1139,14 +1164,8 @@ function App() {
                   coins={state.coins} 
                   shopItems={state.shopItems || []}
                   gachaPools={state.gachaPools || []}
-                  onPurchase={(price, name) => {
-                    setState(prev => ({ ...prev, coins: prev.coins - price }));
-                    addRewardToHistory({
-                      name,
-                      rarity: 'common',
-                      source: 'Shop',
-                      type: 'text'
-                    });
+                  onPurchase={(itemId) => {
+                    purchaseShopItem(itemId);
                     triggerSimpleConfetti();
                     playSound('reward', state.soundVolume, state.soundEnabled);
                   }}

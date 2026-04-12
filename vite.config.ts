@@ -18,7 +18,7 @@ export default defineConfig(({mode}) => {
         includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
         manifest: {
           name: "Scholar's Dungeon",
-          short_name: 'Dungeon',
+          short_name: "Scholar's Dungeon",
           description: 'A gamified productivity app',
           theme_color: '#0f172a',
           background_color: '#0f172a',

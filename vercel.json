@@ -9,5 +9,11 @@
       "source": "/api/push/(.*)",
       "destination": "/api/push"
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/push/check",
+      "schedule": "* * * * *"
+    }
   ]
 }

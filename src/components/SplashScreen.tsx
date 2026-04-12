@@ -33,15 +33,9 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="relative"
         >
-          <motion.div
-            animate={{ 
-              boxShadow: ['0 0 0px 0px rgba(99, 102, 241, 0)', '0 0 40px 10px rgba(99, 102, 241, 0.4)', '0 0 0px 0px rgba(99, 102, 241, 0)']
-            }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            className="p-6 bg-slate-900/50 rounded-full border border-indigo-500/30 backdrop-blur-sm mb-6"
-          >
+          <div className="p-6 bg-slate-900/50 rounded-full border border-indigo-500/30 backdrop-blur-sm mb-6">
             <Sword size={64} className="text-indigo-400" strokeWidth={1.5} />
-          </motion.div>
+          </div>
         </motion.div>
 
         <motion.div
@@ -50,8 +44,8 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
           transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
           className="text-center"
         >
-          <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-indigo-400 tracking-widest uppercase mb-2">
-            The Scholar's Dungeon
+          <h1 className="text-3xl font-bold text-indigo-400 tracking-widest uppercase mb-2">
+            Scholar's Dungeon
           </h1>
           <motion.div 
             className="h-0.5 bg-indigo-500/50 mx-auto"
@@ -64,6 +58,15 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
           </p>
         </motion.div>
       </div>
+
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.5 }}
+        className="absolute bottom-12 text-slate-600 text-[10px] font-bold tracking-[0.2em] uppercase"
+      >
+        Version 1.4.7
+      </motion.div>
     </motion.div>
   );
 }

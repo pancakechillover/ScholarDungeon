@@ -498,6 +498,14 @@ export function useGameState() {
       const isNewDay = prev.lastStudyDate !== todayStr;
       const newStreak = isNewDay ? prev.streak + 1 : prev.streak;
       
+      // Update shop stock if applicable
+      const newShopItems = prev.shopItems.map(item => {
+        if (dungeonId && item.id === dungeonId && item.stock !== undefined && item.stock > 0) {
+          return { ...item, stock: item.stock - 1 };
+        }
+        return item;
+      });
+
       let newState = {
         ...prev,
         history: [...prev.history, session],
@@ -505,7 +513,8 @@ export function useGameState() {
         streak: newStreak,
         dailySessions: prev.dailySessions + 1,
         coins: prev.coins + Math.floor(baseCoins),
-        inventory: [] // Clear inventory after session
+        inventory: [], // Clear inventory after session
+        shopItems: newShopItems
       };
 
       // Process Quests
@@ -1001,6 +1010,34 @@ export function useGameState() {
     }));
   }, []);
 
+  const purchaseShopItem = useCallback((itemId: string) => {
+    setState(prev => {
+      const item = prev.shopItems.find(i => i.id === itemId);
+      if (!item || prev.coins < item.price) return prev;
+      if (item.stock !== undefined && item.stock === 0) return prev;
+
+      const newShopItems = prev.shopItems.map(i => {
+        if (i.id === itemId && i.stock !== undefined && i.stock > 0) {
+          return { ...i, stock: i.stock - 1 };
+        }
+        return i;
+      });
+
+      addRewardToHistory({
+        name: item.name,
+        rarity: 'rare',
+        source: 'Shop',
+        type: 'item',
+      });
+
+      return {
+        ...prev,
+        coins: prev.coins - item.price,
+        shopItems: newShopItems
+      };
+    });
+  }, [addRewardToHistory]);
+
   return {
     state,
     dungeons,
@@ -1012,6 +1049,7 @@ export function useGameState() {
     addRewardToHistory,
     toggleRewardRedeemed,
     completeSession,
+    purchaseShopItem,
     drawGacha,
     resetIchibanPool,
     unlockTalent,

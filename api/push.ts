@@ -79,5 +79,44 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
   }
 
+  if (path?.endsWith('/check')) {
+    try {
+      const now = Date.now();
+      const tasks = await client.zRangeByScore('scholar_push_tasks', 0, now);
+      const results = [];
+
+      for (const taskStr of tasks) {
+        const task = JSON.parse(taskStr.toString());
+        const subStr = await client.get(`scholar_push_sub_${task.secretCode}`);
+        
+        if (subStr) {
+          const subscription = JSON.parse(subStr.toString());
+          try {
+            await webpush.sendNotification(subscription, JSON.stringify({
+              title: task.title,
+              body: task.body,
+              data: { type: task.type }
+            }));
+            results.push({ secretCode: task.secretCode, status: 'sent' });
+          } catch (err: any) {
+            console.error(`Push failed for ${task.secretCode}:`, err.message);
+            if (err.statusCode === 410 || err.statusCode === 404) {
+              await client.del(`scholar_push_sub_${task.secretCode}`);
+            }
+            results.push({ secretCode: task.secretCode, status: 'failed', error: err.message });
+          }
+        } else {
+          results.push({ secretCode: task.secretCode, status: 'no_subscription' });
+        }
+        await client.zRem('scholar_push_tasks', taskStr.toString());
+      }
+
+      return res.json({ success: true, processed: tasks.length, results });
+    } catch (error) {
+      console.error("Check error:", error);
+      return res.status(500).json({ error: "Check failed" });
+    }
+  }
+
   return res.status(404).json({ error: "Not found" });
 }

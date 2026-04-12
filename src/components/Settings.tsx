@@ -978,7 +978,7 @@ export const Settings = React.memo<SettingsProps>(({
                 <h3 className="text-3xl font-black text-white tracking-tight">Scholar's Dungeon</h3>
                 <div className="flex flex-col items-center gap-1 mt-2">
                   <span className="px-3 py-1 bg-indigo-500/20 text-indigo-400 rounded-full font-bold tracking-widest uppercase text-xs border border-indigo-500/30">
-                    Version 1.4.3
+                    Version 1.4.7
                   </span>
                   <span className="text-slate-500 text-xs font-medium">
                     Updated: 2026-04-12
@@ -1309,9 +1309,40 @@ const ShopSettings = ({ items, onUpdate }: { items: ShopItem[], onUpdate: (i: Sh
               >
                 <h4 className="text-xl font-bold text-white">Edit Shop Item</h4>
                 <div className="space-y-4">
-                  <input type="text" placeholder="Name" value={editing.name} onChange={e => setEditing({...editing, name: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white" />
-                  <textarea placeholder="Description" value={editing.description} onChange={e => setEditing({...editing, description: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white h-20" />
-                  <input type="number" placeholder="Price" value={editing.price} onChange={e => setEditing({...editing, price: parseInt(e.target.value)})} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white" />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-500 uppercase">Item Name</label>
+                      <input type="text" placeholder="Name" value={editing.name} onChange={e => setEditing({...editing, name: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white" />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-500 uppercase">Price (Gold)</label>
+                      <input type="number" placeholder="Price" value={editing.price} onChange={e => setEditing({...editing, price: parseInt(e.target.value) || 0})} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white" />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-500 uppercase">Stock (-1 for infinite)</label>
+                      <input type="number" placeholder="Stock" value={editing.stock ?? -1} onChange={e => setEditing({...editing, stock: parseInt(e.target.value)})} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white" />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-500 uppercase">Icon</label>
+                      <select 
+                        value={editing.icon || 'ShoppingBag'} 
+                        onChange={e => setEditing({...editing, icon: e.target.value})}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white"
+                      >
+                        {['ShoppingBag', 'Sparkles', 'Trophy', 'Coins', 'Zap', 'Flame', 'Gem', 'Target', 'Star', 'Heart', 'Shield', 'Sword', 'Coffee', 'Pizza', 'Gift', 'Package', 'Camera', 'Music', 'Book', 'Gamepad2', 'Ghost', 'Moon', 'Sun', 'Cloud', 'Anchor', 'Compass', 'Map', 'Key', 'Lock', 'Unlock', 'Bell', 'BellOff', 'Eye', 'EyeOff', 'Search', 'Settings'].map(icon => (
+                          <option key={icon} value={icon}>{icon}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-500 uppercase">Description</label>
+                    <textarea placeholder="Description" value={editing.description} onChange={e => setEditing({...editing, description: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white h-20" />
+                  </div>
                 </div>
                 <div className="flex justify-end gap-3 pt-4">
                   <button onClick={() => setEditing(null)} className="px-4 py-2 text-slate-400">Cancel</button>
