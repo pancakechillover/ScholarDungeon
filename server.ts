@@ -1,7 +1,7 @@
 import express from "express";
 import { createServer as createViteServer } from "vite";
 import path from "path";
-import { kv } from "@vercel/kv";
+import { createClient } from "redis";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -9,6 +9,15 @@ dotenv.config();
 async function startServer() {
   const app = express();
   const PORT = 3000;
+
+  // Initialize Redis client
+  let redisClient: ReturnType<typeof createClient> | null = null;
+  if (process.env.REDIS_URL) {
+    redisClient = createClient({ url: process.env.REDIS_URL });
+    redisClient.on('error', (err) => console.error('Redis Client Error', err));
+    await redisClient.connect().catch(console.error);
+    console.log("Connected to Redis via REDIS_URL");
+  }
 
   app.use(express.json({ limit: '10mb' }));
 
@@ -26,14 +35,15 @@ async function startServer() {
         return res.status(400).json({ error: "Secret code is required" });
       }
 
-      if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) {
-        return res.status(500).json({ error: "Cloud sync is not configured on the server." });
+      if (!redisClient) {
+        return res.status(500).json({ error: "Cloud sync is not configured on the server (Missing REDIS_URL)." });
       }
 
       const key = `scholar_sync_${secretCode}`;
       
       // Get existing cloud data
-      const cloudData = await kv.get(key);
+      const cloudDataString = await redisClient.get(key);
+      const cloudData = cloudDataString ? JSON.parse(cloudDataString) : null;
 
       // If no local data provided, just return cloud data (GET equivalent)
       if (!localData) {
@@ -61,7 +71,7 @@ async function startServer() {
       }
 
       // Save to KV
-      await kv.set(key, localData);
+      await redisClient.set(key, JSON.stringify(localData));
       
       res.json({ success: true, cloudData: localData });
     } catch (error) {
