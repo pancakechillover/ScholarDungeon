@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -123,7 +123,8 @@ function App() {
     finalizeMajorDungeon,
     updateQuests,
     claimQuestReward,
-    saveDailyLog
+    saveDailyLog,
+    purchaseShopItem
   } = useGameState();
 
   const {
@@ -184,6 +185,13 @@ function App() {
   }, []);
 
   const [prevLevel, setPrevLevel] = useState(state.level);
+
+  const handlePurchase = useCallback((itemId: string) => {
+    console.log('Purchasing item:', itemId);
+    purchaseShopItem(itemId);
+    triggerSimpleConfetti();
+    playSound('reward', state.soundVolume, state.soundEnabled);
+  }, [purchaseShopItem, state.soundVolume, state.soundEnabled]);
 
   React.useEffect(() => {
     if (state.level > prevLevel) {
@@ -1164,11 +1172,7 @@ function App() {
                   coins={state.coins} 
                   shopItems={state.shopItems || []}
                   gachaPools={state.gachaPools || []}
-                  onPurchase={(itemId) => {
-                    purchaseShopItem(itemId);
-                    triggerSimpleConfetti();
-                    playSound('reward', state.soundVolume, state.soundEnabled);
-                  }}
+                  onPurchase={handlePurchase}
                   onDrawGacha={handleDraw}
                   onResetIchiban={(id) => {
                     resetIchibanPool(id);

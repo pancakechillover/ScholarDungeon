@@ -166,12 +166,24 @@ export function useGameState() {
   const [dungeons, setDungeons] = useState<Dungeon[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEY + '_dungeons');
     if (saved) return JSON.parse(saved);
+    // Fallback: try to load from the main state if it exists there (legacy)
+    const mainSaved = localStorage.getItem(STORAGE_KEY);
+    if (mainSaved) {
+      const parsed = JSON.parse(mainSaved);
+      if (parsed.dungeons) return parsed.dungeons;
+    }
     return [];
   });
 
   const [majorDungeons, setMajorDungeons] = useState<MajorDungeon[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEY + '_major_dungeons');
     if (saved) return JSON.parse(saved);
+    // Fallback: try to load from the main state if it exists there (legacy)
+    const mainSaved = localStorage.getItem(STORAGE_KEY);
+    if (mainSaved) {
+      const parsed = JSON.parse(mainSaved);
+      if (parsed.majorDungeons) return parsed.majorDungeons;
+    }
     return [];
   });
 

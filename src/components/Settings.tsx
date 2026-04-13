@@ -388,7 +388,12 @@ const GeneralSettings = ({ state, setState, setShowClearConfirm }: { state: any,
   };
 
   const handleExport = () => {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
+    const dataToExport = {
+      ...state,
+      dungeons,
+      majorDungeons
+    };
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dataToExport));
     const downloadAnchorNode = document.createElement('a');
     downloadAnchorNode.setAttribute("href", dataStr);
     downloadAnchorNode.setAttribute("download", "scholars_dungeon_save.json");
@@ -404,9 +409,15 @@ const GeneralSettings = ({ state, setState, setShowClearConfirm }: { state: any,
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
-        const importedState = JSON.parse(e.target?.result as string);
-        if (importedState && typeof importedState === 'object') {
+        const importedData = JSON.parse(e.target?.result as string);
+        if (importedData && typeof importedData === 'object') {
+          // Extract state and dungeon data
+          const { dungeons, majorDungeons, ...importedState } = importedData;
+          
           localStorage.setItem('scholars_dungeon_state', JSON.stringify(importedState));
+          if (dungeons) localStorage.setItem('scholars_dungeon_dungeons', JSON.stringify(dungeons));
+          if (majorDungeons) localStorage.setItem('scholars_dungeon_major_dungeons', JSON.stringify(majorDungeons));
+          
           window.location.reload();
         } else {
           alert('Invalid save file format.');
