@@ -402,28 +402,7 @@ export function CloudSyncModal({
                         ) : (
                           <>
                             <Cloud size={20} />
-                            Force Sync (Upload)
-                          </>
-                        )}
-                      </button>
-                      <button 
-                        onClick={() => setConfirmDialog({
-                          title: 'Download from Cloud',
-                          message: 'This will overwrite your current local data with the data from the cloud. Are you sure you want to proceed?',
-                          action: () => onConnect(secretCode || '')
-                        })}
-                        disabled={isSyncing}
-                        className="w-full py-4 bg-indigo-600/20 hover:bg-indigo-600/30 disabled:opacity-50 text-indigo-400 rounded-2xl font-bold border border-indigo-500/30 transition-colors flex items-center justify-center gap-3"
-                      >
-                        {isSyncing ? (
-                          <>
-                            <Loader2 className="animate-spin" size={20} />
-                            Communing...
-                          </>
-                        ) : (
-                          <>
-                            <RefreshCw size={20} />
-                            Download from Cloud
+                            Force Sync
                           </>
                         )}
                       </button>

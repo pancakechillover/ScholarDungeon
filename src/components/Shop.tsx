@@ -1,19 +1,15 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ShopItem, GachaPool } from '../types';
-import { ShoppingBag, Sparkles, Trophy, Coins, RefreshCw, HelpCircle, Zap, Flame, Gem, Target, Star, Heart, Shield, Sword, Coffee, Pizza, Gift, Package, Camera, Music, Book, Gamepad2, Ghost, Moon, Sun, Cloud, Anchor, Compass, Map, Key, Lock, Unlock, Bell, BellOff, Eye, EyeOff, Search, Settings, Trash2, Edit2, Plus, X, Check, CheckCircle2, AlertCircle, Info, HelpCircle as HelpIcon } from 'lucide-react';
+import { ShoppingBag, Sparkles, Trophy, Coins, RefreshCw, HelpCircle } from 'lucide-react';
 import { PageHeader } from './PageHeader';
 import { cn } from '../lib/utils';
-
-const ICON_MAP: Record<string, any> = {
-  ShoppingBag, Sparkles, Trophy, Coins, RefreshCw, HelpCircle, Zap, Flame, Gem, Target, Star, Heart, Shield, Sword, Coffee, Pizza, Gift, Package, Camera, Music, Book, Gamepad2, Ghost, Moon, Sun, Cloud, Anchor, Compass, Map, Key, Lock, Unlock, Bell, BellOff, Eye, EyeOff, Search, Settings, Trash2, Edit2, Plus, X, Check, CheckCircle2, AlertCircle, Info, HelpIcon
-};
 
 interface ShopProps {
   coins: number;
   shopItems: ShopItem[];
   gachaPools: GachaPool[];
-  onPurchase: (itemId: string) => void;
+  onPurchase: (price: number, name: string) => void;
   onDrawGacha: (poolId: string, amount: number) => void;
   onResetIchiban: (poolId: string) => void;
   onShowCoinGuide?: () => void;
@@ -72,45 +68,28 @@ export const Shop = React.memo<ShopProps>(({ coins, shopItems, gachaPools, onPur
             exit={{ opacity: 0, x: -20 }}
             className="grid grid-cols-1 md:grid-cols-3 gap-6"
           >
-            {shopItems.map(item => {
-              const IconComponent = (item.icon && ICON_MAP[item.icon]) || ShoppingBag;
-              const isOutOfStock = item.stock !== undefined && item.stock === 0;
-
-              return (
-                <div key={item.id} className={cn(
-                  "bg-slate-900 p-6 rounded-2xl border flex flex-col h-full transition-all",
-                  isOutOfStock ? "opacity-50 grayscale border-slate-800" : "border-slate-800 hover:border-slate-700"
-                )}>
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="p-3 bg-indigo-500/10 text-indigo-400 rounded-xl w-fit">
-                      <IconComponent size={24} />
-                    </div>
-                    {item.stock !== undefined && item.stock !== -1 && (
-                      <div className="px-2 py-1 bg-slate-800 rounded-lg border border-slate-700">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                          Stock: {item.stock}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  <h3 className="text-lg font-bold text-white mb-2">{item.name}</h3>
-                  <p className="text-sm text-slate-400 mb-6 flex-grow">{item.description}</p>
-                  <button
-                    onClick={() => onPurchase(item.id)}
-                    disabled={coins < item.price || isOutOfStock}
-                    className={cn(
-                      "w-full py-3 rounded-xl font-bold transition-all flex items-center justify-center space-x-2",
-                      (coins >= item.price && !isOutOfStock)
-                        ? "bg-amber-500 hover:bg-amber-600 text-slate-900" 
-                        : "bg-slate-800 text-slate-600 cursor-not-allowed"
-                    )}
-                  >
-                    <Coins size={18} />
-                    <span>{isOutOfStock ? 'Out of Stock' : `${item.price.toLocaleString()} Gold`}</span>
-                  </button>
+            {shopItems.map(item => (
+              <div key={item.id} className="bg-slate-900 p-6 rounded-2xl border border-slate-800 flex flex-col h-full">
+                <div className="p-3 bg-indigo-500/10 text-indigo-400 rounded-xl w-fit mb-4">
+                  <ShoppingBag size={24} />
                 </div>
-              );
-            })}
+                <h3 className="text-lg font-bold text-white mb-2">{item.name}</h3>
+                <p className="text-sm text-slate-400 mb-6 flex-grow">{item.description}</p>
+                <button
+                  onClick={() => onPurchase(item.price, item.name)}
+                  disabled={coins < item.price}
+                  className={cn(
+                    "w-full py-3 rounded-xl font-bold transition-all flex items-center justify-center space-x-2",
+                    coins >= item.price 
+                      ? "bg-amber-500 hover:bg-amber-600 text-slate-900" 
+                      : "bg-slate-800 text-slate-600 cursor-not-allowed"
+                  )}
+                >
+                  <Coins size={18} />
+                  <span>{item.price.toLocaleString()} Gold</span>
+                </button>
+              </div>
+            ))}
           </motion.div>
         )}
 

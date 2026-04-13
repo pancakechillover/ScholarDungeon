@@ -166,24 +166,12 @@ export function useGameState() {
   const [dungeons, setDungeons] = useState<Dungeon[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEY + '_dungeons');
     if (saved) return JSON.parse(saved);
-    // Fallback: try to load from the main state if it exists there (legacy)
-    const mainSaved = localStorage.getItem(STORAGE_KEY);
-    if (mainSaved) {
-      const parsed = JSON.parse(mainSaved);
-      if (parsed.dungeons) return parsed.dungeons;
-    }
     return [];
   });
 
   const [majorDungeons, setMajorDungeons] = useState<MajorDungeon[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEY + '_major_dungeons');
     if (saved) return JSON.parse(saved);
-    // Fallback: try to load from the main state if it exists there (legacy)
-    const mainSaved = localStorage.getItem(STORAGE_KEY);
-    if (mainSaved) {
-      const parsed = JSON.parse(mainSaved);
-      if (parsed.majorDungeons) return parsed.majorDungeons;
-    }
     return [];
   });
 
@@ -510,14 +498,6 @@ export function useGameState() {
       const isNewDay = prev.lastStudyDate !== todayStr;
       const newStreak = isNewDay ? prev.streak + 1 : prev.streak;
       
-      // Update shop stock if applicable
-      const newShopItems = prev.shopItems.map(item => {
-        if (dungeonId && item.id === dungeonId && item.stock !== undefined && item.stock > 0) {
-          return { ...item, stock: item.stock - 1 };
-        }
-        return item;
-      });
-
       let newState = {
         ...prev,
         history: [...prev.history, session],
@@ -525,8 +505,7 @@ export function useGameState() {
         streak: newStreak,
         dailySessions: prev.dailySessions + 1,
         coins: prev.coins + Math.floor(baseCoins),
-        inventory: [], // Clear inventory after session
-        shopItems: newShopItems
+        inventory: [] // Clear inventory after session
       };
 
       // Process Quests
@@ -1022,34 +1001,6 @@ export function useGameState() {
     }));
   }, []);
 
-  const purchaseShopItem = useCallback((itemId: string) => {
-    setState(prev => {
-      const item = prev.shopItems.find(i => i.id === itemId);
-      if (!item || prev.coins < item.price) return prev;
-      if (item.stock !== undefined && item.stock === 0) return prev;
-
-      const newShopItems = prev.shopItems.map(i => {
-        if (i.id === itemId && i.stock !== undefined && i.stock > 0) {
-          return { ...i, stock: i.stock - 1 };
-        }
-        return i;
-      });
-
-      addRewardToHistory({
-        name: item.name,
-        rarity: 'rare',
-        source: 'Shop',
-        type: 'item',
-      });
-
-      return {
-        ...prev,
-        coins: prev.coins - item.price,
-        shopItems: newShopItems
-      };
-    });
-  }, [addRewardToHistory]);
-
   return {
     state,
     dungeons,
@@ -1061,7 +1012,6 @@ export function useGameState() {
     addRewardToHistory,
     toggleRewardRedeemed,
     completeSession,
-    purchaseShopItem,
     drawGacha,
     resetIchibanPool,
     unlockTalent,

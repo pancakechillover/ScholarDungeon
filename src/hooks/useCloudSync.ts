@@ -32,12 +32,15 @@ export function useCloudSync(
     setSyncError(null);
 
     try {
+      const dungeons = JSON.parse(localStorage.getItem('scholars_dungeon_dungeons') || '[]');
+      const majorDungeons = JSON.parse(localStorage.getItem('scholars_dungeon_major_dungeons') || '[]');
+
       const payload = {
         secretCode: currentState.secretCode,
         localData: {
           state: currentState,
-          dungeons: JSON.parse(localStorage.getItem('scholars_dungeon_state_dungeons') || '[]'),
-          majorDungeons: JSON.parse(localStorage.getItem('scholars_dungeon_state_major_dungeons') || '[]'),
+          dungeons,
+          majorDungeons,
           lastUpdated: new Date().toISOString()
         },
         forceOverwrite

@@ -580,17 +580,17 @@ export const Timer = React.memo<TimerProps>(({
                           setIsResting(true);
                           setDuration(restDuration);
                           setTimeLeft(restDuration * 60);
-                          // If loop is on, start rest immediately. 
-                          // If loop is off but rest is on, we still start rest automatically as requested.
-                          setIsActive(true);
-                          setEndTime(Date.now() + restDuration * 60 * 1000);
+                          if (isLooping) {
+                            setIsActive(true);
+                            setEndTime(Date.now() + restDuration * 60 * 1000);
+                          }
                         } else if (isLooping) {
                           setDuration(focusDuration);
                           setTimeLeft(focusDuration * 60);
                           setIsActive(true);
                           setEndTime(Date.now() + focusDuration * 60 * 1000);
                         } else {
-                          // Reset timer if not looping and no rest
+                          // Reset timer if not looping
                           setDuration(focusDuration);
                           setTimeLeft(focusDuration * 60);
                         }
