@@ -11,10 +11,11 @@ Whenever you complete a task or make changes to the application:
 3. Update the version number and release date in `src/components/Settings.tsx` (under the 'about' section) to match the new version and date.
 
 ## Current Status
-- **Current Version:** v1.5.0
+- **Current Version:** v1.5.1
 - **Last Update Date:** 2026-04-14
 
 ## Task History
+- **v1.5.1 (2026-04-14):** Analyzed the failure of silent sync (caused by volatile fields like `syncHistory` in JSON.stringify) and planned the side-by-side data comparison UI for the conflict modal. Documented in AGENTS.md.
 - **v1.5.0 (2026-04-14):** Implemented Smart Cloud Sync (silent identical sync) and Device Tracking. Added `deviceType` to `UserState` and sync history. Updated `CloudSyncModal` to display Cloud and Local device types during conflicts and in the sync history view.
 - **v1.4.11 (2026-04-14):** Fixed Web Push Notifications on Vercel. Added `/api/push/vapid-public-key` endpoint to serve the VAPID key to the frontend (resolving Vite env var issues) and added rewrite rules in `vercel.json` for `/api/push/*`.
 - **v1.4.10 (2026-04-13):** Analyzed Web Push Notification failures on Vercel. Documented root causes (Vite env vars, Vercel routing, and Hobby plan cron limits) in AGENTS.md.
@@ -38,5 +39,12 @@ Whenever you complete a task or make changes to the application:
 - **v1.0.0:** Initial release and subsequent security/UI enhancements (Cloud Sync confirmations, history tracking, etc.).
 
 ## Pending Tasks
+- **[Bugfix & Feature] Fix Silent Sync & Add Data Comparison UI (v1.5.1):**
+  - *Analysis of Silent Sync Failure:*
+    1. **Root Cause:** The `JSON.stringify` comparison in `useCloudSync.ts` is too strict. While we ignored `lastUpdated`, we forgot to ignore other volatile fields. Specifically, `syncHistory` is different between local and cloud (every sync adds an event, and local might have a different history length), `deviceType` might differ, and `pushSubscription` might differ. If any of these differ, `JSON.stringify` returns false, triggering the modal.
+    2. **Fix Plan:** Create a robust `compareGameStates` utility function. This function will explicitly strip out volatile fields (`lastUpdated`, `syncHistory`, `deviceType`, `pushSubscription`, `secretCode`) from both local and cloud states before performing a deep comparison.
+  - *Feasibility of Data Comparison UI:*
+    1. **Feasibility:** Highly feasible. We already have `syncCheckResult.cloudData.state` and the local `state` available in `CloudSyncModal.tsx`.
+    2. **Action Plan:** Redesign the conflict view in `CloudSyncModal.tsx`. Instead of just showing the cloud level and time, we will create a side-by-side comparison table/grid showing: Level, Coins, Total Sessions (history length), Device Type, and Last Updated Time for BOTH Local and Cloud. We can highlight the higher values in green to make it obvious which save is more advanced.
 - Fix performance issues causing lag (state colocation for Timer - partially addressed with memoization).
 - Further optimize state management if lag persists.
