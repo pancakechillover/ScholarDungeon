@@ -191,6 +191,8 @@ export interface ShopItem {
   name: string;
   price: number;
   description: string;
+  stock?: number; // -1 for infinite
+  icon?: string; // Lucide icon name
 }
 
 export interface GachaPool {

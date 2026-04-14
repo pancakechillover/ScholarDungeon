@@ -32,10 +32,14 @@ const getRedisClient = async () => {
 };
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  const path = req.url?.split('?')[0];
+
+  if (path?.endsWith('/vapid-public-key')) {
+    return res.json({ publicKey: vapidPublicKey });
+  }
+
   const client = await getRedisClient();
   if (!client) return res.status(500).json({ error: "Redis connection failed" });
-
-  const path = req.url?.split('?')[0];
 
   if (path?.endsWith('/subscribe')) {
     try {

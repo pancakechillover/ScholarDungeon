@@ -1,10 +1,10 @@
 import { createClient } from 'redis';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-// Initialize Redis client lazily
+// Initialize Redis client lazily to reuse connection in serverless environment
 let redisClient: any = null;
 const getRedisClient = async () => {
-  if (redisClient) return redisClient;
+  if (redisClient && redisClient.isOpen) return redisClient;
   if (process.env.REDIS_URL) {
     try {
       redisClient = createClient({ url: process.env.REDIS_URL });
@@ -20,24 +20,36 @@ const getRedisClient = async () => {
 };
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // Handle CORS if necessary, but Vercel handles same-origin by default
-  
-  const client = await getRedisClient();
-  if (!client) {
-    return res.status(500).json({ error: "Cloud sync is not configured (Redis connection failed)." });
-  }
+  try {
+    const client = await getRedisClient();
+    if (!client) {
+      return res.status(500).json({ error: "Cloud sync is not configured (Redis connection failed)." });
+    }
 
-  if (req.method === 'POST') {
-    try {
-      const { secretCode, localData, forceOverwrite } = req.body;
+    // Parse body if it's a string (fallback for missing Content-Type)
+    let body = req.body;
+    if (typeof body === 'string') {
+      try {
+        body = JSON.parse(body);
+      } catch (e) {
+        console.error("Failed to parse string body:", e);
+      }
+    }
+
+    if (req.method === 'POST') {
+      const { secretCode, localData, forceOverwrite } = body || {};
       if (!secretCode) return res.status(400).json({ error: "Secret code is required" });
 
       const key = `scholar_sync_${secretCode}`;
       const cloudDataRaw = await client.get(key);
       const cloudData = cloudDataRaw ? JSON.parse(cloudDataRaw.toString()) : null;
 
-      if (!localData) return res.json({ cloudData });
+      // If no localData is provided, this is a FETCH request
+      if (!localData) {
+        return res.status(200).json({ cloudData });
+      }
 
+      // Conflict resolution
       if (cloudData && cloudData.lastUpdated) {
         const cloudTime = new Date(cloudData.lastUpdated).getTime();
         const localTime = new Date(localData.lastUpdated || 0).getTime();
@@ -48,26 +60,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       if (!localData.lastUpdated) localData.lastUpdated = new Date().toISOString();
       await client.set(key, JSON.stringify(localData));
-      return res.json({ success: true, cloudData: localData });
-    } catch (error) {
-      console.error("Sync error:", error);
-      return res.status(500).json({ error: "Sync failed" });
-    }
-  } 
-  
-  if (req.method === 'DELETE') {
-    try {
-      const { secretCode } = req.body;
+      return res.status(200).json({ success: true, cloudData: localData });
+    } 
+    
+    if (req.method === 'DELETE') {
+      const { secretCode } = body || {};
       if (!secretCode) return res.status(400).json({ error: "Secret code is required" });
       
       const key = `scholar_sync_${secretCode}`;
       await client.del(key);
-      return res.json({ success: true });
-    } catch (error) {
-      console.error("Delete error:", error);
-      return res.status(500).json({ error: "Delete failed" });
+      return res.status(200).json({ success: true });
     }
-  }
 
-  return res.status(405).json({ error: "Method not allowed" });
+    return res.status(405).json({ error: "Method not allowed" });
+  } catch (error) {
+    console.error("Sync error:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
 }

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -123,7 +123,8 @@ function App() {
     finalizeMajorDungeon,
     updateQuests,
     claimQuestReward,
-    saveDailyLog
+    saveDailyLog,
+    purchaseShopItem
   } = useGameState();
 
   const {
@@ -184,6 +185,13 @@ function App() {
   }, []);
 
   const [prevLevel, setPrevLevel] = useState(state.level);
+
+  const handlePurchase = useCallback((itemId: string) => {
+    console.log('Purchasing item:', itemId);
+    purchaseShopItem(itemId);
+    triggerSimpleConfetti();
+    playSound('reward', state.soundVolume, state.soundEnabled);
+  }, [purchaseShopItem, state.soundVolume, state.soundEnabled]);
 
   React.useEffect(() => {
     if (state.level > prevLevel) {
@@ -394,11 +402,36 @@ function App() {
     { id: 'settings', label: 'Settings', icon: SettingsIcon },
   ];
 
+  useEffect(() => {
+    if (appReady && state.secretCode) {
+      // Auto check sync on load if logged in
+      fetchFromCloud(state.secretCode);
+    }
+  }, [appReady]); // Only run once when app becomes ready
+
   return (
     <>
       <AnimatePresence>
         {!appReady && <SplashScreen key="splash" onComplete={() => setAppReady(true)} />}
       </AnimatePresence>
+
+      {syncCheckResult && (
+        <CloudSyncModal 
+          isOpen={true}
+          onClose={() => setSyncCheckResult(null)}
+          secretCode={state.secretCode}
+          isSyncing={isSyncing}
+          syncError={syncError}
+          syncCheckResult={syncCheckResult}
+          onConnect={fetchFromCloud}
+          onResolveConflict={resolveConflict}
+          onCancelConnect={() => setSyncCheckResult(null)}
+          onManualSync={() => syncToCloud(true)}
+          onUnbind={unbindFromCloud}
+          onDeleteCloudData={deleteCloudData}
+          syncHistory={state.syncHistory}
+        />
+      )}
 
       <div className="min-h-[100dvh] bg-slate-950 text-slate-200 font-sans selection:bg-indigo-500/30">
       {/* Sidebar Navigation - Hidden on mobile, visible on tablet/desktop */}
@@ -1139,17 +1172,7 @@ function App() {
                   coins={state.coins} 
                   shopItems={state.shopItems || []}
                   gachaPools={state.gachaPools || []}
-                  onPurchase={(price, name) => {
-                    setState(prev => ({ ...prev, coins: prev.coins - price }));
-                    addRewardToHistory({
-                      name,
-                      rarity: 'common',
-                      source: 'Shop',
-                      type: 'text'
-                    });
-                    triggerSimpleConfetti();
-                    playSound('reward', state.soundVolume, state.soundEnabled);
-                  }}
+                  onPurchase={handlePurchase}
                   onDrawGacha={handleDraw}
                   onResetIchiban={(id) => {
                     resetIchibanPool(id);
