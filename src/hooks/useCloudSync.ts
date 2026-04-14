@@ -18,7 +18,7 @@ export function useCloudSync(
   const logSyncEvent = useCallback((type: 'login' | 'force_sync' | 'local_to_cloud' | 'cloud_to_local' | 'cancel_login' | 'unbind_local' | 'delete_cloud', code: string) => {
     setState(prev => {
       const newHistory = [...(prev.syncHistory || [])];
-      newHistory.unshift({ type, code, timestamp: new Date().toISOString() });
+      newHistory.unshift({ type, code, timestamp: new Date().toISOString(), deviceType: prev.deviceType });
       if (newHistory.length > 50) newHistory.pop();
       return { ...prev, syncHistory: newHistory };
     });
@@ -136,6 +136,25 @@ export function useCloudSync(
       if (data.cloudData) {
         const cloudTime = new Date(data.cloudData.lastUpdated || 0).getTime();
         const localTime = new Date(state.lastUpdated || 0).getTime();
+
+        // Check if data is identical (ignoring lastUpdated)
+        const localDataToCompare = {
+          state: { ...state, lastUpdated: undefined },
+          dungeons: JSON.parse(localStorage.getItem('scholars_dungeon_state_dungeons') || '[]'),
+          majorDungeons: JSON.parse(localStorage.getItem('scholars_dungeon_state_major_dungeons') || '[]')
+        };
+        const cloudDataToCompare = {
+          state: { ...data.cloudData.state, lastUpdated: undefined },
+          dungeons: data.cloudData.dungeons || [],
+          majorDungeons: data.cloudData.majorDungeons || []
+        };
+
+        if (JSON.stringify(localDataToCompare) === JSON.stringify(cloudDataToCompare)) {
+          // Data is identical, silently update lastUpdated and secretCode
+          setState(prev => ({ ...prev, lastUpdated: data.cloudData.lastUpdated, secretCode: code }));
+          setSyncCheckResult(null);
+          return;
+        }
 
         if (cloudTime > localTime) {
           setSyncCheckResult({ status: 'cloud_newer', cloudData: data.cloudData, code });

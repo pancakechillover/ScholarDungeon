@@ -3,7 +3,7 @@ import { UserState, Dungeon, StudySession, Talent, RewardCard, MajorDungeon, Rew
 import { TALENTS, INITIAL_REWARD_POOL, INITIAL_GACHA, DEFAULT_QUESTS } from '../constants';
 import { format, isSameDay, parseISO, differenceInDays } from 'date-fns';
 
-import { getXPForLevel, getDefaultRewardForLevel } from '../lib/utils';
+import { getXPForLevel, getDefaultRewardForLevel, getDeviceType } from '../lib/utils';
 
 const STORAGE_KEY = 'scholars_dungeon_state';
 
@@ -36,6 +36,7 @@ export function useGameState() {
       devModeEnabled: false,
       pushEnabled: false,
       pushSubscription: null,
+      deviceType: getDeviceType(),
       devBaseXP: 100,
       devBaseCoins: 10,
       devMinCoins: 5,
@@ -198,6 +199,13 @@ export function useGameState() {
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY + '_major_dungeons', JSON.stringify(majorDungeons));
   }, [majorDungeons]);
+
+  useEffect(() => {
+    const currentDeviceType = getDeviceType();
+    if (state.deviceType !== currentDeviceType) {
+      setState(prev => ({ ...prev, deviceType: currentDeviceType }));
+    }
+  }, [state.deviceType]);
 
   // Daily Reset Logic
   useEffect(() => {

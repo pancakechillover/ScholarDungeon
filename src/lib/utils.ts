@@ -15,3 +15,15 @@ export const getDefaultRewardForLevel = (lvl: number) => {
   if (lvl > 43 && (lvl - 43) % 5 === 0) return { type: 'talentPoint', amount: 1 };
   return null;
 };
+
+export function getDeviceType(): string {
+  if (typeof navigator === 'undefined') return 'Unknown';
+  const ua = navigator.userAgent;
+  if (/android/i.test(ua)) return 'Android';
+  if (/iPad|iPhone|iPod/.test(ua)) return 'iOS';
+  if (/windows phone/i.test(ua)) return 'Windows Phone';
+  if (/Macintosh/i.test(ua)) return 'macOS';
+  if (/Windows/i.test(ua)) return 'Windows';
+  if (/Linux/i.test(ua)) return 'Linux';
+  return 'Unknown Device';
+}

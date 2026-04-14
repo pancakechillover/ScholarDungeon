@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Cloud, Key, X, AlertTriangle, Check, Loader2, Database, Sparkles, HelpCircle, Unlink, Info, Eye, EyeOff, Copy, RefreshCw, Trash2, History } from 'lucide-react';
+import { getDeviceType } from '../lib/utils';
 
 interface CloudSyncModalProps {
   isOpen: boolean;
@@ -215,7 +216,10 @@ export function CloudSyncModal({
                           </span>
                           <span className="text-[10px] text-slate-500">{new Date(record.timestamp).toLocaleString()}</span>
                         </div>
-                        <div className="text-xs text-slate-400 font-mono">Code: {record.code}</div>
+                        <div className="flex justify-between items-center mt-1">
+                          <span className="text-xs text-slate-400 font-mono">Code: {record.code}</span>
+                          {record.deviceType && <span className="text-[10px] text-slate-500 bg-slate-800 px-2 py-0.5 rounded-full">{record.deviceType}</span>}
+                        </div>
                       </div>
                     ))
                   ) : (
@@ -275,6 +279,16 @@ export function CloudSyncModal({
                               ? new Date(syncCheckResult.cloudData.state.lastUpdated).toLocaleString() 
                               : 'Unknown'}
                           </span>
+                        </div>
+                        {syncCheckResult.cloudData?.state?.deviceType && (
+                          <div className="flex justify-between items-center mt-1 pt-1 border-t border-slate-800/50">
+                            <span className="text-xs text-slate-500">Cloud Device</span>
+                            <span className="text-xs text-slate-300">{syncCheckResult.cloudData.state.deviceType}</span>
+                          </div>
+                        )}
+                        <div className="flex justify-between items-center mt-1">
+                          <span className="text-xs text-slate-500">Local Device</span>
+                          <span className="text-xs text-slate-300">{getDeviceType()}</span>
                         </div>
                       </div>
                       

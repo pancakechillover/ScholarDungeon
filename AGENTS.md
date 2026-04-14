@@ -11,10 +11,11 @@ Whenever you complete a task or make changes to the application:
 3. Update the version number and release date in `src/components/Settings.tsx` (under the 'about' section) to match the new version and date.
 
 ## Current Status
-- **Current Version:** v1.4.11
+- **Current Version:** v1.5.0
 - **Last Update Date:** 2026-04-14
 
 ## Task History
+- **v1.5.0 (2026-04-14):** Implemented Smart Cloud Sync (silent identical sync) and Device Tracking. Added `deviceType` to `UserState` and sync history. Updated `CloudSyncModal` to display Cloud and Local device types during conflicts and in the sync history view.
 - **v1.4.11 (2026-04-14):** Fixed Web Push Notifications on Vercel. Added `/api/push/vapid-public-key` endpoint to serve the VAPID key to the frontend (resolving Vite env var issues) and added rewrite rules in `vercel.json` for `/api/push/*`.
 - **v1.4.10 (2026-04-13):** Analyzed Web Push Notification failures on Vercel. Documented root causes (Vite env vars, Vercel routing, and Hobby plan cron limits) in AGENTS.md.
 - **v1.4.9 (2026-04-13):** Fixed "Missing localData" error in Vercel cloud sync. Restored API contract in `api/sync.ts` (handling POST-as-fetch, DELETE, and conflict resolution) and added fallback parsing for stringified `req.body`.
