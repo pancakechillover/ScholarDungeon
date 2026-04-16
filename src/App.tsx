@@ -212,7 +212,8 @@ function App() {
                 console.error('Push sync: Failed with status', res.status);
               }
             } else {
-              console.warn('Push sync: No subscription found in browser even though pushEnabled is true');
+              console.warn('Push sync: No subscription found in browser even though pushEnabled is true. Auto-correcting state.');
+              setState(prev => ({ ...prev, pushEnabled: false, pushSubscription: null }));
             }
           }
         } catch (error) {

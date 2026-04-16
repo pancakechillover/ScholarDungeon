@@ -44,8 +44,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (path?.endsWith('/subscribe')) {
     try {
       const { secretCode, subscription } = req.body;
-      if (!secretCode || !subscription) return res.status(400).json({ error: "Invalid request" });
+      if (!secretCode) return res.status(400).json({ error: "Invalid request" });
       const key = `scholar_push_sub_${secretCode}`;
+      
+      if (subscription === null) {
+        await client.del(key);
+        return res.json({ success: true, message: "Subscription cleared" });
+      }
+      
       await client.set(key, JSON.stringify(subscription));
       return res.json({ success: true });
     } catch (error) {

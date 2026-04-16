@@ -427,16 +427,25 @@ const GeneralSettings = ({ state, setState, setShowClearConfirm }: { state: any,
     
     setIsSubscribing(true);
     try {
+      console.log('Force Sync: Checking service worker...');
       let registration = await navigator.serviceWorker.getRegistration();
       if (!registration) {
+        console.log('Force Sync: Registering new service worker...');
         registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
       }
-      registration = await navigator.serviceWorker.ready;
       
+      console.log('Force Sync: Waiting for ready...');
+      const readyPromise = navigator.serviceWorker.ready;
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Service Worker ready timeout (10s)')), 10000)
+      );
+      registration = await Promise.race([readyPromise, timeoutPromise]) as ServiceWorkerRegistration;
+      
+      console.log('Force Sync: Checking subscription...');
       let subscription = await registration.pushManager.getSubscription();
       
       if (!subscription) {
-        // Try to re-subscribe if missing
+        console.log('Force Sync: No subscription found, attempting to re-subscribe...');
         const vapidResponse = await fetch('/api/push/vapid-public-key');
         const { publicKey } = await vapidResponse.json();
         const convertedVapidKey = urlBase64ToUint8Array(publicKey);
@@ -445,8 +454,10 @@ const GeneralSettings = ({ state, setState, setShowClearConfirm }: { state: any,
           userVisibleOnly: true,
           applicationServerKey: convertedVapidKey
         });
+        console.log('Force Sync: Re-subscribed successfully');
       }
 
+      console.log('Force Sync: Sending to server...');
       const res = await fetch('/api/push/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1236,6 +1247,36 @@ export const Settings = React.memo<SettingsProps>(({
                     >
                       <Trash2 size={14} />
                       Reset Service Worker
+                    </button>
+                    <button
+                      onClick={async () => {
+                        if (!state.secretCode) return alert('Secret Code required');
+                        if (!confirm('This will delete your push subscription from the server. You will need to re-enable notifications. Continue?')) return;
+                        try {
+                          // We don't have a direct delete endpoint, but we can send a null subscription or similar
+                          // Actually, let's add a proper delete logic if possible, or just overwrite with invalid
+                          const res = await fetch('/api/push/subscribe', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              secretCode: state.secretCode,
+                              subscription: null // Backend should handle this or we add a delete endpoint
+                            })
+                          });
+                          if (res.ok) {
+                            setState(prev => ({ ...prev, pushEnabled: false, pushSubscription: null }));
+                            alert('Server subscription cleared.');
+                          } else {
+                            alert('Failed to clear server subscription.');
+                          }
+                        } catch (e) {
+                          alert('Error: ' + e);
+                        }
+                      }}
+                      className="flex items-center justify-center gap-2 bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 border border-orange-500/30 font-bold py-2 rounded-xl text-xs transition-all"
+                    >
+                      <Trash2 size={14} />
+                      Clear Server Sub
                     </button>
                     <button
                       onClick={async () => {
