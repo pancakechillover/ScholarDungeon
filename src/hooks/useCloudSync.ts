@@ -96,28 +96,33 @@ export function useCloudSync(
   const resolveConflict = useCallback(async (useCloud: boolean) => {
     if (!syncCheckResult) return;
 
-    if (useCloud && syncCheckResult.cloudData) {
-      if (syncCheckResult.cloudData.fullLocalStorage) {
-        Object.keys(syncCheckResult.cloudData.fullLocalStorage).forEach(key => {
-          localStorage.setItem(key, syncCheckResult.cloudData.fullLocalStorage[key]);
-        });
-      } else {
-        localStorage.setItem('scholars_dungeon_state', JSON.stringify(syncCheckResult.cloudData.state));
-        localStorage.setItem('scholars_dungeon_dungeons', JSON.stringify(syncCheckResult.cloudData.dungeons));
-        localStorage.setItem('scholars_dungeon_major_dungeons', JSON.stringify(syncCheckResult.cloudData.majorDungeons));
-      }
+    setIsSyncing(true);
+    try {
+      if (useCloud && syncCheckResult.cloudData) {
+        if (syncCheckResult.cloudData.fullLocalStorage) {
+          Object.keys(syncCheckResult.cloudData.fullLocalStorage).forEach(key => {
+            localStorage.setItem(key, syncCheckResult.cloudData.fullLocalStorage[key]);
+          });
+        } else {
+          localStorage.setItem('scholars_dungeon_state', JSON.stringify(syncCheckResult.cloudData.state));
+          localStorage.setItem('scholars_dungeon_dungeons', JSON.stringify(syncCheckResult.cloudData.dungeons));
+          localStorage.setItem('scholars_dungeon_major_dungeons', JSON.stringify(syncCheckResult.cloudData.majorDungeons));
+        }
 
-      setState(syncCheckResult.cloudData.state);
-      setDungeons(syncCheckResult.cloudData.dungeons);
-      setMajorDungeons(syncCheckResult.cloudData.majorDungeons);
-      
-      logSyncEvent('cloud_to_local', syncCheckResult.code);
-    } else if (!useCloud) {
-      setState(prev => ({ ...prev, secretCode: syncCheckResult.code }));
-      await syncToCloud(true, { ...state, secretCode: syncCheckResult.code });
-      logSyncEvent('local_to_cloud', syncCheckResult.code);
+        setState(syncCheckResult.cloudData.state);
+        setDungeons(syncCheckResult.cloudData.dungeons);
+        setMajorDungeons(syncCheckResult.cloudData.majorDungeons);
+        
+        logSyncEvent('cloud_to_local', syncCheckResult.code);
+      } else if (!useCloud) {
+        setState(prev => ({ ...prev, secretCode: syncCheckResult.code }));
+        await syncToCloud(true, { ...state, secretCode: syncCheckResult.code });
+        logSyncEvent('local_to_cloud', syncCheckResult.code);
+      }
+      setSyncCheckResult(null);
+    } finally {
+      setIsSyncing(false);
     }
-    setSyncCheckResult(null);
   }, [syncCheckResult, setState, setDungeons, setMajorDungeons, syncToCloud, state, logSyncEvent]);
 
   const fetchFromCloud = useCallback(async (code: string) => {

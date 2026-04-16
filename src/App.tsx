@@ -187,6 +187,13 @@ function App() {
   const [prevLevel, setPrevLevel] = useState(state.level);
   const [isSyncingPush, setIsSyncingPush] = useState(false);
 
+  // Sync prevLevel with state.level during synchronization to prevent level-up popups
+  useEffect(() => {
+    if (isSyncing) {
+      setPrevLevel(state.level);
+    }
+  }, [isSyncing, state.level]);
+
   // Sync Push Subscription to server whenever secretCode or pushEnabled changes
   useEffect(() => {
     const syncPushSubscription = async () => {
@@ -1573,7 +1580,7 @@ function App() {
                       }} 
                       className="w-full py-4 bg-slate-800 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-slate-700 transition-colors"
                     >
-                      {state.lastCompletionRewards.type === 'dungeon' ? 'Select Next Dungeon' : 
+                      {state.lastCompletionRewards.type === 'dungeon' ? 'Back to Dungeon' : 
                        state.lastCompletionRewards.type === 'quest' ? 'View Quests' : 
                        'View Achievements'}
                     </button>

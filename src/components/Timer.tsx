@@ -126,7 +126,10 @@ export const Timer = React.memo<TimerProps>(({
           icon: '/pwa-icon.svg',
           tag: 'timer_complete',
           renotify: true,
-          vibrate: [200, 100, 200]
+          vibrate: [200, 100, 200],
+          actions: [
+            { action: 'open', title: 'Back to Dungeon' }
+          ]
         } as any);
       }).catch(err => console.error('Local notification failed:', err));
     }

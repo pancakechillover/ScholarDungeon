@@ -6,7 +6,7 @@ declare let self: ServiceWorkerGlobalScope;
 precacheAndRoute(self.__WB_MANIFEST);
 
 self.addEventListener('install', (event) => {
-  console.log('[Service Worker] Installing version: 1.6.3');
+  console.log('[Service Worker] Installing version: 1.7.0');
   self.skipWaiting();
 });
 
@@ -16,7 +16,7 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('push', (event) => {
-  console.log('[Service Worker v1.6.3] Push Received.');
+  console.log('[Service Worker v1.7.0] Push Received.');
   
   if (event.data) {
     try {
@@ -32,7 +32,7 @@ self.addEventListener('push', (event) => {
         tag: 'dungeon-notification', // Group notifications
         renotify: true,
         actions: [
-          { action: 'open', title: 'Return to Dungeon' }
+          { action: 'open', title: 'Back to Dungeon' }
         ]
       };
 
