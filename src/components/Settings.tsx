@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { RewardCard, ShopItem, GachaPool, Rarity } from '../types';
 import { INITIAL_GACHA } from '../constants';
-import { Plus, Trash2, Save, Edit2, X, ChevronRight, Coins, Zap, Sparkles, Trophy, Timer as TimerIcon, Package, Flame, AlertTriangle, Scroll, Volume2, VolumeX, Sun, Moon, Settings as SettingsIcon, ShoppingBag, Trees, Waves, Database, Download, Upload, Target, Gift, User, Sword, Eye, Palette, Check, Bell, BellOff, RefreshCw } from 'lucide-react';
+import { Plus, Trash2, Save, Edit2, X, ChevronRight, Coins, Zap, Sparkles, Trophy, Timer as TimerIcon, Package, Flame, AlertTriangle, Scroll, Volume2, VolumeX, Sun, Moon, Settings as SettingsIcon, ShoppingBag, Trees, Waves, Database, Download, Upload, Target, Gift, User, Sword, Eye, Palette, Check, Bell, BellOff, RefreshCw, Key } from 'lucide-react';
 import { cn, getXPForLevel, getDefaultRewardForLevel } from '../lib/utils';
 import { playSound } from '../lib/sound';
 
@@ -371,7 +371,13 @@ const GeneralSettings = ({ state, setState, setShowClearConfirm }: { state: any,
       }
       
       console.log('Waiting for service worker to be ready...');
-      registration = await navigator.serviceWorker.ready;
+      // Add a timeout to prevent hanging
+      const readyPromise = navigator.serviceWorker.ready;
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Service Worker ready timeout (10s)')), 10000)
+      );
+      
+      registration = await Promise.race([readyPromise, timeoutPromise]) as ServiceWorkerRegistration;
       console.log('Service worker ready:', registration.active?.state);
       
       console.log('Fetching VAPID public key...');
@@ -891,6 +897,9 @@ export const Settings = React.memo<SettingsProps>(({
             alert(`Success! Notification sent.\nQueue: ${debug.totalPendingInQueue} tasks remaining.`);
           } else if (myResult.status === 'no_subscription') {
             alert('Error: No subscription found on server. Try "Force Sync" first.');
+          } else if (myResult.status === 'failed') {
+            const err = myResult.error || {};
+            alert(`Push Service Rejected: ${err.message} (Status: ${err.statusCode})\n\nThis usually means the VAPID keys or subscription are invalid.`);
           } else {
             alert(`Notification failed: ${myResult.status} ${myResult.error || ''}`);
           }
@@ -1206,6 +1215,64 @@ export const Settings = React.memo<SettingsProps>(({
                       <RefreshCw className={cn("w-4 h-4", isTestingNotification && "animate-spin")} />
                     </button>
                   </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <button
+                      onClick={async () => {
+                        if (!confirm('This will unregister all service workers and clear local push state. Continue?')) return;
+                        try {
+                          const regs = await navigator.serviceWorker.getRegistrations();
+                          for (const reg of regs) {
+                            await reg.unregister();
+                          }
+                          setState(prev => ({ ...prev, pushEnabled: false, pushSubscription: null }));
+                          alert('Service Workers unregistered. Please refresh the page and re-enable notifications.');
+                          window.location.reload();
+                        } catch (e) {
+                          alert('Reset failed: ' + e);
+                        }
+                      }}
+                      className="flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 font-bold py-2 rounded-xl text-xs transition-all"
+                    >
+                      <Trash2 size={14} />
+                      Reset Service Worker
+                    </button>
+                    <button
+                      onClick={async () => {
+                        try {
+                          const res = await fetch('/api/push/vapid-public-key');
+                          const data = await res.json();
+                          alert(`VAPID Public Key:\n${data.publicKey}\n\nCheck console for full string.`);
+                          console.log('Current VAPID Public Key:', data.publicKey);
+                        } catch (e) {
+                          alert('Failed to fetch VAPID key');
+                        }
+                      }}
+                      className="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-bold py-2 rounded-xl text-xs transition-all"
+                    >
+                      <Key size={14} />
+                      View VAPID Key
+                    </button>
+                    <button
+                      onClick={async () => {
+                        try {
+                          const reg = await navigator.serviceWorker.getRegistration();
+                          if (reg) {
+                            await reg.update();
+                            alert('Service Worker update triggered. Check console for logs.');
+                          } else {
+                            alert('No Service Worker registration found.');
+                          }
+                        } catch (e) {
+                          alert('Update failed: ' + e);
+                        }
+                      }}
+                      className="flex items-center justify-center gap-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 font-bold py-2 rounded-xl text-xs transition-all"
+                    >
+                      <RefreshCw size={14} />
+                      Update Service Worker
+                    </button>
+                  </div>
                   <p className="text-[10px] text-slate-500 italic">
                     This will schedule a task with 0 delay and immediately trigger the /api/push/check endpoint.
                   </p>
@@ -1225,7 +1292,7 @@ export const Settings = React.memo<SettingsProps>(({
                 <h3 className="text-3xl font-black text-white tracking-tight">Scholar's Dungeon</h3>
                 <div className="flex flex-col items-center gap-1 mt-2">
                   <span className="px-3 py-1 bg-indigo-500/20 text-indigo-400 rounded-full font-bold tracking-widest uppercase text-xs border border-indigo-500/30">
-                    Version 1.6.1
+                    Version 1.6.2
                   </span>
                   <span className="text-slate-500 text-xs font-medium">
                     Updated: 2026-04-16

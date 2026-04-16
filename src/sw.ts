@@ -5,8 +5,18 @@ declare let self: ServiceWorkerGlobalScope;
 
 precacheAndRoute(self.__WB_MANIFEST);
 
+self.addEventListener('install', (event) => {
+  console.log('[Service Worker] Installing version: 1.6.2');
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+  console.log('[Service Worker] Activating...');
+  event.waitUntil(self.clients.claim());
+});
+
 self.addEventListener('push', (event) => {
-  console.log('[Service Worker] Push Received.');
+  console.log('[Service Worker v1.6.2] Push Received.');
   
   if (event.data) {
     try {

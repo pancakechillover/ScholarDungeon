@@ -11,7 +11,7 @@ Whenever you complete a task or make changes to the application:
 3. Update the version number and release date in `src/components/Settings.tsx` (under the 'about' section) to match the new version and date.
 
 ## Current Status
-- **Current Version:** v1.6.0
+- **Current Version:** v1.6.2
 - **Last Update Date:** 2026-04-16
 
 ## Light Themes Definition
@@ -21,6 +21,10 @@ The following themes are considered "Light Themes" and require special CSS handl
 - **Candy** (`data-theme="candy"`)
 
 ## Task History
+- **v1.6.2 (2026-04-16):** Analyzed `sent` status but missing SW logs.
+  - *Analysis:* Backend successfully hands off to push service, but SW never receives the event. Likely due to stale SW registration, VAPID mismatch, or Manifest 401 blocking.
+  - *Plan:* Add SW lifecycle logs, implement "Reset Service Worker" debug tool, and enhance backend error reporting.
+- **v1.6.1 (2026-04-16):** Enhanced Service Worker logging and improved toggle error handling.
 - **v1.6.0 (2026-04-16):** Diagnosed `processed: 0` and `401 Unauthorized` manifest errors.
   - *Analysis:* `processed: 0` is likely due to server/client clock drift or Redis latency. `401` on manifest is likely Vercel Deployment Protection.
   - *Plan:* Enhance `/api/push/check` with detailed debug info (queue count, server time) and optimize `vercel.json` routing.

@@ -107,15 +107,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             await webpush.sendNotification(subscription, JSON.stringify({
               title: task.title,
               body: task.body,
-              data: { type: task.type }
+              data: task.data || { type: task.type }
             }));
             results.push({ secretCode: task.secretCode, status: 'sent' });
           } catch (err: any) {
-            console.error(`Push failed for ${task.secretCode}:`, err.message);
+            console.error(`Push failed for ${task.secretCode}:`, err.message, err.statusCode);
+            const errorDetail = {
+              message: err.message,
+              statusCode: err.statusCode,
+              endpoint: subscription.endpoint.substring(0, 30) + '...'
+            };
+            
             if (err.statusCode === 410 || err.statusCode === 404) {
               await client.del(`scholar_push_sub_${task.secretCode}`);
             }
-            results.push({ secretCode: task.secretCode, status: 'failed', error: err.message });
+            results.push({ secretCode: task.secretCode, status: 'failed', error: errorDetail });
           }
         } else {
           results.push({ secretCode: task.secretCode, status: 'no_subscription' });
