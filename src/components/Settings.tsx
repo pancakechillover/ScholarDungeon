@@ -355,31 +355,44 @@ const GeneralSettings = ({ state, setState, setShowClearConfirm }: { state: any,
     // Subscribe
     setIsSubscribing(true);
     try {
+      console.log('Requesting notification permission...');
       const permission = await Notification.requestPermission();
       if (permission !== 'granted') {
-        alert('Notification permission denied. Please enable it in your browser settings.');
+        console.warn('Notification permission denied:', permission);
+        alert(`Notification permission ${permission}. Please enable it in your browser settings to receive alerts.`);
         return;
       }
 
+      console.log('Checking for service worker registration...');
       let registration = await navigator.serviceWorker.getRegistration();
       if (!registration) {
-        console.log('No service worker found, registering...');
+        console.log('No service worker found, registering /sw.js...');
         registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
       }
-      registration = await navigator.serviceWorker.ready;
       
+      console.log('Waiting for service worker to be ready...');
+      registration = await navigator.serviceWorker.ready;
+      console.log('Service worker ready:', registration.active?.state);
+      
+      console.log('Fetching VAPID public key...');
       const vapidResponse = await fetch('/api/push/vapid-public-key');
+      if (!vapidResponse.ok) throw new Error(`Failed to fetch VAPID key: ${vapidResponse.status}`);
+      
       const { publicKey } = await vapidResponse.json();
+      console.log('VAPID key received, converting...');
       const convertedVapidKey = urlBase64ToUint8Array(publicKey);
 
+      console.log('Subscribing to push manager...');
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: convertedVapidKey
       });
+      console.log('Push subscription successful:', subscription.endpoint);
 
       // Save to server if secretCode exists
       if (state.secretCode) {
-        await fetch('/api/push/subscribe', {
+        console.log('Syncing subscription to server for code:', state.secretCode);
+        const syncRes = await fetch('/api/push/subscribe', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -387,15 +400,14 @@ const GeneralSettings = ({ state, setState, setShowClearConfirm }: { state: any,
             subscription
           })
         });
+        if (!syncRes.ok) throw new Error(`Server sync failed: ${syncRes.status}`);
       }
 
       setState(prev => ({ ...prev, pushEnabled: true, pushSubscription: subscription }));
-      
-      // Explicitly log success
       console.log('Successfully enabled notifications and synced to server');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to subscribe:', error);
-      alert('Failed to enable notifications. Make sure you are using a supported browser and have added the app to your home screen if on iOS.');
+      alert(`Failed to enable notifications: ${error.message || 'Unknown error'}. \n\nCheck console for details.`);
     } finally {
       setIsSubscribing(false);
     }
@@ -1213,7 +1225,7 @@ export const Settings = React.memo<SettingsProps>(({
                 <h3 className="text-3xl font-black text-white tracking-tight">Scholar's Dungeon</h3>
                 <div className="flex flex-col items-center gap-1 mt-2">
                   <span className="px-3 py-1 bg-indigo-500/20 text-indigo-400 rounded-full font-bold tracking-widest uppercase text-xs border border-indigo-500/30">
-                    Version 1.6.0
+                    Version 1.6.1
                   </span>
                   <span className="text-slate-500 text-xs font-medium">
                     Updated: 2026-04-16

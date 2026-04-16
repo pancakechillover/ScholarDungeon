@@ -5,6 +5,14 @@
       "destination": "/manifest.webmanifest"
     },
     {
+      "source": "/sw.js",
+      "destination": "/sw.js"
+    },
+    {
+      "source": "/pwa-icon.svg",
+      "destination": "/pwa-icon.svg"
+    },
+    {
       "source": "/api/sync/(.*)",
       "destination": "/api/sync"
     },
