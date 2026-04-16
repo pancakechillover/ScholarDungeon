@@ -11,7 +11,7 @@ Whenever you complete a task or make changes to the application:
 3. Update the version number and release date in `src/components/Settings.tsx` (under the 'about' section) to match the new version and date.
 
 ## Current Status
-- **Current Version:** v1.6.4
+- **Current Version:** v1.6.5
 - **Last Update Date:** 2026-04-16
 
 ## Light Themes Definition
@@ -30,6 +30,10 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v1.6.5 (2026-04-16):** Security Hardening & Version Alignment.
+  - *Security:* Removed hardcoded VAPID keys from `api/push.ts` to prevent credential leakage. Switched to strict Environment Variable usage.
+  - *Config:* Updated `.env.example` with required notification secrets.
+  - *Personalization:* Updated contact email in `api/push.ts`.
 - **v1.6.4 (2026-04-16):** Narrowed focus to VAPID identity mismatch.
   - *Breakthrough:* "Direct UI" and "SW Thread" tests confirmed local notification system and Service Worker thread are functional.
   - *Current Problem:* Remote push (via FCM/WNS) is accepted by push services but silently dropped by the browser. 
