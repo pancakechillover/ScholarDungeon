@@ -3,18 +3,23 @@ import webpush from 'web-push';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 // Configure Web Push
-const vapidPublicKey = process.env.VAPID_PUBLIC_KEY;
-const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY;
+// RESTORED FALLBACKS to prevent UI hang. 
+// SECURITY NOTE: Please set VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY in your Secrets for production.
+const vapidPublicKey = process.env.VAPID_PUBLIC_KEY || "BLqju80Sl3cUDF0s-0pEallPIkVpxl-2l5NJMh-X2twNOmvTUU4q1Q2yotukIZEEt92QANtsukbTwk6L7I7LITo";
+const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY || "OKWnQn0E_X2HGGAVFydaCJA_3_IWTZZIhmtDENJTUgo";
 const vapidEmail = process.env.VAPID_EMAIL || "mailto:jl3190264398@163.com";
 
 if (vapidPublicKey && vapidPrivateKey) {
   try {
     webpush.setVapidDetails(vapidEmail, vapidPublicKey, vapidPrivateKey);
+    if (!process.env.VAPID_PRIVATE_KEY) {
+      console.warn("Using FALLBACK VAPID keys. This is NOT secure for production.");
+    }
   } catch (err) {
     console.error("Failed to set VAPID details:", err);
   }
 } else {
-  console.warn("VAPID Keys are missing in environment variables. Push notifications will fail.");
+  console.warn("VAPID Keys are missing. Push notifications will fail.");
 }
 
 // Initialize Redis client lazily
@@ -94,7 +99,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   if (path?.endsWith('/check')) {
-    console.log(`[Push Check] Using VAPID Public Key: ${vapidPublicKey.substring(0, 10)}...`);
+    console.log(`[Push Check] Using VAPID Public Key: ${vapidPublicKey ? vapidPublicKey.substring(0, 10) : 'MISSING'}...`);
     try {
       const now = Date.now();
       // Get all tasks that are due
