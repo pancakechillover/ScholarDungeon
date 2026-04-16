@@ -54,14 +54,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
       const { secretCode, subscription } = req.body;
       if (!secretCode) return res.status(400).json({ error: "Invalid request" });
-      const key = `scholar_push_sub_${secretCode}`;
+      const key = `scholar_push_subs_${secretCode}`;
       
       if (subscription === null) {
         await client.del(key);
-        return res.json({ success: true, message: "Subscription cleared" });
+        return res.json({ success: true, message: "All subscriptions cleared" });
       }
       
-      await client.set(key, JSON.stringify(subscription));
+      await client.sAdd(key, JSON.stringify(subscription));
       return res.json({ success: true });
     } catch (error) {
       return res.status(500).json({ error: "Subscribe failed" });
@@ -115,32 +115,46 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       for (const taskStr of tasks) {
         const task = JSON.parse(taskStr.toString());
-        const subStr = await client.get(`scholar_push_sub_${task.secretCode}`);
+        const subs = await client.sMembers(`scholar_push_subs_${task.secretCode}`);
         
-        if (subStr) {
-          const subscription = JSON.parse(subStr.toString());
-          try {
-            await webpush.sendNotification(subscription, JSON.stringify({
-              title: task.title,
-              body: task.body,
-              data: task.data || { type: task.type }
-            }));
-            results.push({ secretCode: task.secretCode, status: 'sent' });
-          } catch (err: any) {
-            console.error(`Push failed for ${task.secretCode}:`, err.message, err.statusCode);
-            const errorDetail = {
-              message: err.message,
-              statusCode: err.statusCode,
-              endpoint: subscription.endpoint.substring(0, 30) + '...'
-            };
-            
-            if (err.statusCode === 410 || err.statusCode === 404) {
-              await client.del(`scholar_push_sub_${task.secretCode}`);
+        if (subs && subs.length > 0) {
+          for (const subStr of subs) {
+            const subscription = JSON.parse(subStr.toString());
+            try {
+              await webpush.sendNotification(subscription, JSON.stringify({
+                title: task.title,
+                body: task.body,
+                data: task.data || { type: task.type }
+              }));
+              results.push({ secretCode: task.secretCode, status: 'sent', endpoint: subscription.endpoint.substring(0, 20) });
+            } catch (err: any) {
+              console.error(`Push failed for sub:`, err.message);
+              if (err.statusCode === 410 || err.statusCode === 404) {
+                await client.sRem(`scholar_push_subs_${task.secretCode}`, subStr);
+              }
+              results.push({ secretCode: task.secretCode, status: 'failed_sub', error: err.message });
             }
-            results.push({ secretCode: task.secretCode, status: 'failed', error: errorDetail });
           }
         } else {
-          results.push({ secretCode: task.secretCode, status: 'no_subscription' });
+          // Compatibility with old key format
+          const oldSubStr = await client.get(`scholar_push_sub_${task.secretCode}`);
+          if (oldSubStr) {
+            const subscription = JSON.parse(oldSubStr.toString());
+            try {
+              await webpush.sendNotification(subscription, JSON.stringify({
+                title: task.title,
+                body: task.body,
+                data: task.data || { type: task.type }
+              }));
+              results.push({ secretCode: task.secretCode, status: 'sent_legacy' });
+            } catch (err: any) {
+              if (err.statusCode === 410 || err.statusCode === 404) {
+                await client.del(`scholar_push_sub_${task.secretCode}`);
+              }
+            }
+          } else {
+            results.push({ secretCode: task.secretCode, status: 'no_subscriptions' });
+          }
         }
         await client.zRem('scholar_push_tasks', taskStr.toString());
       }

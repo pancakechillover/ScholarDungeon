@@ -103,19 +103,33 @@ export const Timer = React.memo<TimerProps>(({
           })
         }).catch(err => console.error('Failed to schedule push:', err));
       }
-    } else {
-      // Cancel when paused or stopped
+    } else if (timeLeft > 0) {
+      // ONLY cancel when manually paused or reset (timeLeft > 0)
+      // If timeLeft is 0, it was a natural finish, let the task be handled or expire
       fetch('/api/push/cancel', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ secretCode })
       }).catch(err => console.error('Failed to cancel push:', err));
     }
-  }, [isActive, endTime, pushEnabled, secretCode, isResting]);
+  }, [isActive, endTime, pushEnabled, secretCode, isResting, timeLeft]);
 
   const handleComplete = useCallback(() => {
     setIsActive(false);
     setEndTime(null);
+
+    // Show local notification if possible
+    if (pushEnabled && 'serviceWorker' in navigator && Notification.permission === 'granted') {
+      navigator.serviceWorker.ready.then(reg => {
+        reg.showNotification(isResting ? "Rest Over!" : "Focus Over!", {
+          body: isResting ? "Time to return to the dungeon." : "You have cleared the room. Take a rest?",
+          icon: '/pwa-icon.svg',
+          tag: 'timer_complete',
+          renotify: true,
+          vibrate: [200, 100, 200]
+        } as any);
+      }).catch(err => console.error('Local notification failed:', err));
+    }
     
     if (isResting) {
       // Finished rest

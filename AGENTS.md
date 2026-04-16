@@ -11,7 +11,7 @@ Whenever you complete a task or make changes to the application:
 3. Update the version number and release date in `src/components/Settings.tsx` (under the 'about' section) to match the new version and date.
 
 ## Current Status
-- **Current Version:** v1.6.5
+- **Current Version:** v1.6.6
 - **Last Update Date:** 2026-04-16
 
 ## Light Themes Definition
@@ -30,6 +30,10 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v1.6.6 (2026-04-16):** Multi-Device Synchronization & Notification Fallbacks.
+  - *Backend:* Implemented Redis Set-based subscription storage in `api/push.ts` to support multiple devices per `secretCode` (e.g., Firefox and Edge simultaneously).
+  - *Timer:* Added local `navigator.serviceWorker.showNotification` fallback when the tab is active.
+  - *Logic:* Fixed bug where naturally finishing timers incorrectly cancelled server-side push tasks.
 - **v1.6.5 (2026-04-16):** Security Hardening & Version Alignment.
   - *Security:* Removed hardcoded VAPID keys from `api/push.ts` to prevent credential leakage. Switched to strict Environment Variable usage.
   - *Config:* Updated `.env.example` with required notification secrets.
