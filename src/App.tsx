@@ -430,6 +430,7 @@ function App() {
           onUnbind={unbindFromCloud}
           onDeleteCloudData={deleteCloudData}
           syncHistory={state.syncHistory}
+          localState={state}
         />
       )}
 

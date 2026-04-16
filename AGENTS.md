@@ -11,11 +11,27 @@ Whenever you complete a task or make changes to the application:
 3. Update the version number and release date in `src/components/Settings.tsx` (under the 'about' section) to match the new version and date.
 
 ## Current Status
-- **Current Version:** v1.5.1
+- **Current Version:** v1.5.3
 - **Last Update Date:** 2026-04-14
 
+## Light Themes Definition
+The following themes are considered "Light Themes" and require special CSS handling (e.g., avoiding white text on light backgrounds, using theme-aware colors for modals and charts):
+- **Daylight** (`data-theme="daylight"`)
+- **Warm Sun** (`data-theme="warm"`)
+- **Candy** (`data-theme="candy"`)
+
 ## Task History
-- **v1.5.1 (2026-04-14):** Analyzed the failure of silent sync (caused by volatile fields like `syncHistory` in JSON.stringify) and planned the side-by-side data comparison UI for the conflict modal. Documented in AGENTS.md.
+- **v1.5.3 (2026-04-14):** Analyzed ongoing Web Push Notification failures. 
+  - *Toggle Failure Analysis:* Identified that the "System Notifications" toggle fails if:
+    1. **Service Worker Registration hangs**: `navigator.serviceWorker.ready` never resolves if the SW isn't registered.
+    2. **Invalid VAPID Key**: The current public key (`BOnH4u...`) is 68 chars (likely invalid; should be ~87 chars), causing `subscribe()` to fail.
+    3. **Missing Redis/SecretCode**: Backend requires `REDIS_URL` and frontend requires `secretCode` to persist the subscription.
+  - *Cron-Job Failure Analysis:* 
+    1. **No Subscriptions**: If the toggle fails, no subscription is stored in Redis for the Cron-Job to use.
+    2. **Task Score/Time**: Cron-Job only processes tasks where `targetTime <= now`.
+    3. **VAPID Mismatch**: Backend keys must match the keys used for subscription.
+- **v1.5.2 (2026-04-14):** Fixed CSS bugs related to Light Themes ("Daylight", "Warm Sun", "Candy"). Updated `CloudSyncModal` to use theme-aware colors for "Echoes of the Past Found", Help section, and confirmation dialogs. Added double-check confirmation prompts for "Keep Local" and "Download Cloud" buttons. Formatted dates to English with year. Updated `Stats` heatmap and efficiency trend chart to use theme-aware colors (`var(--color-indigo-500)`).
+- **v1.5.1 (2026-04-14):** Fixed silent sync failure by stripping volatile fields (`lastUpdated`, `syncHistory`, `deviceType`, `pushSubscription`, `secretCode`) before comparison. Added side-by-side data comparison UI in `CloudSyncModal`. Updated Cloud Sync and Export Data to include the entire `localStorage` payload (`fullLocalStorage`) to ensure absolutely no user data (like timer settings) is missed.
 - **v1.5.0 (2026-04-14):** Implemented Smart Cloud Sync (silent identical sync) and Device Tracking. Added `deviceType` to `UserState` and sync history. Updated `CloudSyncModal` to display Cloud and Local device types during conflicts and in the sync history view.
 - **v1.4.11 (2026-04-14):** Fixed Web Push Notifications on Vercel. Added `/api/push/vapid-public-key` endpoint to serve the VAPID key to the frontend (resolving Vite env var issues) and added rewrite rules in `vercel.json` for `/api/push/*`.
 - **v1.4.10 (2026-04-13):** Analyzed Web Push Notification failures on Vercel. Documented root causes (Vite env vars, Vercel routing, and Hobby plan cron limits) in AGENTS.md.
@@ -39,6 +55,18 @@ Whenever you complete a task or make changes to the application:
 - **v1.0.0:** Initial release and subsequent security/UI enhancements (Cloud Sync confirmations, history tracking, etc.).
 
 ## Pending Tasks
+- **[Analysis] Web Push Notification Failures (v1.5.3):**
+  - *Current State:* Notifications are still failing despite VAPID keys and Vercel Cron endpoints being added.
+  - *Possible Root Causes:*
+    1. **Vercel Cron Limitations (Hobby Tier):** Vercel's free tier only allows 1 cron job execution per day. If we rely on cron to check Redis and send notifications, they will not arrive in real-time.
+    2. **iOS/Safari Restrictions:** Web Push on iOS requires the app to be installed to the Home Screen (PWA) and requires iOS 16.4+. It will silently fail in a standard Safari tab.
+    3. **Redis Connection Timeouts:** In a serverless environment, the Redis connection might be dropping or failing to connect in time, meaning scheduled pushes are never retrieved.
+    4. **Service Worker Scope/Lifecycle:** Vite's PWA plugin might be overriding our custom `sw.js`, or the service worker is going to sleep and failing to wake up for the push event.
+    5. **Missing/Invalid VAPID Env Vars:** The Vercel environment variables (`VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`) might be missing or incorrectly formatted in the Vercel dashboard.
+  - *Feasibility & Next Steps:*
+    - **Cron Fix:** Very difficult on Vercel Hobby. *Alternative:* Switch to client-side scheduling (using Service Worker `setTimeout`, though unreliable) or trigger the check endpoint (`/api/push/check`) on every app load/interaction instead of relying solely on Cron.
+    - **iOS Fix:** Cannot fix via code. Must add UI to detect iOS and prompt the user to "Add to Home Screen" before enabling notifications.
+    - **Redis Fix:** Add robust error logging to the `/api/push/check` endpoint to see if Redis is the bottleneck.
 - **[Bugfix & Feature] Fix Silent Sync & Add Data Comparison UI (v1.5.1):**
   - *Analysis of Silent Sync Failure:*
     1. **Root Cause:** The `JSON.stringify` comparison in `useCloudSync.ts` is too strict. While we ignored `lastUpdated`, we forgot to ignore other volatile fields. Specifically, `syncHistory` is different between local and cloud (every sync adds an event, and local might have a different history length), `deviceType` might differ, and `pushSubscription` might differ. If any of these differ, `JSON.stringify` returns false, triggering the modal.

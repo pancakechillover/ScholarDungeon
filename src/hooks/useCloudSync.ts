@@ -32,12 +32,21 @@ export function useCloudSync(
     setSyncError(null);
 
     try {
+      const fullLocalStorage: Record<string, string> = {};
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key) {
+          fullLocalStorage[key] = localStorage.getItem(key) || '';
+        }
+      }
+
       const payload = {
         secretCode: currentState.secretCode,
         localData: {
           state: currentState,
           dungeons: JSON.parse(localStorage.getItem('scholars_dungeon_state_dungeons') || '[]'),
           majorDungeons: JSON.parse(localStorage.getItem('scholars_dungeon_state_major_dungeons') || '[]'),
+          fullLocalStorage,
           lastUpdated: new Date().toISOString()
         },
         forceOverwrite
@@ -88,13 +97,19 @@ export function useCloudSync(
     if (!syncCheckResult) return;
 
     if (useCloud && syncCheckResult.cloudData) {
+      if (syncCheckResult.cloudData.fullLocalStorage) {
+        Object.keys(syncCheckResult.cloudData.fullLocalStorage).forEach(key => {
+          localStorage.setItem(key, syncCheckResult.cloudData.fullLocalStorage[key]);
+        });
+      } else {
+        localStorage.setItem('scholars_dungeon_state', JSON.stringify(syncCheckResult.cloudData.state));
+        localStorage.setItem('scholars_dungeon_dungeons', JSON.stringify(syncCheckResult.cloudData.dungeons));
+        localStorage.setItem('scholars_dungeon_major_dungeons', JSON.stringify(syncCheckResult.cloudData.majorDungeons));
+      }
+
       setState(syncCheckResult.cloudData.state);
       setDungeons(syncCheckResult.cloudData.dungeons);
       setMajorDungeons(syncCheckResult.cloudData.majorDungeons);
-      
-      localStorage.setItem('scholars_dungeon_state', JSON.stringify(syncCheckResult.cloudData.state));
-      localStorage.setItem('scholars_dungeon_dungeons', JSON.stringify(syncCheckResult.cloudData.dungeons));
-      localStorage.setItem('scholars_dungeon_major_dungeons', JSON.stringify(syncCheckResult.cloudData.majorDungeons));
       
       logSyncEvent('cloud_to_local', syncCheckResult.code);
     } else if (!useCloud) {
@@ -137,17 +152,27 @@ export function useCloudSync(
         const cloudTime = new Date(data.cloudData.lastUpdated || 0).getTime();
         const localTime = new Date(state.lastUpdated || 0).getTime();
 
-        // Check if data is identical (ignoring lastUpdated)
-        const localDataToCompare = {
-          state: { ...state, lastUpdated: undefined },
+        // Helper to strip volatile fields for comparison
+        const stripVolatile = (dataObj: any) => {
+          if (!dataObj || !dataObj.state) return dataObj;
+          const { lastUpdated, syncHistory, deviceType, pushSubscription, secretCode, ...restState } = dataObj.state;
+          return {
+            ...dataObj,
+            state: restState
+          };
+        };
+
+        const localDataToCompare = stripVolatile({
+          state: state,
           dungeons: JSON.parse(localStorage.getItem('scholars_dungeon_state_dungeons') || '[]'),
           majorDungeons: JSON.parse(localStorage.getItem('scholars_dungeon_state_major_dungeons') || '[]')
-        };
-        const cloudDataToCompare = {
-          state: { ...data.cloudData.state, lastUpdated: undefined },
+        });
+        
+        const cloudDataToCompare = stripVolatile({
+          state: data.cloudData.state,
           dungeons: data.cloudData.dungeons || [],
           majorDungeons: data.cloudData.majorDungeons || []
-        };
+        });
 
         if (JSON.stringify(localDataToCompare) === JSON.stringify(cloudDataToCompare)) {
           // Data is identical, silently update lastUpdated and secretCode

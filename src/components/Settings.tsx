@@ -336,8 +336,12 @@ const GeneralSettings = ({ state, setState, setShowClearConfirm }: { state: any,
     if (state.pushEnabled) {
       // Unsubscribe
       try {
-        const registration = await navigator.serviceWorker.ready;
-        const subscription = await registration.pushManager.getSubscription();
+      let registration = await navigator.serviceWorker.getRegistration();
+      if (!registration) {
+        registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+      }
+      registration = await navigator.serviceWorker.ready;
+      const subscription = await registration.pushManager.getSubscription();
         if (subscription) {
           await subscription.unsubscribe();
         }
@@ -357,7 +361,12 @@ const GeneralSettings = ({ state, setState, setShowClearConfirm }: { state: any,
         return;
       }
 
-      const registration = await navigator.serviceWorker.ready;
+      let registration = await navigator.serviceWorker.getRegistration();
+      if (!registration) {
+        console.log('No service worker found, registering...');
+        registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+      }
+      registration = await navigator.serviceWorker.ready;
       
       const vapidResponse = await fetch('/api/push/vapid-public-key');
       const { publicKey } = await vapidResponse.json();
@@ -390,10 +399,19 @@ const GeneralSettings = ({ state, setState, setShowClearConfirm }: { state: any,
   };
 
   const handleExport = () => {
+    const fullLocalStorage: Record<string, string> = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key) {
+        fullLocalStorage[key] = localStorage.getItem(key) || '';
+      }
+    }
+
     const dataToExport = {
       ...state,
-      dungeons,
-      majorDungeons
+      dungeons: JSON.parse(localStorage.getItem('scholars_dungeon_state_dungeons') || '[]'),
+      majorDungeons: JSON.parse(localStorage.getItem('scholars_dungeon_state_major_dungeons') || '[]'),
+      fullLocalStorage
     };
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dataToExport));
     const downloadAnchorNode = document.createElement('a');
@@ -414,11 +432,17 @@ const GeneralSettings = ({ state, setState, setShowClearConfirm }: { state: any,
         const importedData = JSON.parse(e.target?.result as string);
         if (importedData && typeof importedData === 'object') {
           // Extract state and dungeon data
-          const { dungeons, majorDungeons, ...importedState } = importedData;
+          const { dungeons, majorDungeons, fullLocalStorage, ...importedState } = importedData;
           
-          localStorage.setItem('scholars_dungeon_state', JSON.stringify(importedState));
-          if (dungeons) localStorage.setItem('scholars_dungeon_dungeons', JSON.stringify(dungeons));
-          if (majorDungeons) localStorage.setItem('scholars_dungeon_major_dungeons', JSON.stringify(majorDungeons));
+          if (fullLocalStorage) {
+            Object.keys(fullLocalStorage).forEach(key => {
+              localStorage.setItem(key, fullLocalStorage[key]);
+            });
+          } else {
+            localStorage.setItem('scholars_dungeon_state', JSON.stringify(importedState));
+            if (dungeons) localStorage.setItem('scholars_dungeon_dungeons', JSON.stringify(dungeons));
+            if (majorDungeons) localStorage.setItem('scholars_dungeon_major_dungeons', JSON.stringify(majorDungeons));
+          }
           
           window.location.reload();
         } else {
@@ -991,7 +1015,7 @@ export const Settings = React.memo<SettingsProps>(({
                 <h3 className="text-3xl font-black text-white tracking-tight">Scholar's Dungeon</h3>
                 <div className="flex flex-col items-center gap-1 mt-2">
                   <span className="px-3 py-1 bg-indigo-500/20 text-indigo-400 rounded-full font-bold tracking-widest uppercase text-xs border border-indigo-500/30">
-                    Version 1.5.1
+                    Version 1.5.3
                   </span>
                   <span className="text-slate-500 text-xs font-medium">
                     Updated: 2026-04-14

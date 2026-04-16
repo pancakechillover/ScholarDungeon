@@ -24,7 +24,9 @@ interface CloudSyncModalProps {
     type: 'login' | 'force_sync' | 'local_to_cloud' | 'cloud_to_local' | 'cancel_login' | 'unbind_local' | 'delete_cloud';
     code: string;
     timestamp: string;
+    deviceType?: string;
   }[];
+  localState?: any;
 }
 
 export function CloudSyncModal({
@@ -40,7 +42,8 @@ export function CloudSyncModal({
   onManualSync,
   onUnbind,
   onDeleteCloudData,
-  syncHistory
+  syncHistory,
+  localState
 }: CloudSyncModalProps) {
   const [inputCode, setInputCode] = useState(secretCode || '');
   const [showHelp, setShowHelp] = useState(false);
@@ -94,7 +97,7 @@ export function CloudSyncModal({
 
         <div className="relative z-10">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xl font-bold text-white flex items-center gap-3">
+            <h3 className="text-xl font-bold text-slate-200 flex items-center gap-3">
               <div className="p-2 bg-indigo-500/20 rounded-xl">
                 <Cloud className="text-indigo-400" size={24} />
               </div>
@@ -122,7 +125,7 @@ export function CloudSyncModal({
                 </button>
               </div>
             </h3>
-            <button onClick={onClose} className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-full transition-colors">
+            <button onClick={onClose} className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 rounded-full transition-colors">
               <X size={20} />
             </button>
           </div>
@@ -134,19 +137,19 @@ export function CloudSyncModal({
                 animate={{ opacity: 1, scale: 1 }}
                 className="space-y-4"
               >
-                <div className={`p-4 border rounded-2xl space-y-3 ${confirmDialog.isDestructive ? 'bg-red-500/10 border-red-500/30' : 'bg-amber-500/10 border-amber-500/30'}`}>
-                  <h4 className={`font-bold flex items-center gap-2 ${confirmDialog.isDestructive ? 'text-red-400' : 'text-amber-400'}`}>
+                <div className={`p-4 border rounded-2xl space-y-3 ${confirmDialog.isDestructive ? 'bg-rose-500/10 border-rose-500/30' : 'bg-indigo-500/10 border-indigo-500/30'}`}>
+                  <h4 className={`font-bold flex items-center gap-2 ${confirmDialog.isDestructive ? 'text-rose-500' : 'text-indigo-500'}`}>
                     <AlertTriangle size={18} />
                     {confirmDialog.title}
                   </h4>
-                  <p className={`text-sm leading-relaxed ${confirmDialog.isDestructive ? 'text-red-200/80' : 'text-amber-200/80'}`}>
+                  <p className="text-sm leading-relaxed text-slate-400">
                     {confirmDialog.message}
                   </p>
                 </div>
                 <div className="grid grid-cols-2 gap-3 mt-4">
                   <button
                     onClick={() => setConfirmDialog(null)}
-                    className="py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-colors"
+                    className="py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl font-bold transition-colors"
                   >
                     Cancel
                   </button>
@@ -155,7 +158,7 @@ export function CloudSyncModal({
                       confirmDialog.action();
                       setConfirmDialog(null);
                     }}
-                    className={`py-3 rounded-xl font-bold transition-colors ${confirmDialog.isDestructive ? 'bg-red-600 hover:bg-red-500 text-white' : 'bg-amber-600 hover:bg-amber-500 text-white'}`}
+                    className={`py-3 rounded-xl font-bold transition-colors ${confirmDialog.isDestructive ? 'bg-rose-600 hover:bg-rose-500 text-white' : 'bg-amber-600 hover:bg-amber-500 text-white'}`}
                   >
                     Confirm
                   </button>
@@ -168,25 +171,25 @@ export function CloudSyncModal({
                 className="space-y-4 max-h-[60vh] overflow-y-auto custom-scrollbar pr-2"
               >
                 <div className="prose prose-invert prose-sm max-w-none">
-                  <h4 className="flex items-center gap-2 text-indigo-400 m-0 mb-2"><Info size={18} /> About the Archives</h4>
-                  <p className="text-slate-300 mt-0">Synchronize your progress across devices. Your journey is automatically inscribed to the cloud after every completed session.</p>
+                  <h4 className="flex items-center gap-2 text-indigo-500 m-0 mb-2"><Info size={18} /> About the Archives</h4>
+                  <p className="text-slate-400 mt-0">Synchronize your progress across devices. Your journey is automatically inscribed to the cloud after every completed session.</p>
                   
-                  <h4 className="flex items-center gap-2 text-slate-300 m-0 mb-2 mt-4"><Key size={18} /> Code Requirements</h4>
+                  <h4 className="flex items-center gap-2 text-indigo-500 m-0 mb-2 mt-4"><Key size={18} /> Code Requirements</h4>
                   <ul className="text-slate-400 mt-0">
                     <li>Length: 6 to 12 characters</li>
                     <li>Allowed: Letters, numbers, and <code>@*￥$%^&</code></li>
                   </ul>
 
-                  <h4 className="flex items-center gap-2 text-amber-400 m-0 mb-2 mt-4"><AlertTriangle size={18} /> Crucial Warning</h4>
-                  <p className="text-amber-200/80 mt-0">Your Brave's Code acts as both your username and password. <strong>Please use a complex and unique code.</strong> Anyone who knows your code can access or overwrite your save data!</p>
+                  <h4 className="flex items-center gap-2 text-indigo-500 m-0 mb-2 mt-4"><AlertTriangle size={18} /> Crucial Warning</h4>
+                  <p className="text-slate-400 mt-0">Your Brave's Code acts as both your username and password. <strong>Please use a complex and unique code.</strong> Anyone who knows your code can access or overwrite your save data!</p>
 
-                  <h4 className="flex items-center gap-2 text-red-400 m-0 mb-2 mt-4"><Database size={18} /> Data Guarantee</h4>
-                  <p className="text-red-200/80 mt-0">This platform does not guarantee the permanent preservation of user data. If you are particularly worried about data loss, please regularly export your JSON data via <strong>Settings - General - Data Management</strong>.</p>
+                  <h4 className="flex items-center gap-2 text-indigo-500 m-0 mb-2 mt-4"><Database size={18} /> Data Guarantee</h4>
+                  <p className="text-slate-400 mt-0">This platform does not guarantee the permanent preservation of user data. If you are particularly worried about data loss, please regularly export your JSON data via <strong>Settings - General - Data Management</strong>.</p>
                 </div>
 
                 <button 
                   onClick={() => setShowHelp(false)}
-                  className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-colors mt-4 sticky bottom-0"
+                  className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl font-bold transition-colors mt-4 sticky bottom-0"
                 >
                   I Understand
                 </button>
@@ -214,7 +217,7 @@ export function CloudSyncModal({
                              record.type === 'unbind_local' ? 'Unbind Local' :
                              record.type === 'delete_cloud' ? 'Delete Cloud' : 'Cloud ➔ Local'}
                           </span>
-                          <span className="text-[10px] text-slate-500">{new Date(record.timestamp).toLocaleString()}</span>
+                          <span className="text-[10px] text-slate-500">{new Date(record.timestamp).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                         </div>
                         <div className="flex justify-between items-center mt-1">
                           <span className="text-xs text-slate-400 font-mono">Code: {record.code}</span>
@@ -228,7 +231,7 @@ export function CloudSyncModal({
                 </div>
                 <button 
                   onClick={() => setShowHistory(false)}
-                  className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-colors mt-2"
+                  className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl font-bold transition-colors mt-2"
                 >
                   Back
                 </button>
@@ -262,33 +265,40 @@ export function CloudSyncModal({
                   </>
                 ) : (
                   <>
-                    <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-2xl">
+                    <div className="p-4 bg-indigo-500/10 border border-indigo-500/30 rounded-2xl">
                       <div className="flex items-center gap-3 mb-3">
-                        <AlertTriangle className="text-amber-400" size={20} />
-                        <h4 className="font-bold text-amber-400">Echoes of the Past Found</h4>
+                        <AlertTriangle className="text-indigo-500" size={20} />
+                        <h4 className="font-bold text-indigo-500">Echoes of the Past Found</h4>
                       </div>
                       <div className="bg-slate-950/50 p-3 rounded-xl border border-slate-800 mb-3">
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="text-xs text-slate-500">Cloud Level</span>
-                          <span className="text-sm font-bold text-indigo-400">Lv. {syncCheckResult.cloudData?.state?.level || 1}</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-xs text-slate-500">Cloud Time</span>
-                          <span className="text-xs text-slate-300">
-                            {syncCheckResult.cloudData?.state?.lastUpdated 
-                              ? new Date(syncCheckResult.cloudData.state.lastUpdated).toLocaleString() 
-                              : 'Unknown'}
-                          </span>
-                        </div>
-                        {syncCheckResult.cloudData?.state?.deviceType && (
-                          <div className="flex justify-between items-center mt-1 pt-1 border-t border-slate-800/50">
-                            <span className="text-xs text-slate-500">Cloud Device</span>
-                            <span className="text-xs text-slate-300">{syncCheckResult.cloudData.state.deviceType}</span>
+                        <div className="grid grid-cols-[auto_1fr_1fr] gap-y-3 gap-x-2 text-xs items-center">
+                          <div className="text-slate-500 font-medium"></div>
+                          <div className="text-center font-bold text-slate-300 bg-slate-800/50 py-1 rounded-md">Local</div>
+                          <div className="text-center font-bold text-indigo-400 bg-indigo-500/10 py-1 rounded-md">Cloud</div>
+
+                          <div className="text-slate-500">Level</div>
+                          <div className={`text-center font-mono ${localState?.level > (syncCheckResult.cloudData?.state?.level || 1) ? 'text-emerald-400 font-bold' : 'text-slate-300'}`}>{localState?.level || 1}</div>
+                          <div className={`text-center font-mono ${(syncCheckResult.cloudData?.state?.level || 1) > (localState?.level || 1) ? 'text-emerald-400 font-bold' : 'text-indigo-300'}`}>{syncCheckResult.cloudData?.state?.level || 1}</div>
+
+                          <div className="text-slate-500">Coins</div>
+                          <div className={`text-center font-mono ${localState?.coins > (syncCheckResult.cloudData?.state?.coins || 0) ? 'text-emerald-400 font-bold' : 'text-slate-300'}`}>{localState?.coins || 0}</div>
+                          <div className={`text-center font-mono ${(syncCheckResult.cloudData?.state?.coins || 0) > (localState?.coins || 0) ? 'text-emerald-400 font-bold' : 'text-indigo-300'}`}>{syncCheckResult.cloudData?.state?.coins || 0}</div>
+
+                          <div className="text-slate-500">Sessions</div>
+                          <div className={`text-center font-mono ${(localState?.history?.length || 0) > (syncCheckResult.cloudData?.state?.history?.length || 0) ? 'text-emerald-400 font-bold' : 'text-slate-300'}`}>{localState?.history?.length || 0}</div>
+                          <div className={`text-center font-mono ${(syncCheckResult.cloudData?.state?.history?.length || 0) > (localState?.history?.length || 0) ? 'text-emerald-400 font-bold' : 'text-indigo-300'}`}>{syncCheckResult.cloudData?.state?.history?.length || 0}</div>
+
+                          <div className="text-slate-500">Device</div>
+                          <div className="text-center text-[10px] text-slate-400 truncate px-1">{getDeviceType()}</div>
+                          <div className="text-center text-[10px] text-indigo-400/70 truncate px-1">{syncCheckResult.cloudData?.state?.deviceType || 'Unknown'}</div>
+
+                          <div className="text-slate-500">Time</div>
+                          <div className="text-center text-[10px] text-slate-400 px-1 leading-tight">
+                            {localState?.lastUpdated ? new Date(localState.lastUpdated).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Unknown'}
                           </div>
-                        )}
-                        <div className="flex justify-between items-center mt-1">
-                          <span className="text-xs text-slate-500">Local Device</span>
-                          <span className="text-xs text-slate-300">{getDeviceType()}</span>
+                          <div className="text-center text-[10px] text-indigo-400/70 px-1 leading-tight">
+                            {syncCheckResult.cloudData?.state?.lastUpdated ? new Date(syncCheckResult.cloudData.state.lastUpdated).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Unknown'}
+                          </div>
                         </div>
                       </div>
                       
@@ -305,14 +315,24 @@ export function CloudSyncModal({
                     
                     <div className="grid grid-cols-2 gap-4">
                       <button 
-                        onClick={() => onResolveConflict(false)}
+                        onClick={() => setConfirmDialog({
+                          title: 'Overwrite Cloud Data?',
+                          message: 'This will permanently replace your cloud save with your current local progress. This action cannot be undone.',
+                          action: () => onResolveConflict(false),
+                          isDestructive: false
+                        })}
                         className="p-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-center transition-colors group"
                       >
-                        <span className="font-bold text-white text-sm block mb-1">Keep Local</span>
+                        <span className="font-bold text-slate-200 text-sm block mb-1">Keep Local</span>
                         <span className="text-[10px] text-slate-400">Overwrite Cloud</span>
                       </button>
                       <button 
-                        onClick={() => onResolveConflict(true)}
+                        onClick={() => setConfirmDialog({
+                          title: 'Overwrite Local Data?',
+                          message: 'This will permanently replace your current local progress with the cloud save. This action cannot be undone.',
+                          action: () => onResolveConflict(true),
+                          isDestructive: true
+                        })}
                         className="p-3 bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/30 rounded-xl text-center transition-colors group"
                       >
                         <span className="font-bold text-indigo-300 text-sm block mb-1">Download Cloud</span>
@@ -331,7 +351,7 @@ export function CloudSyncModal({
                       value={inputCode}
                       onChange={handleInputChange}
                       placeholder="Enter 6-12 char code"
-                      className="w-full bg-slate-950/50 border-b-2 border-slate-800 py-4 px-4 pr-12 text-center text-lg text-white placeholder:text-slate-600 focus:outline-none focus:border-indigo-500 transition-all font-medium tracking-widest"
+                      className="w-full bg-slate-950/50 border-b-2 border-slate-800 py-4 px-4 pr-12 text-center text-lg text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-indigo-500 transition-all font-medium tracking-widest"
                     />
                     <button
                       type="button"
@@ -406,7 +426,7 @@ export function CloudSyncModal({
                           action: onManualSync
                         })}
                         disabled={isSyncing}
-                        className="w-full py-4 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-white rounded-2xl font-bold transition-colors flex items-center justify-center gap-3"
+                        className="w-full py-4 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-slate-200 rounded-2xl font-bold transition-colors flex items-center justify-center gap-3"
                       >
                         {isSyncing ? (
                           <>

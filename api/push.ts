@@ -3,8 +3,8 @@ import webpush from 'web-push';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 // Configure Web Push
-const vapidPublicKey = process.env.VAPID_PUBLIC_KEY || "BH5OwZMBM9P55jCf-14OfpwDhWfOw7wxirim8bzKlyGZaRD61hdtRVW6nIlURIzD9ZHXKWfsgdNH3Gzrx3MTgyw";
-const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY || "Xiz1jQ_9n7iCw-VbjJjF4CPCdrMFszNj6Z1Ja6hXe58";
+const vapidPublicKey = process.env.VAPID_PUBLIC_KEY || "BLqju80Sl3cUDF0s-0pEallPIkVpxl-2l5NJMh-X2twNOmvTUU4q1Q2yotukIZEEt92QANtsukbTwk6L7I7LITo";
+const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY || "OKWnQn0E_X2HGGAVFydaCJA_3_IWTZZIhmtDENJTUgo";
 const vapidEmail = process.env.VAPID_EMAIL || "mailto:iz.karakarakarakan@gmail.com";
 
 try {

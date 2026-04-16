@@ -127,10 +127,10 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
     } else {
       const log = dailyLogs[format(date, 'yyyy-MM-dd')];
       if (!log || log.rating === 0) return 'bg-slate-800/50';
-      if (log.rating < 2) return 'bg-amber-500/20';
-      if (log.rating < 3.5) return 'bg-amber-500/50';
-      if (log.rating < 4.5) return 'bg-amber-500/80';
-      return 'bg-amber-500';
+      if (log.rating < 2) return 'bg-indigo-500/20';
+      if (log.rating < 3.5) return 'bg-indigo-500/50';
+      if (log.rating < 4.5) return 'bg-indigo-500/80';
+      return 'bg-indigo-500';
     }
   };
 
@@ -151,9 +151,9 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
         {/* Daily Activity */}
         <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800 flex flex-col space-y-6">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-bold text-white">Daily Activity</h3>
+            <h3 className="text-lg font-bold text-slate-200">Daily Activity</h3>
             <div className="flex items-center gap-2 bg-slate-800/50 rounded-lg p-1">
-              <button onClick={() => setDailyDate(subDays(dailyDate, 1))} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-white"><ChevronLeft size={16} /></button>
+              <button onClick={() => setDailyDate(subDays(dailyDate, 1))} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-slate-200"><ChevronLeft size={16} /></button>
               <div className="relative flex items-center justify-center">
                 <button 
                   onClick={() => dailyInputRef.current?.showPicker()}
@@ -169,7 +169,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
                   onChange={(e) => e.target.value && setDailyDate(parseISO(e.target.value))}
                 />
               </div>
-              <button onClick={() => setDailyDate(addDays(dailyDate, 1))} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-white"><ChevronRight size={16} /></button>
+              <button onClick={() => setDailyDate(addDays(dailyDate, 1))} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-slate-200"><ChevronRight size={16} /></button>
             </div>
           </div>
 
@@ -211,7 +211,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
                     onClick={() => setIsMarkdownPreview(!isMarkdownPreview)}
                     className={cn(
                       "p-1.5 rounded-lg transition-all",
-                      isMarkdownPreview ? "text-indigo-400 bg-indigo-500/10" : "text-slate-500 hover:text-white"
+                      isMarkdownPreview ? "text-indigo-400 bg-indigo-500/10" : "text-slate-500 hover:text-slate-200"
                     )}
                   >
                     {isMarkdownPreview ? <Eye size={14} /> : <EyeOff size={14} />}
@@ -260,7 +260,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
                   <textarea
                     value={editReflection}
                     onChange={(e) => setEditReflection(e.target.value)}
-                    className="w-full h-32 bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-indigo-500 transition-all resize-none"
+                    className="w-full h-32 bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 transition-all resize-none"
                     placeholder="Reflect on your day..."
                   />
                   {isMarkdownPreview && editReflection && (
@@ -303,9 +303,9 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
         {/* Weekly Activity */}
         <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800 flex flex-col space-y-6">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-bold text-white">Weekly Activity</h3>
+            <h3 className="text-lg font-bold text-slate-200">Weekly Activity</h3>
             <div className="flex items-center gap-2 bg-slate-800/50 rounded-lg p-1">
-              <button onClick={() => setWeeklyDate(subWeeks(weeklyDate, 1))} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-white"><ChevronLeft size={16} /></button>
+              <button onClick={() => setWeeklyDate(subWeeks(weeklyDate, 1))} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-slate-200"><ChevronLeft size={16} /></button>
               <div className="relative flex items-center justify-center">
                 <button 
                   onClick={() => weeklyInputRef.current?.showPicker()}
@@ -321,7 +321,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
                   onChange={(e) => e.target.value && setWeeklyDate(parseISO(e.target.value))}
                 />
               </div>
-              <button onClick={() => setWeeklyDate(addWeeks(weeklyDate, 1))} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-white"><ChevronRight size={16} /></button>
+              <button onClick={() => setWeeklyDate(addWeeks(weeklyDate, 1))} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-slate-200"><ChevronRight size={16} /></button>
             </div>
           </div>
           
@@ -359,15 +359,15 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
                     <YAxis hide domain={[0, 5]} />
                     <Tooltip 
                       contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '8px' }}
-                      itemStyle={{ color: '#6366f1' }}
+                      itemStyle={{ color: 'var(--color-indigo-400, #818cf8)' }}
                     />
                     <Line 
                       type="monotone" 
                       dataKey="efficiency" 
-                      stroke="#6366f1" 
+                      stroke="var(--color-indigo-500, #6366f1)" 
                       strokeWidth={3} 
-                      dot={{ fill: '#6366f1', strokeWidth: 2, r: 4 }}
-                      activeDot={{ r: 6, strokeWidth: 0 }}
+                      dot={{ fill: 'var(--color-indigo-500, #6366f1)', strokeWidth: 2, r: 4 }}
+                      activeDot={{ r: 6, strokeWidth: 0, fill: 'var(--color-indigo-400, #818cf8)' }}
                     />
                   </LineChart>
                 </ResponsiveContainer>
@@ -380,7 +380,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
         <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800 lg:col-span-2">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <div className="flex items-center gap-4">
-              <h3 className="text-lg font-bold text-white">Heatmap</h3>
+              <h3 className="text-lg font-bold text-slate-200">Heatmap</h3>
               <div className="flex bg-slate-800/50 p-1 rounded-lg">
                 <button
                   onClick={() => setHeatmapMetric('time')}
@@ -395,7 +395,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
                   onClick={() => setHeatmapMetric('efficiency')}
                   className={cn(
                     "px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-md transition-all",
-                    heatmapMetric === 'efficiency' ? "bg-amber-600 text-white" : "text-slate-400 hover:text-slate-200"
+                    heatmapMetric === 'efficiency' ? "bg-indigo-600 text-white" : "text-slate-400 hover:text-slate-200"
                   )}
                 >
                   Efficiency
@@ -424,7 +424,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
                     else if (heatmapMode === 'month') setHeatmapDate(subMonths(heatmapDate, 1));
                     else setHeatmapDate(subYears(heatmapDate, 1));
                   }} 
-                  className="p-2 sm:p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-white"
+                  className="p-2 sm:p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-slate-200"
                 >
                   <ChevronLeft size={16} />
                 </button>
@@ -449,7 +449,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
                     else if (heatmapMode === 'month') setHeatmapDate(addMonths(heatmapDate, 1));
                     else setHeatmapDate(addYears(heatmapDate, 1));
                   }} 
-                  className="p-2 sm:p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-white"
+                  className="p-2 sm:p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-slate-200"
                 >
                   <ChevronRight size={16} />
                 </button>
@@ -476,11 +476,11 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
           </div>
           <div className="mt-6 flex items-center justify-end space-x-2 text-[10px] text-slate-500 uppercase font-bold">
             <span>Less</span>
-            <div className={cn("w-3 h-3 rounded-sm", heatmapMetric === 'time' ? "bg-slate-800/50" : "bg-slate-800/50")} />
-            <div className={cn("w-3 h-3 rounded-sm", heatmapMetric === 'time' ? "bg-indigo-500/20" : "bg-amber-500/20")} />
-            <div className={cn("w-3 h-3 rounded-sm", heatmapMetric === 'time' ? "bg-indigo-500/40" : "bg-amber-500/50")} />
-            <div className={cn("w-3 h-3 rounded-sm", heatmapMetric === 'time' ? "bg-indigo-500/70" : "bg-amber-500/80")} />
-            <div className={cn("w-3 h-3 rounded-sm", heatmapMetric === 'time' ? "bg-indigo-500" : "bg-amber-500")} />
+            <div className="w-3 h-3 rounded-sm bg-slate-800/50" />
+            <div className="w-3 h-3 rounded-sm bg-indigo-500/20" />
+            <div className="w-3 h-3 rounded-sm bg-indigo-500/40" />
+            <div className="w-3 h-3 rounded-sm bg-indigo-500/70" />
+            <div className="w-3 h-3 rounded-sm bg-indigo-500" />
             <span>More</span>
           </div>
         </div>
