@@ -1354,6 +1354,39 @@ export const Settings = React.memo<SettingsProps>(({
                       <Eye size={14} />
                       Test Direct UI
                     </button>
+                    <button
+                      onClick={async () => {
+                        if (!confirm('ULTRA RESET: This will wipe all push-related data (SW + Server + Local) and try to register from scratch. Use this if "Test Direct UI" works but remote push is silent. Continue?')) return;
+                        setIsTestingNotification(true);
+                        try {
+                          // 1. Clear server
+                          if (state.secretCode) {
+                            await fetch('/api/push/subscribe', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ secretCode: state.secretCode, subscription: null })
+                            });
+                          }
+                          // 2. Unregister ALL service workers
+                          const regs = await navigator.serviceWorker.getRegistrations();
+                          for (const reg of regs) { await reg.unregister(); }
+                          // 3. Clear state
+                          setState(prev => ({ ...prev, pushEnabled: false, pushSubscription: null }));
+                          
+                          alert('Deep Clean Step 1 Complete: Data wiped. Now refreshing page to re-install. After refresh, manually turn on Push Notifications.');
+                          window.location.reload();
+                        } catch (e) {
+                          alert('Deep Clean failed: ' + e);
+                        } finally {
+                          setIsTestingNotification(false);
+                        }
+                      }}
+                      disabled={isTestingNotification}
+                      className="flex items-center justify-center gap-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 border border-amber-500/30 font-bold py-2 rounded-xl text-xs transition-all col-span-1 sm:col-span-2"
+                    >
+                      <RefreshCw className={cn("w-3 h-3", isTestingNotification && "animate-spin")} />
+                      Full Push Deep Reset (Wipe & Re-Sync)
+                    </button>
                   </div>
                   <p className="text-[10px] text-slate-500 italic">
                     This will schedule a task with 0 delay and immediately trigger the /api/push/check endpoint.
@@ -1374,7 +1407,7 @@ export const Settings = React.memo<SettingsProps>(({
                 <h3 className="text-3xl font-black text-white tracking-tight">Scholar's Dungeon</h3>
                 <div className="flex flex-col items-center gap-1 mt-2">
                   <span className="px-3 py-1 bg-indigo-500/20 text-indigo-400 rounded-full font-bold tracking-widest uppercase text-xs border border-indigo-500/30">
-                    Version 1.6.3
+                    Version 1.6.4
                   </span>
                   <span className="text-slate-500 text-xs font-medium">
                     Updated: 2026-04-16

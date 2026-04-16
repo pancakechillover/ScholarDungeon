@@ -11,7 +11,7 @@ Whenever you complete a task or make changes to the application:
 3. Update the version number and release date in `src/components/Settings.tsx` (under the 'about' section) to match the new version and date.
 
 ## Current Status
-- **Current Version:** v1.6.3
+- **Current Version:** v1.6.4
 - **Last Update Date:** 2026-04-16
 
 ## Light Themes Definition
@@ -30,6 +30,11 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v1.6.4 (2026-04-16):** Narrowed focus to VAPID identity mismatch.
+  - *Breakthrough:* "Direct UI" and "SW Thread" tests confirmed local notification system and Service Worker thread are functional.
+  - *Current Problem:* Remote push (via FCM/WNS) is accepted by push services but silently dropped by the browser. 
+  - *Root Cause:* Likely VAPID key mismatch between client subscription time and server sending time.
+  - *Plan:* Implement "Deep Reset" to force re-handshake and add environment detection for Iframe risks.
 - **v1.6.3 (2026-04-16):** Enhanced Push Troubleshooting.
   - *Analysis:* Delivery reported as `sent` by WNS/FCM but no receipt logged in client. Likely environment (Iframe) or OS blocking.
   - *Plan:* Add Direct Notification Test in Settings to isolate OS/Browser vs Push Service issues. Document troubleshooting protocols.

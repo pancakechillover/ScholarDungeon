@@ -90,6 +90,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   if (path?.endsWith('/check')) {
+    console.log(`[Push Check] Using VAPID Public Key: ${vapidPublicKey.substring(0, 10)}...`);
     try {
       const now = Date.now();
       // Get all tasks that are due
