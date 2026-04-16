@@ -5,7 +5,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 // Configure Web Push
 const vapidPublicKey = process.env.VAPID_PUBLIC_KEY || "BLqju80Sl3cUDF0s-0pEallPIkVpxl-2l5NJMh-X2twNOmvTUU4q1Q2yotukIZEEt92QANtsukbTwk6L7I7LITo";
 const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY || "OKWnQn0E_X2HGGAVFydaCJA_3_IWTZZIhmtDENJTUgo";
-const vapidEmail = process.env.VAPID_EMAIL || "mailto:iz.karakarakarakan@gmail.com";
+const vapidEmail = process.env.VAPID_EMAIL || "mailto:jl3190264398@163.com";
 
 try {
   webpush.setVapidDetails(vapidEmail, vapidPublicKey, vapidPrivateKey);
