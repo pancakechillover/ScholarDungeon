@@ -185,6 +185,48 @@ function App() {
   }, []);
 
   const [prevLevel, setPrevLevel] = useState(state.level);
+  const [isSyncingPush, setIsSyncingPush] = useState(false);
+
+  // Sync Push Subscription to server whenever secretCode or pushEnabled changes
+  useEffect(() => {
+    const syncPushSubscription = async () => {
+      if (state.pushEnabled && state.secretCode && !isSyncingPush) {
+        setIsSyncingPush(true);
+        try {
+          const registration = await navigator.serviceWorker.getRegistration();
+          if (registration) {
+            const subscription = await registration.pushManager.getSubscription();
+            if (subscription) {
+              console.log('Push sync: Syncing subscription for', state.secretCode);
+              const res = await fetch('/api/push/subscribe', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  secretCode: state.secretCode,
+                  subscription
+                })
+              });
+              if (res.ok) {
+                console.log('Push sync: Success');
+              } else {
+                console.error('Push sync: Failed with status', res.status);
+              }
+            } else {
+              console.warn('Push sync: No subscription found in browser even though pushEnabled is true');
+            }
+          }
+        } catch (error) {
+          console.error('Push sync: Error', error);
+        } finally {
+          setIsSyncingPush(false);
+        }
+      }
+    };
+
+    if (appReady) {
+      syncPushSubscription();
+    }
+  }, [state.pushEnabled, state.secretCode, appReady]);
 
   const handlePurchase = useCallback((itemId: string) => {
     console.log('Purchasing item:', itemId);

@@ -390,9 +390,63 @@ const GeneralSettings = ({ state, setState, setShowClearConfirm }: { state: any,
       }
 
       setState(prev => ({ ...prev, pushEnabled: true, pushSubscription: subscription }));
+      
+      // Explicitly log success
+      console.log('Successfully enabled notifications and synced to server');
     } catch (error) {
       console.error('Failed to subscribe:', error);
       alert('Failed to enable notifications. Make sure you are using a supported browser and have added the app to your home screen if on iOS.');
+    } finally {
+      setIsSubscribing(false);
+    }
+  };
+
+  const forceSyncNotifications = async () => {
+    if (!state.secretCode) {
+      alert('Please link your account with a Secret Code first to sync notifications.');
+      return;
+    }
+    
+    setIsSubscribing(true);
+    try {
+      let registration = await navigator.serviceWorker.getRegistration();
+      if (!registration) {
+        registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+      }
+      registration = await navigator.serviceWorker.ready;
+      
+      let subscription = await registration.pushManager.getSubscription();
+      
+      if (!subscription) {
+        // Try to re-subscribe if missing
+        const vapidResponse = await fetch('/api/push/vapid-public-key');
+        const { publicKey } = await vapidResponse.json();
+        const convertedVapidKey = urlBase64ToUint8Array(publicKey);
+        
+        subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: convertedVapidKey
+        });
+      }
+
+      const res = await fetch('/api/push/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          secretCode: state.secretCode,
+          subscription
+        })
+      });
+
+      if (res.ok) {
+        alert('Notifications synced successfully!');
+        setState(prev => ({ ...prev, pushEnabled: true, pushSubscription: subscription }));
+      } else {
+        throw new Error(`Server error: ${res.status}`);
+      }
+    } catch (error) {
+      console.error('Force sync failed:', error);
+      alert('Failed to sync notifications. Please try toggling the switch off and on again.');
     } finally {
       setIsSubscribing(false);
     }
@@ -601,15 +655,26 @@ const GeneralSettings = ({ state, setState, setShowClearConfirm }: { state: any,
                 <div className="text-xs text-slate-500">Alerts for timer ends and rest periods</div>
               </div>
             </div>
-            <button
-              onClick={handleNotificationToggle}
-              disabled={isSubscribing}
-              className={cn(
-                "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
-                state.pushEnabled ? "bg-indigo-500" : "bg-slate-700",
-                isSubscribing && "opacity-50 cursor-not-allowed"
+            <div className="flex items-center gap-2">
+              {state.pushEnabled && (
+                <button
+                  onClick={forceSyncNotifications}
+                  disabled={isSubscribing}
+                  className="p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-indigo-400 transition-colors"
+                  title="Force Sync Notifications"
+                >
+                  <RefreshCw size={16} className={cn(isSubscribing && "animate-spin")} />
+                </button>
               )}
-            >
+              <button
+                onClick={handleNotificationToggle}
+                disabled={isSubscribing}
+                className={cn(
+                  "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
+                  state.pushEnabled ? "bg-indigo-500" : "bg-slate-700",
+                  isSubscribing && "opacity-50 cursor-not-allowed"
+                )}
+              >
               {isSubscribing ? (
                 <RefreshCw size={12} className="animate-spin text-white mx-auto" />
               ) : (
@@ -622,6 +687,7 @@ const GeneralSettings = ({ state, setState, setShowClearConfirm }: { state: any,
               )}
             </button>
           </div>
+        </div>
           {!state.pushEnabled && (
             <p className="text-[10px] text-slate-500 px-4 italic">
               Requires PWA installation on iOS. Make sure to allow permissions when prompted.
@@ -1015,10 +1081,10 @@ export const Settings = React.memo<SettingsProps>(({
                 <h3 className="text-3xl font-black text-white tracking-tight">Scholar's Dungeon</h3>
                 <div className="flex flex-col items-center gap-1 mt-2">
                   <span className="px-3 py-1 bg-indigo-500/20 text-indigo-400 rounded-full font-bold tracking-widest uppercase text-xs border border-indigo-500/30">
-                    Version 1.5.3
+                    Version 1.5.5
                   </span>
                   <span className="text-slate-500 text-xs font-medium">
-                    Updated: 2026-04-14
+                    Updated: 2026-04-16
                   </span>
                 </div>
               </div>

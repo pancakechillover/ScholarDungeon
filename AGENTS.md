@@ -11,8 +11,8 @@ Whenever you complete a task or make changes to the application:
 3. Update the version number and release date in `src/components/Settings.tsx` (under the 'about' section) to match the new version and date.
 
 ## Current Status
-- **Current Version:** v1.5.3
-- **Last Update Date:** 2026-04-14
+- **Current Version:** v1.5.5
+- **Last Update Date:** 2026-04-16
 
 ## Light Themes Definition
 The following themes are considered "Light Themes" and require special CSS handling (e.g., avoiding white text on light backgrounds, using theme-aware colors for modals and charts):
@@ -21,6 +21,19 @@ The following themes are considered "Light Themes" and require special CSS handl
 - **Candy** (`data-theme="candy"`)
 
 ## Task History
+- **v1.5.5 (2026-04-16):** Fixed Web Push Notification delivery by implementing automatic subscription syncing.
+  - *Auto-Sync Logic:* Added a `useEffect` in `App.tsx` that automatically POSTs the browser's `PushSubscription` to `/api/push/subscribe` whenever `pushEnabled` is true and a `secretCode` is available. This ensures the backend always has the latest subscription for the user's code.
+  - *UI Enhancements:* Added a "Force Sync Notifications" button (refresh icon) in General Settings to allow users to manually re-sync their subscription if notifications are not arriving.
+  - *Robustness:* Improved the notification toggle logic to explicitly log success and handle edge cases where the subscription might be missing from the browser but enabled in state.
+- **v1.5.4 (2026-04-16):** Analyzed successful Push Subscription but failed notification delivery.
+  - *Subscription Success:* Confirmed that the frontend can now successfully generate a valid `PushSubscription` object (WNS endpoint for Windows).
+  - *Delivery Failure Analysis:*
+    1. **Redis/SecretCode Sync**: Even if the browser subscribes, the subscription must be successfully POSTed to `/api/push/subscribe` with a valid `secretCode`.
+    2. **Cron-Job Payload**: The Cron-Job triggers `/api/push/check`, which looks for tasks in Redis. If the timer logic doesn't correctly call `/api/push/schedule`, no tasks will exist.
+    3. **Service Worker (sw.js) Event Handling**: The SW must correctly listen for the `push` event and call `self.registration.showNotification`.
+  - *New Finding (no_subscription):* Confirmed that `/api/push/check` returns `status: "no_subscription"`. This proves the backend is finding the scheduled task but cannot find the corresponding push subscription in Redis.
+  - *Root Cause:* The frontend is either not sending the subscription to the server, or it's being sent with a different `secretCode` than the one used to schedule the task.
+  - *Feasibility:* High. We need to ensure the subscription is re-synced whenever the `secretCode` changes or the app initializes.
 - **v1.5.3 (2026-04-14):** Analyzed ongoing Web Push Notification failures. 
   - *Toggle Failure Analysis:* Identified that the "System Notifications" toggle fails if:
     1. **Service Worker Registration hangs**: `navigator.serviceWorker.ready` never resolves if the SW isn't registered.
