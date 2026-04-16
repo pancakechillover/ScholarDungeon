@@ -11,7 +11,7 @@ Whenever you complete a task or make changes to the application:
 3. Update the version number and release date in `src/components/Settings.tsx` (under the 'about' section) to match the new version and date.
 
 ## Current Status
-- **Current Version:** v1.7.0
+- **Current Version:** v1.7.1
 - **Last Update Date:** 2026-04-16
 
 ## Light Themes Definition
@@ -30,6 +30,10 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v1.7.1 (2026-04-16):** Android/PWA Compatibility & Multi-Device Sync logic Fix.
+  - *UI:* Added detailed `alert` error messages in `Settings.tsx` to debug Android/PWA subscription failures.
+  - *Logic:* Added 10-second timeout to Service Worker registration to prevent UI lockup.
+  - *Multi-Device:* Added `deviceInfo` tracking during subscription to help server distinguish browsers.
 - **v1.7.0 (2026-04-16):** Enhanced Navigation & Sync Stability.
   - *UI:* Added "Back to Dungeon" button to reward modals and notification actions.
   - *Bugfix:* Fixed bug where downloading cloud saves re-triggered all previous level-up popups by syncing `prevLevel` during active synchronization.

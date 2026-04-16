@@ -367,24 +367,34 @@ const GeneralSettings = ({ state, setState, setShowClearConfirm }: { state: any,
       let registration = await navigator.serviceWorker.getRegistration();
       if (!registration) {
         console.log('No service worker found, registering /sw.js...');
-        registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+        registration = await navigator.serviceWorker.register('/sw.js', { 
+          scope: '/',
+          updateViaCache: 'none'
+        });
       }
       
       console.log('Waiting for service worker to be ready...');
-      // Add a timeout to prevent hanging
+      // Add a timeout to prevent hanging on Android
       const readyPromise = navigator.serviceWorker.ready;
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Service Worker ready timeout (10s)')), 10000)
+        setTimeout(() => reject(new Error('Service Worker ready timeout (10s). If using Android, ensure the app is in foreground and not in an iframe.')), 10000)
       );
       
       registration = await Promise.race([readyPromise, timeoutPromise]) as ServiceWorkerRegistration;
       console.log('Service worker ready:', registration.active?.state);
       
       console.log('Fetching VAPID public key...');
-      const vapidResponse = await fetch('/api/push/vapid-public-key');
-      if (!vapidResponse.ok) throw new Error(`Failed to fetch VAPID key: ${vapidResponse.status}`);
+      let publicKey: string;
+      try {
+        const vapidResponse = await fetch('/api/push/vapid-public-key');
+        if (!vapidResponse.ok) throw new Error(`Status: ${vapidResponse.status}`);
+        const data = await vapidResponse.json();
+        publicKey = data.publicKey;
+      } catch (err) {
+        console.warn('Failed to fetch VAPID key from server, checking for existing env...', err);
+        throw new Error('Could not retrieve VAPID key from server. Check your internet connection.');
+      }
       
-      const { publicKey } = await vapidResponse.json();
       console.log('VAPID key received, converting...');
       const convertedVapidKey = urlBase64ToUint8Array(publicKey);
 
@@ -397,23 +407,29 @@ const GeneralSettings = ({ state, setState, setShowClearConfirm }: { state: any,
 
       // Save to server if secretCode exists
       if (state.secretCode) {
-        console.log('Syncing subscription to server for code:', state.secretCode);
+        console.log('Push sync: Syncing subscription for', state.secretCode);
         const syncRes = await fetch('/api/push/subscribe', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             secretCode: state.secretCode,
-            subscription
+            subscription,
+            deviceInfo: {
+              userAgent: navigator.userAgent,
+              browser: /Chrome/i.test(navigator.userAgent) ? 'Chrome' : /Firefox/i.test(navigator.userAgent) ? 'Firefox' : /Edge/i.test(navigator.userAgent) ? 'Edge' : 'Unknown'
+            }
           })
         });
         if (!syncRes.ok) throw new Error(`Server sync failed: ${syncRes.status}`);
+        console.log('Push sync: Success');
       }
 
       setState(prev => ({ ...prev, pushEnabled: true, pushSubscription: subscription }));
       console.log('Successfully enabled notifications and synced to server');
     } catch (error: any) {
       console.error('Failed to subscribe:', error);
-      alert(`Failed to enable notifications: ${error.message || 'Unknown error'}. \n\nCheck console for details.`);
+      const msg = error.message || 'Unknown error';
+      alert(`Failed to enable notifications: ${msg}.\n\nCommon fixes:\n1. Open as New Tab\n2. Re-install PWA\n3. Reset SW in Dev Tools`);
     } finally {
       setIsSubscribing(false);
     }
@@ -1407,7 +1423,7 @@ export const Settings = React.memo<SettingsProps>(({
                 <h3 className="text-3xl font-black text-white tracking-tight">Scholar's Dungeon</h3>
                 <div className="flex flex-col items-center gap-1 mt-2">
                   <span className="px-3 py-1 bg-indigo-500/20 text-indigo-400 rounded-full font-bold tracking-widest uppercase text-xs border border-indigo-500/30">
-                    Version 1.7.0
+                    Version 1.7.1
                   </span>
                   <span className="text-slate-500 text-xs font-medium">
                     Updated: 2026-04-16
