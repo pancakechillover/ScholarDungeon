@@ -22,9 +22,10 @@ The following themes are considered "Light Themes" and require special CSS handl
 
 ## Task History
 - **v1.5.5 (2026-04-16):** Fixed Web Push Notification delivery by implementing automatic subscription syncing.
-  - *Auto-Sync Logic:* Added a `useEffect` in `App.tsx` that automatically POSTs the browser's `PushSubscription` to `/api/push/subscribe` whenever `pushEnabled` is true and a `secretCode` is available. This ensures the backend always has the latest subscription for the user's code.
-  - *UI Enhancements:* Added a "Force Sync Notifications" button (refresh icon) in General Settings to allow users to manually re-sync their subscription if notifications are not arriving.
-  - *Robustness:* Improved the notification toggle logic to explicitly log success and handle edge cases where the subscription might be missing from the browser but enabled in state.
+  - *Auto-Sync Logic:* Added a `useEffect` in `App.tsx` that automatically POSTs the browser's `PushSubscription` to `/api/push/subscribe` whenever `pushEnabled` is true and a `secretCode` is available.
+  - *UI Enhancements:* Added a "Force Sync Notifications" button in General Settings.
+  - *Developer Tools:* Added a "Notification Testing" section in Developer Settings to allow immediate testing of push notifications with custom content and real-time console logging of `/api/push/check` results.
+  - *Bugfix:* Fixed a `ReferenceError` where developer notification states were defined in the wrong component scope.
 - **v1.5.4 (2026-04-16):** Analyzed successful Push Subscription but failed notification delivery.
   - *Subscription Success:* Confirmed that the frontend can now successfully generate a valid `PushSubscription` object (WNS endpoint for Windows).
   - *Delivery Failure Analysis:*

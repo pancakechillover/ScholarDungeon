@@ -831,6 +831,67 @@ export const Settings = React.memo<SettingsProps>(({
   const [isDevUnlocked, setIsDevUnlocked] = useState(state.devModeEnabled || false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
 
+  const [testNotificationTitle, setTestNotificationTitle] = useState('Dungeon Alert!');
+  const [testNotificationBody, setTestNotificationBody] = useState('Your focus session has ended.');
+  const [isTestingNotification, setIsTestingNotification] = useState(false);
+
+  const handleTestNotification = async () => {
+    if (!state.secretCode) {
+      alert('Please link your account with a Secret Code first.');
+      return;
+    }
+    
+    setIsTestingNotification(true);
+    try {
+      // 1. Schedule immediate notification (0 delay)
+      console.log('Testing: Scheduling notification...');
+      const scheduleRes = await fetch('/api/push/schedule', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          secretCode: state.secretCode,
+          delayMinutes: 0,
+          title: testNotificationTitle,
+          body: testNotificationBody,
+          type: 'focus'
+        })
+      });
+      
+      if (!scheduleRes.ok) throw new Error('Failed to schedule test notification');
+      
+      // 2. Wait a moment for Redis to settle
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // 3. Trigger check and log results
+      console.log('Testing: Triggering check...');
+      const checkRes = await fetch('/api/push/check');
+      const checkData = await checkRes.json();
+      console.log('Push Check Results:', checkData);
+      
+      if (checkData.success) {
+        const myResult = checkData.results?.find((r: any) => r.secretCode === state.secretCode);
+        if (myResult) {
+          if (myResult.status === 'sent') {
+            alert('Notification sent successfully! Check your device.');
+          } else if (myResult.status === 'no_subscription') {
+            alert('Error: No subscription found on server for this Secret Code. Try "Force Sync" first.');
+          } else {
+            alert(`Notification failed: ${myResult.status} ${myResult.error || ''}`);
+          }
+        } else {
+          alert('Check completed, but no task was found for your Secret Code. It might have been processed already or failed to schedule.');
+        }
+      } else {
+        alert('Check failed: ' + (checkData.error || 'Unknown error'));
+      }
+    } catch (error: any) {
+      console.error('Test notification failed:', error);
+      alert('Test failed: ' + error.message);
+    } finally {
+      setIsTestingNotification(false);
+    }
+  };
+
   const handleUnlockDev = () => {
     if (devPassword === '8424') {
       setIsDevUnlocked(true);
@@ -1065,6 +1126,69 @@ export const Settings = React.memo<SettingsProps>(({
                       icon={<Sparkles size={24} className="text-indigo-300" />}
                     />
                   </div>
+                </div>
+
+                {/* Section 3: Notification Testing */}
+                <div className="space-y-6 pt-6 border-t border-slate-800">
+                  <div className="flex items-center gap-2 text-indigo-400">
+                    <Bell size={18} />
+                    <h4 className="font-bold uppercase text-sm tracking-widest">Notification Testing</h4>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-slate-500 uppercase">Test Title</label>
+                      <input 
+                        type="text" 
+                        value={testNotificationTitle} 
+                        onChange={e => setTestNotificationTitle(e.target.value)}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm"
+                        placeholder="Notification Title"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-slate-500 uppercase">Test Body</label>
+                      <input 
+                        type="text" 
+                        value={testNotificationBody} 
+                        onChange={e => setTestNotificationBody(e.target.value)}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm"
+                        placeholder="Notification Message"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={handleTestNotification}
+                      disabled={isTestingNotification}
+                      className="flex-1 flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-bold py-3 rounded-xl transition-all"
+                    >
+                      {isTestingNotification ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Bell className="w-4 h-4" />}
+                      Send Test Notification Now
+                    </button>
+                    <button
+                      onClick={async () => {
+                        setIsTestingNotification(true);
+                        try {
+                          const res = await fetch('/api/push/check');
+                          const data = await res.json();
+                          console.log('Manual Push Check Results:', data);
+                          alert(`Processed ${data.processed} tasks. Check console for details.`);
+                        } catch (e) {
+                          alert('Check failed');
+                        } finally {
+                          setIsTestingNotification(false);
+                        }
+                      }}
+                      disabled={isTestingNotification}
+                      className="px-4 bg-slate-800 hover:bg-slate-700 text-white rounded-xl transition-all"
+                      title="Trigger Manual Check"
+                    >
+                      <RefreshCw className={cn("w-4 h-4", isTestingNotification && "animate-spin")} />
+                    </button>
+                  </div>
+                  <p className="text-[10px] text-slate-500 italic">
+                    This will schedule a task with 0 delay and immediately trigger the /api/push/check endpoint.
+                  </p>
                 </div>
               </div>
             )}
