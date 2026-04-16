@@ -843,14 +843,14 @@ export const Settings = React.memo<SettingsProps>(({
     
     setIsTestingNotification(true);
     try {
-      // 1. Schedule immediate notification (0 delay)
-      console.log('Testing: Scheduling notification...');
+      // 1. Schedule immediate notification (use -1 minute to ensure it's expired immediately)
+      console.log('Testing: Scheduling notification (expired)...');
       const scheduleRes = await fetch('/api/push/schedule', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           secretCode: state.secretCode,
-          delayMinutes: 0,
+          delayMinutes: -1, // Force expiration
           title: testNotificationTitle,
           body: testNotificationBody,
           type: 'focus'
@@ -860,26 +860,34 @@ export const Settings = React.memo<SettingsProps>(({
       if (!scheduleRes.ok) throw new Error('Failed to schedule test notification');
       
       // 2. Wait a moment for Redis to settle
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 800));
       
       // 3. Trigger check and log results
       console.log('Testing: Triggering check...');
       const checkRes = await fetch('/api/push/check');
       const checkData = await checkRes.json();
-      console.log('Push Check Results:', checkData);
+      console.log('Push Check Results (Detailed):', checkData);
       
       if (checkData.success) {
         const myResult = checkData.results?.find((r: any) => r.secretCode === state.secretCode);
+        const debug = checkData.debug || {};
+        
+        console.log(`[Debug Info] Queue Count: ${debug.totalPendingInQueue}, Server Time: ${debug.serverTime}`);
+        
         if (myResult) {
           if (myResult.status === 'sent') {
-            alert('Notification sent successfully! Check your device.');
+            alert(`Success! Notification sent.\nQueue: ${debug.totalPendingInQueue} tasks remaining.`);
           } else if (myResult.status === 'no_subscription') {
-            alert('Error: No subscription found on server for this Secret Code. Try "Force Sync" first.');
+            alert('Error: No subscription found on server. Try "Force Sync" first.');
           } else {
             alert(`Notification failed: ${myResult.status} ${myResult.error || ''}`);
           }
         } else {
-          alert('Check completed, but no task was found for your Secret Code. It might have been processed already or failed to schedule.');
+          if (checkData.processed > 0) {
+            alert(`Processed ${checkData.processed} tasks, but none matched your code. Check console.`);
+          } else {
+            alert(`No tasks processed. Queue count: ${debug.totalPendingInQueue}. If > 0, the task might not be due yet (Server Time: ${debug.serverTime}).`);
+          }
         }
       } else {
         alert('Check failed: ' + (checkData.error || 'Unknown error'));
@@ -1205,7 +1213,7 @@ export const Settings = React.memo<SettingsProps>(({
                 <h3 className="text-3xl font-black text-white tracking-tight">Scholar's Dungeon</h3>
                 <div className="flex flex-col items-center gap-1 mt-2">
                   <span className="px-3 py-1 bg-indigo-500/20 text-indigo-400 rounded-full font-bold tracking-widest uppercase text-xs border border-indigo-500/30">
-                    Version 1.5.5
+                    Version 1.6.0
                   </span>
                   <span className="text-slate-500 text-xs font-medium">
                     Updated: 2026-04-16

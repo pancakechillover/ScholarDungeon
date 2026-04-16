@@ -86,7 +86,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (path?.endsWith('/check')) {
     try {
       const now = Date.now();
+      // Get all tasks that are due
       const tasks = await client.zRangeByScore('scholar_push_tasks', 0, now);
+      
+      // Get total count for debug
+      const totalCount = await client.zCard('scholar_push_tasks');
+      // Get the very next task time
+      const nextTasks = await client.zRangeWithScores('scholar_push_tasks', 0, 0);
+      const nextTaskTime = nextTasks.length > 0 ? nextTasks[0].score : null;
+
       const results = [];
 
       for (const taskStr of tasks) {
@@ -115,7 +123,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         await client.zRem('scholar_push_tasks', taskStr.toString());
       }
 
-      return res.json({ success: true, processed: tasks.length, results });
+      return res.json({ 
+        success: true, 
+        processed: tasks.length, 
+        debug: {
+          serverTime: now,
+          totalPendingInQueue: totalCount,
+          nextTaskDueAt: nextTaskTime,
+          timeUntilNextMs: nextTaskTime ? nextTaskTime - now : null
+        },
+        results 
+      });
     } catch (error) {
       console.error("Check error:", error);
       return res.status(500).json({ error: "Check failed" });

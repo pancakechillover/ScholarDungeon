@@ -11,7 +11,7 @@ Whenever you complete a task or make changes to the application:
 3. Update the version number and release date in `src/components/Settings.tsx` (under the 'about' section) to match the new version and date.
 
 ## Current Status
-- **Current Version:** v1.5.5
+- **Current Version:** v1.6.0
 - **Last Update Date:** 2026-04-16
 
 ## Light Themes Definition
@@ -21,6 +21,9 @@ The following themes are considered "Light Themes" and require special CSS handl
 - **Candy** (`data-theme="candy"`)
 
 ## Task History
+- **v1.6.0 (2026-04-16):** Diagnosed `processed: 0` and `401 Unauthorized` manifest errors.
+  - *Analysis:* `processed: 0` is likely due to server/client clock drift or Redis latency. `401` on manifest is likely Vercel Deployment Protection.
+  - *Plan:* Enhance `/api/push/check` with detailed debug info (queue count, server time) and optimize `vercel.json` routing.
 - **v1.5.5 (2026-04-16):** Fixed Web Push Notification delivery by implementing automatic subscription syncing.
   - *Auto-Sync Logic:* Added a `useEffect` in `App.tsx` that automatically POSTs the browser's `PushSubscription` to `/api/push/subscribe` whenever `pushEnabled` is true and a `secretCode` is available.
   - *UI Enhancements:* Added a "Force Sync Notifications" button in General Settings.
