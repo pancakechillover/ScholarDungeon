@@ -1311,7 +1311,48 @@ export const Settings = React.memo<SettingsProps>(({
                       className="flex items-center justify-center gap-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 font-bold py-2 rounded-xl text-xs transition-all"
                     >
                       <RefreshCw size={14} />
-                      Update Service Worker
+                      Update SW
+                    </button>
+                    <button
+                      onClick={async () => {
+                        try {
+                          const reg = await navigator.serviceWorker.getRegistration();
+                          if (reg && reg.active) {
+                            reg.active.postMessage({ type: 'TEST_NOTIFICATION_SW' });
+                            alert('Message sent to Service Worker thread. Check SW console.');
+                          } else {
+                            alert('No active Service Worker found to message.');
+                          }
+                        } catch (e) {
+                          alert('Direct SW Test failed: ' + e);
+                        }
+                      }}
+                      className="flex items-center justify-center gap-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/30 font-bold py-2 rounded-xl text-xs transition-all"
+                    >
+                      <Zap size={14} />
+                      Test SW Thread
+                    </button>
+                    <button
+                      onClick={async () => {
+                        try {
+                          const permission = await Notification.requestPermission();
+                          if (permission === 'granted') {
+                            const reg = await navigator.serviceWorker.ready;
+                            await reg.showNotification('Scholar\'s Dungeon', {
+                              body: 'Direct thread notification test successful!',
+                              icon: '/pwa-icon.svg'
+                            });
+                          } else {
+                            alert('Permission not granted: ' + permission);
+                          }
+                        } catch (e) {
+                          alert('Direct Notification Test failed: ' + e);
+                        }
+                      }}
+                      className="flex items-center justify-center gap-2 bg-green-500/10 hover:bg-green-500/20 text-green-400 border border-green-500/30 font-bold py-2 rounded-xl text-xs transition-all"
+                    >
+                      <Eye size={14} />
+                      Test Direct UI
                     </button>
                   </div>
                   <p className="text-[10px] text-slate-500 italic">
@@ -1333,7 +1374,7 @@ export const Settings = React.memo<SettingsProps>(({
                 <h3 className="text-3xl font-black text-white tracking-tight">Scholar's Dungeon</h3>
                 <div className="flex flex-col items-center gap-1 mt-2">
                   <span className="px-3 py-1 bg-indigo-500/20 text-indigo-400 rounded-full font-bold tracking-widest uppercase text-xs border border-indigo-500/30">
-                    Version 1.6.2
+                    Version 1.6.3
                   </span>
                   <span className="text-slate-500 text-xs font-medium">
                     Updated: 2026-04-16

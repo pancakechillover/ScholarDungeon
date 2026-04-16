@@ -11,7 +11,7 @@ Whenever you complete a task or make changes to the application:
 3. Update the version number and release date in `src/components/Settings.tsx` (under the 'about' section) to match the new version and date.
 
 ## Current Status
-- **Current Version:** v1.6.2
+- **Current Version:** v1.6.3
 - **Last Update Date:** 2026-04-16
 
 ## Light Themes Definition
@@ -20,10 +20,21 @@ The following themes are considered "Light Themes" and require special CSS handl
 - **Warm Sun** (`data-theme="warm"`)
 - **Candy** (`data-theme="candy"`)
 
+## Push Notification Troubleshooting Protocols
+Due to inconsistencies in Web Push delivery in various environments (Iframes, PWAs), follow this hierarchy:
+1. **Execution Context:** Web Push is often blocked in cross-origin IFRAMES. Always test by opening the app in a **New Tab** or as an **Installed PWA**.
+2. **Direct Permission Check:** Verify address bar shows "Allowed". 
+3. **Service Worker Console:** Switch to `Application -> Service Workers -> Inspect` in DevTools to see SW-specific logs (`[Service Worker]`). Main console may skip these.
+4. **OS Level:** Check Windows Focus Assist or macOS Do Not Disturb.
+5. **Direct API Test:** Use the "Test Local Notification (Direct)" tool in Developer settings. If this fails, the browser/OS is blocking notifications globally.
+6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
+
 ## Task History
-- **v1.6.2 (2026-04-16):** Analyzed `sent` status but missing SW logs.
-  - *Analysis:* Backend successfully hands off to push service, but SW never receives the event. Likely due to stale SW registration, VAPID mismatch, or Manifest 401 blocking.
-  - *Plan:* Add SW lifecycle logs, implement "Reset Service Worker" debug tool, and enhance backend error reporting.
+- **v1.6.3 (2026-04-16):** Enhanced Push Troubleshooting.
+  - *Analysis:* Delivery reported as `sent` by WNS/FCM but no receipt logged in client. Likely environment (Iframe) or OS blocking.
+  - *Plan:* Add Direct Notification Test in Settings to isolate OS/Browser vs Push Service issues. Document troubleshooting protocols.
+- **v1.6.2 (2026-04-16):** Added deep synchronization logic.
+  - *Fix:* Auto-correct `pushEnabled` if subscription missing. Added "Clear Server Sub" and "Reset SW" tools.
 - **v1.6.1 (2026-04-16):** Enhanced Service Worker logging and improved toggle error handling.
 - **v1.6.0 (2026-04-16):** Diagnosed `processed: 0` and `401 Unauthorized` manifest errors.
   - *Analysis:* `processed: 0` is likely due to server/client clock drift or Redis latency. `401` on manifest is likely Vercel Deployment Protection.

@@ -6,7 +6,7 @@ declare let self: ServiceWorkerGlobalScope;
 precacheAndRoute(self.__WB_MANIFEST);
 
 self.addEventListener('install', (event) => {
-  console.log('[Service Worker] Installing version: 1.6.2');
+  console.log('[Service Worker] Installing version: 1.6.3');
   self.skipWaiting();
 });
 
@@ -16,7 +16,7 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('push', (event) => {
-  console.log('[Service Worker v1.6.2] Push Received.');
+  console.log('[Service Worker v1.6.3] Push Received.');
   
   if (event.data) {
     try {
@@ -55,17 +55,25 @@ self.addEventListener('push', (event) => {
 });
 
 self.addEventListener('notificationclick', (event) => {
+  console.log('[Service Worker] Notification Clicked:', event.action);
   event.notification.close();
   event.waitUntil(
-    self.clients.matchAll({ type: 'window' }).then((clientList) => {
-      for (const client of clientList) {
-        if (client.url === '/' && 'focus' in client) {
-          return client.focus();
-        }
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      if (clientList.length > 0) {
+        return clientList[0].focus();
       }
-      if (self.clients.openWindow) {
-        return self.clients.openWindow('/');
-      }
+      return self.clients.openWindow('/');
     })
   );
+});
+
+self.addEventListener('message', (event) => {
+  console.log('[Service Worker] Message Received:', event.data);
+  if (event.data && event.data.type === 'TEST_NOTIFICATION_SW') {
+    self.registration.showNotification('Scholar\'s Dungeon', {
+      body: 'Service Worker thread notification test successful!',
+      icon: '/pwa-icon.svg',
+      tag: 'test-thread'
+    });
+  }
 });
