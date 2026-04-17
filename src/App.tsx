@@ -561,7 +561,7 @@ function App() {
 
       {/* Main Content - Adjust margin based on sidebar visibility */}
       <main className={cn(
-        "min-h-[100dvh] pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0 transition-all duration-300",
+        "min-h-[100dvh] pb-[calc(7rem+env(safe-area-inset-bottom))] md:pb-0 transition-all duration-300",
         isFullscreenExplore ? "m-0 p-0" : (isSidebarCollapsed ? "md:ml-20" : "md:ml-64")
       )}>
         {!isFullscreenExplore && (
@@ -1593,18 +1593,21 @@ function App() {
         document.body
       )}
 
-      {/* Mobile Bottom Navigation - Only visible on small screens */}
+      {/* Modern Floating Bottom Navigation for Mobile */}
       {!isFullscreenExplore && (
-        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900/90 backdrop-blur-md border-t border-slate-800 px-6 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] flex justify-between items-center z-50 overflow-x-auto scrollbar-hide">
-          {navItems.filter(i => i.id !== 'settings').map(item => (
-            <MobileNavItem 
-              key={item.id}
-              active={activeTab === item.id} 
-              onClick={() => setActiveTab(item.id as any)} 
-              icon={<item.icon size={20} />} 
-              showDot={item.id === 'dungeons' && state.unclaimedQuests > 0 && state.questNotificationStyle === 'red_dot'}
-            />
-          ))}
+        <div className="md:hidden fixed bottom-6 left-4 right-4 z-[90] pb-[env(safe-area-inset-bottom)]">
+          <div className="bg-slate-900/95 backdrop-blur-xl border border-slate-700/80 rounded-[2rem] p-2 flex justify-between items-center shadow-[0_20px_40px_-15px_rgba(0,0,0,0.7)] shadow-indigo-500/10 mx-auto max-w-sm">
+            {navItems.filter(i => i.id !== 'settings').map(item => (
+              <MobileNavItem 
+                key={item.id}
+                active={activeTab === item.id} 
+                onClick={() => setActiveTab(item.id as any)} 
+                icon={<item.icon size={22} />} 
+                label={item.label}
+                showDot={item.id === 'dungeons' && state.unclaimedQuests > 0 && state.questNotificationStyle === 'red_dot'}
+              />
+            ))}
+          </div>
         </div>
       )}
       <CoinRain active={showCoinRain} onComplete={() => setShowCoinRain(false)} />
@@ -1986,21 +1989,33 @@ function NavItem({ active, onClick, icon, label, collapsed, showDot }: { active:
   );
 }
 
-function MobileNavItem({ active, onClick, icon, showDot }: { active: boolean; onClick: () => void; icon: React.ReactNode; showDot?: boolean; key?: string }) {
+function MobileNavItem({ active, onClick, icon, label, showDot }: { active: boolean; onClick: () => void; icon: React.ReactNode; label: string; showDot?: boolean; key?: string }) {
   return (
     <button
       onClick={onClick}
       className={cn(
-        "p-3 rounded-xl transition-all relative",
-        active ? "bg-indigo-600 text-white" : "text-slate-500"
+        "flex flex-col items-center justify-center w-14 h-12 rounded-2xl transition-all relative group",
+        active ? "text-indigo-400 bg-indigo-500/10" : "text-slate-500 hover:text-slate-300"
       )}
     >
-      <div className="relative">
+      <div className={cn("relative transition-transform duration-300", active ? "-translate-y-2 opacity-100 scale-110" : "opacity-80")}>
         {icon}
         {showDot && (
-          <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-indigo-500 rounded-full border-2 border-slate-950" />
+          <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-indigo-500 rounded-full border-2 border-slate-900" />
         )}
       </div>
+      <AnimatePresence>
+        {active && (
+          <motion.span 
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 5 }}
+            className="absolute bottom-1 text-[9px] font-black tracking-wider text-indigo-400"
+          >
+            {label}
+          </motion.span>
+        )}
+      </AnimatePresence>
     </button>
   );
 }
