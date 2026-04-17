@@ -49,6 +49,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
   const [newMajor, setNewMajor] = useState({ name: '', description: '', rewards: [] as DungeonReward[] });
   const [newSub, setNewSub] = useState({
     name: '',
+    description: '',
     totalSessions: 10,
     rewardCoins: 0,
     rewardXP: 0,
@@ -148,7 +149,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                 </div>
                 <div>
                   <p className="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-1">Active Dungeon</p>
-                  <h3 className="text-2xl font-black text-white tracking-tight italic uppercase">{activeDungeon.name}</h3>
+                  <h3 className="text-2xl font-black text-white tracking-tight italic uppercase pr-2">{activeDungeon.name}</h3>
                 </div>
               </div>
               <div className="text-right">
@@ -233,18 +234,19 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                       />
                     </div>
                   )}
-                  {(editingMajor || isAddingMajor) && (
-                    <div className="space-y-1">
+                  {(editingMajor || isAddingMajor || editingSub) && (
+                    <div className="space-y-1 sm:col-span-2">
                       <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Description</label>
                       <input
                         type="text"
-                        value={isAddingMajor ? newMajor.description : editingMajor?.description || ''}
+                        value={isAddingMajor ? newMajor.description : (editingMajor ? editingMajor.description : editingSub?.description || '') || ''}
                         onChange={e => {
                           if (isAddingMajor) setNewMajor({ ...newMajor, description: e.target.value });
                           else if (editingMajor) setEditingMajor({ ...editingMajor, description: e.target.value });
+                          else if (editingSub) setEditingSub({ ...editingSub, description: e.target.value });
                         }}
                         className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
-                        placeholder={isAddingMajor ? "Description" : ""}
+                        placeholder={isAddingMajor ? "Description" : "Optional description"}
                       />
                     </div>
                   )}
@@ -354,7 +356,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                       onUpdateMajor(editingMajor.id, { name: editingMajor.name, description: editingMajor.description, rewards: editingMajor.rewards });
                       setEditingMajor(null);
                     } else if (editingSub) {
-                      onUpdateSub(editingSub.id, { name: editingSub.name, totalSessions: editingSub.totalSessions, rewards: editingSub.rewards });
+                      onUpdateSub(editingSub.id, { name: editingSub.name, description: editingSub.description, totalSessions: editingSub.totalSessions, rewards: editingSub.rewards });
                       setEditingSub(null);
                     }
                   }}
@@ -522,6 +524,16 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                               className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white text-sm focus:border-indigo-500 outline-none"
                             />
                           </div>
+                          <div className="space-y-1 sm:col-span-2">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase">Description</label>
+                            <input
+                              type="text"
+                              placeholder="Optional description"
+                              value={newSub.description}
+                              onChange={e => setNewSub({ ...newSub, description: e.target.value })}
+                              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white text-sm focus:border-indigo-500 outline-none"
+                            />
+                          </div>
                         </div>
                         <div className="space-y-3">
                           <div className="flex items-center justify-between">
@@ -628,6 +640,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                               setIsAddingSub(null);
                               setNewSub({
                                 name: '',
+                                description: '',
                                 totalSessions: 10,
                                 rewardCoins: 0,
                                 rewardXP: 0,
@@ -684,9 +697,14 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                               </div>
                               <div>
                                 <span className={cn(
-                                  "font-black text-sm sm:text-base uppercase italic tracking-tight transition-colors block truncate max-w-[150px] sm:max-w-none",
+                                  "font-black text-sm sm:text-base uppercase italic tracking-tight transition-colors block truncate max-w-[150px] sm:max-w-none pr-2",
                                   sub.status === 'completed' ? "text-slate-600 line-through" : "text-white"
                                 )}>{sub.name}</span>
+                                {sub.description && (
+                                  <p className="text-[10px] sm:text-xs text-slate-500 font-medium line-clamp-2 mt-0.5 pr-2">
+                                    {sub.description}
+                                  </p>
+                                )}
                                 <div className="flex items-center gap-3 mt-1">
                                   <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{sub.completedSessions}/{sub.totalSessions} Rooms</span>
                                   {sub.status === 'completed' && (

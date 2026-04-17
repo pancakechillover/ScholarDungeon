@@ -339,7 +339,10 @@ export const Timer = React.memo<TimerProps>(({
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-6xl sm:text-7xl lg:text-8xl font-black font-mono text-white tracking-tighter">
+          <span className={cn(
+            "font-black font-mono text-white tracking-tighter",
+            isFullscreen ? "text-6xl sm:text-7xl md:text-[5rem]" : "text-6xl sm:text-7xl lg:text-7xl"
+          )}>
             {formatTime(timeLeft)}
           </span>
           <span className={cn(

@@ -429,7 +429,11 @@ const GeneralSettings = ({ state, setState, setShowClearConfirm }: { state: any,
     } catch (error: any) {
       console.error('Failed to subscribe:', error);
       const msg = error.message || 'Unknown error';
-      alert(`Failed to enable notifications: ${msg}.\n\nCommon fixes:\n1. Open as New Tab\n2. Re-install PWA\n3. Reset SW in Dev Tools`);
+      if (msg.includes('push service error')) {
+        alert(`Push Service Error on Android detected.\n\nThis is a known Android limitation issue. We have applied a patch (gcm_sender_id) in version 1.7.2.\n\nTo fix:\n1. Delete/Uninstall this PWA from your phone.\n2. In your browser settings, clear cookies/cache for this site.\n3. Reload the site and install the PWA again.`);
+      } else {
+        alert(`Failed to enable notifications: ${msg}.\n\nCommon fixes:\n1. Open as New Tab\n2. Re-install PWA\n3. Reset SW in Dev Tools`);
+      }
     } finally {
       setIsSubscribing(false);
     }
@@ -1423,7 +1427,7 @@ export const Settings = React.memo<SettingsProps>(({
                 <h3 className="text-3xl font-black text-white tracking-tight">Scholar's Dungeon</h3>
                 <div className="flex flex-col items-center gap-1 mt-2">
                   <span className="px-3 py-1 bg-indigo-500/20 text-indigo-400 rounded-full font-bold tracking-widest uppercase text-xs border border-indigo-500/30">
-                    Version 1.7.1
+                    Version 1.7.3
                   </span>
                   <span className="text-slate-500 text-xs font-medium">
                     Updated: 2026-04-16

@@ -11,7 +11,7 @@ Whenever you complete a task or make changes to the application:
 3. Update the version number and release date in `src/components/Settings.tsx` (under the 'about' section) to match the new version and date.
 
 ## Current Status
-- **Current Version:** v1.7.1
+- **Current Version:** v1.7.3
 - **Last Update Date:** 2026-04-16
 
 ## Light Themes Definition
@@ -30,6 +30,8 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v1.7.3 (2026-04-16):** Polished UI/UX. Fixed tablet fullscreen timer text size, added description field to sub-dungeons, fixed clipping of italic dungeon names, and corrected viewport meta tag to prevent zooming issues on tablet PWAs.
+- **v1.7.2 (2026-04-16):** Fixed Android PWA 'push service error' by injecting generic gcm_sender_id into manifest.
 - **v1.7.1 (2026-04-16):** Android/PWA Compatibility & Multi-Device Sync logic Fix.
   - *UI:* Added detailed `alert` error messages in `Settings.tsx` to debug Android/PWA subscription failures.
   - *Logic:* Added 10-second timeout to Service Worker registration to prevent UI lockup.

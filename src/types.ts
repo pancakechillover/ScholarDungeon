@@ -36,6 +36,7 @@ export interface DungeonReward {
 export interface Dungeon {
   id: string;
   name: string;
+  description?: string;
   totalSessions: number;
   completedSessions: number;
   rewardCoins: number;

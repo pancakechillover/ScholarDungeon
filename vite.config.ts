@@ -23,6 +23,7 @@ export default defineConfig(({mode}) => {
           theme_color: '#0f172a',
           background_color: '#0f172a',
           display: 'standalone',
+          gcm_sender_id: '103953800507',
           icons: [
             {
               src: 'pwa-icon.svg',
@@ -31,7 +32,7 @@ export default defineConfig(({mode}) => {
               purpose: 'any maskable'
             }
           ]
-        }
+        } as any
       })
     ],
     define: {
