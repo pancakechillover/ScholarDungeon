@@ -12,8 +12,31 @@ html {
 }
 
 @layer base {
+  :root {
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
   html, body {
     @apply bg-slate-950 text-slate-200;
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: black;
+    /* Prevent text selection causing shift on some browsers */
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  #root {
+    height: 100%;
+    width: 100%;
+    overflow-y: auto;
+    overflow-x: hidden; /* Prevent horizontal scroll/black bars */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: none;
+    position: relative;
   }
   
   /* Custom Scrollbar - Global */

@@ -11,8 +11,8 @@ Whenever you complete a task or make changes to the application:
 3. Update the version number and release date in `src/components/Settings.tsx` (under the 'about' section) to match the new version and date.
 
 ## Current Status
-- **Current Version:** v1.7.3
-- **Last Update Date:** 2026-04-16
+- **Current Version:** v1.7.4
+- **Last Update Date:** 2026-04-17
 
 ## Light Themes Definition
 The following themes are considered "Light Themes" and require special CSS handling (e.g., avoiding white text on light backgrounds, using theme-aware colors for modals and charts):
@@ -30,6 +30,17 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v1.7.4 (2026-04-17):** Mobile Performance & Layout Stability Overhaul.
+  - *Fix:* Switched page transitions to `mode="wait"` and simplified animations to `opacity`-only on mobile to eliminate lag and vertical jitter.
+  - *Fix:* Implemented strict `overflow-x: hidden` and `w-full` on all main tab containers to resolve the persistent "black bar on the right" layout issue.
+  - *Fix:* Redesigned the mobile bottom navigation bar to be fluid (`flex-1`) and grouped, ensuring it fits perfectly even on narrow devices like iPhone SE.
+  - *UI:* Improved responsiveness of sub-dungeon selection cards; edit and reorder buttons now wrap if space is tight.
+  - *PWA:* Reinforced `overscroll-behavior: none` and added `touch-action: pan-y` to the root scroll container to eliminate landscape overscroll glitches on iPad.
+- **v1.7.4 (2026-04-16):** Stability & Layout Polish.
+  - *Fix:* Removed global layout transitions causing jitter during Tab switching.
+  - *Fix:* Switched to Framer Motion `mode="popLayout"` to stabilize content entry/exit and prevent vertical layout jumps.
+  - *Fix:* Implemented root-level `overscroll-behavior: none` to prevent iPad PWA black edges when dragging.
+  - *Fix:* Relocated mobile bottom bar padding to the content wrapper to stabilize header position.
 - **v1.7.3 (2026-04-16):** Polished UI/UX. Fixed tablet fullscreen timer text size, added description field to sub-dungeons, fixed clipping of italic dungeon names, and corrected viewport meta tag to prevent zooming issues on tablet PWAs.
 - **v1.7.2 (2026-04-16):** Fixed Android PWA 'push service error' by injecting generic gcm_sender_id into manifest.
 - **v1.7.1 (2026-04-16):** Android/PWA Compatibility & Multi-Device Sync logic Fix.

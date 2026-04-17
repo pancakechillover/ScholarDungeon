@@ -715,15 +715,15 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                                 </div>
                               </div>
                             </div>
-                            <div className="flex items-center justify-end gap-3 w-full sm:w-auto mt-2 sm:mt-0">
+                            <div className="flex flex-wrap items-center justify-end gap-2 w-full sm:w-auto mt-2 sm:mt-0">
                               {currentDungeonId === sub.id && (
                                 <span className="mr-auto sm:mr-0 px-2 py-1 bg-indigo-500 text-white text-[8px] font-black uppercase tracking-widest rounded-lg animate-pulse shadow-lg shadow-indigo-500/20">Active</span>
                               )}
                               
-                              <div className="flex items-center gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all shrink-0">
+                              <div className="flex items-center gap-1.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all shrink-0">
                                 <div className="flex items-center gap-1 bg-slate-950/50 p-1 rounded-xl border border-slate-800">
-                                  <button onClick={(e) => { e.stopPropagation(); onReorderSub(sub.id, 'up'); }} className="text-slate-500 hover:text-indigo-400 p-1.5 transition-colors"><ChevronUp size={14} /></button>
-                                  <button onClick={(e) => { e.stopPropagation(); onReorderSub(sub.id, 'down'); }} className="text-slate-500 hover:text-indigo-400 p-1.5 transition-colors"><ChevronDown size={14} /></button>
+                                  <button onClick={(e) => { e.stopPropagation(); onReorderSub(sub.id, 'up'); }} className="text-slate-500 hover:text-indigo-400 p-1 transition-colors"><ChevronUp size={14} /></button>
+                                  <button onClick={(e) => { e.stopPropagation(); onReorderSub(sub.id, 'down'); }} className="text-slate-500 hover:text-indigo-400 p-1 transition-colors"><ChevronDown size={14} /></button>
                                 </div>
                                 
                                 {sub.status !== 'completed' ? (
