@@ -37,6 +37,7 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({
   const lastOneResults = results.filter(r => r.rarity.toUpperCase() === 'LASTONE');
   
   const [revealedIndices, setRevealedIndices] = useState<number[]>([]);
+  const [viewedIndices, setViewedIndices] = useState<number[]>([0]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);
   const [lastOneClaimed, setLastOneClaimed] = useState(false);
@@ -55,6 +56,7 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({
   const handleSkipAnimation = () => {
     // Reveal all normal results
     setRevealedIndices(normalResults.map((_, i) => i));
+    setViewedIndices(normalResults.map((_, i) => i));
     // If no LastOne, show summary or allow closing
     if (lastOneResults.length === 0) {
       setShowSummary(true);
@@ -79,6 +81,19 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({
     };
   }, []);
   
+  // Track viewed cards for color indicators
+  useEffect(() => {
+    if (!viewedIndices.includes(currentIndex)) {
+      setViewedIndices(prev => [...prev, currentIndex]);
+    }
+  }, [currentIndex, viewedIndices]);
+
+  useEffect(() => {
+    if (showSummary) {
+      setViewedIndices(normalResults.map((_, i) => i));
+    }
+  }, [showSummary, normalResults]);
+
   const handlePrev = useCallback(() => {
     setDirection(-1);
     setCurrentIndex(prev => (prev > 0 ? prev - 1 : normalResults.length - 1));
@@ -251,7 +266,7 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({
               </button>
 
               <div className="w-full h-full flex items-center justify-center relative overflow-hidden px-4">
-                <AnimatePresence mode="popLayout" initial={false} custom={direction}>
+                <AnimatePresence initial={false} custom={direction}>
                   {(() => {
                     const res = normalResults[currentIndex];
                     const idx = currentIndex;
@@ -315,7 +330,10 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({
                         initial="enter"
                         animate="center"
                         exit="exit"
-                        transition={{ type: 'spring', stiffness: 400, damping: 35 }}
+                        transition={{ 
+                          x: { type: "spring", stiffness: 300, damping: 30 },
+                          opacity: { duration: 0.2 }
+                        }}
                         drag="x"
                         dragConstraints={{ left: 0, right: 0 }}
                         onDragEnd={(e, { offset, velocity }) => {
@@ -323,7 +341,7 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({
                           else if (offset.x < -70 || velocity.x < -400) handleNext();
                         }}
                         className={cn(
-                          "relative group transition-all duration-500 shrink-0",
+                          "absolute transition-none group shrink-0",
                           gachaEffect === 'card' 
                             ? "h-[45vh] sm:h-[50vh] max-h-[500px] aspect-[2/3]" 
                             : "h-[30vh] sm:h-[35vh] max-h-[350px] aspect-[16/9]",
@@ -355,7 +373,7 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({
                   </div>
                   <div className="flex gap-2">
                     {normalResults.map((res, i) => {
-                      const isRevealed = revealedIndices.includes(i) || gachaEffect !== 'scratch';
+                      const isRevealed = revealedIndices.includes(i) || (viewedIndices.includes(i) && gachaEffect !== 'scratch');
                       const styles = isRevealed ? getRarityStyles(res.rarity, false) : null;
                       
                       return (
@@ -433,7 +451,7 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({
                     animate={{ opacity: 1, scale: 1, y: 0, rotateY: 0 }}
                     transition={{ delay: 0.1 + idx * 0.05, type: 'spring', stiffness: 100, damping: 15 }}
                     className={cn(
-                      "relative group transition-all duration-500",
+                      "relative group transition-none",
                       isTenPull 
                         ? "w-full aspect-[4/3] rounded-lg sm:rounded-[1.5rem] p-[1px] sm:p-[1.5px]" 
                         : gachaEffect === 'card' 
@@ -474,7 +492,7 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({
                   setLastOneClaimed(true);
                   playSound('levelUp', soundVolume, soundEnabled);
                 }}
-                className="group relative flex flex-col items-center gap-2 p-6 bg-gradient-to-br from-rose-500 to-rose-700 text-white rounded-3xl font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95 shadow-[0_20px_40px_-10px_rgba(244,63,94,0.4)] border-2 border-rose-400"
+                className="group relative flex flex-col items-center gap-2 p-6 bg-gradient-to-br from-indigo-500 to-indigo-700 text-white rounded-3xl font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95 shadow-[0_20px_40px_-10px_rgba(99,102,241,0.4)] border-2 border-indigo-400"
               >
                 <Crown size={32} className="text-white drop-shadow-lg mb-1" />
                 <span className="text-xs sm:text-sm">Claim Last One Prize!</span>

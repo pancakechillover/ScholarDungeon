@@ -694,9 +694,9 @@ const GeneralSettings = ({ state, setState, setShowClearConfirm }: { state: any,
             </div>
           </div>
 
-          <div className="space-y-4 p-5 bg-slate-900/50 rounded-3xl border border-rose-500/10 shadow-inner">
+          <div className="space-y-4 p-5 bg-slate-900/50 rounded-3xl border border-indigo-500/10 shadow-inner">
             <div className="flex items-center gap-2 mb-1">
-              <Sparkles size={16} className="text-rose-400" />
+              <Sparkles size={16} className="text-indigo-400" />
               <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Ichiban Draw</label>
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -712,11 +712,11 @@ const GeneralSettings = ({ state, setState, setShowClearConfirm }: { state: any,
                     className={cn(
                       "flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all relative overflow-hidden group",
                       isActive 
-                        ? "bg-rose-500/10 border-rose-500" 
+                        ? "bg-indigo-500/10 border-indigo-500" 
                         : "bg-slate-950 border-slate-800 text-slate-500 hover:border-slate-700"
                     )}
                   >
-                    <effect.icon size={20} className={cn("transition-transform group-hover:scale-110", isActive ? "text-rose-400" : "text-slate-600")} />
+                    <effect.icon size={20} className={cn("transition-transform group-hover:scale-110", isActive ? "text-indigo-400" : "text-slate-600")} />
                     <div className="text-center">
                       <div className={cn("text-[9px] font-black uppercase tracking-widest leading-none mb-0.5", isActive ? "text-white" : "text-slate-500")}>
                         {effect.name}
@@ -985,6 +985,25 @@ export const Settings = React.memo<SettingsProps>(({
   const [devPassword, setDevPassword] = useState('');
   const [isDevUnlocked, setIsDevUnlocked] = useState(state.devModeEnabled || false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+
+  const handleExportData = () => {
+    const data = {
+      state: state,
+      dungeons: JSON.parse(localStorage.getItem('scholars_dungeon_state_dungeons') || '[]'),
+      majorDungeons: JSON.parse(localStorage.getItem('scholars_dungeon_state_major_dungeons') || '[]'),
+      exportDate: new Date().toISOString()
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `scholars_dungeon_backup_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   const [testNotificationTitle, setTestNotificationTitle] = useState('Dungeon Alert!');
   const [testNotificationBody, setTestNotificationBody] = useState('Your focus session has ended.');
@@ -1533,7 +1552,7 @@ export const Settings = React.memo<SettingsProps>(({
                 <h3 className="text-3xl font-black text-white tracking-tight">Scholar's Dungeon</h3>
                 <div className="flex flex-col items-center gap-1 mt-2">
                   <span className="px-3 py-1 bg-indigo-500/20 text-indigo-400 rounded-full font-bold tracking-widest uppercase text-xs border border-indigo-500/30">
-                    Version 2.6.0
+                    Version 2.7.5
                   </span>
                   <span className="text-slate-500 text-xs font-medium">
                     Updated: 2026-04-18
@@ -1621,12 +1640,40 @@ export const Settings = React.memo<SettingsProps>(({
                   <p className="text-slate-300 text-sm leading-relaxed">
                     You are about to clear <strong>ALL</strong> stored data. This includes your progress, talents, inventory, and history. This action <strong>cannot be undone</strong>.
                   </p>
+                  
+                  <div className="p-4 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 space-y-3">
+                    <p className="text-xs text-indigo-300 font-bold leading-relaxed">
+                      Before proceeding, we strongly recommend exporting your data for safekeeping.
+                    </p>
+                    <button
+                      onClick={handleExportData}
+                      className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2"
+                    >
+                      <Database size={14} />
+                      Export Data as JSON
+                    </button>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Type "Delete" to confirm</label>
+                    <input 
+                      type="text"
+                      value={deleteConfirmText}
+                      onChange={(e) => setDeleteConfirmText(e.target.value)}
+                      placeholder="Type Delete here"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl py-3 px-4 text-white focus:border-red-500 outline-none transition-all font-bold"
+                    />
+                  </div>
+
                   <p className="text-red-400 text-sm font-bold">
                     Are you absolutely sure you want to proceed?
                   </p>
                   <div className="flex gap-4 pt-4">
                     <button
-                      onClick={() => setShowClearConfirm(false)}
+                      onClick={() => {
+                        setShowClearConfirm(false);
+                        setDeleteConfirmText('');
+                      }}
                       className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-colors"
                     >
                       Cancel
@@ -1636,7 +1683,8 @@ export const Settings = React.memo<SettingsProps>(({
                         localStorage.clear();
                         window.location.reload();
                       }}
-                      className="flex-1 py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl font-bold transition-colors"
+                      disabled={deleteConfirmText.toLowerCase() !== 'delete'}
+                      className="flex-1 py-3 bg-red-600 hover:bg-red-500 disabled:bg-slate-800 disabled:text-slate-500 text-white rounded-xl font-bold transition-colors"
                     >
                       Yes, Clear Data
                     </button>

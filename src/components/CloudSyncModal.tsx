@@ -50,11 +50,14 @@ export function CloudSyncModal({
   const [showHistory, setShowHistory] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [deleteInput, setDeleteInput] = useState('');
   const [confirmDialog, setConfirmDialog] = useState<{
     title: string;
     message: string;
     action: () => void;
     isDestructive?: boolean;
+    requiresTextConfirm?: boolean;
+    showComparison?: boolean;
   } | null>(null);
 
   const generatePassword = () => {
@@ -78,6 +81,25 @@ export function CloudSyncModal({
   };
 
   const isInputValid = inputCode.length >= 6 && inputCode.length <= 12;
+
+  const handleExportDataLocal = () => {
+    if (!localState) return;
+    const data = {
+      state: localState,
+      dungeons: JSON.parse(localStorage.getItem('scholars_dungeon_state_dungeons') || '[]'),
+      majorDungeons: JSON.parse(localStorage.getItem('scholars_dungeon_state_major_dungeons') || '[]'),
+      exportDate: new Date().toISOString()
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `scholars_dungeon_backup_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   if (!isOpen) return null;
 
@@ -137,18 +159,89 @@ export function CloudSyncModal({
                 animate={{ opacity: 1, scale: 1 }}
                 className="space-y-4"
               >
-                <div className={`p-4 border rounded-2xl space-y-3 ${confirmDialog.isDestructive ? 'bg-rose-500/10 border-rose-500/30' : 'bg-indigo-500/10 border-indigo-500/30'}`}>
-                  <h4 className={`font-bold flex items-center gap-2 ${confirmDialog.isDestructive ? 'text-rose-500' : 'text-indigo-500'}`}>
-                    <AlertTriangle size={18} />
-                    {confirmDialog.title}
-                  </h4>
-                  <p className="text-sm leading-relaxed text-slate-400">
-                    {confirmDialog.message}
-                  </p>
+                <div className={`p-4 border rounded-2xl space-y-4 ${confirmDialog.isDestructive ? 'bg-rose-500/10 border-rose-500/30' : 'bg-indigo-500/10 border-indigo-500/30'}`}>
+                  <div className="space-y-1">
+                    <h4 className={`font-bold flex items-center gap-2 ${confirmDialog.isDestructive ? 'text-rose-500' : 'text-indigo-500'}`}>
+                      <AlertTriangle size={18} />
+                      {confirmDialog.title}
+                    </h4>
+                    <p className="text-sm leading-relaxed text-slate-400">
+                      {confirmDialog.message}
+                    </p>
+                  </div>
+                  
+                  {confirmDialog.showComparison && (
+                    <div className="space-y-2">
+                       <p className="text-[10px] text-indigo-400 font-bold uppercase tracking-widest">Comparison Preview</p>
+                       <div className="bg-slate-950/50 p-3 rounded-xl border border-slate-800 text-[10px]">
+                        <div className="grid grid-cols-[auto_1fr_1fr] gap-x-2 gap-y-1 items-center">
+                          <div className="text-slate-500"></div>
+                          <div className="text-center font-bold text-slate-300 bg-slate-800/50 py-1 rounded-md">Local</div>
+                          <div className="text-center font-bold text-indigo-400 bg-indigo-500/10 py-1 rounded-md">Cloud</div>
+                          
+                          <div className="text-slate-500">Level</div>
+                          <div className={`text-center font-mono ${localState?.level > (syncCheckResult?.cloudData?.state?.level ?? syncCheckResult?.cloudData?.level ?? 0) ? 'text-emerald-400 font-bold' : 'text-slate-300'}`}>
+                            {localState?.level || 1}
+                          </div>
+                          <div className={`text-center font-mono ${(syncCheckResult?.cloudData?.state?.level ?? syncCheckResult?.cloudData?.level ?? 0) > (localState?.level ?? 0) ? 'text-emerald-400 font-bold' : 'text-indigo-300'}`}>
+                            {syncCheckResult?.cloudData?.state?.level ?? syncCheckResult?.cloudData?.level ?? '?'}
+                          </div>
+
+                          <div className="text-slate-500">Coins</div>
+                          <div className={`text-center font-mono ${localState?.coins > (syncCheckResult?.cloudData?.state?.coins ?? syncCheckResult?.cloudData?.coins ?? 0) ? 'text-emerald-400 font-bold' : 'text-slate-300'}`}>
+                            {localState?.coins || 0}
+                          </div>
+                          <div className={`text-center font-mono ${(syncCheckResult?.cloudData?.state?.coins ?? syncCheckResult?.cloudData?.coins ?? 0) > (localState?.coins ?? 0) ? 'text-emerald-400 font-bold' : 'text-indigo-300'}`}>
+                            {syncCheckResult?.cloudData?.state?.coins ?? syncCheckResult?.cloudData?.coins ?? '?'}
+                          </div>
+                          
+                          <div className="text-slate-500">Update</div>
+                          <div className="text-center text-[8px] text-slate-500 font-mono truncate">{localState?.lastUpdated ? new Date(localState.lastUpdated).toLocaleDateString() : '-'}</div>
+                          <div className="text-center text-[8px] text-indigo-500/70 font-mono truncate">
+                            {syncCheckResult?.cloudData?.state?.lastUpdated ?? syncCheckResult?.cloudData?.lastUpdated ? new Date(syncCheckResult.cloudData.state?.lastUpdated ?? syncCheckResult.cloudData.lastUpdated).toLocaleDateString() : '-'}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {confirmDialog.isDestructive && (
+                    <div className="pt-2 space-y-4">
+                      <div className="p-3 bg-slate-950/50 rounded-xl border border-slate-800 space-y-2">
+                        <p className="text-[10px] text-indigo-400 font-bold uppercase tracking-widest">Safety Suggestion</p>
+                        <p className="text-xs text-slate-500 leading-relaxed">
+                          We recommend exporting your current local progress before performing this irreversible action.
+                        </p>
+                        <button
+                          onClick={handleExportDataLocal}
+                          className="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-2 border border-slate-700"
+                        >
+                          <Database size={14} />
+                          Export Local Data
+                        </button>
+                      </div>
+
+                      {confirmDialog.requiresTextConfirm && (
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black text-rose-500/70 uppercase tracking-widest">Type "Delete" to confirm</label>
+                          <input 
+                            type="text"
+                            value={deleteInput}
+                            onChange={(e) => setDeleteInput(e.target.value)}
+                            placeholder="Type Delete here"
+                            className="w-full bg-slate-950 border border-rose-500/20 rounded-xl py-2.5 px-4 text-white focus:border-rose-500 outline-none transition-all font-bold text-sm"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
                 <div className="grid grid-cols-2 gap-3 mt-4">
                   <button
-                    onClick={() => setConfirmDialog(null)}
+                    onClick={() => {
+                      setConfirmDialog(null);
+                      setDeleteInput('');
+                    }}
                     className="py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl font-bold transition-colors"
                   >
                     Cancel
@@ -157,8 +250,10 @@ export function CloudSyncModal({
                     onClick={() => {
                       confirmDialog.action();
                       setConfirmDialog(null);
+                      setDeleteInput('');
                     }}
-                    className={`py-3 rounded-xl font-bold transition-colors ${confirmDialog.isDestructive ? 'bg-rose-600 hover:bg-rose-500 text-white' : 'bg-amber-600 hover:bg-amber-500 text-white'}`}
+                    disabled={confirmDialog.requiresTextConfirm && deleteInput.toLowerCase() !== 'delete'}
+                    className={`py-3 rounded-xl font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${confirmDialog.isDestructive ? 'bg-rose-600 hover:bg-rose-500 text-white' : 'bg-amber-600 hover:bg-amber-500 text-white'}`}
                   >
                     Confirm
                   </button>
@@ -319,7 +414,8 @@ export function CloudSyncModal({
                           title: 'Overwrite Cloud Data?',
                           message: 'This will permanently replace your cloud save with your current local progress. This action cannot be undone.',
                           action: () => onResolveConflict(false),
-                          isDestructive: false
+                          isDestructive: false,
+                          showComparison: true
                         })}
                         className="p-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-center transition-colors group"
                       >
@@ -331,7 +427,9 @@ export function CloudSyncModal({
                           title: 'Overwrite Local Data?',
                           message: 'This will permanently replace your current local progress with the cloud save. This action cannot be undone.',
                           action: () => onResolveConflict(true),
-                          isDestructive: true
+                          isDestructive: true,
+                          requiresTextConfirm: false, // User requested no "Delete" typing for this
+                          showComparison: true
                         })}
                         className="p-3 bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/30 rounded-xl text-center transition-colors group"
                       >
@@ -423,7 +521,8 @@ export function CloudSyncModal({
                         onClick={() => setConfirmDialog({
                           title: 'Force Sync',
                           message: 'This will overwrite the cloud save with your current local data. Are you sure you want to proceed?',
-                          action: onManualSync
+                          action: onManualSync,
+                          showComparison: true
                         })}
                         disabled={isSyncing}
                         className="w-full py-4 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-slate-200 rounded-2xl font-bold transition-colors flex items-center justify-center gap-3"
@@ -444,7 +543,10 @@ export function CloudSyncModal({
                         onClick={() => setConfirmDialog({
                           title: 'Download from Cloud',
                           message: 'This will overwrite your current local data with the data from the cloud. Are you sure you want to proceed?',
-                          action: () => onConnect(secretCode || '')
+                          action: () => onConnect(secretCode || ''),
+                          isDestructive: true,
+                          requiresTextConfirm: false, // User requested no "Delete" typing for this
+                          showComparison: true
                         })}
                         disabled={isSyncing}
                         className="w-full py-4 bg-indigo-600/20 hover:bg-indigo-600/30 disabled:opacity-50 text-indigo-400 rounded-2xl font-bold border border-indigo-500/30 transition-colors flex items-center justify-center gap-3"
@@ -482,6 +584,7 @@ export function CloudSyncModal({
                             title: 'Delete Cloud Data',
                             message: 'This will permanently delete your save data from the cloud and unbind your local app. Your local data will NOT be affected. This action CANNOT be undone. Are you absolutely sure?',
                             isDestructive: true,
+                            requiresTextConfirm: true,
                             action: () => {
                               setInputCode('');
                               onDeleteCloudData();

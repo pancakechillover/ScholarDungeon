@@ -117,12 +117,12 @@ export const Timer = React.memo<TimerProps>(({
     }
   }, [isActive, endTime, pushEnabled, secretCode, isResting]); // Removed timeLeft from dependencies
 
-  const handleComplete = useCallback(() => {
+  const handleComplete = useCallback((silent: boolean = false) => {
     setIsActive(false);
     setEndTime(null);
 
     // Show local notification if possible
-    if (pushEnabled && 'serviceWorker' in navigator && Notification.permission === 'granted') {
+    if (!silent && pushEnabled && 'serviceWorker' in navigator && Notification.permission === 'granted') {
       navigator.serviceWorker.ready.then(reg => {
         reg.showNotification(isResting ? "Rest Over!" : "Focus Over!", {
           body: isResting ? "Time to return to the dungeon." : "You have cleared the room. Take a rest?",
@@ -288,34 +288,6 @@ export const Timer = React.memo<TimerProps>(({
 
   return (
     <div className="relative flex flex-col items-center space-y-8 w-full">
-      {/* Dungeon Progress in Fullscreen */}
-      {isFullscreen && currentDungeon && (
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-2xl px-6 py-4 bg-slate-900/50 backdrop-blur-md border border-slate-800 rounded-3xl flex items-center gap-6"
-        >
-          <div className="p-3 bg-indigo-500/20 text-indigo-400 rounded-2xl border border-indigo-500/20 shrink-0">
-            <Sword size={20} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex justify-between items-end mb-2">
-              <h4 className="text-sm font-black text-white uppercase italic tracking-tight truncate">{currentDungeon.name}</h4>
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
-                {currentDungeon.completedSessions}/{currentDungeon.totalSessions}
-              </span>
-            </div>
-            <div className="h-2 bg-slate-950 rounded-full overflow-hidden border border-slate-800">
-              <motion.div 
-                initial={{ width: 0 }}
-                animate={{ width: `${(currentDungeon.completedSessions / currentDungeon.totalSessions) * 100}%` }}
-                className="h-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]"
-              />
-            </div>
-          </div>
-        </motion.div>
-      )}
-
       {/* Timer Display */}
       <div className="relative w-full max-w-[320px] sm:max-w-[400px] lg:max-w-[480px] aspect-square">
         <svg viewBox="0 0 320 320" className="w-full h-full transform -rotate-90">
@@ -342,19 +314,60 @@ export const Timer = React.memo<TimerProps>(({
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className={cn(
-            "font-black font-mono text-white tracking-tighter",
-            isFullscreen ? "text-6xl sm:text-7xl md:text-[5rem]" : "text-6xl sm:text-7xl lg:text-7xl"
-          )}>
+          <span 
+            className={cn(
+              "font-black font-mono text-white tracking-tighter",
+              isFullscreen ? "text-6xl sm:text-7xl md:text-[5rem]" : "text-6xl sm:text-7xl lg:text-7xl"
+            )}
+          >
             {formatTime(timeLeft)}
           </span>
-          <span className={cn(
-            "font-bold uppercase tracking-widest text-xs mt-2 flex items-center gap-2",
-            isResting ? "text-emerald-500" : "text-slate-500"
-          )}>
-            {isResting ? <Coffee size={14} /> : null}
-            {isResting ? (isActive ? 'Resting...' : 'Ready to Rest') : (isActive ? 'Exploring...' : 'Ready to Delve')}
-          </span>
+          <div className={cn(
+              "font-bold uppercase tracking-widest text-xs mt-2 flex items-center gap-1",
+              isResting ? "text-emerald-500" : "text-indigo-400"
+            )}>
+            {(() => {
+              const statusText = (isResting ? (isActive ? 'Resting...' : 'Ready to Rest') : (isActive ? 'Exploring...' : 'Ready to Delve'));
+              const charArray = statusText.split('');
+              const totalItems = charArray.length + 1; // +1 for the icon
+              const animationDuration = 0.6;
+              const repeatDelay = (totalItems - 1) * animationDuration;
+
+              return (
+                <>
+                  <motion.span
+                    animate={isActive ? { y: [0, -8, 0] } : { y: 0 }}
+                    transition={{
+                      duration: animationDuration,
+                      repeat: isActive ? Infinity : 0,
+                      ease: "easeInOut",
+                      delay: 0,
+                      repeatDelay: repeatDelay
+                    }}
+                    className="inline-block mr-1"
+                  >
+                    {isResting ? <Coffee size={14} /> : <Sword size={14} />}
+                  </motion.span>
+                  {charArray.map((char, i) => (
+                    <motion.span
+                      key={i}
+                      animate={isActive ? { y: [0, -8, 0] } : { y: 0 }}
+                      transition={{
+                        duration: animationDuration,
+                        repeat: isActive ? Infinity : 0,
+                        ease: "easeInOut",
+                        delay: (i + 1) * animationDuration, // Delay based on its position in sequence
+                        repeatDelay: repeatDelay
+                      }}
+                      className="inline-block"
+                    >
+                      {char}
+                    </motion.span>
+                  ))}
+                </>
+              );
+            })()}
+          </div>
         </div>
       </div>
 
@@ -379,7 +392,7 @@ export const Timer = React.memo<TimerProps>(({
           {isActive ? <Pause size={40} fill="currentColor" /> : <Play size={40} fill="currentColor" className="ml-2" />}
         </button>
         <button
-          onClick={handleComplete}
+          onClick={() => handleComplete(true)}
           className="p-4 bg-slate-900 text-slate-400 hover:text-white rounded-full border border-slate-800 transition-all"
           title="Skip Session"
         >

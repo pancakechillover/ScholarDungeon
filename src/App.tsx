@@ -188,6 +188,19 @@ function App() {
 
   const [prevLevel, setPrevLevel] = useState(state.level);
   const [isSyncingPush, setIsSyncingPush] = useState(false);
+  const wasSyncingRef = React.useRef(false);
+
+  // Track if we were recently syncing to handle React 18 state batching
+  useEffect(() => {
+    if (isSyncing) {
+      wasSyncingRef.current = true;
+    } else {
+      const timer = setTimeout(() => {
+        wasSyncingRef.current = false;
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [isSyncing]);
 
   // Sync prevLevel with state.level during synchronization to prevent level-up popups
   useEffect(() => {
@@ -247,6 +260,11 @@ function App() {
 
   React.useEffect(() => {
     if (state.level > prevLevel) {
+      // If we are syncing or just finished syncing, just update the baseline without showing UI
+      if (isSyncing || wasSyncingRef.current) {
+        setPrevLevel(state.level);
+        return;
+      }
       const levelsGained = [];
       for (let l = prevLevel + 1; l <= state.level; l++) {
         levelsGained.push(l);
@@ -256,7 +274,7 @@ function App() {
       playSound('levelUp', state.soundVolume, state.soundEnabled);
       setPrevLevel(state.level);
     }
-  }, [state.level, prevLevel, state.soundVolume, state.soundEnabled]);
+  }, [state.level, prevLevel, state.soundVolume, state.soundEnabled, isSyncing]);
 
   const handleDraw = (poolId: string, amount: number) => {
     setDrawResult(null);

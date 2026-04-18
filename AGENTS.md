@@ -11,7 +11,7 @@ Whenever you complete a task or make changes to the application:
 3. Update the version number and release date in `src/components/Settings.tsx` (under the 'about' section) to match the new version and date.
 
 ## Current Status
-- **Current Version:** v2.6.0
+- **Current Version:** v2.7.5
 - **Last Update Date:** 2026-04-18
 
 ## Light Themes Definition
@@ -30,6 +30,22 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v2.7.5 (2026-04-18):** Timer UI Enhancement.
+  - *Animation:* Added an active "bobbing" animation effect to the timer display and status indicator when the timer is active for a more playful, responsive feel.
+- **v2.7.4 (2026-04-18):** Cloud Sync Confirmation Refinement & Bugfix.
+  - *UX Logic:* Targeted the "Type Delete to Confirm" requirement strictly to permanent deletions. Overwriting local data via sync now only requires a "Safety Suggestion".
+  - *Bugfix (Sync):* Fixed Comparison Preview in sync modals to robustly handle cloudData structures and added visual status indicators (color highlighting) to clearly display differences between save states.
+  - *UI Enhancement:* Added a "Comparison Preview" table to all sync-related confirmation dialogs.
+- **v2.7.3 (2026-04-18):** Destructive Action Hardening.
+  - *UX/Security:* Implemented mandatory "Type Delete to Confirm" gates and proactive "Export Data" suggestions for both "Clear all data" (Settings) and "Delete Cloud" (Astral Archives) actions.
+- **v2.7.2 (2026-04-18):** Gacha Carousel Indicator Polish.
+  - *UI Logic:* Refined multi-draw indicators in Overlap Mode. Indicator dots now only display rarity colors for cards that have been specifically viewed or revealed, maintaining the element of surprise for upcoming cards.
+- **v2.7.1 (2026-04-18):** Cloud Sync Level-up Fix.
+  - *Bugfix:* Resolved an issue where downloading a cloud save with a higher level than the local save would trigger multiple level-up popups. Implemented a `wasSyncingRef` with a safety buffer to suppress level-up UI during and immediately after state restoration.
+- **v2.7.0 (2026-04-18):** Carousel Smoothness & UI Alignment.
+  - *Animation:* Eliminated flickering in Overlap Mode by stripping conflicting CSS transitions and switching to absolute stacking in `AnimatePresence`. 
+  - *UX:* Skipping the timer in Explore no longer triggers system notifications.
+  - *UI:* Aligned Ichiban Draw setting borders with the active theme color (Indigo).
 - **v2.6.0 (2026-04-18):** Reward Summary & Workflow Hardening.
   - *Feature:* Added a "Skip Animation" option and a post-draw "Summoning Summary" table to provide a clear inventory of all items won.
   - *Bugfix:* Patched the "Claim Rewards" button to be strictly gated until 100% of cards are revealed, preventing premature closure.
