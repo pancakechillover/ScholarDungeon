@@ -11,7 +11,7 @@ Whenever you complete a task or make changes to the application:
 3. Update the version number and release date in `src/components/Settings.tsx` (under the 'about' section) to match the new version and date.
 
 ## Current Status
-- **Current Version:** v1.8.4
+- **Current Version:** v1.8.5
 - **Last Update Date:** 2026-04-18
 
 ## Light Themes Definition
@@ -30,6 +30,9 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v1.8.5 (2026-04-18):** Fixed Page Transition Jitter / Double Scrollbar Conflict.
+  - *Analysis:* Found the root cause of the horizontal width snapping during tab transitions (especially Sanctum, Merchant, Record). The main `max-w-[1600px]` transition wrapper had an `overflow-x-hidden` class. During `AnimatePresence popLayout` mode, when a tall exiting component became `position: absolute`, the wrapper physically shrunk to the height of the incoming short component. Because the wrapper had `overflow-x-hidden`, the CSS engine automatically computed its `overflow-y` to `auto`, instantly spawning a new, temporary "small scrollbar" strictly for that wrapper to contain the tall but exiting absolute child. This inner scrollbar shifted the incoming content leftward by 6px, then vanished when the exit animation finished, causing the layout swap jump.
+  - *Fix:* Removed `overflow-x-hidden` from the `relative max-w-[1600px]` transition wrapper in `App.tsx`. The horizontal boundary is cleanly managed by `#root` instead, allowing the exit absolute elements to gracefully visually clear the vertical bounding box without triggering any interior nested scrollbars.
 - **v1.8.4 (2026-04-18):** Global Scrollbar Lock Architecture.
   - *Analysis:* Resolved layout jitter dynamically caused by `<html>` scrollbar creation/deletion during `Framer Motion popLayout` absolute rendering.
   - *Fix:* Shifted scrolling responsibility from `#root` to the native `html` element. Added `html { scrollbar-gutter: stable; overflow-y: scroll; }` and removed `overflow: hidden` on body. This establishes an unshakeable browser-level vertical scroll track, severing the link between content height and horizontal expansion.
