@@ -228,7 +228,7 @@ export function useGameState() {
       if (state.quests) {
         updates.quests = state.quests.map(q => {
           if (q.type === 'daily_sessions') {
-            return { ...q, progress: 0, completed: false };
+            return { ...q, progress: 0, completed: false, claimed: false };
           }
           return q;
         });
@@ -241,7 +241,7 @@ export function useGameState() {
       if (state.quests) {
         updates.quests = (updates.quests || state.quests).map(q => {
           if (q.type === 'weekly_sessions') {
-            return { ...q, progress: 0, completed: false };
+            return { ...q, progress: 0, completed: false, claimed: false };
           }
           return q;
         });
@@ -254,7 +254,7 @@ export function useGameState() {
       if (state.quests) {
         updates.quests = (updates.quests || state.quests).map(q => {
           if (q.type === 'monthly_sessions') {
-            return { ...q, progress: 0, completed: false };
+            return { ...q, progress: 0, completed: false, claimed: false };
           }
           return q;
         });

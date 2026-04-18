@@ -7,17 +7,31 @@ import webpush from "web-push";
 dotenv.config();
 
 // Configure Web Push
-const vapidPublicKey = process.env.VAPID_PUBLIC_KEY || "BH5OwZMBM9P55jCf-14OfpwDhWfOw7wxirim8bzKlyGZaRD61hdtRVW6nIlURIzD9ZHXKWfsgdNH3Gzrx3MTgyw";
-const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY || "Xiz1jQ_9n7iCw-VbjJjF4CPCdrMFszNj6Z1Ja6hXe58";
+const cleanKey = (key?: string) => key ? key.replace(/['"]/g, '').trim() : '';
+
+const envPublic = cleanKey(process.env.VAPID_PUBLIC_KEY);
+const envPrivate = cleanKey(process.env.VAPID_PRIVATE_KEY);
+// Valid fallback keys
+const fallbackPublic = "BJgimrTgCLcXvp_P1leS8zy56ZKqfMueXM5iitrQyLMmA1swEho4wNXRovLGJdwP0mftM9-s-EkH_15PyiyM0aw";
+const fallbackPrivate = "UKT36f_f6QUyadIQ0JK1PR4rD46bjeQVSCqDvmSfuO4";
+
+const vapidPublicKey = envPublic || fallbackPublic;
+const vapidPrivateKey = envPrivate || fallbackPrivate;
 const vapidEmailInput = process.env.VAPID_EMAIL || "iz.karakarakarakan@gmail.com";
 const vapidSubject = vapidEmailInput.startsWith('http') || vapidEmailInput.startsWith('mailto:')
   ? vapidEmailInput
-  : `mailto:${vapidEmailInput}`;
+  : `mailto:${cleanKey(vapidEmailInput)}`;
 
 try {
   webpush.setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey);
-} catch (err) {
-  console.error("Failed to set VAPID details:", err);
+} catch (err: any) {
+  console.error("Failed to set VAPID details with primary keys:", err.message);
+  try {
+    webpush.setVapidDetails(vapidSubject, fallbackPublic, fallbackPrivate);
+    console.warn("Using FALLBACK VAPID keys because environment keys were invalid.");
+  } catch (fallbackErr) {
+    console.error("Even fallback VAPID keys failed! Push will not work.");
+  }
 }
 
 const app = express();

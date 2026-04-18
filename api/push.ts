@@ -5,24 +5,33 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 // Configure Web Push
 // RESTORED FALLBACKS to prevent UI hang. 
 // SECURITY NOTE: Please set VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY in your Secrets for production.
-const vapidPublicKey = process.env.VAPID_PUBLIC_KEY || "BLqju80Sl3cUDF0s-0pEallPIkVpxl-2l5NJMh-X2twNOmvTUU4q1Q2yotukIZEEt92QANtsukbTwk6L7I7LITo";
-const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY || "OKWnQn0E_X2HGGAVFydaCJA_3_IWTZZIhmtDENJTUgo";
+const cleanKey = (key?: string) => key ? key.replace(/['"]/g, '').trim() : '';
+
+const envPublic = cleanKey(process.env.VAPID_PUBLIC_KEY);
+const envPrivate = cleanKey(process.env.VAPID_PRIVATE_KEY);
+const fallbackPublic = "BJgimrTgCLcXvp_P1leS8zy56ZKqfMueXM5iitrQyLMmA1swEho4wNXRovLGJdwP0mftM9-s-EkH_15PyiyM0aw";
+const fallbackPrivate = "UKT36f_f6QUyadIQ0JK1PR4rD46bjeQVSCqDvmSfuO4";
+
+const vapidPublicKey = envPublic || fallbackPublic;
+const vapidPrivateKey = envPrivate || fallbackPrivate;
 const vapidEmailInput = process.env.VAPID_EMAIL || "jl3190264398@163.com";
 const vapidSubject = vapidEmailInput.startsWith('http') || vapidEmailInput.startsWith('mailto:') 
   ? vapidEmailInput 
-  : `mailto:${vapidEmailInput}`;
+  : `mailto:${cleanKey(vapidEmailInput)}`;
 
-if (vapidPublicKey && vapidPrivateKey) {
-  try {
-    webpush.setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey);
-    if (!process.env.VAPID_PRIVATE_KEY) {
-      console.warn("Using FALLBACK VAPID keys. This is NOT secure for production.");
-    }
-  } catch (err) {
-    console.error("Failed to set VAPID details:", err);
+try {
+  webpush.setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey);
+  if (!envPrivate) {
+    console.warn("Using FALLBACK VAPID keys. This is NOT secure for production.");
   }
-} else {
-  console.warn("VAPID Keys are missing. Push notifications will fail.");
+} catch (err: any) {
+  console.error("Failed to set VAPID details with primary keys:", err.message);
+  try {
+    webpush.setVapidDetails(vapidSubject, fallbackPublic, fallbackPrivate);
+    console.warn("Using FALLBACK VAPID keys because environment keys were invalid.");
+  } catch (fallbackErr) {
+    console.error("Even fallback VAPID keys failed! Push will not work.");
+  }
 }
 
 // Initialize Redis client lazily

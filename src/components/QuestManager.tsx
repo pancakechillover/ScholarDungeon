@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Quest, QuestType, QuestReward } from '../types';
-import { Target, Trophy, Plus, Trash2, Edit2, CheckCircle2, ChevronDown, ChevronUp, X, Gift, Coins, Zap } from 'lucide-react';
+import { Target, Trophy, Plus, Trash2, Edit2, CheckCircle2, ChevronDown, ChevronUp, X, Gift, Coins, Zap, CheckSquare, Square } from 'lucide-react';
 import { PageHeader } from './PageHeader';
 import { cn } from '../lib/utils';
 
@@ -13,9 +13,10 @@ interface QuestManagerProps {
   onUpdateQuests: (quests: Quest[]) => void;
   onClaimReward: (id: string) => void;
   forceTab?: 'quests' | 'achievements';
+  isEditMode?: boolean;
 }
 
-export const QuestManager = React.memo<QuestManagerProps>(({ quests, activeTalents, isAdding, setIsAdding, onUpdateQuests, onClaimReward, forceTab }) => {
+export const QuestManager = React.memo<QuestManagerProps>(({ quests, activeTalents, isAdding, setIsAdding, onUpdateQuests, onClaimReward, forceTab, isEditMode = false }) => {
   const [activeTab, setActiveTab] = useState<'quests' | 'achievements'>(forceTab || 'quests');
 
   React.useEffect(() => {
@@ -373,7 +374,7 @@ export const QuestManager = React.memo<QuestManagerProps>(({ quests, activeTalen
             </div>
             
             <div className="flex items-center justify-end sm:justify-start gap-3 shrink-0">
-              {quest.completed && !quest.claimed && (
+              {quest.completed && !quest.claimed ? (
                 <button
                   onClick={() => onClaimReward(quest.id)}
                   className="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-black text-[10px] uppercase tracking-widest transition-all shadow-lg shadow-emerald-900/20 flex items-center gap-2"
@@ -381,39 +382,43 @@ export const QuestManager = React.memo<QuestManagerProps>(({ quests, activeTalen
                   <Gift size={16} />
                   Claim Reward
                 </button>
-              )}
-              {quest.claimed && (
-                <span className="px-4 py-2 bg-slate-800/50 text-slate-500 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 border border-slate-800">
-                  <CheckCircle2 size={14} />
-                  Claimed
+              ) : (quest.completed && quest.claimed) ? (
+                <span className="flex items-center">
+                  <CheckSquare size={24} className="text-emerald-500 drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                </span>
+              ) : (
+                <span className="flex items-center">
+                  <Square size={24} className="text-slate-600" />
                 </span>
               )}
               
-              <div className="flex items-center gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all">
-                <div className="flex items-center gap-1 bg-slate-950/50 p-1 rounded-xl border border-slate-800">
-                  <button onClick={() => handleReorder(index, 'up')} disabled={index === 0} className="p-1.5 text-slate-500 hover:text-indigo-400 disabled:opacity-30 transition-colors"><ChevronUp size={16} /></button>
-                  <button onClick={() => handleReorder(index, 'down')} disabled={index === filteredQuests.length - 1} className="p-1.5 text-slate-500 hover:text-indigo-400 disabled:opacity-30 transition-colors"><ChevronDown size={16} /></button>
-                </div>
-                <button 
-                  onClick={() => {
-                    setIsEditing(quest);
-                    setNewQuest(quest);
-                  }}
-                  className="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-xl transition-all border border-slate-700"
-                  title="Edit Task"
-                >
-                  <Edit2 size={16} />
-                </button>
-                {!quest.talentRequired && (
+              {isEditMode && (
+                <div className="flex items-center gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all ml-2">
+                  <div className="flex items-center gap-1 bg-slate-950/50 p-1 rounded-xl border border-slate-800">
+                    <button onClick={() => handleReorder(index, 'up')} disabled={index === 0} className="p-1.5 text-slate-500 hover:text-indigo-400 disabled:opacity-30 transition-colors"><ChevronUp size={16} /></button>
+                    <button onClick={() => handleReorder(index, 'down')} disabled={index === filteredQuests.length - 1} className="p-1.5 text-slate-500 hover:text-indigo-400 disabled:opacity-30 transition-colors"><ChevronDown size={16} /></button>
+                  </div>
                   <button 
-                    onClick={() => handleDelete(quest.id)}
-                    className="p-2.5 bg-slate-800 text-slate-400 hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/30 rounded-xl transition-all border border-slate-700"
-                    title="Delete Task"
+                    onClick={() => {
+                      setIsEditing(quest);
+                      setNewQuest(quest);
+                    }}
+                    className="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-xl transition-all border border-slate-700"
+                    title="Edit Task"
                   >
-                    <Trash2 size={16} />
+                    <Edit2 size={16} />
                   </button>
-                )}
-              </div>
+                  {!quest.talentRequired && (
+                    <button 
+                      onClick={() => handleDelete(quest.id)}
+                      className="p-2.5 bg-slate-800 text-slate-400 hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/30 rounded-xl transition-all border border-slate-700"
+                      title="Delete Task"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         ))}

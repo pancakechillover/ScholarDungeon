@@ -30,7 +30,8 @@ import {
   Calendar,
   Maximize,
   Minimize,
-  RefreshCw
+  RefreshCw,
+  Edit2
 } from 'lucide-react';
 import { Timer } from './components/Timer';
 import { DungeonManager } from './components/DungeonManager';
@@ -78,6 +79,7 @@ function App() {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'explore' | 'dungeons' | 'talents' | 'shop' | 'stats' | 'settings' | 'vault'>('dashboard');
   const [dungeonSubTab, setDungeonSubTab] = useState<'list' | 'quests' | 'achievements'>('list');
   const [isAddingMajor, setIsAddingMajor] = useState(false);
+  const [isDungeonEditMode, setIsDungeonEditMode] = useState(false);
   const [isAddingQuest, setIsAddingQuest] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
@@ -660,12 +662,12 @@ function App() {
                     </p>
                     
                     {currentDungeon ? (
-                      <div className="bg-slate-950/50 p-6 rounded-2xl border border-indigo-500/20">
-                        <div className="flex items-center justify-between mb-4">
-                          <span className="text-xs font-bold text-indigo-400 uppercase tracking-widest">Current Quest</span>
-                          <span className="text-xs text-slate-500">{currentDungeon.completedSessions}/{currentDungeon.totalSessions} Rooms Cleared</span>
+                      <div className="bg-slate-950/50 p-4 sm:p-6 rounded-2xl border border-indigo-500/20">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 mb-3 sm:mb-4">
+                          <span className="text-[10px] sm:text-xs font-bold text-indigo-400 uppercase tracking-widest">Current Quest</span>
+                          <span className="text-[9px] sm:text-xs text-slate-500">{currentDungeon.completedSessions}/{currentDungeon.totalSessions} Rooms Cleared</span>
                         </div>
-                        <h3 className="text-xl font-bold text-white mb-4">{currentDungeon.name}</h3>
+                        <h3 className="font-bold text-white mb-4 truncate pr-2" style={{ fontSize: 'clamp(1rem, 4vw, 1.25rem)' }}>{currentDungeon.name}</h3>
                         <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden mb-6">
                           <motion.div 
                             initial={{ width: 0 }}
@@ -730,7 +732,7 @@ function App() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                className={cn("w-full p-8 space-y-12", isFullscreenExplore ? "h-[100dvh] flex flex-col items-center justify-center p-0 m-0 space-y-0" : "")}
+                className={cn("w-full px-4 py-6 sm:p-8 space-y-8 sm:space-y-12", isFullscreenExplore ? "h-[100dvh] flex flex-col items-center justify-center p-0 m-0 space-y-0" : "")}
               >
                 {!isFullscreenExplore && (
                   <PageHeader 
@@ -786,39 +788,82 @@ function App() {
                   {currentDungeon && (
                     <div className="flex flex-col items-center gap-4">
                       <div 
-                        onClick={() => setActiveTab('dungeons')}
+                        onClick={() => !isFullscreenExplore && setActiveTab('dungeons')}
                         className={cn(
-                          "w-full space-y-4 cursor-pointer transition-all group",
+                          "w-full transition-all group overflow-hidden relative",
                           isFullscreenExplore 
-                            ? "bg-transparent p-2 text-center flex flex-col items-center" 
-                            : "bg-slate-900/50 rounded-2xl border border-slate-800 p-6 hover:border-indigo-500/50"
+                            ? "bg-transparent py-4 flex flex-col items-center" 
+                            : "bg-slate-900/50 rounded-2xl border border-slate-800 hover:border-indigo-500/50 cursor-pointer"
                         )}
                       >
-                        <div className={cn("flex items-center", isFullscreenExplore ? "justify-center flex-col gap-2" : "justify-between")}>
-                          <div className="flex items-center gap-3">
-                            {!isFullscreenExplore && (
-                              <div className="p-2 bg-indigo-500/10 text-indigo-400 rounded-lg group-hover:bg-indigo-500 group-hover:text-white transition-colors">
-                                <Sword size={18} />
-                              </div>
-                            )}
-                            <h3 className={cn("font-bold text-white", isFullscreenExplore ? "text-2xl tracking-widest uppercase" : "text-lg")}>{currentDungeon.name}</h3>
-                          </div>
-                          <div className={cn(isFullscreenExplore ? "text-center" : "text-right")}>
-                            {!isFullscreenExplore && <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest block">Active Dungeon</span>}
-                            <span className={cn("font-bold uppercase", isFullscreenExplore ? "text-sm text-indigo-400" : "text-xs text-slate-500")}>{currentDungeon.completedSessions} / {currentDungeon.totalSessions} Rooms</span>
+                        {/* Interactive overlay for desktop */}
+                        {!isFullscreenExplore && (
+                          <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/0 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        )}
+
+                        <div className={cn("relative z-10 w-full", isFullscreenExplore ? "px-2 max-w-sm" : "p-2.5 sm:p-5")}>
+                          <div className={cn("flex flex-col gap-2 sm:gap-3", isFullscreenExplore ? "items-center" : "")}>
+                            {/* Top row: Tags & Progress Text */}
+                            <div className={cn("flex w-full min-w-0 items-center justify-between gap-1.5 sm:gap-2.5", isFullscreenExplore ? "justify-center" : "")}>
+                               {!isFullscreenExplore && (
+                                  <div className="flex items-center gap-1 sm:gap-1.5 px-1.5 py-0.5 sm:px-2 sm:py-1 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-md shrink-0">
+                                    <Target size={9} className="sm:w-3 sm:h-3" />
+                                    <span className="text-[7px] sm:text-[10px] md:text-xs font-bold uppercase tracking-wider sm:tracking-widest">Active Dungeon</span>
+                                  </div>
+                               )}
+                               <span className={cn(
+                                 "font-bold uppercase tabular-nums shrink-0 mt-0.5 sm:mt-0", 
+                                 isFullscreenExplore ? "text-xs sm:text-sm text-indigo-400" : "text-[8px] sm:text-[10px] md:text-xs text-slate-500"
+                               )}>
+                                 {currentDungeon.completedSessions} / {currentDungeon.totalSessions} Rooms
+                               </span>
+                            </div>
+
+                            {/* Dungeon Title Row */}
+                            <div className={cn("flex items-center w-full min-w-0 gap-2 sm:gap-4 mt-0.5 sm:mt-2 mb-0.5 sm:mb-1", isFullscreenExplore ? "justify-center" : "")}>
+                              {!isFullscreenExplore && (
+                                <div className="w-7 h-7 sm:w-12 sm:h-12 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-400 group-hover:bg-indigo-500 group-hover:text-white transition-all shrink-0 shadow-inner">
+                                  <Sword size={14} className="sm:w-6 sm:h-6" />
+                                </div>
+                              )}
+                              <h3 
+                                className={cn("font-black text-white truncate", isFullscreenExplore ? "tracking-widest uppercase text-center" : "pr-0")} 
+                                style={{ fontSize: 'clamp(0.625rem, 4vw, 1.5rem)' }}
+                              >
+                                {currentDungeon.name}
+                              </h3>
+                            </div>
+
+                            {/* Progress Bar */}
+                            <div className={cn(
+                              "relative bg-slate-950 rounded-full overflow-hidden border border-slate-800", 
+                              isFullscreenExplore ? "h-1.5 w-full max-w-[200px] mt-4" : "h-2 w-full mt-2"
+                            )}>
+                              <motion.div 
+                                initial={{ width: 0 }}
+                                animate={{ width: `${(currentDungeon.completedSessions / currentDungeon.totalSessions) * 100}%` }}
+                                className="absolute top-0 left-0 h-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]"
+                              />
+                            </div>
                           </div>
                         </div>
-                        <div className={cn("relative bg-slate-950 rounded-full overflow-hidden border border-slate-800", isFullscreenExplore ? "h-1.5 w-48 mx-auto" : "h-3 w-full")}>
-                          <motion.div 
-                            initial={{ width: 0 }}
-                            animate={{ width: `${(currentDungeon.completedSessions / currentDungeon.totalSessions) * 100}%` }}
-                            className="absolute top-0 left-0 h-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]"
-                          />
-                        </div>
-                        {currentDungeon.completedSessions >= currentDungeon.totalSessions && (
+
+                        {/* Completed State Actions */}
+                        {!isFullscreenExplore && currentDungeon.completedSessions >= currentDungeon.totalSessions && (
+                          <div className="px-4 pb-4 sm:px-5 sm:pb-5 relative z-10 pt-2">
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); setActiveTab('dungeons'); }}
+                              className="w-full py-3 bg-emerald-600 border border-emerald-500 hover:bg-emerald-500 text-white rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/20"
+                            >
+                              <RotateCcw size={16} />
+                              Change Dungeon
+                            </button>
+                          </div>
+                        )}
+                        {isFullscreenExplore && currentDungeon.completedSessions >= currentDungeon.totalSessions && (
                           <button 
                             onClick={(e) => { e.stopPropagation(); setActiveTab('dungeons'); }}
-                            className="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2"
+                            className="mt-6 mx-auto px-6 py-2 bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 rounded-full font-bold text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 hover:bg-emerald-500 hover:text-white relative z-10"
                           >
                             <RotateCcw size={14} />
                             Change Dungeon
@@ -1120,35 +1165,50 @@ function App() {
                       </button>
                     </div>
 
-                    {dungeonSubTab === 'list' && (
+                    <div className="flex items-center gap-2">
                       <button
-                        onClick={() => setIsAddingMajor(true)}
-                        className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-all shadow-lg shadow-indigo-500/20"
-                        title="New Major Dungeon"
+                        onClick={() => setIsDungeonEditMode(!isDungeonEditMode)}
+                        className={cn(
+                          "flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-xl transition-all shadow-lg shrink-0",
+                          isDungeonEditMode 
+                            ? "bg-indigo-600 text-white shadow-indigo-500/20" 
+                            : "bg-slate-800 text-slate-400 hover:text-white"
+                        )}
+                        title={isDungeonEditMode ? "Exit Edit Mode" : "Enter Edit Mode"}
                       >
-                        <Plus size={18} />
+                        <Edit2 size={16} className="sm:w-[18px] sm:h-[18px]" />
                       </button>
-                    )}
 
-                    {dungeonSubTab === 'quests' && (
-                      <button
-                        onClick={() => setIsAddingQuest(true)}
-                        className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-all shadow-lg shadow-indigo-500/20"
-                        title="Add Quest"
-                      >
-                        <Plus size={18} />
-                      </button>
-                    )}
+                      {dungeonSubTab === 'list' && (
+                        <button
+                          onClick={() => setIsAddingMajor(true)}
+                          className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-all shadow-lg shadow-indigo-500/20 shrink-0"
+                          title="New Major Dungeon"
+                        >
+                          <Plus size={18} />
+                        </button>
+                      )}
 
-                    {dungeonSubTab === 'achievements' && (
-                      <button
-                        onClick={() => setIsAddingQuest(true)}
-                        className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-amber-600 hover:bg-amber-700 text-white rounded-xl transition-all shadow-lg shadow-amber-500/20"
-                        title="Add Achievement"
-                      >
-                        <Plus size={18} />
-                      </button>
-                    )}
+                      {dungeonSubTab === 'quests' && (
+                        <button
+                          onClick={() => setIsAddingQuest(true)}
+                          className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-all shadow-lg shadow-indigo-500/20 shrink-0"
+                          title="Add Quest"
+                        >
+                          <Plus size={18} />
+                        </button>
+                      )}
+
+                      {dungeonSubTab === 'achievements' && (
+                        <button
+                          onClick={() => setIsAddingQuest(true)}
+                          className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-amber-600 hover:bg-amber-700 text-white rounded-xl transition-all shadow-lg shadow-amber-500/20 shrink-0"
+                          title="Add Achievement"
+                        >
+                          <Plus size={18} />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </PageHeader>
 
@@ -1159,6 +1219,7 @@ function App() {
                     currentDungeonId={state.currentDungeonId}
                     isAddingMajor={isAddingMajor}
                     setIsAddingMajor={setIsAddingMajor}
+                    isEditMode={isDungeonEditMode}
                     onSelect={(id) => setState(prev => ({ ...prev, currentDungeonId: id }))}
                     onCreateMajor={handleCreateMajor}
                     onCreateSub={handleCreateSub}
@@ -1176,6 +1237,7 @@ function App() {
                     activeTalents={state.activeTalents}
                     isAdding={isAddingQuest}
                     setIsAdding={setIsAddingQuest}
+                    isEditMode={isDungeonEditMode}
                     onUpdateQuests={(quests) => setState(prev => ({ ...prev, quests }))}
                     onClaimReward={claimQuestReward}
                     forceTab="quests"
@@ -1186,6 +1248,7 @@ function App() {
                     activeTalents={state.activeTalents}
                     isAdding={isAddingQuest}
                     setIsAdding={setIsAddingQuest}
+                    isEditMode={isDungeonEditMode}
                     onUpdateQuests={(quests) => setState(prev => ({ ...prev, quests }))}
                     onClaimReward={claimQuestReward}
                     forceTab="achievements"

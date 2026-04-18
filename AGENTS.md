@@ -11,7 +11,7 @@ Whenever you complete a task or make changes to the application:
 3. Update the version number and release date in `src/components/Settings.tsx` (under the 'about' section) to match the new version and date.
 
 ## Current Status
-- **Current Version:** v1.8.6
+- **Current Version:** v1.9.6
 - **Last Update Date:** 2026-04-18
 
 ## Light Themes Definition
@@ -30,6 +30,33 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v1.9.6 (2026-04-18):** Micro-Responsive Polish (Exploration Card).
+  - *UI Adjust:* Further refined the minimum font-size for Active Dungeon titles on ultra-mobile viewports (`clamp` floor lowered to 0.625rem). This ensures layout stability for users with exceptionally long dungeon naming conventions without compromising the aesthetic "Black" font-weight impact.
+- **v1.9.5 (2026-04-18):** Micro-Responsive Polish (Explore Tab).
+  - *UI Adjust:* Refined the "Active Dungeon" card in the Explore tab for maximum mobile compatibility. Reduced padding, minimized icon sizes (Sword/Target), and adjusted the fluid font-size clamp to ensure the dungeon name and progress fit perfectly on ultra-narrow viewports without vertical or horizontal overflow.
+- **v1.9.4 (2026-04-18):** Bugfix: Permanent Quest Checkboxes.
+  - *Fix (Backend Logic):* Discovered a core lifecycle flaw where daily/weekly/monthly quests were resetting their `completed` state across date boundaries but failing to properly reset their `claimed` boolean tracking. This caused newly reset routine tasks to be permanently locked out of granting rewards. Hardcoded explicit `claimed: false` reset instructions into the `useGameState` chronological boundary loops.
+  - *Fix (Frontend rendering):* Upgraded the `QuestManager` completion indicator ternary loop. Made `CheckSquare` rendering strictly dependent on BOTH `completed == true` AND `claimed == true` to prevent erroneously checking off altered or glitched targets.
+- **v1.9.3 (2026-04-18):** Bugfix: Quest Duplicate Checkboxes.
+  - *Fix:* Resolved an edge case bug where editing a previously cleared/claimed Quest's target to a higher number caused both the `CheckSquare` (from `claimed == true`) and `Square` (from `completed == false`) logic gates to fire simultaneously. Refactored the UI block to a strict mutually exclusive ternary operation so only one indicator or button can ever render.
+- **v1.9.2 (2026-04-18):** Edit Mode across Quests and Achievements.
+  - *Feature:* Expanded the unified "Edit Mode" from the main Dungeon Manager into the "Quests" and "Achievements" sections. Structure modification actions (editing, deleting, reordering) are securely hidden behind user toggle.
+  - *UI Adjust:* Refactored completion markers on Quests/Achievements array. Swapped static "Claimed" label arrays with dynamic interactive Lucide CheckSquare/Square elements, maintaining 100% cohesion with Dungeon tracker aesthetics.
+- **v1.9.1 (2026-04-18):** Dungeons Edit Mode & Explore Rewrite.
+  - *Feature:* Renamed "Simple Mode" to "Edit Mode" with a Pen icon and moved it globally to the top header (`App.tsx` PageHeader) next to the "Add Dungeon" button (`+`). Editing actions are now gated behind toggling "Edit Mode" on.
+  - *Responsive Polish:* Completely rewrote the `Active Dungeon` module inside the "Explore" tab. It now features an interactive layered card design with smooth 0-min widths and proper DOM hierarchy for `truncate`, ensuring long dungeon names safely hide with an ellipsis ("...") instead of blowing out the side editing buttons on varying viewport sizes.
+  - *Bugfix:* Patched `Major Dungeon` and `Sub Dungeon` lists inside `DungeonManager` to use `<div className="min-w-0 flex-1">` wraps so native CSS flexbox truncate handles long strings flawlessly across all devices.
+- **v1.9.0 (2026-04-18):** Dungeon Manager Simple Mode & Fluid Layouts.
+  - *Feature:* Added a "Simple Mode: On/Off" toggle to the Dungeon Manager list that visually hides bulk action buttons (edit, delete, create nested sub-dungeon).
+  - *Feature:* Replaced bare "Cleared" text labels on Sub-Dungeons with a modern Lucide checkbox indicator (CheckSquare/Square) that dynamically reflects their 100% completion status.
+  - *Responsive Polish:* Upgraded Active Dungeon text scaling across Sanctum and Explore sections using CSS `clamp()` for perfectly fluid resizing on all viewport widths, ensuring it isn't just bound by `sm:` breakpoints.
+- **v1.8.9 (2026-04-18):** Micro-Responsive Polish.
+  - *Fix:* Adjusted Active Dungeon card padding and font sizes (`text-[9px] sm:text-xs`) across Sanctum and Explore components to prevent horizontal text overflow on ultra-narrow screens (e.g., iPhone SE).
+- **v1.8.8 (2026-04-18):** VAPID Key Error Handling & Resilience.
+  - *Fix:* Resolved "Vapid public key should be 65 bytes long when decoded." errors caused by malformed environment variables. Added string sanitization (stripping quotes, whitespace) and a robust `try/catch` fallback mechanism in both `server.ts` and `api/push.ts`. The push server now automatically recovers using valid internal fallback keys if user-supplied keys in `.env` are broken.
+- **v1.8.7 (2026-04-18):** Responsive UI Patches & Dungeon Link Routing. 
+  - *Fix:* Re-structured the flexbox layout in Sanctum and Explore "Active Dungeon" components to use `flex-col sm:flex-row`, preventing long dungeon names from overlapping with status labels on narrow phone screens (`truncate` added to titles).
+  - *Enhancement:* Upgraded the "View Details" button in the Record (`DungeonManager`) page. Clicking it now dynamically expands the correct parent Major Dungeon and uses `scrollIntoView` to seamlessly scroll to the target Sub-Dungeon row.
 - **v1.8.6 (2026-04-18):** Global Scrollbar Annihilation - The Final CSS Spec.
   - *Analysis:* The user identified a continuing double-scrollbar mechanism. While `overflow-x-hidden` was removed from `App.tsx`'s transition wrapper in 1.8.5, the absolute root (`<div id="root">`) in `index.css` *also* still contained `overflow-x: hidden`. According to CSS spec, any `overflow-x: hidden` forces `overflow-y: auto`. Therefore, `#root` itself was acting as the secondary dynamic scroll container when child animations popped out.
   - *Fix:* Upgraded both `body` and `#root` CSS properties to use `overflow-x: clip;` instead of `hidden`. The powerful `clip` property completely severs the CSS `overflow-y: auto` auto-generation loop, allowing content to bleed out vertically (to be caught by the safe `html { overflow-y: scroll }`) without ever spawning an internal root scrollbar again. No secondary scrollbar = zero horizontal layout collapse.

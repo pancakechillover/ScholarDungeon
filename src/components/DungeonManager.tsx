@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Dungeon, MajorDungeon, DungeonReward } from '../types';
-import { Plus, Target, Sword, CheckCircle2, ChevronRight, Trash2, FolderPlus, Folder, ChevronDown, ChevronUp, Gift, X, Edit2, Coins, Zap, Trophy, HelpCircle } from 'lucide-react';
+import { Plus, Target, Sword, CheckCircle2, ChevronRight, Trash2, FolderPlus, Folder, ChevronDown, ChevronUp, Gift, X, Edit2, Coins, Zap, Trophy, HelpCircle, Square, CheckSquare, EyeOff, Eye } from 'lucide-react';
 import { PageHeader } from './PageHeader';
 import { cn } from '../lib/utils';
 
@@ -21,6 +21,7 @@ interface DungeonManagerProps {
   onReorderMajor: (id: string, direction: 'up' | 'down') => void;
   onReorderSub: (id: string, direction: 'up' | 'down') => void;
   onFinalizeMajor: (id: string) => void;
+  isEditMode?: boolean;
 }
 
 export const DungeonManager = React.memo<DungeonManagerProps>(({
@@ -38,7 +39,8 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
   onDeleteSub,
   onReorderMajor,
   onReorderSub,
-  onFinalizeMajor
+  onFinalizeMajor,
+  isEditMode = false
 }) => {
   const [isAddingSub, setIsAddingSub] = useState<{ parentId: string } | null>(null);
   const [editingMajor, setEditingMajor] = useState<MajorDungeon | null>(null);
@@ -173,7 +175,17 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                   <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{activeDungeon.totalSessions} Total Rooms</span>
                 </div>
                 <button 
-                  onClick={() => onSelect(activeDungeon.id)}
+                  onClick={() => {
+                    const parentMajor = majorDungeons.find(m => m.id === activeDungeon.parentId);
+                    if (parentMajor && !expandedMajors.includes(parentMajor.id)) {
+                      setExpandedMajors(prev => [...prev, parentMajor.id]);
+                    }
+                    onSelect(activeDungeon.id);
+                    setTimeout(() => {
+                      const el = document.getElementById(`dungeon-${activeDungeon.id}`);
+                      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 100);
+                  }}
                   className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold uppercase tracking-widest transition-all border border-slate-700"
                 >
                   View Details
@@ -388,13 +400,13 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                 className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer hover:bg-slate-800/30 transition-colors"
                 onClick={() => toggleMajor(major.id)}
               >
-                <div className="flex items-start sm:items-center space-x-4">
+                <div className="flex items-start sm:items-center space-x-4 min-w-0 flex-1">
                   <div className="p-2.5 bg-indigo-500/10 text-indigo-400 rounded-xl border border-indigo-500/10 group-hover:scale-110 transition-transform shrink-0">
                     <Folder size={20} />
                   </div>
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2 mb-1">
-                      <h3 className="text-base font-bold text-white tracking-tight truncate pr-2">{major.name}</h3>
+                      <h3 className="text-base font-bold text-white tracking-tight truncate max-w-full pr-2">{major.name}</h3>
                       {major.isFinalized && (
                         <span className="text-[10px] font-black bg-indigo-500/20 text-indigo-400 px-2 py-0.5 rounded-lg border border-indigo-500/30 uppercase tracking-widest shrink-0">
                           Finalized
@@ -429,59 +441,63 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                 </div>
                 
                 <div className="flex items-center justify-end sm:justify-start gap-2 shrink-0">
-                  <div className="flex items-center gap-1 bg-slate-950/50 p-1 rounded-lg border border-slate-800">
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); onReorderMajor(major.id, 'up'); }} 
-                      className="p-1.5 text-slate-500 hover:text-indigo-400 hover:bg-slate-800 rounded-md transition-all"
-                    >
-                      <ChevronUp size={14} />
-                    </button>
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); onReorderMajor(major.id, 'down'); }} 
-                      className="p-1.5 text-slate-500 hover:text-indigo-400 hover:bg-slate-800 rounded-md transition-all"
-                    >
-                      <ChevronDown size={14} />
-                    </button>
-                  </div>
+                  {isEditMode && (
+                    <div className="flex items-center gap-1 bg-slate-950/50 p-1 rounded-lg border border-slate-800">
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); onReorderMajor(major.id, 'up'); }} 
+                        className="p-1.5 text-slate-500 hover:text-indigo-400 hover:bg-slate-800 rounded-md transition-all"
+                      >
+                        <ChevronUp size={14} />
+                      </button>
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); onReorderMajor(major.id, 'down'); }} 
+                        className="p-1.5 text-slate-500 hover:text-indigo-400 hover:bg-slate-800 rounded-md transition-all"
+                      >
+                        <ChevronDown size={14} />
+                      </button>
+                    </div>
+                  )}
                   
-                  <div className="flex items-center gap-1.5">
-                    {!major.status || major.status !== 'completed' ? (
-                      major.isFinalized ? (
-                        <div className="p-2 bg-indigo-500/10 text-indigo-400 rounded-lg border border-indigo-500/20 cursor-not-allowed" title="Finalized dungeons cannot be edited">
-                          <CheckCircle2 size={16} />
-                        </div>
+                  {isEditMode && (
+                    <div className="flex items-center gap-1.5">
+                      {!major.status || major.status !== 'completed' ? (
+                        major.isFinalized ? (
+                          <div className="p-2 bg-indigo-500/10 text-indigo-400 rounded-lg border border-indigo-500/20 cursor-not-allowed" title="Finalized dungeons cannot be edited">
+                            <CheckCircle2 size={16} />
+                          </div>
+                        ) : (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setEditingMajor(major); }}
+                            className="p-2 bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-all border border-slate-700"
+                            title="Edit Major Dungeon"
+                          >
+                            <Edit2 size={16} />
+                          </button>
+                        )
                       ) : (
-                        <button
-                          onClick={(e) => { e.stopPropagation(); setEditingMajor(major); }}
-                          className="p-2 bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-all border border-slate-700"
-                          title="Edit Major Dungeon"
-                        >
+                        <div className="p-2 bg-slate-800/30 text-slate-600 rounded-lg border border-slate-800/50 cursor-not-allowed" title="Completed tasks cannot be edited">
                           <Edit2 size={16} />
-                        </button>
-                      )
-                    ) : (
-                      <div className="p-2 bg-slate-800/30 text-slate-600 rounded-lg border border-slate-800/50 cursor-not-allowed" title="Completed tasks cannot be edited">
-                        <Edit2 size={16} />
-                      </div>
-                    )}
-                    
-                    <button
-                      onClick={(e) => { 
-                        e.stopPropagation(); 
-                        if (major.isFinalized) return;
-                        setDeletingDungeon({ id: major.id, name: major.name, isMajor: true });
-                      }}
-                      className={cn(
-                        "p-2 rounded-lg transition-all border",
-                        major.isFinalized 
-                          ? "bg-slate-800/30 text-slate-600 border-slate-800/50 cursor-not-allowed" 
-                          : "bg-slate-800 text-slate-400 hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/30 border-slate-700"
+                        </div>
                       )}
-                      title="Delete Major Dungeon"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
+                      
+                      <button
+                        onClick={(e) => { 
+                          e.stopPropagation(); 
+                          if (major.isFinalized) return;
+                          setDeletingDungeon({ id: major.id, name: major.name, isMajor: true });
+                        }}
+                        className={cn(
+                          "p-2 rounded-lg transition-all border",
+                          major.isFinalized 
+                            ? "bg-slate-800/30 text-slate-600 border-slate-800/50 cursor-not-allowed" 
+                            : "bg-slate-800 text-slate-400 hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/30 border-slate-700"
+                        )}
+                        title="Delete Major Dungeon"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  )}
                   
                   <div className="p-1 text-slate-600 group-hover:text-indigo-400 transition-colors ml-2">
                     <ChevronDown size={20} className={cn("transition-transform duration-300", expandedMajors.includes(major.id) ? "rotate-180" : "")} />
@@ -677,6 +693,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                       {dungeons.filter(d => d.parentId === major.id).map(sub => (
                         <motion.div
                           key={sub.id}
+                          id={`dungeon-${sub.id}`}
                           whileHover={{ scale: 1.005 }}
                           className={cn(
                             "p-4 sm:p-6 rounded-3xl border transition-all cursor-pointer group",
@@ -697,7 +714,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                               </div>
                               <div>
                                 <span className={cn(
-                                  "font-black text-sm sm:text-base uppercase italic tracking-tight transition-colors block truncate max-w-[150px] sm:max-w-none pr-2",
+                                  "font-black text-sm sm:text-base uppercase italic tracking-tight transition-colors block truncate pr-2",
                                   sub.status === 'completed' ? "text-slate-600 line-through" : "text-white"
                                 )}>{sub.name}</span>
                                 {sub.description && (
@@ -707,11 +724,6 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                                 )}
                                 <div className="flex items-center gap-3 mt-1">
                                   <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{sub.completedSessions}/{sub.totalSessions} Rooms</span>
-                                  {sub.status === 'completed' && (
-                                    <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest bg-emerald-500/10 px-2 py-0.5 rounded-lg border border-emerald-500/20">
-                                      Cleared
-                                    </span>
-                                  )}
                                 </div>
                               </div>
                             </div>
@@ -720,39 +732,49 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                                 <span className="mr-auto sm:mr-0 px-2 py-1 bg-indigo-500 text-white text-[8px] font-black uppercase tracking-widest rounded-lg animate-pulse shadow-lg shadow-indigo-500/20">Active</span>
                               )}
                               
-                              <div className="flex items-center gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all shrink-0">
-                                <div className="flex items-center gap-1 bg-slate-950/50 p-1 rounded-xl border border-slate-800">
-                                  <button onClick={(e) => { e.stopPropagation(); onReorderSub(sub.id, 'up'); }} className="text-slate-500 hover:text-indigo-400 p-1.5 transition-colors"><ChevronUp size={14} /></button>
-                                  <button onClick={(e) => { e.stopPropagation(); onReorderSub(sub.id, 'down'); }} className="text-slate-500 hover:text-indigo-400 p-1.5 transition-colors"><ChevronDown size={14} /></button>
-                                </div>
-                                
-                                {sub.status !== 'completed' ? (
-                                  major.isFinalized ? (
-                                    <div className="p-2 text-slate-700 cursor-not-allowed" title="Parent dungeon is finalized">
+                              {isEditMode && (
+                                <div className="flex items-center gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all shrink-0">
+                                  <div className="flex items-center gap-1 bg-slate-950/50 p-1 rounded-xl border border-slate-800">
+                                    <button onClick={(e) => { e.stopPropagation(); onReorderSub(sub.id, 'up'); }} className="text-slate-500 hover:text-indigo-400 p-1.5 transition-colors"><ChevronUp size={14} /></button>
+                                    <button onClick={(e) => { e.stopPropagation(); onReorderSub(sub.id, 'down'); }} className="text-slate-500 hover:text-indigo-400 p-1.5 transition-colors"><ChevronDown size={14} /></button>
+                                  </div>
+                                  
+                                  {sub.status !== 'completed' ? (
+                                    major.isFinalized ? (
+                                      <div className="p-2 text-slate-700 cursor-not-allowed" title="Parent dungeon is finalized">
+                                        <Edit2 size={16} />
+                                      </div>
+                                    ) : (
+                                      <button 
+                                        onClick={(e) => { e.stopPropagation(); setEditingSub(sub); }}
+                                        className="p-2 bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 rounded-xl transition-all border border-slate-700"
+                                        title="Edit Sub Dungeon"
+                                      >
+                                        <Edit2 size={16} />
+                                      </button>
+                                    )
+                                  ) : (
+                                    <div className="p-2 bg-slate-800/30 text-slate-700 rounded-xl border border-slate-800/50 cursor-not-allowed" title="Completed tasks cannot be edited">
                                       <Edit2 size={16} />
                                     </div>
-                                  ) : (
-                                    <button 
-                                      onClick={(e) => { e.stopPropagation(); setEditingSub(sub); }}
-                                      className="p-2 bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 rounded-xl transition-all border border-slate-700"
-                                      title="Edit Sub Dungeon"
-                                    >
-                                      <Edit2 size={16} />
-                                    </button>
-                                  )
+                                  )}
+                                  
+                                  <button 
+                                    onClick={(e) => { e.stopPropagation(); setDeletingDungeon({ id: sub.id, name: sub.name, isMajor: false }); }}
+                                    className="p-2 bg-slate-800 text-slate-400 hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/30 rounded-xl transition-all border border-slate-700"
+                                    title="Delete Sub Dungeon"
+                                  >
+                                    <Trash2 size={16} />
+                                  </button>
+                                </div>
+                              )}
+
+                              <div className="flex items-center shrink-0 ml-2">
+                                {sub.completedSessions >= sub.totalSessions ? (
+                                  <CheckSquare size={24} className="text-emerald-500 drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
                                 ) : (
-                                  <div className="p-2 bg-slate-800/30 text-slate-700 rounded-xl border border-slate-800/50 cursor-not-allowed" title="Completed tasks cannot be edited">
-                                    <Edit2 size={16} />
-                                  </div>
+                                  <Square size={24} className="text-slate-600" />
                                 )}
-                                
-                                <button 
-                                  onClick={(e) => { e.stopPropagation(); setDeletingDungeon({ id: sub.id, name: sub.name, isMajor: false }); }}
-                                  className="p-2 bg-slate-800 text-slate-400 hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/30 rounded-xl transition-all border border-slate-700"
-                                  title="Delete Sub Dungeon"
-                                >
-                                  <Trash2 size={16} />
-                                </button>
                               </div>
                             </div>
                           </div>
@@ -783,7 +805,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                           )}
                         </motion.div>
                       ))}
-                      {!major.isFinalized && major.status !== 'completed' && isAddingSub?.parentId !== major.id && (
+                      {isEditMode && !major.isFinalized && major.status !== 'completed' && isAddingSub?.parentId !== major.id && (
                         <button
                           onClick={() => setIsAddingSub({ parentId: major.id })}
                           className="w-full py-4 border-2 border-dashed border-slate-800 hover:border-indigo-500/50 rounded-[2rem] text-slate-500 hover:text-indigo-400 transition-all flex items-center justify-center gap-2 font-bold uppercase tracking-widest text-xs"
@@ -827,13 +849,23 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                       </div>
                       <h4 className="font-bold text-white text-sm sm:text-base">{d.name}</h4>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); onDeleteSub(d.id); }} 
-                        className="text-slate-600 hover:text-red-400 p-1 sm:opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <Trash2 size={16} />
-                      </button>
+                    <div className="flex items-center gap-3">
+                      {isEditMode && (
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); onDeleteSub(d.id); }} 
+                          className="text-slate-600 hover:text-red-400 p-1 sm:opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
+                      
+                      <div className="flex items-center">
+                        {d.completedSessions >= d.totalSessions ? (
+                          <CheckSquare size={20} className="text-emerald-500 drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                        ) : (
+                          <Square size={20} className="text-slate-600" />
+                        )}
+                      </div>
                     </div>
                   </div>
                   <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden mb-3 sm:mb-4">
