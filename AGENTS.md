@@ -11,7 +11,7 @@ Whenever you complete a task or make changes to the application:
 3. Update the version number and release date in `src/components/Settings.tsx` (under the 'about' section) to match the new version and date.
 
 ## Current Status
-- **Current Version:** v1.9.8
+- **Current Version:** v2.0.0
 - **Last Update Date:** 2026-04-18
 
 ## Light Themes Definition
@@ -30,6 +30,15 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v2.0.0 (2026-04-18):** Draw Animation Refinement & Settings Reorg.
+  - *Feature:* Unified Gacha and Ichiban animation settings under a new "Draw Animation" module, relocated below the Audio section for better flow.
+  - *Scratch Visuals:* Switched to a smaller, hard circular brush. Enforced 100% immediate transparency removal for a "heavier" scratch feel.
+  - *UI Polish:* Unified unrevealed scratch card borders to a neutral Slate-400 gray to maintain suspense.
+- **v1.9.9 (2026-04-18):** Advanced Draw Animation Customization.
+  - *Feature:* Split "Draw Animation" settings into separate Gacha and Ichiban toggles.
+  - *Gacha Visuals:* Card Flip mode now uses vertical (Portrait) card orientation for a classic CCG look.
+  - *Scratch Visuals:* Upgraded scratch brush to a square "hard" shape. Increased scratch weight for faster, more impactful reveals. Border and glow effects are now hidden until revealed to maintain mystery.
+  - *Logic:* Cards now auto-reveal when scratched beyond 50%. Cleaned up reveal transition by removing star particle overlays.
 - **v1.9.8 (2026-04-18):** Enhanced Gacha Scratch-off mechanics.
   - *Feature:* Upgraded the "Scratch-off" system with realistic brushed-metal textures, shimmer highlights, and ICHIBAN watermarks. Added sound feedback for successful reveals.
   - *UI Adjust:* Moved the "Draw Animation" setting to the top of the "General" settings for better discoverability.

@@ -143,7 +143,9 @@ export interface UserState {
   devCritChance?: number;
   devCritMultiplier?: number;
   theme?: string;
-  gachaEffect?: 'card' | 'scratch';
+  gachaEffect?: 'card' | 'scratch'; // Deprecated but kept for migration
+  gachaAnimation?: 'card' | 'scratch';
+  ichibanAnimation?: 'card' | 'scratch';
   soundEnabled?: boolean;
   soundVolume?: number;
   defaultMarkdownEnabled?: boolean;

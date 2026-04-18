@@ -65,7 +65,7 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
         transition={{ delay: 1.5 }}
         className="absolute bottom-12 text-slate-600 text-[10px] font-bold tracking-[0.2em] uppercase"
       >
-        Version 1.9.8
+        Version 2.0.0
       </motion.div>
     </motion.div>
   );

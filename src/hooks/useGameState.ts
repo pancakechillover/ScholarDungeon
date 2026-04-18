@@ -44,7 +44,8 @@ export function useGameState() {
       devCoinMode: 'random',
       devCritChance: 0.05,
       devCritMultiplier: 5,
-      gachaEffect: 'card',
+      gachaAnimation: 'card',
+      ichibanAnimation: 'scratch',
       defaultMarkdownEnabled: true,
       dailyLogs: {},
       rewardPool: INITIAL_REWARD_POOL,
@@ -85,6 +86,15 @@ export function useGameState() {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
+        
+        // Migration: gachaEffect to split animations
+        if (parsed.gachaEffect) {
+          if (!parsed.gachaAnimation) parsed.gachaAnimation = parsed.gachaEffect;
+          if (!parsed.ichibanAnimation) parsed.ichibanAnimation = parsed.gachaEffect;
+        } else {
+          if (!parsed.gachaAnimation) parsed.gachaAnimation = 'card';
+          if (!parsed.ichibanAnimation) parsed.ichibanAnimation = 'scratch';
+        }
         
         // Migration: Update rewardPool to new structure if needed
         if (parsed.rewardPool) {
@@ -740,17 +750,18 @@ export function useGameState() {
   }, [addXP, addCoins, state.activeTalents, state.dailySessions, state.streak, state.inventory, state.rewardPool, state.devModeEnabled, state.devBaseXP, state.devCoinMode, state.devBaseCoins, state.devMinCoins, state.devMaxCoins, state.devCritChance, state.devCritMultiplier]);
 
   const drawGacha = useCallback((poolId: string, amount: number = 1) => {
-    let pullResults: { item: string; rarity: string }[] = [];
+    let pullResults: { item: string; rarity: string; poolType: 'gacha' | 'ichiban' }[] = [];
     let success = false;
 
     setState(prev => {
       const pool = prev.gachaPools.find(p => p.id === poolId);
       if (!pool || prev.coins < pool.cost * amount) return prev;
+      const poolType = pool.type;
 
       let newCoins = prev.coins;
       let newPools = [...prev.gachaPools];
       let currentPool = { ...pool, items: pool.items.map(i => ({ ...i })) };
-      const results: { item: string; rarity: string }[] = [];
+      const results: { item: string; rarity: string; poolType: 'gacha' | 'ichiban' }[] = [];
       
       for (let pull = 0; pull < amount; pull++) {
         if (currentPool.type === 'gacha') {
@@ -771,7 +782,7 @@ export function useGameState() {
 
           const selectedItem = itemList[Math.floor(Math.random() * itemList.length)];
           newCoins -= currentPool.cost;
-          results.push({ item: selectedItem, rarity });
+          results.push({ item: selectedItem, rarity, poolType: pool.type });
           
         } else if (currentPool.type === 'ichiban') {
           const availableItems = currentPool.items.filter(i => (i.count || 0) > 0 && i.rarity !== 'LastOne');
@@ -804,7 +815,7 @@ export function useGameState() {
           const subItems = selectedEntry.name.split('/').map(s => s.trim()).filter(s => s.length > 0);
           const finalItemName = subItems.length > 0 ? subItems[Math.floor(Math.random() * subItems.length)] : selectedEntry.name;
 
-          results.push({ item: finalItemName, rarity: selectedEntry.rarity });
+          results.push({ item: finalItemName, rarity: selectedEntry.rarity, poolType: pool.type });
 
           // Check if LastOne should be awarded
           const remaining = currentPool.items.filter(i => i.rarity !== 'LastOne').reduce((acc, i) => acc + (i.count || 0), 0);
@@ -816,10 +827,10 @@ export function useGameState() {
               if (lastOneSubItems.length > 1) {
                 // Award all sub-items
                 lastOneSubItems.forEach(subItem => {
-                  results.push({ item: subItem, rarity: 'LastOne' });
+                  results.push({ item: subItem, rarity: 'LastOne', poolType: pool.type });
                 });
               } else {
-                results.push({ item: lastOne.name, rarity: 'LastOne' });
+                results.push({ item: lastOne.name, rarity: 'LastOne', poolType: pool.type });
               }
 
               // Mark LastOne as taken

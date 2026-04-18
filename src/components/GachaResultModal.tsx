@@ -8,12 +8,14 @@ import { playSound } from '../lib/sound';
 interface GachaResult {
   item: string;
   rarity: string;
+  poolType: 'gacha' | 'ichiban';
 }
 
 interface GachaResultModalProps {
   results: GachaResult[];
   onClose: () => void;
-  gachaEffect?: 'card' | 'scratch';
+  gachaAnimation?: 'card' | 'scratch';
+  ichibanAnimation?: 'card' | 'scratch';
   soundEnabled?: boolean;
   soundVolume?: number;
 }
@@ -21,17 +23,25 @@ interface GachaResultModalProps {
 export const GachaResultModal: React.FC<GachaResultModalProps> = ({ 
   results, 
   onClose, 
-  gachaEffect = 'card',
+  gachaAnimation = 'card',
+  ichibanAnimation = 'scratch',
   soundEnabled = true,
   soundVolume = 0.5
 }) => {
   const isMulti = results.length > 1;
-  const [scratchedCount, setScratchedCount] = useState(0);
+  const isTenPull = results.length >= 10;
+  const [revealedIndices, setRevealedIndices] = useState<number[]>([]);
+  
+  // Determine which effect to use based on the source of the rewards
+  const gachaEffect = results[0]?.poolType === 'ichiban' ? ichibanAnimation : gachaAnimation;
+
+  const scratchedCount = revealedIndices.length;
   const allScratched = scratchedCount >= results.length;
   const canClose = gachaEffect !== 'scratch' || allScratched;
 
-  const handleScratchComplete = () => {
-    setScratchedCount(prev => prev + 1);
+  const handleScratchComplete = (idx: number) => {
+    if (revealedIndices.includes(idx)) return;
+    setRevealedIndices(prev => [...prev, idx]);
     playSound('reward', soundVolume, soundEnabled);
   };
 
@@ -101,8 +111,6 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({
     };
   };
 
-  const isTenPull = results.length === 10;
-
   return (
     <div 
       className="fixed inset-0 z-[200] flex items-start justify-center p-4 bg-black/95 backdrop-blur-2xl overflow-y-auto custom-scrollbar"
@@ -147,7 +155,7 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({
                 "h-full w-full flex flex-col items-center relative overflow-hidden transition-all",
                 isTenPull 
                   ? "rounded-[calc(0.75rem-1px)] sm:rounded-[1.9rem] p-2 sm:p-6" 
-                  : "rounded-[1.9rem] p-6",
+                  : gachaEffect === 'card' ? "rounded-[1.9rem] p-8" : "rounded-[1.9rem] p-6",
                 styles.bg
               )}>
                 {/* Card Background Pattern */}
@@ -228,13 +236,15 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({
                   "relative group transition-all duration-500",
                   isTenPull 
                     ? "w-full aspect-[4/3] sm:aspect-[3/2] rounded-xl sm:rounded-[2rem] p-[1.5px] sm:p-[2px]" 
-                    : "w-[300px] sm:w-[400px] aspect-[16/9] rounded-[2rem] p-[2.5px]",
-                  styles.accent,
-                  styles.glow,
+                    : gachaEffect === 'card' 
+                      ? "w-[280px] sm:w-[350px] aspect-[2/3] rounded-[2rem] p-[2.5px]" 
+                      : "w-[340px] sm:w-[500px] aspect-[16/9] rounded-[2rem] p-[2.5px]",
+                  (gachaEffect !== 'scratch' || revealedIndices.includes(idx)) ? styles.accent : "bg-slate-400",
+                  (gachaEffect !== 'scratch' || revealedIndices.includes(idx)) ? styles.glow : "shadow-none",
                   res.rarity === 'LastOne' && "z-20"
                 )}
               >
-                {res.rarity === 'LastOne' && (
+                {res.rarity === 'LastOne' && (revealedIndices.includes(idx) || gachaEffect !== 'scratch') && (
                   <div className={cn(
                     "absolute -top-4 sm:-top-6 left-1/2 -translate-x-1/2 z-30 bg-rose-600 text-white px-2 sm:px-4 py-0.5 sm:py-1 rounded-full text-xs font-black tracking-widest shadow-xl border border-rose-400 animate-bounce whitespace-nowrap"
                   )}>
@@ -244,9 +254,9 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({
                 
                 {gachaEffect === 'scratch' ? (
                   <ScratchCard 
-                    onComplete={() => handleScratchComplete()}
+                    onComplete={() => handleScratchComplete(idx)}
                     containerClassName="h-full w-full rounded-[calc(0.75rem-1px)] sm:rounded-[1.9rem]"
-                    scratchRadius={isTenPull ? 20 : 40}
+                    scratchRadius={isTenPull ? 35 : 70}
                   >
                     {cardContent}
                   </ScratchCard>

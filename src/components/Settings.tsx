@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { RewardCard, ShopItem, GachaPool, Rarity } from '../types';
 import { INITIAL_GACHA } from '../constants';
-import { Plus, Trash2, Save, Edit2, X, ChevronRight, Coins, Zap, Sparkles, Trophy, Timer as TimerIcon, Package, Flame, AlertTriangle, Scroll, Volume2, VolumeX, Sun, Moon, Settings as SettingsIcon, ShoppingBag, Trees, Waves, Database, Download, Upload, Target, Gift, User, Sword, Eye, Palette, Check, Bell, BellOff, RefreshCw, Key } from 'lucide-react';
+import { Plus, Trash2, Save, Edit2, X, ChevronRight, Coins, Zap, Sparkles, Trophy, Timer as TimerIcon, Package, Flame, AlertTriangle, Scroll, Volume2, VolumeX, Sun, Moon, Settings as SettingsIcon, ShoppingBag, Trees, Waves, Database, Download, Upload, Target, Gift, User, Sword, Eye, Palette, Check, Bell, BellOff, RefreshCw, Key, Layers } from 'lucide-react';
 import { cn, getXPForLevel, getDefaultRewardForLevel } from '../lib/utils';
 import { playSound } from '../lib/sound';
 
@@ -567,47 +567,6 @@ const GeneralSettings = ({ state, setState, setShowClearConfirm }: { state: any,
           <h4 className="font-bold uppercase text-sm tracking-widest">Global Effects & Theme</h4>
         </div>
 
-        {/* Gacha Effect Setting - Moved to top for visibility */}
-        <div className="space-y-4 p-6 bg-slate-900/50 rounded-3xl border border-indigo-500/20 shadow-inner">
-          <div className="flex items-center gap-2 mb-2">
-            <Scroll size={16} className="text-indigo-400" />
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Draw Animation (Gacha/Ichiban)</label>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            {[
-              { id: 'card', name: 'Classic Flip', icon: Package, desc: 'Quick card flip reveal' },
-              { id: 'scratch', name: 'Scratch-off', icon: Scroll, desc: 'Interactive scratch reveal' }
-            ].map(effect => {
-              const isActive = (state.gachaEffect || 'card') === effect.id;
-              return (
-                <button
-                  key={effect.id}
-                  onClick={() => setState(prev => ({ ...prev, gachaEffect: effect.id as 'card' | 'scratch' }))}
-                  className={cn(
-                    "flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all relative overflow-hidden group",
-                    isActive 
-                      ? "bg-indigo-500/10 border-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.2)]" 
-                      : "bg-slate-950 border-slate-800 text-slate-500 hover:border-slate-700"
-                  )}
-                >
-                  <effect.icon size={24} className={cn("transition-transform group-hover:scale-110", isActive ? "text-indigo-400" : "text-slate-600")} />
-                  <div className="text-center">
-                    <div className={cn("text-[10px] font-black uppercase tracking-widest mb-0.5", isActive ? "text-white" : "text-slate-500")}>
-                      {effect.name}
-                    </div>
-                    <div className="text-[9px] opacity-60 font-medium">{effect.desc}</div>
-                  </div>
-                  {isActive && (
-                    <div className="absolute top-2 right-2">
-                       <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse" />
-                    </div>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-        
         <div className="space-y-4 pt-4">
           <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">App Themes</label>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
@@ -690,6 +649,85 @@ const GeneralSettings = ({ state, setState, setShowClearConfirm }: { state: any,
               />
             </div>
           )}
+        </div>
+      </div>
+
+      <div className="space-y-6 pt-6 border-t border-slate-800">
+        <div className="flex items-center gap-2 text-indigo-400 mb-6">
+          <Sparkles size={18} />
+          <h4 className="font-bold uppercase text-sm tracking-widest">Draw Animation</h4>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-4 p-5 bg-slate-900/50 rounded-3xl border border-indigo-500/10 shadow-inner">
+            <div className="flex items-center gap-2 mb-1">
+              <Package size={16} className="text-indigo-400" />
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Gacha Draw</label>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { id: 'card', name: 'Classic Flip', icon: Layers, desc: 'Vertical flip' },
+                { id: 'scratch', name: 'Scratch-off', icon: Scroll, desc: 'Reveal' }
+              ].map(effect => {
+                const isActive = (state.gachaAnimation || 'card') === effect.id;
+                return (
+                  <button
+                    key={effect.id}
+                    onClick={() => setState(prev => ({ ...prev, gachaAnimation: effect.id as 'card' | 'scratch' }))}
+                    className={cn(
+                      "flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all relative overflow-hidden group",
+                      isActive 
+                        ? "bg-indigo-500/10 border-indigo-500" 
+                        : "bg-slate-950 border-slate-800 text-slate-500 hover:border-slate-700"
+                    )}
+                  >
+                    <effect.icon size={20} className={cn("transition-transform group-hover:scale-110", isActive ? "text-indigo-400" : "text-slate-600")} />
+                    <div className="text-center">
+                      <div className={cn("text-[9px] font-black uppercase tracking-widest leading-none mb-0.5", isActive ? "text-white" : "text-slate-500")}>
+                        {effect.name}
+                      </div>
+                      <div className="text-[8px] opacity-60 font-medium whitespace-nowrap">{effect.desc}</div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="space-y-4 p-5 bg-slate-900/50 rounded-3xl border border-rose-500/10 shadow-inner">
+            <div className="flex items-center gap-2 mb-1">
+              <Sparkles size={16} className="text-rose-400" />
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Ichiban Draw</label>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { id: 'card', name: 'Classic Flip', icon: Layers, desc: 'Vertical flip' },
+                { id: 'scratch', name: 'Scratch-off', icon: Scroll, desc: 'Reveal' }
+              ].map(effect => {
+                const isActive = (state.ichibanAnimation || 'scratch') === effect.id;
+                return (
+                  <button
+                    key={effect.id}
+                    onClick={() => setState(prev => ({ ...prev, ichibanAnimation: effect.id as 'card' | 'scratch' }))}
+                    className={cn(
+                      "flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all relative overflow-hidden group",
+                      isActive 
+                        ? "bg-rose-500/10 border-rose-500" 
+                        : "bg-slate-950 border-slate-800 text-slate-500 hover:border-slate-700"
+                    )}
+                  >
+                    <effect.icon size={20} className={cn("transition-transform group-hover:scale-110", isActive ? "text-rose-400" : "text-slate-600")} />
+                    <div className="text-center">
+                      <div className={cn("text-[9px] font-black uppercase tracking-widest leading-none mb-0.5", isActive ? "text-white" : "text-slate-500")}>
+                        {effect.name}
+                      </div>
+                      <div className="text-[8px] opacity-60 font-medium whitespace-nowrap">{effect.desc}</div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1468,7 +1506,7 @@ export const Settings = React.memo<SettingsProps>(({
                 <h3 className="text-3xl font-black text-white tracking-tight">Scholar's Dungeon</h3>
                 <div className="flex flex-col items-center gap-1 mt-2">
                   <span className="px-3 py-1 bg-indigo-500/20 text-indigo-400 rounded-full font-bold tracking-widest uppercase text-xs border border-indigo-500/30">
-                    Version 1.9.8
+                    Version 2.0.0
                   </span>
                   <span className="text-slate-500 text-xs font-medium">
                     Updated: 2026-04-18

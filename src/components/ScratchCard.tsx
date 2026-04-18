@@ -17,8 +17,8 @@ export const ScratchCard: React.FC<ScratchCardProps> = ({
   onComplete,
   children,
   overlayColor = '#1e293b', // slate-800
-  scratchRadius = 25,
-  threshold = 60,
+  scratchRadius = 30, // Default slightly larger
+  threshold = 50, // Auto-reveal at 50% as requested
   className,
   containerClassName
 }) => {
@@ -40,6 +40,10 @@ export const ScratchCard: React.FC<ScratchCardProps> = ({
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+
+    // Set brush style as requested (Square and Hard)
+    ctx.lineJoin = 'miter';
+    ctx.lineCap = 'square';
 
     // Drawing the overlay
     ctx.fillStyle = overlayColor;
@@ -125,8 +129,11 @@ export const ScratchCard: React.FC<ScratchCardProps> = ({
     const y = clientY - rect.top;
 
     ctx.globalCompositeOperation = 'destination-out';
+    
+    // Hard Circular Brush as requested
+    // "smaller" and "80-100% transparency" on first scratch
     ctx.beginPath();
-    ctx.arc(x, y, scratchRadius, 0, Math.PI * 2);
+    ctx.arc(x, y, scratchRadius * 0.8, 0, Math.PI * 2);
     ctx.fill();
 
     if (showHelper) setShowHelper(false);
@@ -187,20 +194,6 @@ export const ScratchCard: React.FC<ScratchCardProps> = ({
           className
         )}
       />
-
-      {/* Finishing Sparkles */}
-      <AnimatePresence>
-        {complete && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 z-10 pointer-events-none flex items-center justify-center"
-          >
-            <Sparkles className="text-amber-400 w-full h-full opacity-30 animate-pulse" />
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Scratch Helper */}
       <AnimatePresence>
