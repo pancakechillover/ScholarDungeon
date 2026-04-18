@@ -11,7 +11,7 @@ Whenever you complete a task or make changes to the application:
 3. Update the version number and release date in `src/components/Settings.tsx` (under the 'about' section) to match the new version and date.
 
 ## Current Status
-- **Current Version:** v1.8.5
+- **Current Version:** v1.8.6
 - **Last Update Date:** 2026-04-18
 
 ## Light Themes Definition
@@ -30,6 +30,9 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v1.8.6 (2026-04-18):** Global Scrollbar Annihilation - The Final CSS Spec.
+  - *Analysis:* The user identified a continuing double-scrollbar mechanism. While `overflow-x-hidden` was removed from `App.tsx`'s transition wrapper in 1.8.5, the absolute root (`<div id="root">`) in `index.css` *also* still contained `overflow-x: hidden`. According to CSS spec, any `overflow-x: hidden` forces `overflow-y: auto`. Therefore, `#root` itself was acting as the secondary dynamic scroll container when child animations popped out.
+  - *Fix:* Upgraded both `body` and `#root` CSS properties to use `overflow-x: clip;` instead of `hidden`. The powerful `clip` property completely severs the CSS `overflow-y: auto` auto-generation loop, allowing content to bleed out vertically (to be caught by the safe `html { overflow-y: scroll }`) without ever spawning an internal root scrollbar again. No secondary scrollbar = zero horizontal layout collapse.
 - **v1.8.5 (2026-04-18):** Fixed Page Transition Jitter / Double Scrollbar Conflict.
   - *Analysis:* Found the root cause of the horizontal width snapping during tab transitions (especially Sanctum, Merchant, Record). The main `max-w-[1600px]` transition wrapper had an `overflow-x-hidden` class. During `AnimatePresence popLayout` mode, when a tall exiting component became `position: absolute`, the wrapper physically shrunk to the height of the incoming short component. Because the wrapper had `overflow-x-hidden`, the CSS engine automatically computed its `overflow-y` to `auto`, instantly spawning a new, temporary "small scrollbar" strictly for that wrapper to contain the tall but exiting absolute child. This inner scrollbar shifted the incoming content leftward by 6px, then vanished when the exit animation finished, causing the layout swap jump.
   - *Fix:* Removed `overflow-x-hidden` from the `relative max-w-[1600px]` transition wrapper in `App.tsx`. The horizontal boundary is cleanly managed by `#root` instead, allowing the exit absolute elements to gracefully visually clear the vertical bounding box without triggering any interior nested scrollbars.
