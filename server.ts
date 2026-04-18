@@ -9,10 +9,13 @@ dotenv.config();
 // Configure Web Push
 const vapidPublicKey = process.env.VAPID_PUBLIC_KEY || "BH5OwZMBM9P55jCf-14OfpwDhWfOw7wxirim8bzKlyGZaRD61hdtRVW6nIlURIzD9ZHXKWfsgdNH3Gzrx3MTgyw";
 const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY || "Xiz1jQ_9n7iCw-VbjJjF4CPCdrMFszNj6Z1Ja6hXe58";
-const vapidEmail = process.env.VAPID_EMAIL || "mailto:iz.karakarakarakan@gmail.com";
+const vapidEmailInput = process.env.VAPID_EMAIL || "iz.karakarakarakan@gmail.com";
+const vapidSubject = vapidEmailInput.startsWith('http') || vapidEmailInput.startsWith('mailto:')
+  ? vapidEmailInput
+  : `mailto:${vapidEmailInput}`;
 
 try {
-  webpush.setVapidDetails(vapidEmail, vapidPublicKey, vapidPrivateKey);
+  webpush.setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey);
 } catch (err) {
   console.error("Failed to set VAPID details:", err);
 }

@@ -67,10 +67,10 @@ export const Shop = React.memo<ShopProps>(({ coins, shopItems, gachaPools, onPur
         {activeTab === 'shop' && (
           <motion.div
             key="shop"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-6"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="w-full grid grid-cols-1 md:grid-cols-3 gap-6"
           >
             {shopItems.map(item => {
               const IconComponent = (item.icon && ICON_MAP[item.icon]) || ShoppingBag;
@@ -117,10 +117,10 @@ export const Shop = React.memo<ShopProps>(({ coins, shopItems, gachaPools, onPur
         {activeTab === 'gacha' && (
           <motion.div
             key="gacha"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            className="flex flex-col items-center space-y-8"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="w-full flex flex-col items-center space-y-8"
           >
             <div className="max-w-md w-full bg-slate-900 p-8 rounded-3xl border border-indigo-500/30 text-center space-y-6 relative">
               <div className="relative mx-auto w-32 h-32 flex items-center justify-center bg-indigo-500/20 rounded-full border-2 border-indigo-500 animate-pulse">
@@ -214,10 +214,10 @@ export const Shop = React.memo<ShopProps>(({ coins, shopItems, gachaPools, onPur
         {activeTab === 'ichiban' && (
           <motion.div
             key="ichiban"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            className="grid grid-cols-1 lg:grid-cols-3 gap-8"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="w-full grid grid-cols-1 lg:grid-cols-3 gap-8"
           >
             <div className="lg:col-span-1 bg-slate-900 p-8 rounded-3xl border border-emerald-500/30 space-y-6 relative">
               <h3 className="text-2xl font-bold text-white">{ichibanPool.name}</h3>

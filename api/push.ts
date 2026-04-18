@@ -7,11 +7,14 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 // SECURITY NOTE: Please set VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY in your Secrets for production.
 const vapidPublicKey = process.env.VAPID_PUBLIC_KEY || "BLqju80Sl3cUDF0s-0pEallPIkVpxl-2l5NJMh-X2twNOmvTUU4q1Q2yotukIZEEt92QANtsukbTwk6L7I7LITo";
 const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY || "OKWnQn0E_X2HGGAVFydaCJA_3_IWTZZIhmtDENJTUgo";
-const vapidEmail = process.env.VAPID_EMAIL || "mailto:jl3190264398@163.com";
+const vapidEmailInput = process.env.VAPID_EMAIL || "jl3190264398@163.com";
+const vapidSubject = vapidEmailInput.startsWith('http') || vapidEmailInput.startsWith('mailto:') 
+  ? vapidEmailInput 
+  : `mailto:${vapidEmailInput}`;
 
 if (vapidPublicKey && vapidPrivateKey) {
   try {
-    webpush.setVapidDetails(vapidEmail, vapidPublicKey, vapidPrivateKey);
+    webpush.setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey);
     if (!process.env.VAPID_PRIVATE_KEY) {
       console.warn("Using FALLBACK VAPID keys. This is NOT secure for production.");
     }
@@ -74,7 +77,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (!secretCode || delayMinutes === undefined) return res.status(400).json({ error: "Invalid request" });
       const targetTime = Date.now() + (delayMinutes * 60 * 1000);
       const task = { secretCode, title, body, type, targetTime };
-      await client.zAdd('scholar_push_tasks', { score: targetTime, value: JSON.stringify(task) });
+      const taskStr = JSON.stringify(task);
+      
+      // Store the specific task string to allow quick removal later
+      await client.set(`scholar_push_task_ref_${secretCode}`, taskStr, { EX: 3600 }); // Expire in 1h
+      await client.zAdd('scholar_push_tasks', { score: targetTime, value: taskStr });
+      
       return res.json({ success: true, targetTime });
     } catch (error) {
       return res.status(500).json({ error: "Schedule failed" });
@@ -85,11 +93,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
       const { secretCode } = req.body;
       if (!secretCode) return res.status(400).json({ error: "Invalid request" });
-      const tasks = await client.zRange('scholar_push_tasks', 0, -1);
-      for (const taskStr of tasks) {
-        const task = JSON.parse(taskStr.toString());
-        if (task.secretCode === secretCode) {
-          await client.zRem('scholar_push_tasks', taskStr.toString());
+      
+      // Get the last scheduled task for this user
+      const taskStr = await client.get(`scholar_push_task_ref_${secretCode}`);
+      if (taskStr) {
+        await client.zRem('scholar_push_tasks', taskStr);
+        await client.del(`scholar_push_task_ref_${secretCode}`);
+      } else {
+        // Fallback: If ref is missing, clear all tasks for this user (Legacy/Fallback)
+        // This is O(N) but only happens if the ref was lost
+        const tasks = await client.zRange('scholar_push_tasks', 0, -1);
+        for (const tStr of tasks) {
+          const t = JSON.parse(tStr.toString());
+          if (t.secretCode === secretCode) {
+            await client.zRem('scholar_push_tasks', tStr.toString());
+          }
         }
       }
       return res.json({ success: true });

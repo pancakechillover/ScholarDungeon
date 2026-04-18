@@ -11,8 +11,8 @@ Whenever you complete a task or make changes to the application:
 3. Update the version number and release date in `src/components/Settings.tsx` (under the 'about' section) to match the new version and date.
 
 ## Current Status
-- **Current Version:** v1.7.4
-- **Last Update Date:** 2026-04-17
+- **Current Version:** v1.8.4
+- **Last Update Date:** 2026-04-18
 
 ## Light Themes Definition
 The following themes are considered "Light Themes" and require special CSS handling (e.g., avoiding white text on light backgrounds, using theme-aware colors for modals and charts):
@@ -30,12 +30,31 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
-- **v1.7.4 (2026-04-17):** Mobile Performance & Layout Stability Overhaul.
-  - *Fix:* Switched page transitions to `mode="wait"` and simplified animations to `opacity`-only on mobile to eliminate lag and vertical jitter.
-  - *Fix:* Implemented strict `overflow-x: hidden` and `w-full` on all main tab containers to resolve the persistent "black bar on the right" layout issue.
-  - *Fix:* Redesigned the mobile bottom navigation bar to be fluid (`flex-1`) and grouped, ensuring it fits perfectly even on narrow devices like iPhone SE.
-  - *UI:* Improved responsiveness of sub-dungeon selection cards; edit and reorder buttons now wrap if space is tight.
-  - *PWA:* Reinforced `overscroll-behavior: none` and added `touch-action: pan-y` to the root scroll container to eliminate landscape overscroll glitches on iPad.
+- **v1.8.4 (2026-04-18):** Global Scrollbar Lock Architecture.
+  - *Analysis:* Resolved layout jitter dynamically caused by `<html>` scrollbar creation/deletion during `Framer Motion popLayout` absolute rendering.
+  - *Fix:* Shifted scrolling responsibility from `#root` to the native `html` element. Added `html { scrollbar-gutter: stable; overflow-y: scroll; }` and removed `overflow: hidden` on body. This establishes an unshakeable browser-level vertical scroll track, severing the link between content height and horizontal expansion.
+- **v1.8.3 (2026-04-18):** Perfected Page Transition Layout Stability & Fixed Console Warnings.
+  - *Fix (Recharts):* Added `minWidth={1}` and `minHeight={1}` to all `<ResponsiveContainer>` components in `Stats.tsx`. This eliminates the persistent `The width(-1) and height(-1) of chart should be greater than 0` warnings in the console caused by Recharts initializing during Framer Motion's virtual DOM absolute-positioning phase before physical dimensions resolve.
+  - *Fix (Scrollbar):* Forced `overflow-y: scroll` on `#root` to permanently reserve physical scrollbar space, eliminating the 6px horizontal layout jump when transitioning between short and long pages.
+  - *Fix (Animation):* Removed `inset-x-0` bounds from `motion.div` containers in `App.tsx` and `Shop.tsx` to stop absolute positioning conflicts with framer-motion's `popLayout` engine during the 6px width recalculations.
+- **v1.8.2 (2026-04-18):** Advanced Layout Stability for Merchant Page.
+  - *Fix (Jitter):* Enforced `w-full` and `left-0` on all tab transition containers in `App.tsx` to stabilize `popLayout` absolute positioning.
+  - *Fix (Shop):* Verticalized all internal tab animations in `Shop.tsx` and ensured 100% width on all sub-containers to prevent sub-pixel horizontal shifts during deep nesting.
+- **v1.8.1 (2026-04-17):** Critical Transition Jitter Fix.
+  - *Fix (Jitter):* Switched all tab transitions from horizontal (`x`) to vertical (`y`) movement. This completely circumvents horizontal sub-pixel calculation errors and `mx-auto` layout shifts during `popLayout` absolute positioning.
+  - *Fix (Layout):* Added `scrollbar-gutter: stable` to global CSS to prevent the entire page from shifting horizontally when scrollbars appear or disappear between tabs of different heights.
+- **v1.8.0 (2026-04-17):** Layout and Chart Stability.
+  - *Fix (Recharts):* Added `min-height` to all chart containers in `Stats.tsx`. This resolves the "width/height (-1)" warnings caused by Recharts elements being initialized before the parent container's dimensions were fully calculated by the browser during tab transitions.
+- **v1.7.9 (2026-04-17):** Push Notification Stability & Performance.
+  - *Fix (NetworkError):* Resolved `NetworkError` when canceling push by removing `timeLeft` from the scheduling `useEffect` in `Timer.tsx`. This stops the app from sending rescheduling requests every single second.
+  - *Optimization (Backend):* Refactored `api/push.ts` to use a O(1) task reference lookup for cancellations, replacing the previous O(N) loop that scanned the entire task queue.
+- **v1.7.8 (2026-04-17):** Mobile Polish & UI Adjustments.
+  - *Fix (Jitter):* Added `w-full` class to all tab root `motion.div` containers inside `AnimatePresence`. This prevents `popLayout`'s `position: absolute` from causing a momentary width collapse and sub-pixel snapping reflow during transitions on mobile devices.
+  - *UI Adjust:* Relocated the notification red dot on the bottom navigation bar (`MobileNavItem`) from the top-right (`-top-1 -right-1`) to the bottom-right (`-bottom-0 -right-1`) to better align with game UI conventions.
+- **v1.7.7 (2026-04-17):** Fixed UI Right-side Black Border.
+  - *Analysis:* Found that `body` had `background: black;`, which was exposed when navigating because `AnimatePresence popLayout` turns exiting elements to `position: absolute`, stretching viewport horizontally.
+  - *Fix:* Added `overflow-x: hidden` to `#root`, removed hardcoded explicit `background: black;` inside `index.css`, and placed `relative` block on the main animating container in `App.tsx` (`max-w-[1600px]`).
+- **v1.7.6 (2026-04-17):** Minor refactor and prep for layout fixing.
 - **v1.7.4 (2026-04-16):** Stability & Layout Polish.
   - *Fix:* Removed global layout transitions causing jitter during Tab switching.
   - *Fix:* Switched to Framer Motion `mode="popLayout"` to stabilize content entry/exit and prevent vertical layout jumps.

@@ -17,26 +17,26 @@ html {
     -webkit-overflow-scrolling: touch;
   }
 
-  html, body {
+  html {
+    scrollbar-gutter: stable;
+    overflow-y: scroll;
+    height: 100%;
+  }
+  
+  body {
     @apply bg-slate-950 text-slate-200;
     height: 100%;
-    width: 100%;
     margin: 0;
     padding: 0;
-    overflow: hidden;
-    background: black;
-    /* Prevent text selection causing shift on some browsers */
-    -webkit-tap-highlight-color: transparent;
+    background-color: var(--color-slate-950, #020617);
   }
 
   #root {
-    height: 100%;
+    min-height: 100%;
     width: 100%;
-    overflow-y: auto;
-    overflow-x: hidden; /* Prevent horizontal scroll/black bars */
+    overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-y: none;
-    position: relative;
   }
   
   /* Custom Scrollbar - Global */

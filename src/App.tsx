@@ -635,15 +635,15 @@ function App() {
         </header>
         )}
 
-        <div className={cn("max-w-[1600px] mx-auto w-full flex-grow relative overflow-x-hidden", isFullscreenExplore ? "h-[100dvh] flex flex-col justify-center" : "pb-[calc(7.5rem+env(safe-area-inset-bottom))] md:pb-8")}>
-          <AnimatePresence mode="wait">
+        <div className={cn("relative overflow-x-hidden max-w-[1600px] mx-auto w-full flex-grow", isFullscreenExplore ? "h-[100dvh] flex flex-col justify-center" : "pb-[calc(7.5rem+env(safe-area-inset-bottom))] md:pb-8")}>
+          <AnimatePresence mode="popLayout" initial={false}>
             {activeTab === 'dashboard' && (
               <motion.div
                 key="dashboard"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="p-6 lg:p-8 space-y-8 w-full overflow-x-hidden"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="w-full p-6 lg:p-8 space-y-8"
               >
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="md:col-span-2 bg-slate-900 rounded-3xl border border-slate-800 p-8 relative overflow-hidden">
@@ -727,10 +727,10 @@ function App() {
             {activeTab === 'explore' && (
               <motion.div
                 key="explore"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className={cn("w-full overflow-x-hidden space-y-12", isFullscreenExplore ? "h-[100dvh] flex flex-col items-center justify-center p-0 m-0 space-y-0" : "p-8")}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className={cn("w-full p-8 space-y-12", isFullscreenExplore ? "h-[100dvh] flex flex-col items-center justify-center p-0 m-0 space-y-0" : "")}
               >
                 {!isFullscreenExplore && (
                   <PageHeader 
@@ -1042,10 +1042,10 @@ function App() {
             {activeTab === 'vault' && (
               <motion.div
                 key="vault"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="p-6 lg:p-8 w-full overflow-x-hidden"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="w-full p-6 lg:p-8"
               >
                 <RewardHistory 
                   history={state.rewardHistory} 
@@ -1060,10 +1060,10 @@ function App() {
             {activeTab === 'dungeons' && (
               <motion.div
                 key="dungeons"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="p-6 lg:p-8 space-y-8 w-full overflow-x-hidden"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="w-full p-6 lg:p-8 space-y-8"
               >
                 <PageHeader 
                   title={dungeonSubTab === 'list' ? "Dungeon Explorer" : dungeonSubTab === 'quests' ? "Quest Board" : "Achievements"} 
@@ -1197,10 +1197,10 @@ function App() {
             {activeTab === 'talents' && (
               <motion.div
                 key="talents"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="p-6 lg:p-8 w-full overflow-x-hidden"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="w-full"
               >
                 <TalentTree 
                   points={state.talentPoints}
@@ -1216,10 +1216,10 @@ function App() {
             {activeTab === 'shop' && (
               <motion.div
                 key="shop"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="p-6 lg:p-8 w-full overflow-x-hidden"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="w-full"
               >
                 <Shop 
                   coins={state.coins} 
@@ -1239,10 +1239,10 @@ function App() {
             {activeTab === 'stats' && (
               <motion.div
                 key="stats"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="p-6 lg:p-8 w-full overflow-x-hidden"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="w-full"
               >
                 <Stats state={state} saveDailyLog={saveDailyLog} />
               </motion.div>
@@ -1251,10 +1251,10 @@ function App() {
             {activeTab === 'settings' && (
               <motion.div
                 key="settings"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="p-6 lg:p-8 w-full overflow-x-hidden"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="w-full"
               >
                 <Settings 
                   state={state}
@@ -1599,8 +1599,8 @@ function App() {
 
       {/* Modern Floating Bottom Navigation for Mobile */}
       {!isFullscreenExplore && (
-        <div className="md:hidden fixed bottom-6 left-2 right-2 z-[90] pb-[env(safe-area-inset-bottom)] pointer-events-none">
-          <div className="bg-slate-900/95 backdrop-blur-xl border border-slate-700/80 rounded-[2rem] p-1 flex justify-between items-center shadow-[0_20px_40px_-15px_rgba(0,0,0,0.7)] shadow-indigo-500/10 mx-auto max-w-lg w-full pointer-events-auto overflow-hidden">
+        <div className="md:hidden fixed bottom-6 left-4 right-4 z-[90] pb-[env(safe-area-inset-bottom)]">
+          <div className="bg-slate-900/95 backdrop-blur-xl border border-slate-700/80 rounded-[2rem] p-2 flex justify-between items-center shadow-[0_20px_40px_-15px_rgba(0,0,0,0.7)] shadow-indigo-500/10 mx-auto max-w-sm">
             {navItems.filter(i => i.id !== 'settings').map(item => (
               <MobileNavItem 
                 key={item.id}
@@ -1998,23 +1998,23 @@ function MobileNavItem({ active, onClick, icon, label, showDot }: { active: bool
     <button
       onClick={onClick}
       className={cn(
-        "flex flex-col items-center justify-center flex-1 h-12 rounded-2xl transition-all relative group min-w-0",
+        "flex flex-col items-center justify-center w-14 h-12 rounded-2xl transition-all relative group",
         active ? "text-indigo-400 bg-indigo-500/10" : "text-slate-500 hover:text-slate-300"
       )}
     >
-      <div className={cn("relative transition-all duration-300 flex items-center justify-center", active ? "-translate-y-2 opacity-100 scale-105" : "opacity-80 scale-95")}>
+      <div className={cn("relative transition-transform duration-300", active ? "-translate-y-2 opacity-100 scale-110" : "opacity-80")}>
         {icon}
         {showDot && (
-          <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-indigo-500 rounded-full border-2 border-slate-900" />
+          <span className="absolute -bottom-0 -right-1 w-2.5 h-2.5 bg-indigo-500 rounded-full border-2 border-slate-900" />
         )}
       </div>
       <AnimatePresence>
         {active && (
           <motion.span 
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            className="absolute bottom-1 text-[8px] font-black tracking-widest text-indigo-400 uppercase truncate px-1 w-full text-center"
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 5 }}
+            className="absolute bottom-1 text-[9px] font-black tracking-wider text-indigo-400"
           >
             {label}
           </motion.span>

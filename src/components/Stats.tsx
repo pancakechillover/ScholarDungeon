@@ -173,8 +173,8 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
             </div>
           </div>
 
-          <div className="h-48">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-48 min-h-[192px]">
+            <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
               <BarChart data={dailyData}>
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10 }} />
                 <Tooltip 
@@ -326,8 +326,8 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
           </div>
           
           <div className="space-y-8">
-            <div className="h-40">
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="h-40 min-h-[160px]">
+              <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                 <BarChart data={weeklyData}>
                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10 }} />
                   <Tooltip 
@@ -348,8 +348,8 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
                 <LineChartIcon className="text-indigo-400" size={16} />
                 <span className="text-xs font-black text-slate-500 uppercase tracking-widest">Efficiency Trend</span>
               </div>
-              <div className="h-32">
-                <ResponsiveContainer width="100%" height="100%">
+              <div className="h-32 min-h-[128px]">
+                <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                   <LineChart data={weeklyDays.map(date => ({
                     name: format(date, 'EEE'),
                     efficiency: dailyLogs[format(date, 'yyyy-MM-dd')]?.rating || 0
