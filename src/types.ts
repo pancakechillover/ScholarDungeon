@@ -143,6 +143,7 @@ export interface UserState {
   devCritChance?: number;
   devCritMultiplier?: number;
   theme?: string;
+  gachaEffect?: 'card' | 'scratch';
   soundEnabled?: boolean;
   soundVolume?: number;
   defaultMarkdownEnabled?: boolean;

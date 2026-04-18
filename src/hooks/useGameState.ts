@@ -44,6 +44,7 @@ export function useGameState() {
       devCoinMode: 'random',
       devCritChance: 0.05,
       devCritMultiplier: 5,
+      gachaEffect: 'card',
       defaultMarkdownEnabled: true,
       dailyLogs: {},
       rewardPool: INITIAL_REWARD_POOL,

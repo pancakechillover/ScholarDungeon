@@ -2017,6 +2017,9 @@ function App() {
           {drawResult && (
             <GachaResultModal 
               results={drawResult} 
+              gachaEffect={state.gachaEffect}
+              soundEnabled={state.soundEnabled}
+              soundVolume={state.soundVolume}
               onClose={() => setDrawResult(null)} 
             />
           )}

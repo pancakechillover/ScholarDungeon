@@ -1,7 +1,9 @@
-import React from 'react';
-import { motion } from 'motion/react';
-import { Trophy, Sparkles, Star, Gift, Crown } from 'lucide-react';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Trophy, Sparkles, Star, Gift, Crown, CheckCircle2 } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { ScratchCard } from './ScratchCard';
+import { playSound } from '../lib/sound';
 
 interface GachaResult {
   item: string;
@@ -11,10 +13,27 @@ interface GachaResult {
 interface GachaResultModalProps {
   results: GachaResult[];
   onClose: () => void;
+  gachaEffect?: 'card' | 'scratch';
+  soundEnabled?: boolean;
+  soundVolume?: number;
 }
 
-export const GachaResultModal: React.FC<GachaResultModalProps> = ({ results, onClose }) => {
+export const GachaResultModal: React.FC<GachaResultModalProps> = ({ 
+  results, 
+  onClose, 
+  gachaEffect = 'card',
+  soundEnabled = true,
+  soundVolume = 0.5
+}) => {
   const isMulti = results.length > 1;
+  const [scratchedCount, setScratchedCount] = useState(0);
+  const allScratched = scratchedCount >= results.length;
+  const canClose = gachaEffect !== 'scratch' || allScratched;
+
+  const handleScratchComplete = () => {
+    setScratchedCount(prev => prev + 1);
+    playSound('reward', soundVolume, soundEnabled);
+  };
 
   const getRarityStyles = (rarity: string, isTenPull: boolean) => {
     const r = rarity.toUpperCase();
@@ -87,7 +106,7 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({ results, onC
   return (
     <div 
       className="fixed inset-0 z-[200] flex items-start justify-center p-4 bg-black/95 backdrop-blur-2xl overflow-y-auto custom-scrollbar"
-      onClick={onClose}
+      onClick={() => canClose && onClose()}
     >
       <motion.div
         initial={{ opacity: 0 }}
@@ -106,7 +125,11 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({ results, onC
               {isMulti ? 'Summoning Results' : 'New Treasure!'}
             </h2>
             <div className="h-1 w-12 sm:w-24 bg-indigo-500 mx-auto rounded-full mb-2 sm:mb-4" />
-            <p className="text-slate-400 font-bold uppercase tracking-[0.3em] text-xs">The vault has opened</p>
+            <p className="text-slate-400 font-bold uppercase tracking-[0.3em] text-xs">
+              {gachaEffect === 'scratch' && !allScratched 
+                ? `Scratch to reveal results (${scratchedCount}/${results.length})` 
+                : "The vault has opened"}
+            </p>
           </motion.div>
         </div>
 
@@ -119,6 +142,77 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({ results, onC
         )}>
           {results.map((res, idx) => {
             const styles = getRarityStyles(res.rarity, isTenPull);
+            const cardContent = (
+              <div className={cn(
+                "h-full w-full flex flex-col items-center relative overflow-hidden transition-all",
+                isTenPull 
+                  ? "rounded-[calc(0.75rem-1px)] sm:rounded-[1.9rem] p-2 sm:p-6" 
+                  : "rounded-[1.9rem] p-6",
+                styles.bg
+              )}>
+                {/* Card Background Pattern */}
+                <div className={cn("absolute inset-0 opacity-30 bg-gradient-to-br", styles.gradient)} />
+                <div className="absolute inset-0 opacity-5 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
+
+                {/* Top Rarity Badge */}
+                <div className={cn(
+                  "px-1.5 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs font-black tracking-widest uppercase border relative z-10 mb-1 sm:mb-2",
+                  styles.text,
+                  styles.border
+                )}>
+                  {res.rarity}
+                </div>
+
+                {/* Content Area - Adjusted for higher text */}
+                <div className={cn(
+                  "flex-1 flex flex-col items-center w-full relative z-10",
+                  isTenPull ? "pt-1 sm:pt-4" : "pt-4"
+                )}>
+                  {/* Icon - Slightly smaller to give room */}
+                  <div className={cn("relative", isTenPull ? "mb-1 sm:mb-4" : "mb-4")}>
+                    <motion.div
+                      animate={{ 
+                        y: [0, -4, 0],
+                        filter: ["brightness(1)", "brightness(1.4)", "brightness(1)"]
+                      }}
+                      transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                      {styles.icon}
+                    </motion.div>
+                    
+                    {/* Glow behind icon */}
+                    <div className={cn(
+                      "absolute inset-0 blur-xl sm:blur-2xl opacity-20 rounded-full -z-10",
+                      styles.accent
+                    )} />
+                  </div>
+
+                  {/* Reward Text - Moved Higher */}
+                  <div className="w-full text-center px-0.5 sm:px-1">
+                    <h3 className={cn(
+                      "font-black leading-tight uppercase italic mb-1 sm:mb-2 line-clamp-4",
+                      isTenPull 
+                        ? "text-xs sm:text-sm md:text-base" 
+                        : "text-xs sm:text-sm md:text-base",
+                      styles.text
+                    )}>
+                      {res.item}
+                    </h3>
+                    <div className={cn("h-0.5 w-4 sm:w-6 mx-auto rounded-full", styles.accent)} />
+                  </div>
+                </div>
+
+                {/* Decorative Corners */}
+                <div className={cn("absolute top-4 left-4 w-2 h-2 border-t-2 border-l-2 opacity-30", styles.border)} />
+                <div className={cn("absolute top-4 right-4 w-2 h-2 border-t-2 border-r-2 opacity-30", styles.border)} />
+                <div className={cn("absolute bottom-4 left-4 w-2 h-2 border-b-2 border-l-2 opacity-30", styles.border)} />
+                <div className={cn("absolute bottom-4 right-4 w-2 h-2 border-b-2 border-r-2 opacity-30", styles.border)} />
+
+                {/* Hover Shine */}
+                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
+              </div>
+            );
+
             return (
               <motion.div
                 key={idx}
@@ -131,10 +225,10 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({ results, onC
                   damping: 15 
                 }}
                 className={cn(
-                  "relative group aspect-[2/3] transition-all duration-500",
+                  "relative group transition-all duration-500",
                   isTenPull 
-                    ? "w-full rounded-xl sm:rounded-[2rem] p-[1px] sm:p-[2px]" 
-                    : "w-[160px] sm:w-[200px] md:w-[220px] rounded-[2rem] p-[2px]",
+                    ? "w-full aspect-[4/3] sm:aspect-[3/2] rounded-xl sm:rounded-[2rem] p-[1.5px] sm:p-[2px]" 
+                    : "w-[300px] sm:w-[400px] aspect-[16/9] rounded-[2rem] p-[2.5px]",
                   styles.accent,
                   styles.glow,
                   res.rarity === 'LastOne' && "z-20"
@@ -147,93 +241,44 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({ results, onC
                     LAST ONE
                   </div>
                 )}
-                <div className={cn(
-                  "h-full w-full flex flex-col items-center relative overflow-hidden",
-                  isTenPull 
-                    ? "rounded-[calc(0.75rem-1px)] sm:rounded-[1.9rem] p-2 sm:p-6" 
-                    : "rounded-[1.9rem] p-6",
-                  styles.bg
-                )}>
-                  {/* Card Background Pattern */}
-                  <div className={cn("absolute inset-0 opacity-30 bg-gradient-to-br", styles.gradient)} />
-                  <div className="absolute inset-0 opacity-5 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
-
-                  {/* Top Rarity Badge */}
-                  <div className={cn(
-                    "px-1.5 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs font-black tracking-widest uppercase border relative z-10 mb-1 sm:mb-2",
-                    styles.text,
-                    styles.border
-                  )}>
-                    {res.rarity}
-                  </div>
-
-                  {/* Content Area - Adjusted for higher text */}
-                  <div className={cn(
-                    "flex-1 flex flex-col items-center w-full relative z-10",
-                    isTenPull ? "pt-1 sm:pt-4" : "pt-4"
-                  )}>
-                    {/* Icon - Slightly smaller to give room */}
-                    <div className={cn("relative", isTenPull ? "mb-1 sm:mb-4" : "mb-4")}>
-                      <motion.div
-                        animate={{ 
-                          y: [0, -4, 0],
-                          filter: ["brightness(1)", "brightness(1.4)", "brightness(1)"]
-                        }}
-                        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                      >
-                        {styles.icon}
-                      </motion.div>
-                      
-                      {/* Glow behind icon */}
-                      <div className={cn(
-                        "absolute inset-0 blur-xl sm:blur-2xl opacity-20 rounded-full -z-10",
-                        styles.accent
-                      )} />
-                    </div>
-
-                    {/* Reward Text - Moved Higher */}
-                    <div className="w-full text-center px-0.5 sm:px-1">
-                      <h3 className={cn(
-                        "font-black leading-tight uppercase italic mb-1 sm:mb-2 line-clamp-4",
-                        isTenPull 
-                          ? "text-xs sm:text-sm md:text-base" 
-                          : "text-xs sm:text-sm md:text-base",
-                        styles.text
-                      )}>
-                        {res.item}
-                      </h3>
-                      <div className={cn("h-0.5 w-4 sm:w-6 mx-auto rounded-full", styles.accent)} />
-                    </div>
-                  </div>
-
-                  {/* Decorative Corners */}
-                  <div className={cn("absolute top-4 left-4 w-2 h-2 border-t-2 border-l-2 opacity-30", styles.border)} />
-                  <div className={cn("absolute top-4 right-4 w-2 h-2 border-t-2 border-r-2 opacity-30", styles.border)} />
-                  <div className={cn("absolute bottom-4 left-4 w-2 h-2 border-b-2 border-l-2 opacity-30", styles.border)} />
-                  <div className={cn("absolute bottom-4 right-4 w-2 h-2 border-b-2 border-r-2 opacity-30", styles.border)} />
-
-                  {/* Hover Shine */}
-                  <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
-                </div>
+                
+                {gachaEffect === 'scratch' ? (
+                  <ScratchCard 
+                    onComplete={() => handleScratchComplete()}
+                    containerClassName="h-full w-full rounded-[calc(0.75rem-1px)] sm:rounded-[1.9rem]"
+                    scratchRadius={isTenPull ? 20 : 40}
+                  >
+                    {cardContent}
+                  </ScratchCard>
+                ) : (
+                  cardContent
+                )}
               </motion.div>
             );
           })}
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.5 }}
-          className="mt-8 sm:mt-16 flex flex-col items-center gap-4"
-        >
-          <button
-            onClick={onClose}
-            className="group relative px-8 sm:px-16 py-3 sm:py-5 bg-indigo-600 text-white rounded-xl sm:rounded-2xl font-black uppercase tracking-[0.2em] text-xs sm:text-base hover:bg-indigo-500 transition-all shadow-[0_20px_50px_rgba(0,0,0,0.3)] hover:shadow-indigo-500/40 overflow-hidden"
-          >
-            <span className="relative z-10">Claim All Rewards</span>
-          </button>
-          <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">Click anywhere to dismiss</p>
-        </motion.div>
+        <div className="flex flex-col items-center gap-6 pb-12">
+          <AnimatePresence>
+            {canClose && (
+              <motion.button
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                onClick={onClose}
+                className="group relative flex items-center gap-3 px-12 py-5 bg-white text-slate-950 rounded-full font-black uppercase tracking-[0.3em] italic text-lg transition-all hover:scale-105 active:scale-95 shadow-[0_20px_40px_-10px_rgba(255,255,255,0.3)]"
+              >
+                <CheckCircle2 size={24} className="group-hover:rotate-12 transition-transform" />
+                Claim Rewards
+              </motion.button>
+            )}
+          </AnimatePresence>
+          {!canClose && (
+            <p className="text-slate-500 text-sm font-black uppercase tracking-widest animate-pulse italic">
+              Scratch cards to reveal prize
+            </p>
+          )}
+        </div>
       </motion.div>
     </div>
   );

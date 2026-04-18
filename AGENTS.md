@@ -11,7 +11,7 @@ Whenever you complete a task or make changes to the application:
 3. Update the version number and release date in `src/components/Settings.tsx` (under the 'about' section) to match the new version and date.
 
 ## Current Status
-- **Current Version:** v1.9.6
+- **Current Version:** v1.9.8
 - **Last Update Date:** 2026-04-18
 
 ## Light Themes Definition
@@ -30,6 +30,13 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v1.9.8 (2026-04-18):** Enhanced Gacha Scratch-off mechanics.
+  - *Feature:* Upgraded the "Scratch-off" system with realistic brushed-metal textures, shimmer highlights, and ICHIBAN watermarks. Added sound feedback for successful reveals.
+  - *UI Adjust:* Moved the "Draw Animation" setting to the top of the "General" settings for better discoverability.
+  - *Logic:* Implemented "Scratch-to-Claim" logic. Modals now prevent accidental closing during scratching and require all cards to be revealed before the "Claim Rewards" button appears.
+- **v1.9.7 (2026-04-18):** New Feature: Interactive Scratch-off Ichiban/Gacha.
+  - *Feature:* Implemented a high-fidelity "Scratch-off" card effect for ICHIBAN and Gacha results. Players can now physically "scratch" the card using mouse or touch to reveal their rewards, complete with metallic textures, watermarks, and particle effects.
+  - *UI Adjust:* Added a new setting in "Settings > Appearance" to toggle between "Card Flip" and "Scratch-off" animations for both Gacha and Ichiban pulls.
 - **v1.9.6 (2026-04-18):** Micro-Responsive Polish (Exploration Card).
   - *UI Adjust:* Further refined the minimum font-size for Active Dungeon titles on ultra-mobile viewports (`clamp` floor lowered to 0.625rem). This ensures layout stability for users with exceptionally long dungeon naming conventions without compromising the aesthetic "Black" font-weight impact.
 - **v1.9.5 (2026-04-18):** Micro-Responsive Polish (Explore Tab).
