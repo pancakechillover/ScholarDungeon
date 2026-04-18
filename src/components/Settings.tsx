@@ -729,6 +729,33 @@ const GeneralSettings = ({ state, setState, setShowClearConfirm }: { state: any,
             </div>
           </div>
         </div>
+
+        {/* Allow Overlap Toggle */}
+        <div className="flex items-center justify-between p-4 bg-slate-900/50 rounded-2xl border border-slate-800 mt-6">
+          <div className="flex items-center gap-3">
+            <div className={cn("p-2 rounded-xl", state.gachaAllowOverlap ? "bg-indigo-500/10 text-indigo-400" : "bg-slate-800 text-slate-500")}>
+              <Layers size={20} />
+            </div>
+            <div>
+              <div className="font-bold text-white uppercase text-xs tracking-widest">Overlap Mode</div>
+              <div className="text-[10px] text-slate-500">Show cards one by one with navigation</div>
+            </div>
+          </div>
+          <button
+            onClick={() => setState(prev => ({ ...prev, gachaAllowOverlap: !prev.gachaAllowOverlap }))}
+            className={cn(
+              "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
+              state.gachaAllowOverlap ? "bg-indigo-500" : "bg-slate-700"
+            )}
+          >
+            <span
+              className={cn(
+                "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+                state.gachaAllowOverlap ? "translate-x-6" : "translate-x-1"
+              )}
+            />
+          </button>
+        </div>
       </div>
 
       <div className="space-y-6 pt-6 border-t border-slate-800">
@@ -1506,7 +1533,7 @@ export const Settings = React.memo<SettingsProps>(({
                 <h3 className="text-3xl font-black text-white tracking-tight">Scholar's Dungeon</h3>
                 <div className="flex flex-col items-center gap-1 mt-2">
                   <span className="px-3 py-1 bg-indigo-500/20 text-indigo-400 rounded-full font-bold tracking-widest uppercase text-xs border border-indigo-500/30">
-                    Version 2.0.0
+                    Version 2.6.0
                   </span>
                   <span className="text-slate-500 text-xs font-medium">
                     Updated: 2026-04-18

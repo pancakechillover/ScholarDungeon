@@ -11,7 +11,7 @@ Whenever you complete a task or make changes to the application:
 3. Update the version number and release date in `src/components/Settings.tsx` (under the 'about' section) to match the new version and date.
 
 ## Current Status
-- **Current Version:** v2.0.0
+- **Current Version:** v2.6.0
 - **Last Update Date:** 2026-04-18
 
 ## Light Themes Definition
@@ -30,6 +30,29 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v2.6.0 (2026-04-18):** Reward Summary & Workflow Hardening.
+  - *Feature:* Added a "Skip Animation" option and a post-draw "Summoning Summary" table to provide a clear inventory of all items won.
+  - *Bugfix:* Patched the "Claim Rewards" button to be strictly gated until 100% of cards are revealed, preventing premature closure.
+  - *Mobile:* Optimized card heights and aspect ratios for mobile browsers to prevent viewport clipping.
+- **v2.5.0 (2026-04-18):** Advanced Carousel Indicators.
+  - *Feature:* Added a "(n/total)" counter to the carousel dots indicator for easier multi-pull tracking.
+  - *Feature:* Dot indicators now dynamically reflect the rarity color of cards once they are revealed, providing an "inventory" preview within the modal.
+- **v2.4.0 (2026-04-18):** Draw UX Polish & Reward Workflow.
+  - *Bugfix:* Eliminated carousel flickering in Overlap Mode by refactoring to a direction-aware `AnimatePresence`. Added 3D `rotateY` transforms for smoother card swaps.
+  - *Feature:* Improved scratch difficulty (10% for Desktop, 30% for Mobile).
+  - *Feature:* Dedicated "Last One" claim button for ICHIBAN draws. Rewards are now strictly gated until all cards are revealed.
+- **v2.3.1 (2026-04-18):** Carousel Smoothness Patch.
+  - *Bugfix:* Eliminated the flickering "flash" during card transitions in Overlap Mode by implementing a direction-aware `AnimatePresence` logic and refactoring the keyed DOM hierarchy.
+  - *Animation:* Added subtle 3D `rotateY` transitions to the carousel cards for a more tactile, premium feel during swaps.
+- **v2.2.0 (2026-04-18):** Scratch & Overlap Mode Stability Patch.
+  - *Scratch-off:* Upgraded to path-based scratching. Drawing a continuous line between movement points ensures 100% transparency removal even with fast mouse/touch movement.
+  - *Bugfix:* Resolved "jumping" layout during Overlap Mode transitions by switching to `popLayout`.
+  - *Bugfix:* Fixed bug where revealed cards would reset to un-scratched state when switching carousel items.
+  - *UI Adjust:* Refined card vertical scaling to prevent clipping on diverse mobile aspect ratios.
+- **v2.1.0 (2026-04-18):** Draw UX Upgrade: Scrolling Lock, Responsive Sizing & Carousel Mode.
+  - *Feature:* Added "Overlap Mode" toggle in settings. When enabled, multi-draw results are shown one by one in a carousel with swipe and arrow navigation.
+  - *UX Logic:* Scrolling is now strictly disabled while the draw modal is active to prevent background scrollbar flickering.
+  - *Responsive Polish:* Redesigned card sizing to be fully fluid based on screen height/width. Classic flip now uses vertical (Portrait) card ratios, while Scratch-off uses horizontal (Landscape) ratios.
 - **v2.0.0 (2026-04-18):** Draw Animation Refinement & Settings Reorg.
   - *Feature:* Unified Gacha and Ichiban animation settings under a new "Draw Animation" module, relocated below the Audio section for better flow.
   - *Scratch Visuals:* Switched to a smaller, hard circular brush. Enforced 100% immediate transparency removal for a "heavier" scratch feel.

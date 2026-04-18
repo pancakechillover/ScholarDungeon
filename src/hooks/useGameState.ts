@@ -46,6 +46,7 @@ export function useGameState() {
       devCritMultiplier: 5,
       gachaAnimation: 'card',
       ichibanAnimation: 'scratch',
+      gachaAllowOverlap: false,
       defaultMarkdownEnabled: true,
       dailyLogs: {},
       rewardPool: INITIAL_REWARD_POOL,

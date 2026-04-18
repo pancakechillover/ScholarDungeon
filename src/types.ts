@@ -146,6 +146,7 @@ export interface UserState {
   gachaEffect?: 'card' | 'scratch'; // Deprecated but kept for migration
   gachaAnimation?: 'card' | 'scratch';
   ichibanAnimation?: 'card' | 'scratch';
+  gachaAllowOverlap?: boolean;
   soundEnabled?: boolean;
   soundVolume?: number;
   defaultMarkdownEnabled?: boolean;

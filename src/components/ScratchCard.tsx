@@ -18,7 +18,7 @@ export const ScratchCard: React.FC<ScratchCardProps> = ({
   children,
   overlayColor = '#1e293b', // slate-800
   scratchRadius = 30, // Default slightly larger
-  threshold = 50, // Auto-reveal at 50% as requested
+  threshold = 10, // Initial default, will be overridden by detection
   className,
   containerClassName
 }) => {
@@ -27,6 +27,14 @@ export const ScratchCard: React.FC<ScratchCardProps> = ({
   const [isScratching, setIsScratching] = useState(false);
   const [complete, setComplete] = useState(false);
   const [showHelper, setShowHelper] = useState(true);
+  const [activeThreshold, setActiveThreshold] = useState(threshold);
+  const lastPoint = useRef<{ x: number, y: number } | null>(null);
+
+  // Initialize threshold based on device
+  useEffect(() => {
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    setActiveThreshold(isMobile ? 30 : 10);
+  }, []);
 
   // Initialize canvas
   useEffect(() => {
@@ -112,11 +120,11 @@ export const ScratchCard: React.FC<ScratchCardProps> = ({
     }
 
     const percentage = (transparentPixels / (pixels.length / 4)) * 100;
-    if (percentage > threshold && !complete) {
+    if (percentage > activeThreshold && !complete) {
       setComplete(true);
       onComplete?.();
     }
-  }, [complete, threshold, onComplete]);
+  }, [complete, activeThreshold, onComplete]);
 
   const handleScratch = (clientX: number, clientY: number) => {
     const canvas = canvasRef.current;
@@ -129,12 +137,22 @@ export const ScratchCard: React.FC<ScratchCardProps> = ({
     const y = clientY - rect.top;
 
     ctx.globalCompositeOperation = 'destination-out';
-    
-    // Hard Circular Brush as requested
-    // "smaller" and "80-100% transparency" on first scratch
-    ctx.beginPath();
-    ctx.arc(x, y, scratchRadius * 0.8, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.lineWidth = scratchRadius * 1.5; // Slightly larger for easier scratch
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    if (lastPoint.current) {
+      ctx.beginPath();
+      ctx.moveTo(lastPoint.current.x, lastPoint.current.y);
+      ctx.lineTo(x, y);
+      ctx.stroke();
+    } else {
+      ctx.beginPath();
+      ctx.arc(x, y, scratchRadius * 0.75, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    lastPoint.current = { x, y };
 
     if (showHelper) setShowHelper(false);
     checkCompletion();
@@ -142,6 +160,7 @@ export const ScratchCard: React.FC<ScratchCardProps> = ({
 
   const onMouseDown = (e: React.MouseEvent) => {
     setIsScratching(true);
+    lastPoint.current = null;
     handleScratch(e.clientX, e.clientY);
   };
 
@@ -149,10 +168,14 @@ export const ScratchCard: React.FC<ScratchCardProps> = ({
     if (isScratching) handleScratch(e.clientX, e.clientY);
   };
 
-  const onMouseUp = () => setIsScratching(false);
+  const onMouseUp = () => {
+    setIsScratching(false);
+    lastPoint.current = null;
+  };
 
   const onTouchStart = (e: React.TouchEvent) => {
     setIsScratching(true);
+    lastPoint.current = null;
     const touch = e.touches[0];
     handleScratch(touch.clientX, touch.clientY);
   };

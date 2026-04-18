@@ -2017,6 +2017,7 @@ function App() {
           {drawResult && (
             <GachaResultModal 
               results={drawResult as any} 
+              allowOverlap={state.gachaAllowOverlap}
               gachaAnimation={state.gachaAnimation}
               ichibanAnimation={state.ichibanAnimation}
               soundEnabled={state.soundEnabled}
