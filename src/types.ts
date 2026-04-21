@@ -53,7 +53,7 @@ export interface MajorDungeon {
   id: string;
   name: string;
   description: string;
-  status: 'active' | 'completed';
+  status: 'active' | 'completed' | 'archived';
   isFinalized?: boolean;
   rewards?: DungeonReward[];
   completedAt?: string;
@@ -105,6 +105,12 @@ export interface Quest {
   isAchievement: boolean;
   isSpecial?: boolean;
   talentRequired?: string;
+}
+
+export interface TimeSettings {
+  morning: { start: number; end: number };
+  afternoon: { start: number; end: number };
+  night: { start: number; end: number };
 }
 
 export interface UserState {
@@ -177,15 +183,20 @@ export interface UserState {
   }[];
   pushEnabled?: boolean;
   pushSubscription?: any;
+  timeSettings?: TimeSettings;
 }
 
 export interface StudySession {
   id: string;
   dungeonId: string;
-  duration: number; // minutes
+  duration: number; // total minutes
+  focusDuration?: number; // focus minutes
+  restDuration?: number; // rest minutes
   timestamp: string;
   coinsEarned: number;
   xpEarned: number;
+  rewardName?: string;
+  rewardIcon?: string;
   isCrit?: boolean;
   triggeredTalents?: {
     flowExperience?: { xp: number; coins: number };

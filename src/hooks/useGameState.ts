@@ -37,6 +37,11 @@ export function useGameState() {
       pushEnabled: false,
       pushSubscription: null,
       deviceType: getDeviceType(),
+      timeSettings: {
+        morning: { start: 8, end: 12 },
+        afternoon: { start: 14, end: 18 },
+        night: { start: 20, end: 24 }
+      },
       devBaseXP: 100,
       devBaseCoins: 10,
       devMinCoins: 5,
@@ -165,6 +170,11 @@ export function useGameState() {
             }
             return item;
           });
+        }
+
+        // Migration: Default timeSettings if missing
+        if (!parsed.timeSettings) {
+          parsed.timeSettings = defaultState.timeSettings;
         }
 
         return { ...defaultState, ...parsed };
@@ -350,7 +360,7 @@ export function useGameState() {
     setState(prev => ({ ...prev, coins: prev.coins + amount }));
   }, []);
 
-  const addRewardToHistory = useCallback((reward: Omit<RewardHistoryItem, 'id' | 'timestamp' | 'redeemed'>) => {
+  const addRewardToHistory = useCallback((reward: Omit<RewardHistoryItem, 'id' | 'timestamp' | 'redeemed'>, linkToSessionId?: string) => {
     setState(prev => {
       const newItem: RewardHistoryItem = {
         ...reward,
@@ -360,6 +370,12 @@ export function useGameState() {
       };
 
       let newState = { ...prev, rewardHistory: [newItem, ...prev.rewardHistory] };
+
+      if (linkToSessionId) {
+        newState.history = newState.history.map(s => 
+          s.id === linkToSessionId ? { ...s, rewardName: reward.name } : s
+        );
+      }
 
       // Special handling for immediate value rewards
       if (reward.type === 'coins') {
@@ -429,7 +445,7 @@ export function useGameState() {
     });
   }, [dungeons, addCoins, addXP, addRewardToHistory]);
 
-  const completeSession = useCallback((dungeonId: string | null, duration: number) => {
+  const completeSession = useCallback((dungeonId: string | null, duration: number, focusDuration?: number, restDuration?: number) => {
     const now = new Date();
     const todayStr = format(now, 'yyyy-MM-dd');
     
@@ -519,6 +535,8 @@ export function useGameState() {
       id: Math.random().toString(36).substr(2, 9),
       dungeonId: dungeonId || 'free_study',
       duration,
+      focusDuration,
+      restDuration,
       timestamp: now.toISOString(),
       coinsEarned: Math.floor(baseCoins),
       xpEarned: Math.floor(baseXP),
@@ -979,6 +997,56 @@ export function useGameState() {
     setState(prev => ({ ...prev, quests }));
   }, []);
 
+  const updateSession = useCallback((sessionId: string, updates: Partial<StudySession>) => {
+    setState(prev => {
+      const session = prev.history.find(s => s.id === sessionId);
+      if (!session) return prev;
+
+      const newHistory = prev.history.map(s => s.id === sessionId ? { ...s, ...updates } : s);
+      
+      // If dungeonId changed, we need to update dungeons completedSessions
+      if (updates.dungeonId && updates.dungeonId !== session.dungeonId) {
+         setDungeons(prevDungeons => {
+            return prevDungeons.map(d => {
+               if (d.id === session.dungeonId) {
+                  return { ...d, completedSessions: Math.max(0, d.completedSessions - 1), status: 'active' };
+               }
+               if (d.id === updates.dungeonId) {
+                  const newCount = d.completedSessions + 1;
+                  const isCompleted = newCount >= d.totalSessions;
+                  return { ...d, completedSessions: newCount, status: isCompleted ? 'completed' : 'active', completedAt: isCompleted ? new Date().toISOString() : undefined };
+               }
+               return d;
+            });
+         });
+      }
+
+      return { ...prev, history: newHistory };
+    });
+  }, [setDungeons]);
+
+  const deleteSession = useCallback((sessionId: string) => {
+    setState(prev => {
+      const session = prev.history.find(s => s.id === sessionId);
+      if (!session) return prev;
+
+      const newHistory = prev.history.filter(s => s.id !== sessionId);
+
+      if (session.dungeonId !== 'free_study') {
+         setDungeons(prevDungeons => {
+            return prevDungeons.map(d => {
+               if (d.id === session.dungeonId) {
+                  return { ...d, completedSessions: Math.max(0, d.completedSessions - 1), status: 'active' };
+               }
+               return d;
+            });
+         });
+      }
+
+      return { ...prev, history: newHistory };
+    });
+  }, [setDungeons]);
+
   const claimQuestReward = useCallback((questId: string) => {
     setState(prev => {
       const quest = prev.quests.find(q => q.id === questId);
@@ -1092,6 +1160,8 @@ export function useGameState() {
     reorderSubDungeon,
     finalizeMajorDungeon,
     updateQuests,
+    updateSession,
+    deleteSession,
     claimQuestReward,
     saveDailyLog
   };

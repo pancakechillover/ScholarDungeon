@@ -11,11 +11,11 @@ interface TimerProps {
   activeTalents: string[];
   dailyRerollUsed: boolean;
   history: StudySession[];
-  onComplete: (duration: number) => StudySession | null;
+  onComplete: (duration: number, focusDuration?: number, restDuration?: number) => StudySession | null;
   onRestComplete?: () => void;
   onInventoryAdd: (id: string) => void;
   onReroll: () => void;
-  onRewardSelect: (reward: RewardCard) => void;
+  onRewardSelect: (reward: RewardCard, sessionId: string) => void;
   setShowCoinRain: (show: boolean) => void;
   isFullscreen?: boolean;
   secretCode?: string;
@@ -154,7 +154,7 @@ export const Timer = React.memo<TimerProps>(({
       }
     } else {
       // Finished focus
-      const session = onComplete(duration);
+      const session = onComplete(duration, focusDuration, restDuration);
       if (session) {
         // Generate choices from rewardPool
         const choices: RewardCard[] = [];
@@ -602,7 +602,7 @@ export const Timer = React.memo<TimerProps>(({
                       key={idx}
                       whileHover={{ y: -5, scale: 1.02 }}
                       onClick={() => {
-                        onRewardSelect(card);
+                        onRewardSelect(card, showRewards.session.id);
                         if (card.type === 'item' && card.itemType !== 'talent_shard' && card.itemType !== 'death_defying_medal') {
                           onInventoryAdd(card.id);
                         }

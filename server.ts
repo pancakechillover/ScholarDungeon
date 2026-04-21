@@ -119,15 +119,31 @@ app.delete("/api/sync", deleteHandler);
 app.delete("/api/sync/", deleteHandler);
 
 // Push Notification Routes
+app.get("/api/push/vapid-public-key", (req, res) => {
+  res.json({ publicKey: vapidPublicKey });
+});
+
 app.post("/api/push/subscribe", async (req, res) => {
   try {
     const { secretCode, subscription } = req.body;
     const client = await getRedisClient();
-    if (!secretCode || !subscription || !client) return res.status(400).json({ error: "Invalid request" });
-    const key = `scholar_push_sub_${secretCode}`;
-    await client.set(key, JSON.stringify(subscription));
+    if (!secretCode || !client) return res.status(400).json({ error: "Invalid request" });
+    
+    // Key for sets of subscriptions for this user
+    const key = `scholar_push_subs_${secretCode}`;
+    
+    if (subscription === null) {
+      await client.del(key);
+      // Also clear legacy format
+      await client.del(`scholar_push_sub_${secretCode}`);
+      return res.json({ success: true, message: "All subscriptions cleared" });
+    }
+    
+    // Use multi-device set storage (sync with api/push.ts)
+    await client.sAdd(key, JSON.stringify(subscription));
     res.json({ success: true });
   } catch (error) {
+    console.error("Subscribe error:", error);
     res.status(500).json({ error: "Subscribe failed" });
   }
 });
@@ -139,9 +155,15 @@ app.post("/api/push/schedule", async (req, res) => {
     if (!secretCode || delayMinutes === undefined || !client) return res.status(400).json({ error: "Invalid request" });
     const targetTime = Date.now() + (delayMinutes * 60 * 1000);
     const task = { secretCode, title, body, type, targetTime };
-    await client.zAdd('scholar_push_tasks', { score: targetTime, value: JSON.stringify(task) });
+    const taskStr = JSON.stringify(task);
+    
+    // Store quick ref for cancellation (sync with api/push.ts)
+    await client.set(`scholar_push_task_ref_${secretCode}`, taskStr, { EX: 3600 });
+    await client.zAdd('scholar_push_tasks', { score: targetTime, value: taskStr });
+    
     res.json({ success: true, targetTime });
   } catch (error) {
+    console.error("Schedule error:", error);
     res.status(500).json({ error: "Schedule failed" });
   }
 });
@@ -151,16 +173,90 @@ app.post("/api/push/cancel", async (req, res) => {
     const { secretCode } = req.body;
     const client = await getRedisClient();
     if (!secretCode || !client) return res.status(400).json({ error: "Invalid request" });
-    const tasks = await client.zRange('scholar_push_tasks', 0, -1);
-    for (const taskStr of tasks) {
-      const task = JSON.parse(taskStr.toString());
-      if (task.secretCode === secretCode) {
-        await client.zRem('scholar_push_tasks', taskStr.toString());
+    
+    // 1. Try quick reference cancel
+    const taskStr = await client.get(`scholar_push_task_ref_${secretCode}`);
+    if (taskStr) {
+      await client.zRem('scholar_push_tasks', taskStr);
+      await client.del(`scholar_push_task_ref_${secretCode}`);
+    } else {
+      // 2. Fallback scan (Legacy/Emergency)
+      const tasks = await client.zRange('scholar_push_tasks', 0, -1);
+      for (const tStr of tasks) {
+        const task = JSON.parse(tStr.toString());
+        if (task.secretCode === secretCode) {
+          await client.zRem('scholar_push_tasks', tStr.toString());
+        }
       }
     }
     res.json({ success: true });
   } catch (error) {
+    console.error("Cancel error:", error);
     res.status(500).json({ error: "Cancel failed" });
+  }
+});
+
+// Common logic for processing push queue
+const processPushQueue = async (client: any) => {
+  const now = Date.now();
+  const tasks = await client.zRangeByScore('scholar_push_tasks', 0, now);
+  let processed = 0;
+
+  for (const taskStr of tasks) {
+    const task = JSON.parse(taskStr.toString());
+    
+    // Try modern multi-device Key
+    const subs = await client.sMembers(`scholar_push_subs_${task.secretCode}`);
+    
+    if (subs && subs.length > 0) {
+      for (const subStr of subs) {
+        const subscription = JSON.parse(subStr.toString());
+        try {
+          await webpush.sendNotification(subscription, JSON.stringify({
+            title: task.title,
+            body: task.body,
+            data: { type: task.type }
+          }));
+        } catch (err: any) {
+          console.error(`Push failed for ${task.secretCode}:`, err.message);
+          if (err.statusCode === 410 || err.statusCode === 404) {
+            await client.sRem(`scholar_push_subs_${task.secretCode}`, subStr);
+          }
+        }
+      }
+    } else {
+      // Fallback for legacy single-sub key
+      const subStr = await client.get(`scholar_push_sub_${task.secretCode}`);
+      if (subStr) {
+        const subscription = JSON.parse(subStr.toString());
+        try {
+          await webpush.sendNotification(subscription, JSON.stringify({
+            title: task.title,
+            body: task.body,
+            data: { type: task.type }
+          }));
+        } catch (err: any) {
+          if (err.statusCode === 410 || err.statusCode === 404) {
+            await client.del(`scholar_push_sub_${task.secretCode}`);
+          }
+        }
+      }
+    }
+    await client.zRem('scholar_push_tasks', taskStr.toString());
+    processed++;
+  }
+  return processed;
+};
+
+app.get("/api/push/check", async (req, res) => {
+  try {
+    const client = await getRedisClient();
+    if (!client) return res.status(500).json({ error: "Redis not configured" });
+    const processed = await processPushQueue(client);
+    res.json({ success: true, processed });
+  } catch (error) {
+    console.error("Manual check error:", error);
+    res.status(500).json({ error: "Check failed" });
   }
 });
 
@@ -170,27 +266,7 @@ const startScheduler = async () => {
   if (client && !process.env.VERCEL) {
     setInterval(async () => {
       try {
-        const now = Date.now();
-        const tasks = await client.zRangeByScore('scholar_push_tasks', 0, now);
-        for (const taskStr of tasks) {
-          const task = JSON.parse(taskStr.toString());
-          const subStr = await client.get(`scholar_push_sub_${task.secretCode}`);
-          if (subStr) {
-            const subscription = JSON.parse(subStr.toString());
-            try {
-              await webpush.sendNotification(subscription, JSON.stringify({
-                title: task.title,
-                body: task.body,
-                data: { type: task.type }
-              }));
-            } catch (err: any) {
-              if (err.statusCode === 410 || err.statusCode === 404) {
-                await client.del(`scholar_push_sub_${task.secretCode}`);
-              }
-            }
-          }
-          await client.zRem('scholar_push_tasks', taskStr.toString());
-        }
+        await processPushQueue(client);
       } catch (error) {
         console.error("Scheduler error:", error);
       }

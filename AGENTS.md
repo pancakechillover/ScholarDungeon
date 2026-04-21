@@ -11,8 +11,8 @@ Whenever you complete a task or make changes to the application:
 3. Update the version number and release date in `src/components/Settings.tsx` (under the 'about' section) to match the new version and date.
 
 ## Current Status
-- **Current Version:** v2.7.5
-- **Last Update Date:** 2026-04-18
+- **Current Version:** v3.4.2
+- **Last Update Date:** 2026-04-20
 
 ## Light Themes Definition
 The following themes are considered "Light Themes" and require special CSS handling (e.g., avoiding white text on light backgrounds, using theme-aware colors for modals and charts):
@@ -30,6 +30,73 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v3.4.2 (2026-04-20):** Explore Tab UI Refinement.
+  - *Removal:* Removed the "How to get XP" guide button from the Explore tab header.
+  - *Feature:* Replaced "Level" statistic in the Explore header with today's "Sessions" count for immediate activity tracking.
+- **v3.4.1 (2026-04-20):** 'Back to Today' Navigation.
+  - *Feature:* Added "Today" shortcut buttons to Daily and Weekly activity date pickers for one-click navigation to the current date.
+- **v3.4.0 (2026-04-20):** Reward Vault Table Overhaul.
+  - *UI:* Refactored the "Vault" (Reward History) from a vertical card list to a high-density technical data table.
+  - *Feature:* Added responsive columns (Icon, Reward, Rarity, Source, Date, Action) with visibility toggling for mobile devices.
+  - *UX:* Improved scannability with monospace timestamps and themed rarity badges in the table rows.
+- **v3.3.9 (2026-04-20):** Icon Style Refinement.
+  - *UI:* Changed "Efficiency & Reflection" icon from a filled star to a hollow star for a lighter visual footprint.
+- **v3.3.8 (2026-04-20):** Icon Visual Polish.
+  - *UI:* Changed "Tasks" icon to `Sword` across Daily and Weekly activity summaries.
+  - *UI:* Verified "Efficiency & Reflection" section uses the `Star` SVG icon for thematic consistency.
+- **v3.3.7 (2026-04-20):** Weekly View Toggle.
+  - *Feature:* Added a toggle in the "Weekly Activity" view to switch between "Natural Week" (calendar basis) and "Last 7d" (rolling basis).
+  - *UX:* Integrated dynamic date navigation that intelligentally scrolls by 1 day or 7 days depending on the active mode.
+- **v3.3.6 (2026-04-20):** Weekly Dynamic Average calculation.
+  - *Feature:* Refactored "Weekly Activity" daily averages to be calculated based on active days within the week rather than a static 7-day divisor. This provides a more accurate reflection of productivity per functional day.
+- **v3.3.5 (2026-04-20):** Dungeon Archiving Feature.
+  - *Feature:* Added a comprehensive archiving system for completed Major Dungeons.
+  - *UI:* Introduced "Archives" tab in Dungeon Explorer with a searchable, filterable table.
+  - *Data:* Archived dungeons now track completion dates and rewards in a structured history view.
+  - *UX:* Added "Archive" button for cleared dungeons and "Unarchive" functionality for flexibility.
+- **v3.3.4 (2026-04-20):** Persistent Column Widths.
+  - *Feature:* Enabled `localStorage` persistence for the "Recent Sessions" table. Resized column widths are now remembered across browser sessions.
+- **v3.3.3 (2026-04-20):** Recent Sessions Table Polish.
+  - *UI:* Renamed "Date & Time" to "Date" and "Dungeon (Major / Sub)" to "Dungeon" in the Recent Sessions table.
+  - *Data:* Updated duration display to "x min + y min" format with proper spacing for better readability.
+- **v3.3.2 (2026-04-20):** Activity Time Peaks.
+  - *Feature:* Added customization for Morning, Afternoon, and Night time ranges in "Settings > General".
+  - *Sync:* Charts in the Record tab now dynamically update their categorization and labels based on these user-defined ranges.
+- **v3.3.1 (2026-04-20):** Weekly Daily Average.
+  - *Feature:* Refactored the summary row in the "Weekly Activity" module to display calculated Daily Averages for Gold, XP, and Tasks instead of weekly totals.
+  - *UI:* Updated labels to "Daily Avg Gold/Exp/Tasks" to reflect the shift to productivity rate tracking.
+- **v3.3.0 (2026-04-20):** Activity Summary Stats.
+  - *Feature:* Added a data-rich summary row to the "Daily Activity" and "Weekly Activity" modules in the Record tab.
+  - *Metrics:* Displays total Gold acquired, total Experience gained, and total Tasks completed (Study Sessions + Quests) for the selected period.
+  - *UI:* Implemented the "Technical Dashboard" aesthetic with monospace data values, small-cap labels, and theme-accented icons (Amber, Indigo, Emerald).
+- **v3.2.0 (2026-04-20):** Explore Fullscreen Fix & Recent Sessions Polish.
+  - *Bugfix:* Fixed a bug where the entire Explore tab content (Build info, Recent Sessions) would leak into Fullscreen mode.
+  - *Feature:* Streamlined Fullscreen Explore to focus strictly on the Timer and Dungeon Progress Bar, hiding text titles and metadata for a cleaner study environment.
+  - *UI:* Optimized "Recent Sessions" for mobile with simplified column headers (e.g., "Date", "Prize") and tighter layout density.
+- **v3.1.0 (2026-04-20):** Persistent Status Header.
+  - *Feature:* Upgraded the top header to persistently show the Level and Experience bar across all screen sizes.
+  - *UI:* Added detailed XP progress displaying "Current / Target" values to the right of the bar (with responsive visibility).
+  - *UX:* Optimized bar width (`w-8` to `w-20`) for a more compact layout and added a detailed hover tooltip.
+- **v3.0.0 (2026-04-20):** Advanced Session Management & Table UI Overhaul.
+  - *Feature:* Upgraded "Recent Sessions" table with resizable columns for personalized layout.
+  - *Feature:* Added advanced filtering (Date Range, Duration Min/Max) to the session history.
+  - *Feature:* Implemented multi-column sorting (Date, Dungeon, Duration) with ascending/descending modes.
+  - *UI:* Refactored Duration column to show Focus/Rest breakdown (e.g., "25F + 5R").
+  - *UX:* Moved session metadata icons (Clock, Sword, Trophy) to table headers for a cleaner data view.
+- **v2.9.2 (2026-04-20):** Recent Sessions Polish & Timestamp Editing.
+  - *Feature:* Added Major Dungeon names to the Recent Sessions table for better context.
+  - *UX:* Allowed editing of session "Start Time" (timestamp) in the Recent Sessions modal. This directly affects "Daily Activity" and heatmap distribution in the Record tab.
+  - *Search:* Expanded session search to include Major Dungeon names.
+- **v2.9.0 (2026-04-20):** Integrated "Recent Sessions" tracking in Explore tab.
+  - *Feature:* Added a chronological list of recently completed study sessions to the Explore tab.
+  - *Feature:* Sessions now capture and display the specific reward selected by the user.
+  - *UX:* Implemented editing and deletion for historical sessions.
+  - *Sync:* Refactored backend logic in `useGameState` to ensure that editing a session's dungeon or duration correctly recalculates the `completedSessions` counters in the Dungeon Manager and Record charts.
+  - *UI:* Added search and dungeon-based filtering to the session list for easier management.
+- **v2.8.0 (2026-04-20):** Critical Push Notification Fix for Windows/Native environments.
+  - *Fix (Backend):* Discovered that `server.ts` (the main entry point for non-Vercel environments like Windows/Native) was missing the `/api/push/vapid-public-key` endpoint, causing the "Could not retrieve VAPID key" error in PWAs.
+  - *Enhancement (Sync):* Synchronized `server.ts` push logic with `api/push.ts`. Upgraded storage to use Redis Sets (`sAdd`, `sMembers`), enabling multi-device synchronization for a single Secret Code (e.g., synchronous notifications on both iOS and Windows).
+  - *Fix (API):* Added missing `/api/push/check` manual trigger and stabilized the internal scheduler loop.
 - **v2.7.5 (2026-04-18):** Timer UI Enhancement.
   - *Animation:* Added an active "bobbing" animation effect to the timer display and status indicator when the timer is active for a more playful, responsive feel.
 - **v2.7.4 (2026-04-18):** Cloud Sync Confirmation Refinement & Bugfix.

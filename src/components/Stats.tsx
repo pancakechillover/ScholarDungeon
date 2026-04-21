@@ -1,13 +1,13 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { 
   format, eachDayOfInterval, isSameDay, 
   startOfWeek, endOfWeek, subDays, addDays, subWeeks, addWeeks,
   startOfMonth, endOfMonth, startOfYear, endOfYear, addMonths, subMonths, addYears, subYears,
-  parseISO
+  parseISO, isWithinInterval
 } from 'date-fns';
-import { StudySession, UserState } from '../types';
+import { StudySession, UserState, RewardHistoryItem } from '../types';
 import { cn } from '../lib/utils';
-import { BarChart2, Zap, Coins, ChevronLeft, ChevronRight, Calendar, Star, StarHalf, Edit2, Save, X, Eye, EyeOff, LineChart as LineChartIcon } from 'lucide-react';
+import { BarChart2, Zap, Coins, ChevronLeft, ChevronRight, Calendar, Star, StarHalf, Edit2, Save, X, Eye, EyeOff, LineChart as LineChartIcon, Trophy, Sword } from 'lucide-react';
 import { PageHeader } from './PageHeader';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, Legend, LineChart, Line, CartesianGrid } from 'recharts';
 import Markdown from 'react-markdown';
@@ -23,6 +23,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
   
   const [dailyDate, setDailyDate] = useState(new Date());
   const [weeklyDate, setWeeklyDate] = useState(new Date());
+  const [weeklyMode, setWeeklyMode] = useState<'calendar' | 'rolling'>('calendar');
   const [heatmapMode, setHeatmapMode] = useState<'30days' | 'month' | 'year'>('30days');
   const [heatmapMetric, setHeatmapMetric] = useState<'time' | 'efficiency'>('time');
   const [heatmapDate, setHeatmapDate] = useState(new Date());
@@ -50,11 +51,78 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
   const weeklyInputRef = useRef<HTMLInputElement>(null);
   const heatmapInputRef = useRef<HTMLInputElement>(null);
 
+  // --- Date Range Calculations ---
+  const weekStart = weeklyMode === 'calendar' 
+    ? startOfWeek(weeklyDate, { weekStartsOn: 1 })
+    : subDays(weeklyDate, 6);
+  const weekEnd = weeklyMode === 'calendar'
+    ? endOfWeek(weeklyDate, { weekStartsOn: 1 })
+    : weeklyDate;
+
+  // --- Aggregate Helpers ---
+  const getGainsForPeriod = (sessions: StudySession[], rewards: RewardHistoryItem[], dateRange?: { start: Date, end: Date }) => {
+    const periodSessions = dateRange 
+      ? sessions.filter(s => isWithinInterval(new Date(s.timestamp), dateRange))
+      : sessions;
+    const periodRewards = dateRange
+      ? rewards.filter(r => isWithinInterval(new Date(r.timestamp), dateRange))
+      : rewards;
+
+    const coins = periodSessions.reduce((acc, s) => acc + s.coinsEarned, 0) + 
+                  periodRewards.filter(r => r.type === 'coins').reduce((acc, r) => acc + (r.amount || 0), 0);
+    const xp = periodSessions.reduce((acc, s) => acc + s.xpEarned, 0) + 
+               periodRewards.filter(r => r.type === 'xp').reduce((acc, r) => acc + (r.amount || 0), 0);
+    
+    // Tasks = Sessions + Unique Quest/Dungeon reward events
+    const questRewards = periodRewards.filter(r => 
+      r.name.includes('Quest') || 
+      r.name.includes('MAJOR CLEAR') || 
+      r.name.includes('QUEST COMPLETE') ||
+      r.name.includes('Achievement') ||
+      r.name.includes('Dungeon Reward')
+    );
+    const uniqueQuests = new Set(questRewards.map(r => r.timestamp)).size;
+    
+    return { coins, xp, tasks: periodSessions.length + uniqueQuests };
+  };
+
+  const dailyGains = useMemo(() => {
+    const sessions = history.filter(s => isSameDay(new Date(s.timestamp), dailyDate));
+    const rewards = (state.rewardHistory || []).filter(r => isSameDay(new Date(r.timestamp), dailyDate));
+    
+    const coins = sessions.reduce((acc, s) => acc + s.coinsEarned, 0) + 
+                  rewards.filter(r => r.type === 'coins').reduce((acc, r) => acc + (r.amount || 0), 0);
+    const xp = sessions.reduce((acc, s) => acc + s.xpEarned, 0) + 
+               rewards.filter(r => r.type === 'xp').reduce((acc, r) => acc + (r.amount || 0), 0);
+    
+    const questRewards = rewards.filter(r => 
+      r.name.includes('Quest') || 
+      r.name.includes('MAJOR CLEAR') || 
+      r.name.includes('QUEST COMPLETE') ||
+      r.name.includes('Achievement') ||
+      r.name.includes('Dungeon Reward')
+    );
+    const uniqueQuests = new Set(questRewards.map(r => r.timestamp)).size;
+    
+    return { coins, xp, tasks: sessions.length + uniqueQuests };
+  }, [history, state.rewardHistory, dailyDate]);
+
+  const weeklyGains = useMemo(() => {
+    const interval = { start: weekStart, end: weekEnd };
+    return getGainsForPeriod(history, state.rewardHistory || [], interval);
+  }, [history, state.rewardHistory, weekStart, weekEnd]);
+
   const getPeriod = (date: Date) => {
     const hour = date.getHours();
-    if (hour >= 8 && hour < 12) return 'Morning';
-    if (hour >= 14 && hour < 18) return 'Afternoon';
-    if (hour >= 20 && hour < 24) return 'Night';
+    const ts = state.timeSettings || {
+      morning: { start: 8, end: 12 },
+      afternoon: { start: 14, end: 18 },
+      night: { start: 20, end: 24 }
+    };
+    
+    if (hour >= ts.morning.start && hour < ts.morning.end) return 'Morning';
+    if (hour >= ts.afternoon.start && hour < ts.afternoon.end) return 'Afternoon';
+    if (hour >= ts.night.start && hour < ts.night.end) return 'Night';
     return 'Other';
   };
 
@@ -65,10 +133,16 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
     dailyCounts[getPeriod(new Date(s.timestamp))]++;
   });
 
+  const ts = state.timeSettings || {
+    morning: { start: 8, end: 12 },
+    afternoon: { start: 14, end: 18 },
+    night: { start: 20, end: 24 }
+  };
+
   const dailyData = [
-    { name: 'Morning (8-12)', sessions: dailyCounts.Morning, fill: '#fde047' },
-    { name: 'Afternoon (14-18)', sessions: dailyCounts.Afternoon, fill: '#f97316' },
-    { name: 'Night (20-24)', sessions: dailyCounts.Night, fill: '#6366f1' },
+    { name: `Morning (${ts.morning.start}-${ts.morning.end})`, sessions: dailyCounts.Morning, fill: '#fde047' },
+    { name: `Afternoon (${ts.afternoon.start}-${ts.afternoon.end})`, sessions: dailyCounts.Afternoon, fill: '#f97316' },
+    { name: `Night (${ts.night.start}-${ts.night.end})`, sessions: dailyCounts.Night, fill: '#6366f1' },
     { name: 'Other', sessions: dailyCounts.Other, fill: '#64748b' }
   ];
 
@@ -86,10 +160,16 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
         : "No sessions recorded during main periods today.")
     : "The archives are silent for today. Embark on a new journey to begin your record.";
 
-  // --- Weekly Data ---
-  const weekStart = startOfWeek(weeklyDate, { weekStartsOn: 1 });
-  const weekEnd = endOfWeek(weeklyDate, { weekStartsOn: 1 });
   const weeklyDays = eachDayOfInterval({ start: weekStart, end: weekEnd });
+
+  const weeklyActiveDaysCount = useMemo(() => {
+    const count = weeklyDays.filter(date => {
+      const hasSessions = history.some(s => isSameDay(new Date(s.timestamp), date));
+      const hasRewards = (state.rewardHistory || []).some(r => isSameDay(new Date(r.timestamp), date));
+      return hasSessions || hasRewards;
+    }).length;
+    return count > 0 ? count : 1;
+  }, [weeklyDays, history, state.rewardHistory]);
 
   const weeklyData = weeklyDays.map(date => {
     const daySessions = history.filter(s => isSameDay(new Date(s.timestamp), date));
@@ -170,6 +250,37 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
                 />
               </div>
               <button onClick={() => setDailyDate(addDays(dailyDate, 1))} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-slate-200"><ChevronRight size={16} /></button>
+              <button 
+                onClick={() => setDailyDate(new Date())}
+                className="px-2 py-1 text-[10px] font-black uppercase tracking-widest text-indigo-400 hover:text-white transition-colors"
+              >
+                Today
+              </button>
+            </div>
+          </div>
+
+          {/* Daily Gains Summary */}
+          <div className="grid grid-cols-3 gap-3">
+            <div className="bg-slate-950/40 border border-slate-800/60 rounded-2xl p-3 flex flex-col items-center justify-center text-center">
+              <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Gold</span>
+              <div className="flex items-center gap-1.5 text-amber-400">
+                <Coins size={12} className="sm:w-4 sm:h-4 shrink-0" />
+                <span className="text-sm sm:text-lg font-black font-mono">+{dailyGains.coins}</span>
+              </div>
+            </div>
+            <div className="bg-slate-950/40 border border-slate-800/60 rounded-2xl p-3 flex flex-col items-center justify-center text-center">
+              <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Exp</span>
+              <div className="flex items-center gap-1.5 text-indigo-400">
+                <Zap size={12} className="sm:w-4 sm:h-4 shrink-0" />
+                <span className="text-sm sm:text-lg font-black font-mono">+{dailyGains.xp}</span>
+              </div>
+            </div>
+            <div className="bg-slate-950/40 border border-slate-800/60 rounded-2xl p-3 flex flex-col items-center justify-center text-center">
+              <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Tasks</span>
+              <div className="flex items-center gap-1.5 text-emerald-400">
+                <Sword size={12} className="sm:w-4 sm:h-4 shrink-0" />
+                <span className="text-sm sm:text-lg font-black font-mono">{dailyGains.tasks}</span>
+              </div>
             </div>
           </div>
 
@@ -195,7 +306,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
           <div className="bg-slate-950/50 border border-slate-800/50 rounded-2xl p-4 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Star className="text-amber-400 fill-amber-400" size={16} />
+                <Star className="text-amber-400" size={16} />
                 <span className="text-xs font-black text-slate-500 uppercase tracking-widest">Efficiency & Reflection</span>
               </div>
               {!isEditingLog ? (
@@ -302,14 +413,39 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
 
         {/* Weekly Activity */}
         <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800 flex flex-col space-y-6">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-bold text-slate-200">Weekly Activity</h3>
-            <div className="flex items-center gap-2 bg-slate-800/50 rounded-lg p-1">
-              <button onClick={() => setWeeklyDate(subWeeks(weeklyDate, 1))} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-slate-200"><ChevronLeft size={16} /></button>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <h3 className="text-lg font-bold text-slate-200">Weekly Activity</h3>
+              <div className="flex bg-slate-800/50 p-1 rounded-lg">
+                <button
+                  onClick={() => setWeeklyMode('calendar')}
+                  className={cn(
+                    "px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-md transition-all whitespace-nowrap",
+                    weeklyMode === 'calendar' ? "bg-indigo-600 text-white" : "text-slate-400 hover:text-slate-200"
+                  )}
+                >
+                  Natural
+                </button>
+                <button
+                  onClick={() => setWeeklyMode('rolling')}
+                  className={cn(
+                    "px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-md transition-all whitespace-nowrap",
+                    weeklyMode === 'rolling' ? "bg-indigo-600 text-white" : "text-slate-400 hover:text-slate-200"
+                  )}
+                >
+                  Last 7d
+                </button>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 bg-slate-800/50 rounded-lg p-1 self-start sm:self-auto">
+              <button onClick={() => {
+                const amount = weeklyMode === 'calendar' ? 1 : 7;
+                setWeeklyDate(subDays(weeklyDate, amount));
+              }} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-slate-200"><ChevronLeft size={16} /></button>
               <div className="relative flex items-center justify-center">
                 <button 
                   onClick={() => weeklyInputRef.current?.showPicker()}
-                  className="text-xs font-bold text-slate-300 w-32 text-center hover:text-indigo-400 transition-colors"
+                  className="text-[10px] font-bold text-slate-300 w-32 text-center hover:text-indigo-400 transition-colors"
                 >
                   {format(weekStart, 'MMM d')} - {format(weekEnd, 'MMM d')}
                 </button>
@@ -321,7 +457,41 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
                   onChange={(e) => e.target.value && setWeeklyDate(parseISO(e.target.value))}
                 />
               </div>
-              <button onClick={() => setWeeklyDate(addWeeks(weeklyDate, 1))} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-slate-200"><ChevronRight size={16} /></button>
+              <button onClick={() => {
+                const amount = weeklyMode === 'calendar' ? 1 : 7;
+                setWeeklyDate(addDays(weeklyDate, amount));
+              }} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-slate-200"><ChevronRight size={16} /></button>
+              <button 
+                onClick={() => setWeeklyDate(new Date())}
+                className="px-2 py-1 text-[10px] font-black uppercase tracking-widest text-indigo-400 hover:text-white transition-colors"
+              >
+                Today
+              </button>
+            </div>
+          </div>
+
+          {/* Weekly Gains Summary */}
+          <div className="grid grid-cols-3 gap-3">
+            <div className="bg-slate-950/40 border border-slate-800/60 rounded-2xl p-3 flex flex-col items-center justify-center text-center">
+              <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Daily Avg Gold</span>
+              <div className="flex items-center gap-1.5 text-amber-400">
+                <Coins size={12} className="sm:w-4 sm:h-4 shrink-0" />
+                <span className="text-sm sm:text-lg font-black font-mono">+{Math.round(weeklyGains.coins / weeklyActiveDaysCount)}</span>
+              </div>
+            </div>
+            <div className="bg-slate-950/40 border border-slate-800/60 rounded-2xl p-3 flex flex-col items-center justify-center text-center">
+              <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Daily Avg Exp</span>
+              <div className="flex items-center gap-1.5 text-indigo-400">
+                <Zap size={12} className="sm:w-4 sm:h-4 shrink-0" />
+                <span className="text-sm sm:text-lg font-black font-mono">+{Math.round(weeklyGains.xp / weeklyActiveDaysCount)}</span>
+              </div>
+            </div>
+            <div className="bg-slate-950/40 border border-slate-800/60 rounded-2xl p-3 flex flex-col items-center justify-center text-center">
+              <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Daily Avg Tasks</span>
+              <div className="flex items-center gap-1.5 text-emerald-400">
+                <Sword size={12} className="sm:w-4 sm:h-4 shrink-0" />
+                <span className="text-sm sm:text-lg font-black font-mono">{(weeklyGains.tasks / weeklyActiveDaysCount).toFixed(1)}</span>
+              </div>
             </div>
           </div>
           

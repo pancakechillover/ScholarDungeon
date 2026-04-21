@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Dungeon, MajorDungeon, DungeonReward } from '../types';
-import { Plus, Target, Sword, CheckCircle2, ChevronRight, Trash2, FolderPlus, Folder, ChevronDown, ChevronUp, Gift, X, Edit2, Coins, Zap, Trophy, HelpCircle, Square, CheckSquare, EyeOff, Eye } from 'lucide-react';
+import { Plus, Target, Sword, CheckCircle2, ChevronRight, Trash2, FolderPlus, Folder, ChevronDown, ChevronUp, Gift, X, Edit2, Coins, Zap, Trophy, HelpCircle, Square, CheckSquare, EyeOff, Eye, Archive, Search, Filter, Calendar } from 'lucide-react';
 import { PageHeader } from './PageHeader';
 import { cn } from '../lib/utils';
 
@@ -21,6 +21,7 @@ interface DungeonManagerProps {
   onReorderMajor: (id: string, direction: 'up' | 'down') => void;
   onReorderSub: (id: string, direction: 'up' | 'down') => void;
   onFinalizeMajor: (id: string) => void;
+  onArchiveMajor: (id: string) => void;
   isEditMode?: boolean;
 }
 
@@ -40,6 +41,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
   onReorderMajor,
   onReorderSub,
   onFinalizeMajor,
+  onArchiveMajor,
   isEditMode = false
 }) => {
   const [isAddingSub, setIsAddingSub] = useState<{ parentId: string } | null>(null);
@@ -47,6 +49,10 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
   const [editingSub, setEditingSub] = useState<Dungeon | null>(null);
   const [expandedMajors, setExpandedMajors] = useState<string[]>([]);
   const [deletingDungeon, setDeletingDungeon] = useState<{ id: string, name: string, isMajor: boolean } | null>(null);
+
+  const [archiveSearch, setArchiveSearch] = useState('');
+  const [dateFilter, setDateFilter] = useState<'all' | 'week' | 'month'>('all');
+  const [activeTab, setActiveTab] = useState<'active' | 'archive'>('active');
 
   const [newMajor, setNewMajor] = useState({ name: '', description: '', rewards: [] as DungeonReward[] });
   const [newSub, setNewSub] = useState({
@@ -130,9 +136,32 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
 
   const activeDungeon = dungeons.find(d => d.id === currentDungeonId);
 
+  const filteredMajors = React.useMemo(() => {
+    if (activeTab === 'active') {
+      return majorDungeons.filter(m => m.status !== 'archived');
+    }
+    const filtered = majorDungeons.filter(m => m.status === 'archived');
+    
+    return filtered.filter(m => {
+      const matchesSearch = m.name.toLowerCase().includes(archiveSearch.toLowerCase()) || 
+                           m.description.toLowerCase().includes(archiveSearch.toLowerCase());
+      
+      if (dateFilter === 'all') return matchesSearch;
+      
+      if (!m.completedAt) return false;
+      const completedDate = new Date(m.completedAt);
+      const now = new Date();
+      const diffDays = (now.getTime() - completedDate.getTime()) / (1000 * 3600 * 24);
+      
+      if (dateFilter === 'week') return matchesSearch && diffDays <= 7;
+      if (dateFilter === 'month') return matchesSearch && diffDays <= 30;
+      
+      return matchesSearch;
+    });
+  }, [majorDungeons, activeTab, archiveSearch, dateFilter]);
+
   return (
     <div className="space-y-8">
-      {/* Active Dungeon Progress */}
       {activeDungeon && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -384,8 +413,35 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
 
       </AnimatePresence>
 
+      {/* Tab Switcher */}
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex p-1 bg-slate-900 rounded-xl border border-slate-800">
+          <button
+            onClick={() => setActiveTab('active')}
+            className={cn(
+              "px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2",
+              activeTab === 'active' ? "bg-indigo-500/20 text-indigo-400" : "text-slate-500 hover:text-slate-300"
+            )}
+          >
+            <Sword size={14} />
+            Explorer
+          </button>
+          <button
+            onClick={() => setActiveTab('archive')}
+            className={cn(
+              "px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2",
+              activeTab === 'archive' ? "bg-amber-500/20 text-amber-400" : "text-slate-500 hover:text-slate-300"
+            )}
+          >
+            <Archive size={14} />
+            Archives
+          </button>
+        </div>
+      </div>
+
       <div className="space-y-4">
-        {majorDungeons.length === 0 && dungeons.filter(d => !d.parentId).length === 0 ? (
+        {activeTab === 'active' ? (
+          filteredMajors.length === 0 && dungeons.filter(d => !d.parentId).length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 px-6 bg-slate-900/30 rounded-[3rem] border border-slate-800 border-dashed">
             <div className="w-24 h-24 bg-slate-900 rounded-full flex items-center justify-center mb-6 text-slate-700 border border-slate-800">
               <Sword size={48} />
@@ -394,7 +450,8 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
             <p className="text-slate-500 text-center max-w-xs text-sm font-medium">Your journey is just beginning. Create your first major dungeon to start tracking your progress!</p>
           </div>
         ) : (
-          majorDungeons.map(major => (
+          <>
+            {filteredMajors.map(major => (
             <div key={major.id} className="bg-slate-900/40 rounded-2xl border border-slate-800 overflow-hidden hover:border-slate-700 transition-all group">
               <div 
                 className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer hover:bg-slate-800/30 transition-colors"
@@ -497,6 +554,16 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                         <Trash2 size={16} />
                       </button>
                     </div>
+                  )}
+
+                  {major.status === 'completed' && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onArchiveMajor(major.id); }}
+                      className="p-2 bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 rounded-lg transition-all border border-amber-500/20"
+                      title="Archive Completed Dungeon"
+                    >
+                      <Archive size={16} />
+                    </button>
                   )}
                   
                   <div className="p-1 text-slate-600 group-hover:text-indigo-400 transition-colors ml-2">
@@ -819,81 +886,204 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                 )}
               </AnimatePresence>
             </div>
-          ))
-        )}
+          ))}
 
-        {/* Uncategorized Dungeons */}
-        {dungeons.filter(d => !d.parentId).length > 0 && (
-          <div className="space-y-4">
-            <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest flex items-center space-x-2">
-              <Sword size={16} />
-              <span>Independent Dungeons</span>
-            </h3>
+          {/* Independent Dungeons */}
+          {dungeons.filter(d => !d.parentId).length > 0 && (
             <div className="space-y-4">
-              {dungeons.filter(d => !d.parentId).map(d => (
-                <div 
-                  key={d.id}
-                  onClick={() => onSelect(d.id)}
-                  className={cn(
-                    "p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer group",
-                    currentDungeonId === d.id ? "bg-indigo-500/10 border-indigo-500" : "bg-slate-900 border-slate-800"
-                  )}
-                >
-                  <div className="flex items-center justify-between mb-3 sm:mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className={cn(
-                        "p-2 rounded-lg",
-                        currentDungeonId === d.id ? "bg-indigo-500 text-white" : "bg-slate-800 text-slate-500"
-                      )}>
-                        <Sword size={16} />
+              <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest flex items-center space-x-2">
+                <Sword size={16} />
+                <span>Independent Dungeons</span>
+              </h3>
+              <div className="space-y-4">
+                {dungeons.filter(d => !d.parentId).map(d => (
+                  <div 
+                    key={d.id}
+                    onClick={() => onSelect(d.id)}
+                    className={cn(
+                      "p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer group",
+                      currentDungeonId === d.id ? "bg-indigo-500/10 border-indigo-500" : "bg-slate-900 border-slate-800"
+                    )}
+                  >
+                    <div className="flex items-center justify-between mb-3 sm:mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className={cn(
+                          "p-2 rounded-lg",
+                          currentDungeonId === d.id ? "bg-indigo-500 text-white" : "bg-slate-800 text-slate-500"
+                        )}>
+                          <Sword size={16} />
+                        </div>
+                        <h4 className="font-bold text-white text-sm sm:text-base">{d.name}</h4>
                       </div>
-                      <h4 className="font-bold text-white text-sm sm:text-base">{d.name}</h4>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      {isEditMode && (
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); onDeleteSub(d.id); }} 
-                          className="text-slate-600 hover:text-red-400 p-1 sm:opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      )}
-                      
-                      <div className="flex items-center">
-                        {d.completedSessions >= d.totalSessions ? (
-                          <CheckSquare size={20} className="text-emerald-500 drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                        ) : (
-                          <Square size={20} className="text-slate-600" />
+                      <div className="flex items-center gap-3">
+                        {isEditMode && (
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); onDeleteSub(d.id); }} 
+                            className="text-slate-600 hover:text-red-400 p-1 sm:opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <Trash2 size={16} />
+                          </button>
                         )}
+                        
+                        <div className="flex items-center">
+                          {d.completedSessions >= d.totalSessions ? (
+                            <CheckSquare size={20} className="text-emerald-500 drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                          ) : (
+                            <Square size={20} className="text-slate-600" />
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden mb-3 sm:mb-4">
-                    <div className="h-full bg-indigo-500" style={{ width: `${(d.completedSessions/d.totalSessions)*100}%` }} />
-                  </div>
+                    <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden mb-3 sm:mb-4">
+                      <div className="h-full bg-indigo-500" style={{ width: `${(d.completedSessions/d.totalSessions)*100}%` }} />
+                    </div>
 
-                  {d.rewards && d.rewards.length > 0 && (
-                    <div className="space-y-1 border-t border-slate-800 pt-3">
-                      <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mb-1">Rewards</p>
-                      <div className="flex flex-wrap gap-1">
-                        {d.rewards.map((r, i) => (
-                          <div key={i} className="flex items-center gap-1 px-1.5 py-0.5 bg-slate-800 rounded text-[9px] text-slate-300 border border-slate-700/50">
-                            {r.type === 'coins' ? <Coins size={10} className="text-amber-400" /> : 
-                             r.type === 'xp' ? <Zap size={10} className="text-indigo-400" /> :
-                             r.type === 'talentPoint' ? <Trophy size={10} className="text-purple-400" /> :
-                             <Gift size={10} className="text-indigo-400" />}
-                            <span>
-                              {r.type === 'text' ? r.rewardText : 
-                               r.type === 'talentPoint' ? `${r.amount} PT` :
-                               `${r.amount} ${r.type === 'item' ? (r.itemName || 'Item') : r.type}`}
+                    {d.rewards && d.rewards.length > 0 && (
+                      <div className="space-y-1 border-t border-slate-800 pt-3">
+                        <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mb-1">Rewards</p>
+                        <div className="flex flex-wrap gap-1">
+                          {d.rewards.map((r, i) => (
+                            <div key={i} className="flex items-center gap-1 px-1.5 py-0.5 bg-slate-800 rounded text-[9px] text-slate-300 border border-slate-700/50">
+                              {r.type === 'coins' ? <Coins size={10} className="text-amber-400" /> : 
+                               r.type === 'xp' ? <Zap size={10} className="text-indigo-400" /> :
+                               r.type === 'talentPoint' ? <Trophy size={10} className="text-purple-400" /> :
+                               <Gift size={10} className="text-indigo-400" />}
+                              <span>
+                                {r.type === 'text' ? r.rewardText : 
+                                 r.type === 'talentPoint' ? `${r.amount} PT` :
+                                 `${r.amount} ${r.type === 'item' ? (r.itemName || 'Item') : r.type}`}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
+      )) : (
+          <div className="space-y-6">
+            {/* Archive Toolbar */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+                <input 
+                  type="text"
+                  placeholder="Search archived dungeons..."
+                  value={archiveSearch}
+                  onChange={(e) => setArchiveSearch(e.target.value)}
+                  className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-sm text-white focus:border-indigo-500 outline-none"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="flex bg-slate-900 p-1 rounded-xl border border-slate-800 shrink-0">
+                  <button
+                    onClick={() => setDateFilter('all')}
+                    className={cn(
+                      "px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all",
+                      dateFilter === 'all' ? "bg-slate-800 text-white" : "text-slate-500 hover:text-slate-400"
+                    )}
+                  >All Time</button>
+                  <button
+                    onClick={() => setDateFilter('week')}
+                    className={cn(
+                      "px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all",
+                      dateFilter === 'week' ? "bg-slate-800 text-white" : "text-slate-500 hover:text-slate-400"
+                    )}
+                  >Last 7d</button>
+                  <button
+                    onClick={() => setDateFilter('month')}
+                    className={cn(
+                      "px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all",
+                      dateFilter === 'month' ? "bg-slate-800 text-white" : "text-slate-500 hover:text-slate-400"
+                    )}
+                  >Last 30d</button>
+                </div>
+              </div>
+            </div>
+
+            {/* Table */}
+            <div className="bg-slate-900 border border-slate-800 rounded-[2rem] overflow-hidden shadow-2xl">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-slate-800/50 bg-slate-900/50">
+                      <th className="px-6 py-4 text-xs font-black text-slate-500 uppercase tracking-widest italic">Dungeon</th>
+                      <th className="px-6 py-4 text-xs font-black text-slate-500 uppercase tracking-widest italic">Completion Date</th>
+                      <th className="px-6 py-4 text-xs font-black text-slate-500 uppercase tracking-widest italic">Rewards</th>
+                      <th className="px-6 py-4 text-xs font-black text-slate-500 uppercase tracking-widest italic text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/50">
+                    {filteredMajors.sort((a,b) => new Date(b.completedAt || 0).getTime() - new Date(a.completedAt || 0).getTime()).map(major => (
+                      <tr key={major.id} className="group hover:bg-indigo-500/5 transition-colors">
+                        <td className="px-6 py-5">
+                          <div className="flex items-center gap-4">
+                            <div className="p-2.5 bg-amber-500/10 text-amber-500 rounded-xl border border-amber-500/20 group-hover:scale-110 transition-transform">
+                              <Archive size={18} />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="font-bold text-white text-sm tracking-tight">{major.name}</p>
+                              <p className="text-xs text-slate-500 line-clamp-1 italic">{major.description}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-5">
+                          <div className="flex items-center gap-2 text-slate-400">
+                            <Calendar size={14} className="text-slate-600" />
+                            <span className="text-xs font-black italic tracking-tighter">
+                              {major.completedAt ? new Date(major.completedAt).toLocaleDateString() : 'Unknown Date'}
                             </span>
                           </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
+                        </td>
+                        <td className="px-6 py-5">
+                          <div className="flex flex-wrap gap-2">
+                            {major.rewards?.map((r, i) => (
+                              <div key={i} className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-950/50 rounded-xl text-[10px] font-bold text-slate-300 border border-slate-800/50 uppercase tracking-widest">
+                                {r.type === 'coins' ? <Coins size={12} className="text-amber-400" /> : 
+                                 r.type === 'xp' ? <Zap size={12} className="text-indigo-400" /> :
+                                 r.type === 'talentPoint' ? <Trophy size={12} className="text-purple-400" /> :
+                                 <Gift size={12} className="text-indigo-400" />}
+                                <span>
+                                  {r.type === 'text' ? r.rewardText : 
+                                   r.type === 'talentPoint' ? `${r.amount} PT` :
+                                   `${r.amount} ${r.type === 'item' ? (r.itemName || 'Item') : r.type}`}
+                                </span>
+                              </div>
+                            ))}
+                            {(!major.rewards || major.rewards.length === 0) && (
+                              <span className="text-[10px] text-slate-600 italic">No rewards recorded</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-5 text-right">
+                          <button 
+                            onClick={() => onUpdateMajor(major.id, { status: 'completed' })}
+                            className="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-indigo-400 text-xs font-bold rounded-lg transition-all border border-slate-700 uppercase tracking-widest"
+                          >
+                            Unarchive
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    {filteredMajors.length === 0 && (
+                      <tr>
+                        <td colSpan={4} className="px-6 py-20 text-center">
+                          <div className="flex flex-col items-center gap-3">
+                            <div className="p-4 bg-slate-800/50 rounded-full text-slate-600">
+                              <Archive size={32} />
+                            </div>
+                            <p className="text-slate-500 italic text-sm">No archived dungeons found.</p>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         )}

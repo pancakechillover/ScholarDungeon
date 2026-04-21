@@ -41,6 +41,7 @@ import { Shop } from './components/Shop';
 import { Stats } from './components/Stats';
 import { Settings } from './components/Settings';
 import { RewardHistory } from './components/RewardHistory';
+import { RecentSessions } from './components/RecentSessions';
 import { DailySummaryModal } from './components/DailySummaryModal';
 import { CoinRain } from './components/CoinRain';
 import { GachaResultModal } from './components/GachaResultModal';
@@ -122,8 +123,10 @@ function App() {
     setState,
     reorderMajorDungeon,
     reorderSubDungeon,
-    finalizeMajorDungeon,
+    finalizeMajorDungeon: finalizeMajorDungeonBase,
     updateQuests,
+    updateSession,
+    deleteSession,
     claimQuestReward,
     saveDailyLog,
     purchaseShopItem
@@ -415,6 +418,15 @@ function App() {
     return { xp: Math.floor(xp), minCoins: Math.floor(minCoins), maxCoins: Math.floor(maxCoins), breakdown };
   }, [state.devModeEnabled, state.devBaseXP, state.devCoinMode, state.devBaseCoins, state.devMinCoins, state.devMaxCoins, state.activeTalents, state.dailySessions, state.streak, state.inventory, state.rewardPool]);
 
+  const finalizeMajorDungeon = (id: string) => {
+    finalizeMajorDungeonBase(id);
+    setHasUnsyncedChanges(true);
+  };
+
+  const archiveMajorDungeon = useCallback((id: string) => {
+    setMajorDungeons(prev => prev.map(m => m.id === id ? { ...m, status: 'archived' } : m));
+  }, [setMajorDungeons]);
+
   const handleCreateMajor = (name: string, description: string, rewards?: DungeonReward[]) => {
     const newMajor: MajorDungeon = {
       id: Math.random().toString(36).substr(2, 9),
@@ -585,21 +597,47 @@ function App() {
         isFullscreenExplore ? "m-0 p-0" : (isSidebarCollapsed ? "md:ml-20" : "md:ml-64")
       )}>
         {!isFullscreenExplore && (
-          <header className="sticky top-0 z-40 bg-slate-950/80 backdrop-blur-md border-b border-slate-800 px-4 sm:px-8 py-2 flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <h1 className="text-lg font-bold text-white capitalize">{activeTab}</h1>
+          <header className="sticky top-0 z-40 bg-slate-950/80 backdrop-blur-md border-b border-slate-800 px-3 sm:px-8 py-2.5 flex items-center justify-between gap-2">
+          {/* Logo/Title - Hidden on mobile to save space */}
+          <div className="hidden lg:flex items-center space-x-4">
+            <h1 className="text-base font-black text-white uppercase tracking-tighter italic">{activeTab}</h1>
           </div>
           
-          <div className="flex items-center space-x-3 sm:space-x-4 md:space-x-6">
+          <div className="flex-1 flex items-center justify-between sm:justify-end gap-2 sm:gap-4 md:gap-6">
 
             {/* XP Bar */}
-            <div className={cn(
-              "items-center gap-2 w-24 sm:w-32",
-              isSidebarCollapsed ? "hidden sm:flex" : "hidden lg:flex"
-            )} title="Experience">
-              <span className="text-[10px] sm:text-xs font-black text-white bg-indigo-600 px-2 py-0.5 rounded-lg italic">LV.{state.level}</span>
-              <div className="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                <div className="h-full bg-indigo-500" style={{ width: `${(state.xp / getXPForLevel(state.level)) * 100}%` }} />
+            <div className="flex items-center gap-1.5 sm:gap-2 group relative" title="Experience">
+              <span className="text-[10px] sm:text-xs font-black text-white bg-indigo-600 px-1.5 sm:px-2 py-0.5 rounded-lg italic leading-none shrink-0 shadow-lg shadow-indigo-600/20">
+                LV.{state.level}
+              </span>
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <div className="w-8 sm:w-16 md:w-20 h-1 sm:h-2 bg-slate-800/80 rounded-full overflow-hidden border border-slate-700/50 shrink-0">
+                  <div 
+                    className="h-full bg-gradient-to-r from-indigo-600 to-indigo-400 shadow-[0_0_8px_rgba(99,102,241,0.4)] transition-all duration-700 ease-in-out" 
+                    style={{ width: `${(state.xp / getXPForLevel(state.level)) * 100}%` }} 
+                  />
+                </div>
+                <div className="hidden sm:flex items-center gap-1 shrink-0">
+                  <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 tabular-nums whitespace-nowrap">
+                    {state.xp.toLocaleString()}
+                    <span className="text-slate-600 ml-1">/ {getXPForLevel(state.level).toLocaleString()}</span>
+                  </span>
+                </div>
+              </div>
+
+              {/* Tooltip on Hover */}
+              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-3 py-2 bg-slate-900/95 backdrop-blur-md border border-slate-700 rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 z-50 whitespace-nowrap scale-95 group-hover:scale-100 origin-top">
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center justify-between gap-6">
+                    <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Next Level</span>
+                    <span className="text-[10px] font-bold text-slate-500 italic">{(state.xp / getXPForLevel(state.level) * 100).toFixed(1)}%</span>
+                  </div>
+                  <div className="h-[1px] w-full bg-slate-800 my-1" />
+                  <div className="flex items-center justify-between gap-8">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Remaining</span>
+                    <span className="text-xs font-black text-white italic">{(getXPForLevel(state.level) - state.xp).toLocaleString()} XP</span>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -613,24 +651,24 @@ function App() {
             </div>
 
             {/* Talent Points */}
-            <div className="flex items-center space-x-1.5" title="Talent Points">
-              <Zap className="text-emerald-400" size={16} />
-              <span className="font-bold text-white text-sm">{state.talentPoints}</span>
+            <div className="flex items-center space-x-1 sm:space-x-1.5 shrink-0" title="Talent Points">
+              <Zap className="text-emerald-400 shrink-0" size={14} />
+              <span className="font-bold text-white text-xs sm:text-sm">{state.talentPoints}</span>
             </div>
 
             {/* Coins */}
-            <div className="flex items-center space-x-1.5">
-              <Coins className="text-amber-500" size={16} />
-              <span className="font-bold text-white text-sm">{state.coins.toLocaleString()}</span>
+            <div className="flex items-center space-x-1 sm:space-x-1.5 shrink-0">
+              <Coins className="text-amber-500 shrink-0" size={14} />
+              <span className="font-bold text-white text-xs sm:text-sm">{state.coins.toLocaleString()}</span>
             </div>
 
             {/* Streak */}
             <div className={cn(
-              "items-center space-x-1.5",
+              "items-center space-x-1 sm:space-x-1.5 shrink-0",
               isSidebarCollapsed ? "flex" : "hidden sm:flex"
             )}>
-              <Flame className="text-orange-500" size={16} />
-              <span className="font-bold text-white text-sm">{state.streak} <span className="hidden sm:inline">Day</span></span>
+              <Flame className="text-orange-500 shrink-0" size={14} />
+              <span className="font-bold text-white text-xs sm:text-sm">{state.streak} <span className="hidden lg:inline text-[10px] text-slate-500">Day</span></span>
             </div>
             
             {/* Mobile-only Profile and Settings */}
@@ -758,7 +796,7 @@ function App() {
                     description="Venture into the unknown and sharpen your mind"
                     icon={TimerIcon}
                     stats={[
-                      { label: 'Level', value: state.level, icon: Trophy, color: 'text-amber-400' },
+                      { label: 'Sessions', value: state.dailySessions, icon: Trophy, color: 'text-amber-400' },
                       { label: 'Streak', value: `${state.streak} Days`, icon: Flame, color: 'text-rose-500' }
                     ]}
                   >
@@ -774,13 +812,6 @@ function App() {
                       >
                         <Maximize size={18} />
                         Fullscreen
-                      </button>
-                      <button 
-                        onClick={() => setShowXPGuide(true)}
-                        className="flex items-center gap-2 px-4 py-2 bg-slate-900/50 border border-slate-800 rounded-xl text-slate-400 hover:text-indigo-400 transition-colors text-sm font-bold uppercase tracking-widest"
-                      >
-                        <HelpCircle size={18} />
-                        How to get XP
                       </button>
                     </div>
                   </PageHeader>
@@ -819,43 +850,40 @@ function App() {
                           <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/0 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                         )}
 
-                        <div className={cn("relative z-10 w-full", isFullscreenExplore ? "px-2 max-w-sm" : "p-2.5 sm:p-5")}>
+                        <div className={cn("relative z-10 w-full", isFullscreenExplore ? "px-2" : "p-2.5 sm:p-5")}>
                           <div className={cn("flex flex-col gap-2 sm:gap-3", isFullscreenExplore ? "items-center" : "")}>
                             {/* Top row: Tags & Progress Text */}
-                            <div className={cn("flex w-full min-w-0 items-center justify-between gap-1.5 sm:gap-2.5", isFullscreenExplore ? "justify-center" : "")}>
-                               {!isFullscreenExplore && (
-                                  <div className="flex items-center gap-1 sm:gap-1.5 px-1.5 py-0.5 sm:px-2 sm:py-1 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-md shrink-0">
-                                    <Target size={9} className="sm:w-3 sm:h-3" />
-                                    <span className="text-[7px] sm:text-[10px] md:text-xs font-bold uppercase tracking-wider sm:tracking-widest">Active Dungeon</span>
-                                  </div>
-                               )}
-                               <span className={cn(
-                                 "font-bold uppercase tabular-nums shrink-0 mt-0.5 sm:mt-0", 
-                                 isFullscreenExplore ? "text-xs sm:text-sm text-indigo-400" : "text-[8px] sm:text-[10px] md:text-xs text-slate-500"
-                               )}>
-                                 {currentDungeon.completedSessions} / {currentDungeon.totalSessions} Rooms
-                               </span>
-                            </div>
+                            {!isFullscreenExplore && (
+                              <div className="flex w-full min-w-0 items-center justify-between gap-1.5 sm:gap-2.5">
+                                <div className="flex items-center gap-1 sm:gap-1.5 px-1.5 py-0.5 sm:px-2 sm:py-1 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-md shrink-0">
+                                  <Target size={9} className="sm:w-3 sm:h-3" />
+                                  <span className="text-[7px] sm:text-[10px] md:text-xs font-bold uppercase tracking-wider sm:tracking-widest">Active Dungeon</span>
+                                </div>
+                                <span className="font-bold uppercase tabular-nums shrink-0 mt-0.5 sm:mt-0 text-[8px] sm:text-[10px] md:text-xs text-slate-500">
+                                  {currentDungeon.completedSessions} / {currentDungeon.totalSessions} Rooms
+                                </span>
+                              </div>
+                            )}
 
                             {/* Dungeon Title Row */}
-                            <div className={cn("flex items-center w-full min-w-0 gap-2 sm:gap-4 mt-0.5 sm:mt-2 mb-0.5 sm:mb-1", isFullscreenExplore ? "justify-center" : "")}>
-                              {!isFullscreenExplore && (
+                            {!isFullscreenExplore && (
+                              <div className="flex items-center w-full min-w-0 gap-2 sm:gap-4 mt-0.5 sm:mt-2 mb-0.5 sm:mb-1">
                                 <div className="w-7 h-7 sm:w-12 sm:h-12 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-400 group-hover:bg-indigo-500 group-hover:text-white transition-all shrink-0 shadow-inner">
                                   <Sword size={14} className="sm:w-6 sm:h-6" />
                                 </div>
-                              )}
-                              <h3 
-                                className={cn("font-black text-white truncate", isFullscreenExplore ? "tracking-widest uppercase text-center" : "pr-0")} 
-                                style={{ fontSize: 'clamp(0.625rem, 4vw, 1.5rem)' }}
-                              >
-                                {currentDungeon.name}
-                              </h3>
-                            </div>
+                                <h3 
+                                  className="font-black text-white truncate pr-0" 
+                                  style={{ fontSize: 'clamp(0.625rem, 4vw, 1.5rem)' }}
+                                >
+                                  {currentDungeon.name}
+                                </h3>
+                              </div>
+                            )}
 
                             {/* Progress Bar */}
                             <div className={cn(
                               "relative bg-slate-950 rounded-full overflow-hidden border border-slate-800", 
-                              isFullscreenExplore ? "h-1.5 w-full max-w-[200px] mt-4" : "h-2 w-full mt-2"
+                              isFullscreenExplore ? "h-1.5 w-48 sm:w-64" : "h-2 w-full mt-2"
                             )}>
                               <motion.div 
                                 initial={{ width: 0 }}
@@ -896,8 +924,8 @@ function App() {
                     activeTalents={state.activeTalents}
                     dailyRerollUsed={state.dailyRerollUsed}
                     history={state.history}
-                    onComplete={(duration) => {
-                      const result = completeSession(state.currentDungeonId || null, duration);
+                    onComplete={(duration, fDur, rDur) => {
+                      const result = completeSession(state.currentDungeonId || null, duration, fDur, rDur);
                       playSound('success', state.soundVolume, state.soundEnabled);
                       if (result && state.secretCode) {
                         syncToCloud(true);
@@ -909,7 +937,7 @@ function App() {
                     }}
                     onInventoryAdd={(id) => setState(prev => ({ ...prev, inventory: [...prev.inventory, id] }))}
                     onReroll={() => setState(prev => ({ ...prev, dailyRerollUsed: true }))}
-                    onRewardSelect={(reward) => {
+                    onRewardSelect={(reward, sessionId) => {
                       addRewardToHistory({
                         name: reward.name,
                         rarity: reward.rarity,
@@ -917,7 +945,7 @@ function App() {
                         type: reward.type,
                         amount: reward.amount,
                         itemType: reward.itemType
-                      });
+                      }, sessionId);
                       playSound('reward', state.soundVolume, state.soundEnabled);
                     }}
                     setShowCoinRain={setShowCoinRain}
@@ -1030,6 +1058,16 @@ function App() {
                     </div>
                   </div>
                 </div>
+                )}
+
+                {!isFullscreenExplore && (
+                  <RecentSessions 
+                    history={state.history}
+                    dungeons={dungeons}
+                    majorDungeons={majorDungeons}
+                    updateSession={updateSession}
+                    deleteSession={deleteSession}
+                  />
                 )}
 
       {createPortal(
@@ -1248,6 +1286,7 @@ function App() {
                     onReorderMajor={reorderMajorDungeon}
                     onReorderSub={reorderSubDungeon}
                     onFinalizeMajor={finalizeMajorDungeon}
+                    onArchiveMajor={archiveMajorDungeon}
                   />
                 ) : dungeonSubTab === 'quests' ? (
                   <QuestManager 
