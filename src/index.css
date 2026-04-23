@@ -167,6 +167,8 @@ html {
 [data-theme="daylight"] .bg-amber-500,
 [data-theme="daylight"] .bg-rose-600,
 [data-theme="daylight"] .bg-rose-500,
+[data-theme="daylight"] .bg-red-600,
+[data-theme="daylight"] .bg-red-500,
 [data-theme="daylight"] .bg-purple-600,
 [data-theme="daylight"] .bg-purple-500,
 [data-theme="daylight"] .bg-blue-600,
@@ -179,6 +181,8 @@ html {
 [data-theme="warm"] .bg-amber-500,
 [data-theme="warm"] .bg-rose-600,
 [data-theme="warm"] .bg-rose-500,
+[data-theme="warm"] .bg-red-600,
+[data-theme="warm"] .bg-red-500,
 [data-theme="warm"] .bg-purple-600,
 [data-theme="warm"] .bg-purple-500,
 [data-theme="warm"] .bg-blue-600,
@@ -191,6 +195,8 @@ html {
 [data-theme="candy"] .bg-amber-500,
 [data-theme="candy"] .bg-rose-600,
 [data-theme="candy"] .bg-rose-500,
+[data-theme="candy"] .bg-red-600,
+[data-theme="candy"] .bg-red-500,
 [data-theme="candy"] .bg-purple-600,
 [data-theme="candy"] .bg-purple-500,
 [data-theme="candy"] .bg-blue-600,
@@ -227,4 +233,12 @@ html {
 
 .show-scrollbar::-webkit-scrollbar-thumb:hover {
   @apply bg-slate-700;
+}
+
+/* Make number input spin buttons always visible on Desktop */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  opacity: 1 !important;
+  background: currentColor;
+  cursor: pointer;
 }

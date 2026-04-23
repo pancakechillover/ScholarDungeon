@@ -139,8 +139,8 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
   }, [history]);
 
   return (
-    <div className="w-full max-w-4xl space-y-6 mt-12 pb-20">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="w-full space-y-6 mt-12 pb-20">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-2">
         <h3 className="text-xl font-bold text-white flex items-center gap-2">
           <History className="text-indigo-400" />
           Recent Sessions
@@ -269,18 +269,18 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
               <p className="text-slate-600 text-sm mt-1">Try adjusting your filters or record a new session!</p>
             </div>
           ) : (
-            <table className="w-full text-left border-collapse table-fixed">
+            <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-slate-800 bg-slate-900/50">
-                  <th className="relative px-6 py-4 text-center" style={{ width: columnWidths.date }}>
+                  <th className="relative px-6 py-5 text-center" style={{ width: columnWidths.date }}>
                     <button 
                       onClick={() => handleSort('date')}
-                      className="flex items-center justify-center gap-2 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] hover:text-slate-300 transition-colors w-full"
+                      className="flex items-center justify-center gap-2.5 text-[11px] font-black text-slate-500 uppercase tracking-widest hover:text-indigo-400 transition-colors w-full"
                     >
-                      <Calendar size={14} />
-                      <span>Date</span>
+                      <Calendar size={16} className="shrink-0" />
+                      <span className="whitespace-nowrap">Date</span>
                       {sortConfig.key === 'date' && (
-                        sortConfig.direction === 'asc' ? <ChevronUp size={10} /> : <ChevronDown size={10} />
+                        sortConfig.direction === 'asc' ? <ChevronUp size={12} /> : <ChevronDown size={12} />
                       )}
                     </button>
                     <div 
@@ -300,15 +300,15 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
                       }}
                     />
                   </th>
-                  <th className="relative px-3 sm:px-6 py-4 text-center" style={{ width: columnWidths.dungeon }}>
+                  <th className="relative px-6 py-5 text-center" style={{ width: columnWidths.dungeon }}>
                     <button 
                       onClick={() => handleSort('dungeon')}
-                      className="flex items-center justify-center gap-2 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] hover:text-slate-300 transition-colors w-full"
+                      className="flex items-center justify-center gap-2.5 text-[11px] font-black text-slate-500 uppercase tracking-widest hover:text-indigo-400 transition-colors w-full"
                     >
-                      <Sword size={14} />
-                      <span>Dungeon</span>
+                      <Sword size={16} className="shrink-0" />
+                      <span className="whitespace-nowrap">Dungeon</span>
                       {sortConfig.key === 'dungeon' && (
-                        sortConfig.direction === 'asc' ? <ChevronUp size={10} /> : <ChevronDown size={10} />
+                        sortConfig.direction === 'asc' ? <ChevronUp size={12} /> : <ChevronDown size={12} />
                       )}
                     </button>
                     <div 
@@ -328,15 +328,15 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
                       }}
                     />
                   </th>
-                  <th className="relative px-3 sm:px-6 py-4 text-center" style={{ width: columnWidths.duration }}>
+                  <th className="relative px-6 py-5 text-center" style={{ width: columnWidths.duration }}>
                     <button 
                       onClick={() => handleSort('duration')}
-                      className="flex items-center justify-center gap-2 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] hover:text-slate-300 transition-colors w-full"
+                      className="flex items-center justify-center gap-2.5 text-[11px] font-black text-slate-500 uppercase tracking-widest hover:text-indigo-400 transition-colors w-full"
                     >
-                      <Clock size={14} />
-                      <span>Duration</span>
+                      <Clock size={16} className="shrink-0" />
+                      <span className="whitespace-nowrap">Duration</span>
                       {sortConfig.key === 'duration' && (
-                        sortConfig.direction === 'asc' ? <ChevronUp size={10} /> : <ChevronDown size={10} />
+                        sortConfig.direction === 'asc' ? <ChevronUp size={12} /> : <ChevronDown size={12} />
                       )}
                     </button>
                     <div 
@@ -356,10 +356,10 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
                       }}
                     />
                   </th>
-                  <th className="relative px-3 sm:px-6 py-4 text-center" style={{ width: columnWidths.reward }}>
-                    <div className="flex items-center justify-center gap-2 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
-                      <Trophy size={14} />
-                      <span>Reward</span>
+                  <th className="relative px-6 py-5 text-center" style={{ width: columnWidths.reward }}>
+                    <div className="flex items-center justify-center gap-2.5 text-[11px] font-black text-slate-500 uppercase tracking-widest">
+                      <Trophy size={16} className="shrink-0" />
+                      <span className="whitespace-nowrap">Reward</span>
                     </div>
                     <div 
                       className="absolute right-0 top-0 h-full w-1 cursor-col-resize hover:bg-indigo-500/50"
@@ -378,10 +378,10 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
                       }}
                     />
                   </th>
-                  <th className="relative px-3 sm:px-6 py-4 text-center" style={{ width: columnWidths.gains }}>
-                    <div className="flex items-center justify-center gap-2 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
-                      <Zap size={14} />
-                      <span>Gains</span>
+                  <th className="relative px-6 py-5 text-center" style={{ width: columnWidths.gains }}>
+                    <div className="flex items-center justify-center gap-2.5 text-[11px] font-black text-slate-500 uppercase tracking-widest">
+                      <Zap size={16} className="shrink-0" />
+                      <span className="whitespace-nowrap">Gains</span>
                     </div>
                     <div 
                       className="absolute right-0 top-0 h-full w-1 cursor-col-resize hover:bg-indigo-500/50"
@@ -400,10 +400,10 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
                       }}
                     />
                   </th>
-                  <th className="px-3 sm:px-6 py-4 text-center" style={{ width: columnWidths.actions }}>
-                    <div className="flex items-center justify-center gap-2 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
-                      <GripVertical size={14} />
-                      <span>Actions</span>
+                  <th className="px-6 py-5 text-center" style={{ width: columnWidths.actions }}>
+                    <div className="flex items-center justify-center gap-2.5 text-[11px] font-black text-slate-500 uppercase tracking-widest">
+                      <GripVertical size={16} className="shrink-0" />
+                      <span className="whitespace-nowrap">Actions</span>
                     </div>
                   </th>
                 </tr>

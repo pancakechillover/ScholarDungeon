@@ -266,20 +266,12 @@ export const Timer = React.memo<TimerProps>(({
             )}
           >
             {formatTime(timeLeft).split('').map((char, i) => (
-              <motion.span
+              <span
                 key={i}
-                animate={isActive ? { y: [0, -12, 0] } : { y: 0 }}
-                transition={{
-                  duration: 0.6,
-                  repeat: isActive ? Infinity : 0,
-                  ease: "easeInOut",
-                  delay: i * 0.1,
-                  repeatDelay: 1
-                }}
                 className="inline-block"
               >
                 {char}
-              </motion.span>
+              </span>
             ))}
           </div>
           <div className={cn(

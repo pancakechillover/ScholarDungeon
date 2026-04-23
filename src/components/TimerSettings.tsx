@@ -54,11 +54,10 @@ export const TimerSettings: React.FC<TimerSettingsProps> = ({
           {!isCurrentMatchPreset && (
             <button
               onClick={() => addPreset(focusDuration, restDuration)}
-              className="px-2 py-1.5 rounded-lg text-xs font-bold transition-all border border-dashed border-slate-700 text-slate-500 hover:border-emerald-500/50 hover:text-emerald-400 flex items-center gap-1.5 bg-slate-900/30"
+              className="px-2 py-1.5 rounded-lg text-xs font-bold transition-all border border-dashed border-slate-700 text-slate-500 hover:border-emerald-500/50 hover:text-emerald-400 flex items-center justify-center bg-slate-900/30"
               title="Save current time as preset"
             >
-              <Plus size={12} />
-              Set Default
+              <Plus size={14} />
             </button>
           )}
           {isCurrentMatchPreset && presets.length > 1 && (
@@ -67,11 +66,10 @@ export const TimerSettings: React.FC<TimerSettingsProps> = ({
                 const preset = presets.find(p => p.focus === focusDuration && p.rest === restDuration);
                 if (preset) setDeleteConfirm(preset);
               }}
-              className="px-2 py-1.5 rounded-lg text-xs font-bold transition-all border border-slate-800 text-slate-500 hover:border-red-500/30 hover:text-red-400 flex items-center gap-1.5 bg-slate-900/30"
+              className="px-2 py-1.5 rounded-lg text-xs font-bold transition-all border border-slate-800 text-slate-500 hover:border-red-500/30 hover:text-red-400 flex items-center justify-center bg-slate-900/30"
               title="Remove this preset"
             >
-              <Trash2 size={12} />
-              Clear Default
+              <Trash2 size={14} />
             </button>
           )}
         </div>

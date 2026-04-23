@@ -19,7 +19,7 @@ Whenever you complete a task or make changes to the application:
 - **Italic Clipping:** To prevent right-side clipping of italic text (especially in browsers with tight bounding boxes), always add a small right padding (e.g., `pr-1` or `px-0.5`) to the element or its immediate container.
 
 ## Current Status
-- **Current Version:** v3.7.6
+- **Current Version:** v3.8.2
 - **Last Update Date:** 2026-04-23
 
 ## Light Themes Definition
@@ -38,6 +38,24 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v3.8.2 (2026-04-23):** PiP Fix.
+  - *Bugfix:* Resolved an issue where Floating Mode (PiP) would open the window properly but fail to render the timer content.
+- **v3.8.1 (2026-04-23):** Explore Layout Tuning.
+  - *UI:* Narrowed the left column in the Explore tab on wide screens by increasing the fixed-width right column to 440px, creating better visual balance.
+- **v3.8.0 (2026-04-23):** Explore Layout Tuning.
+  - *UI:* Reduced the maximum width of the timer circle on wide screens (`max-w-lg` to `max-w-md`) to ensure the "Timer Settings" column in the split-screen layout is fully visible and usable.
+  - *UI:* Aligned the "Recent Sessions" table width with the "Active Talents" and "Current Build" modules on small screens by adding matching horizontal padding.
+- **v3.7.9 (2026-04-23):** Recent Sessions Table & UI Consistency.
+  - *UI:* Expanded the Recent Sessions table to occupy the full width of the screen on large displays.
+  - *UI:* Rewrote the table headers to ensure uniform icon sizing and spacing across all columns (Date, Dungeon, Duration, Reward, Gains, Actions).
+  - *UI:* Increased header icon prominence to fix a visual bug where certain icons appeared smaller.
+- **v3.7.8 (2026-04-23):** Light Theme Button Contrast.
+  - *UI:* Ensured the "Delete" button text in the Preset deletion modal remains strictly white, even when active in Light Themes (Daylight, Warm Sun, Candy).
+- **v3.7.7 (2026-04-23):** UI Refinement & Interaction Polish.
+  - *UX:* Removed the "View Recent Sessions" shortcut button from the Explore tab to declutter the interface.
+  - *UI:* Simplified Timer Settings presets by removing text labels from "Set Default" and "Clear Default" buttons.
+  - *UI:* Enhanced Timer Settings inputs: made adjustment arrows (spin buttons) always visible on desktop and centered the input values.
+  - *Animation:* Refined Timer visuals by disabling the jumping animation for the countdown digits, maintaining focus on clarity while keeping the playful animation for status indicators.
 - **v3.7.6 (2026-04-23):** Floating Compact Timer (PiP Mode).
   - *Feature:* Implemented a "Floating Mode" for Desktop PWA users. When active, the application opens a small, always-on-top window containing only the countdown timer and the current dungeon progress bar.
   - *Tech:* Leveraged the modern Document Picture-in-Picture API for the true "Always on Top" experience.

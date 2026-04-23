@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Sword, 
@@ -191,7 +192,20 @@ function App() {
         pip.document.body.style.margin = '0';
         pip.document.body.style.overflow = 'hidden';
 
-        pip.addEventListener("pagehide", () => setPipWindow(null));
+        const root = createRoot(pip.document.body);
+        root.render(
+          <React.StrictMode>
+             <div className="text-white w-full h-full flex flex-col items-center justify-center">
+                 <div className="text-4xl font-bold font-mono">{Math.floor(timerTimeLeft / 60).toString().padStart(2, '0')}:{(timerTimeLeft % 60).toString().padStart(2, '0')}</div>
+                 <div className="text-xs uppercase tracking-widest text-slate-400 mt-2">{isTimerActive ? "Focusing" : "Paused"}</div>
+             </div>
+          </React.StrictMode>
+        );
+
+        pip.addEventListener("pagehide", () => {
+             root.unmount();
+             setPipWindow(null);
+        });
         setPipWindow(pip);
       } catch (err) {
         console.error('Failed to enter PiP mode:', err);
@@ -1034,7 +1048,7 @@ function App() {
                 )}>
                   <div className={cn(
                     "w-full h-full",
-                    !isFullscreenExplore ? "grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-6 xl:gap-12" : "flex flex-col items-center justify-center h-full w-full"
+                    !isFullscreenExplore ? "grid grid-cols-1 lg:grid-cols-[minmax(300px,1fr)_440px] gap-6 xl:gap-12" : "flex flex-col items-center justify-center h-full w-full"
                   )}>
                     {/* Left Column: Timer & Timer Settings area */}
                     <div className={cn(
@@ -1056,7 +1070,7 @@ function App() {
                             <Maximize size={18} className="group-hover:scale-110 transition-transform" />
                           </button>
                           
-                          <div className="w-full max-w-lg aspect-square sm:aspect-auto flex items-center justify-center scale-90 sm:scale-100">
+                          <div className="w-full max-w-md aspect-square sm:aspect-auto flex items-center justify-center scale-90 sm:scale-100">
                             <Timer 
                               currentDungeon={currentDungeon || null}
                               rewardPool={state.rewardPool || []}
@@ -1292,26 +1306,13 @@ function App() {
                             </div>
                           </div>
                         </div>
-
-                        {/* Mobile/Small Screen Recent Sessions Link */}
-                        <div className="lg:hidden shrink-0 mt-auto pt-4">
-                           <button 
-                             onClick={() => {
-                               const el = document.getElementById('recent-sessions-anchor');
-                               el?.scrollIntoView({ behavior: 'smooth' });
-                             }}
-                             className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-400 rounded-xl text-xs font-bold uppercase tracking-widest transition-all"
-                           >
-                             View Recent Sessions
-                           </button>
-                        </div>
                       </div>
                     )}
                   </div>
                 </div>
 
                 {!isFullscreenExplore && (
-                  <div id="recent-sessions-anchor" className="mt-8 shrink-0 w-full">
+                  <div id="recent-sessions-anchor" className="mt-8 shrink-0 w-full px-4 sm:px-6 lg:px-8">
                     <RecentSessions 
                       history={state.history}
                       dungeons={dungeons}
