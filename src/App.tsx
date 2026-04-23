@@ -31,9 +31,11 @@ import {
   Maximize,
   Minimize,
   RefreshCw,
-  Edit2
+  Edit2,
+  Archive
 } from 'lucide-react';
 import { Timer } from './components/Timer';
+import { TimerSettings } from './components/TimerSettings';
 import { DungeonManager } from './components/DungeonManager';
 import { QuestManager } from './components/QuestManager';
 import { TalentTree } from './components/TalentTree';
@@ -57,6 +59,8 @@ import { StudySession, Dungeon, RewardCard, MajorDungeon, DungeonReward } from '
 import { CloudSyncModal } from './components/CloudSyncModal';
 import { SplashScreen } from './components/SplashScreen';
 
+import { CompactTimer } from './components/CompactTimer';
+
 const isTalentLevel = (lvl: number) => {
   if (lvl <= 4) return true;
   if (lvl <= 16) return (lvl - 4) % 2 === 0;
@@ -77,7 +81,139 @@ const getNextTalentLevel = (currentLvl: number, levelRewards?: any[]) => {
 
 function App() {
   const [appReady, setAppReady] = useState(false);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'explore' | 'dungeons' | 'talents' | 'shop' | 'stats' | 'settings' | 'vault'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'explore' | 'dungeons' | 'talents' | 'shop' | 'stats' | 'settings' | 'vault'>('explore');
+  const [pipWindow, setPipWindow] = useState<Window | null>(null);
+
+  // Timer States
+  const [focusDuration, setFocusDuration] = useState(() => parseInt(localStorage.getItem('timer_focusDuration') || '25', 10));
+  const [restDuration, setRestDuration] = useState(() => parseInt(localStorage.getItem('timer_restDuration') || '5', 10));
+  const [enableRest, setEnableRest] = useState(() => localStorage.getItem('timer_enableRest') === 'true');
+  const [isLooping, setIsLooping] = useState(() => localStorage.getItem('timer_isLooping') === 'true');
+  const [isResting, setIsResting] = useState(() => localStorage.getItem('timer_isResting') === 'true');
+  const [duration, setDuration] = useState(() => {
+    const saved = localStorage.getItem('timer_duration');
+    return saved ? parseInt(saved, 10) : 25;
+  });
+  const [isTimerActive, setIsTimerActive] = useState(() => localStorage.getItem('timer_isActive') === 'true');
+  const [timerEndTime, setTimerEndTime] = useState<number | null>(() => {
+    const saved = localStorage.getItem('timer_endTime');
+    return saved ? parseInt(saved, 10) : null;
+  });
+  const [timerTimeLeft, setTimerTimeLeft] = useState(() => {
+    const saved = localStorage.getItem('timer_timeLeft');
+    return saved ? parseInt(saved, 10) : 25 * 60;
+  });
+
+  const [timerPresets, setTimerPresets] = useState<{focus: number, rest: number}[]>(() => {
+    const saved = localStorage.getItem('timer_presets');
+    if (!saved) return [{focus: 25, rest: 5}, {focus: 50, rest: 10}];
+    try {
+      return JSON.parse(saved);
+    } catch (e) {
+      console.error('Failed to parse timer presets:', e);
+      return [{focus: 25, rest: 5}, {focus: 50, rest: 10}];
+    }
+  });
+
+  // Timer Sync
+  useEffect(() => {
+    localStorage.setItem('timer_focusDuration', focusDuration.toString());
+    localStorage.setItem('timer_restDuration', restDuration.toString());
+    localStorage.setItem('timer_enableRest', enableRest.toString());
+    localStorage.setItem('timer_isLooping', isLooping.toString());
+    localStorage.setItem('timer_isResting', isResting.toString());
+    localStorage.setItem('timer_duration', duration.toString());
+    localStorage.setItem('timer_isActive', isTimerActive.toString());
+    if (timerEndTime) {
+      localStorage.setItem('timer_endTime', timerEndTime.toString());
+    } else {
+      localStorage.removeItem('timer_endTime');
+    }
+    localStorage.setItem('timer_timeLeft', timerTimeLeft.toString());
+    localStorage.setItem('timer_presets', JSON.stringify(timerPresets));
+  }, [focusDuration, restDuration, enableRest, isLooping, isResting, duration, isTimerActive, timerEndTime, timerTimeLeft, timerPresets]);
+
+  const addTimerPreset = (focus: number, rest: number) => {
+    if (!timerPresets.find(p => p.focus === focus && p.rest === rest)) {
+      setTimerPresets(prev => [...prev, { focus, rest }]);
+    }
+  };
+
+  const removeTimerPreset = (focus: number, rest: number) => {
+    setTimerPresets(prev => prev.filter(p => !(p.focus === focus && p.rest === rest)));
+  };
+
+  const applyTimerPreset = (focus: number, rest: number) => {
+    setFocusDuration(focus);
+    setRestDuration(rest);
+    setIsResting(false);
+    setDuration(focus);
+    setTimerTimeLeft(focus * 60);
+    setIsTimerActive(false);
+    setTimerEndTime(null);
+  };
+
+  const togglePip = async () => {
+    if (pipWindow) {
+      pipWindow.close();
+      setPipWindow(null);
+      return;
+    }
+
+    if ('documentPictureInPicture' in window) {
+      try {
+        // @ts-ignore
+        const pip = await window.documentPictureInPicture.requestWindow({
+          width: 320,
+          height: 380,
+        });
+
+        const copyStyles = () => {
+          [...document.styleSheets].forEach((styleSheet) => {
+            try {
+              const cssRules = [...styleSheet.cssRules].map((rule) => rule.cssText).join("");
+              const style = document.createElement("style");
+              style.textContent = cssRules;
+              pip.document.head.appendChild(style);
+            } catch (e) {
+              const link = document.createElement("link");
+              if (styleSheet.href) {
+                link.rel = "stylesheet";
+                link.href = styleSheet.href;
+                pip.document.head.appendChild(link);
+              }
+            }
+          });
+        };
+
+        copyStyles();
+        pip.document.body.style.backgroundColor = '#020617';
+        pip.document.body.style.margin = '0';
+        pip.document.body.style.overflow = 'hidden';
+
+        pip.addEventListener("pagehide", () => setPipWindow(null));
+        setPipWindow(pip);
+      } catch (err) {
+        console.error('Failed to enter PiP mode:', err);
+      }
+    }
+  };
+
+  const handleTimerCustomChange = (focus: number, rest: number) => {
+    const safeFocus = Math.max(1, focus);
+    const safeRest = Math.max(1, rest);
+    setFocusDuration(safeFocus);
+    setRestDuration(safeRest);
+    if (!isTimerActive) {
+      if (isResting) {
+        setDuration(safeRest);
+        setTimerTimeLeft(safeRest * 60);
+      } else {
+        setDuration(safeFocus);
+        setTimerTimeLeft(safeFocus * 60);
+      }
+    }
+  };
   const [dungeonSubTab, setDungeonSubTab] = useState<'list' | 'quests' | 'achievements'>('list');
   const [isAddingMajor, setIsAddingMajor] = useState(false);
   const [isDungeonEditMode, setIsDungeonEditMode] = useState(false);
@@ -104,6 +240,7 @@ function App() {
   const [showDailySummary, setShowDailySummary] = useState(false);
   const [showCloudSync, setShowCloudSync] = useState(false);
   const [isFullscreenExplore, setIsFullscreenExplore] = useState(false);
+  const [isArchiveView, setIsArchiveView] = useState(false);
   
   const { 
     state, 
@@ -425,7 +562,14 @@ function App() {
 
   const archiveMajorDungeon = useCallback((id: string) => {
     setMajorDungeons(prev => prev.map(m => m.id === id ? { ...m, status: 'archived' } : m));
-  }, [setMajorDungeons]);
+    // Clear active dungeon if it belongs to the archived major dungeon
+    if (state.currentDungeonId) {
+      const activeDungeon = dungeons.find(d => d.id === state.currentDungeonId);
+      if (activeDungeon && activeDungeon.parentId === id) {
+        setState(prev => ({ ...prev, currentDungeonId: null }));
+      }
+    }
+  }, [setMajorDungeons, state.currentDungeonId, dungeons, setState]);
 
   const handleCreateMajor = (name: string, description: string, rewards?: DungeonReward[]) => {
     const newMajor: MajorDungeon = {
@@ -457,13 +601,36 @@ function App() {
   };
 
   const handleDeleteMajor = (id: string) => {
+    const dungeonsToDelete = new Set<string>();
+    const rootSubs = dungeons.filter(d => d.parentId === id);
+    
+    const collectAllDescendants = (parentId: string) => {
+      dungeonsToDelete.add(parentId);
+      dungeons.filter(d => d.parentId === parentId).forEach(child => {
+        collectAllDescendants(child.id);
+      });
+    };
+
+    rootSubs.forEach(sub => collectAllDescendants(sub.id));
+    
     setMajorDungeons(majorDungeons.filter(m => m.id !== id));
-    setDungeons(dungeons.filter(d => d.parentId !== id));
+    setDungeons(dungeons.filter(d => d.parentId !== id && !dungeonsToDelete.has(d.id)));
   };
 
   const handleDeleteSub = (id: string) => {
-    setDungeons(dungeons.filter(d => d.id !== id));
-    if (state.currentDungeonId === id) {
+    const dungeonsToDelete = new Set<string>();
+    
+    const collectAllDescendants = (parentId: string) => {
+      dungeonsToDelete.add(parentId);
+      dungeons.filter(d => d.parentId === parentId).forEach(child => {
+        collectAllDescendants(child.id);
+      });
+    };
+
+    collectAllDescendants(id);
+
+    setDungeons(dungeons.filter(d => !dungeonsToDelete.has(d.id)));
+    if (state.currentDungeonId && dungeonsToDelete.has(state.currentDungeonId)) {
       setState(prev => ({ ...prev, currentDungeonId: null }));
     }
   };
@@ -491,11 +658,24 @@ function App() {
     }
   }, [appReady]); // Only run once when app becomes ready
 
+  const handleSplashComplete = useCallback(() => setAppReady(true), []);
+
   return (
     <>
       <AnimatePresence>
-        {!appReady && <SplashScreen key="splash" onComplete={() => setAppReady(true)} />}
+        {!appReady && <SplashScreen key="splash" onComplete={handleSplashComplete} />}
       </AnimatePresence>
+
+      {pipWindow && createPortal(
+        <CompactTimer 
+          timeLeft={timerTimeLeft}
+          isActive={isTimerActive}
+          isResting={isResting}
+          currentDungeon={currentDungeon || null}
+          duration={duration}
+        />,
+        pipWindow.document.body
+      )}
 
       {syncCheckResult && (
         <CloudSyncModal 
@@ -600,20 +780,51 @@ function App() {
           <header className="sticky top-0 z-40 bg-slate-950/80 backdrop-blur-md border-b border-slate-800 px-3 sm:px-8 py-2.5 flex items-center justify-between gap-2">
           {/* Logo/Title - Hidden on mobile to save space */}
           <div className="hidden lg:flex items-center space-x-4">
-            <h1 className="text-base font-black text-white uppercase tracking-tighter italic">{activeTab}</h1>
+            <h1 className="text-base font-black text-white uppercase tracking-tighter italic pr-1">{activeTab}</h1>
           </div>
+
+          {/* Persistent Active Dungeon Widget - Simplified */}
+          {currentDungeon && (
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              onClick={() => setActiveTab('explore')}
+              className="flex items-center gap-2 sm:gap-3 group cursor-pointer transition-all max-w-[140px] xs:max-w-[180px] sm:max-w-none px-2"
+            >
+              <div className="flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                <Sword size={14} className="text-indigo-400" />
+              </div>
+              <div className="flex flex-col min-w-0">
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <span className="text-[10px] sm:text-xs font-bold text-white truncate max-w-[60px] xs:max-w-[100px] sm:max-w-[180px] leading-tight">
+                    {currentDungeon.name}
+                  </span>
+                  <span className="text-[9px] font-black text-slate-600 tabular-nums shrink-0">
+                    {currentDungeon.completedSessions}/{currentDungeon.totalSessions}
+                  </span>
+                </div>
+                <div className="w-16 sm:w-24 h-0.5 sm:h-1 bg-slate-800 rounded-full overflow-hidden mt-0.5">
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: `${(currentDungeon.completedSessions / currentDungeon.totalSessions) * 100}%` }}
+                    className="h-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.3)]"
+                  />
+                </div>
+              </div>
+            </motion.div>
+          )}
           
           <div className="flex-1 flex items-center justify-between sm:justify-end gap-2 sm:gap-4 md:gap-6">
 
             {/* XP Bar */}
             <div className="flex items-center gap-1.5 sm:gap-2 group relative" title="Experience">
-              <span className="text-[10px] sm:text-xs font-black text-white bg-indigo-600 px-1.5 sm:px-2 py-0.5 rounded-lg italic leading-none shrink-0 shadow-lg shadow-indigo-600/20">
+              <span className="text-[10px] sm:text-xs font-black text-white bg-indigo-600 px-1.5 sm:px-2 py-0.5 rounded-lg italic pr-1 leading-none shrink-0 shadow-lg shadow-indigo-600/20">
                 LV.{state.level}
               </span>
               <div className="flex items-center gap-1.5 sm:gap-2">
                 <div className="w-8 sm:w-16 md:w-20 h-1 sm:h-2 bg-slate-800/80 rounded-full overflow-hidden border border-slate-700/50 shrink-0">
                   <div 
-                    className="h-full bg-gradient-to-r from-indigo-600 to-indigo-400 shadow-[0_0_8px_rgba(99,102,241,0.4)] transition-all duration-700 ease-in-out" 
+                    className="h-full bg-gradient-to-r from-indigo-400 to-indigo-600 shadow-[0_0_8px_rgba(99,102,241,0.4)] transition-all duration-700 ease-in-out" 
                     style={{ width: `${(state.xp / getXPForLevel(state.level)) * 100}%` }} 
                   />
                 </div>
@@ -630,12 +841,12 @@ function App() {
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center justify-between gap-6">
                     <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Next Level</span>
-                    <span className="text-[10px] font-bold text-slate-500 italic">{(state.xp / getXPForLevel(state.level) * 100).toFixed(1)}%</span>
+                    <span className="text-[10px] font-bold text-slate-500 italic pr-1">{(state.xp / getXPForLevel(state.level) * 100).toFixed(1)}%</span>
                   </div>
                   <div className="h-[1px] w-full bg-slate-800 my-1" />
                   <div className="flex items-center justify-between gap-8">
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Remaining</span>
-                    <span className="text-xs font-black text-white italic">{(getXPForLevel(state.level) - state.xp).toLocaleString()} XP</span>
+                    <span className="text-xs font-black text-white italic pr-1">{(getXPForLevel(state.level) - state.xp).toLocaleString()} XP</span>
                   </div>
                 </div>
               </div>
@@ -788,33 +999,19 @@ function App() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                className={cn("w-full px-4 py-6 sm:p-8 space-y-8 sm:space-y-12", isFullscreenExplore ? "h-[100dvh] flex flex-col items-center justify-center p-0 m-0 space-y-0" : "")}
+                className={cn(
+                  "w-full flex-1 min-h-0 flex flex-col",
+                  isFullscreenExplore ? "h-[100dvh] items-center justify-center p-0 m-0" : "px-4 py-4 sm:px-8 sm:py-6"
+                )}
               >
                 {!isFullscreenExplore && (
-                  <PageHeader 
-                    title="Explore"
-                    description="Venture into the unknown and sharpen your mind"
-                    icon={TimerIcon}
-                    stats={[
-                      { label: 'Sessions', value: state.dailySessions, icon: Trophy, color: 'text-amber-400' },
-                      { label: 'Streak', value: `${state.streak} Days`, icon: Flame, color: 'text-rose-500' }
-                    ]}
-                  >
-                    <div className="flex items-center gap-4 mt-4">
-                      <button 
-                        onClick={() => {
-                          setIsFullscreenExplore(true);
-                          if (document.documentElement.requestFullscreen) {
-                            document.documentElement.requestFullscreen().catch(() => {});
-                          }
-                        }}
-                        className="flex items-center gap-2 px-4 py-2 bg-slate-900/50 border border-slate-800 rounded-xl text-slate-400 hover:text-indigo-400 transition-colors text-sm font-bold uppercase tracking-widest"
-                      >
-                        <Maximize size={18} />
-                        Fullscreen
-                      </button>
-                    </div>
-                  </PageHeader>
+                  <div className="shrink-0 mb-4 sm:mb-6">
+                    <PageHeader 
+                      title="Explore"
+                      description="Venture into the unknown and sharpen your mind"
+                      icon={TimerIcon}
+                    />
+                  </div>
                 )}
 
                 {isFullscreenExplore && (
@@ -831,243 +1028,298 @@ function App() {
                   </button>
                 )}
 
-                <div className="flex flex-col items-center space-y-12">
-                  {/* Center Column: Timer */}
-                  <div className="w-full max-w-lg space-y-4">
-                  {currentDungeon && (
-                    <div className="flex flex-col items-center gap-4">
-                      <div 
-                        onClick={() => !isFullscreenExplore && setActiveTab('dungeons')}
-                        className={cn(
-                          "w-full transition-all group overflow-hidden relative",
-                          isFullscreenExplore 
-                            ? "bg-transparent py-4 flex flex-col items-center" 
-                            : "bg-slate-900/50 rounded-2xl border border-slate-800 hover:border-indigo-500/50 cursor-pointer"
-                        )}
-                      >
-                        {/* Interactive overlay for desktop */}
-                        {!isFullscreenExplore && (
-                          <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/0 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                        )}
+                <div className={cn(
+                  "w-full flex-1 min-h-0",
+                  isFullscreenExplore ? "flex items-center justify-center w-full h-full" : "px-4 sm:px-6 lg:px-8"
+                )}>
+                  <div className={cn(
+                    "w-full h-full",
+                    !isFullscreenExplore ? "grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-6 xl:gap-12" : "flex flex-col items-center justify-center h-full w-full"
+                  )}>
+                    {/* Left Column: Timer & Timer Settings area */}
+                    <div className={cn(
+                      "w-full h-full flex flex-col min-h-0",
+                      !isFullscreenExplore ? "gap-6" : ""
+                    )}>
+                      {!isFullscreenExplore && (
+                        <div className="flex-1 min-h-0 relative bg-slate-900/20 rounded-[2.5rem] border border-slate-800/50 p-4 sm:p-8 flex flex-col items-center justify-center">
+                          <button 
+                            onClick={() => {
+                              setIsFullscreenExplore(true);
+                              if (document.documentElement.requestFullscreen) {
+                                document.documentElement.requestFullscreen().catch(() => {});
+                              }
+                            }}
+                            className="absolute top-6 right-6 z-[20] p-2 bg-slate-800/80 hover:bg-indigo-600 text-slate-400 hover:text-white rounded-xl transition-all shadow-lg border border-slate-700/50 group"
+                            title="Fullscreen Mode"
+                          >
+                            <Maximize size={18} className="group-hover:scale-110 transition-transform" />
+                          </button>
+                          
+                          <div className="w-full max-w-lg aspect-square sm:aspect-auto flex items-center justify-center scale-90 sm:scale-100">
+                            <Timer 
+                              currentDungeon={currentDungeon || null}
+                              rewardPool={state.rewardPool || []}
+                              activeTalents={state.activeTalents}
+                              dailyRerollUsed={state.dailyRerollUsed}
+                              history={state.history}
+                              onComplete={(duration, fDur, rDur) => {
+                                const result = completeSession(state.currentDungeonId || null, duration, fDur, rDur);
+                                playSound('success', state.soundVolume, state.soundEnabled);
+                                if (result && state.secretCode) {
+                                  syncToCloud(true);
+                                }
+                                return result;
+                              }}
+                              onRestComplete={() => {
+                                playSound('success', state.soundVolume, state.soundEnabled);
+                              }}
+                              onInventoryAdd={(id) => setState(prev => ({ ...prev, inventory: [...prev.inventory, id] }))}
+                              onReroll={() => setState(prev => ({ ...prev, dailyRerollUsed: true }))}
+                              onRewardSelect={(reward, sessionId) => {
+                                addRewardToHistory({
+                                  name: reward.name,
+                                  rarity: reward.rarity,
+                                  source: 'Explore',
+                                  type: reward.type,
+                                  amount: reward.amount,
+                                  itemType: reward.itemType
+                                }, sessionId);
+                                playSound('reward', state.soundVolume, state.soundEnabled);
+                              }}
+                              setShowCoinRain={setShowCoinRain}
+                              isFullscreen={isFullscreenExplore}
+                              secretCode={state.secretCode}
+                              pushEnabled={state.pushEnabled}
+                              onTogglePip={togglePip}
+                              focusDuration={focusDuration}
+                              restDuration={restDuration}
+                              enableRest={enableRest}
+                              isLooping={isLooping}
+                              setIsResting={setIsResting}
+                              isResting={isResting}
+                              setDuration={setDuration}
+                              duration={duration}
+                              setTimeLeft={setTimerTimeLeft}
+                              timeLeft={timerTimeLeft}
+                              setIsActive={setIsTimerActive}
+                              isActive={isTimerActive}
+                              setEndTime={setTimerEndTime}
+                              endTime={timerEndTime}
+                            />
+                          </div>
+                        </div>
+                      )}
 
-                        <div className={cn("relative z-10 w-full", isFullscreenExplore ? "px-2" : "p-2.5 sm:p-5")}>
-                          <div className={cn("flex flex-col gap-2 sm:gap-3", isFullscreenExplore ? "items-center" : "")}>
-                            {/* Top row: Tags & Progress Text */}
-                            {!isFullscreenExplore && (
-                              <div className="flex w-full min-w-0 items-center justify-between gap-1.5 sm:gap-2.5">
-                                <div className="flex items-center gap-1 sm:gap-1.5 px-1.5 py-0.5 sm:px-2 sm:py-1 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-md shrink-0">
-                                  <Target size={9} className="sm:w-3 sm:h-3" />
-                                  <span className="text-[7px] sm:text-[10px] md:text-xs font-bold uppercase tracking-wider sm:tracking-widest">Active Dungeon</span>
-                                </div>
-                                <span className="font-bold uppercase tabular-nums shrink-0 mt-0.5 sm:mt-0 text-[8px] sm:text-[10px] md:text-xs text-slate-500">
-                                  {currentDungeon.completedSessions} / {currentDungeon.totalSessions} Rooms
+                       {isFullscreenExplore && (
+                        <div className="w-full h-full flex flex-col items-center justify-center scale-125">
+                           <Timer 
+                              currentDungeon={currentDungeon || null}
+                              rewardPool={state.rewardPool || []}
+                              activeTalents={state.activeTalents}
+                              dailyRerollUsed={state.dailyRerollUsed}
+                              history={state.history}
+                              onComplete={(duration, fDur, rDur) => {
+                                const result = completeSession(state.currentDungeonId || null, duration, fDur, rDur);
+                                playSound('success', state.soundVolume, state.soundEnabled);
+                                if (result && state.secretCode) {
+                                  syncToCloud(true);
+                                }
+                                return result;
+                              }}
+                              onRestComplete={() => {
+                                playSound('success', state.soundVolume, state.soundEnabled);
+                              }}
+                              onInventoryAdd={(id) => setState(prev => ({ ...prev, inventory: [...prev.inventory, id] }))}
+                              onReroll={() => setState(prev => ({ ...prev, dailyRerollUsed: true }))}
+                              onRewardSelect={(reward, sessionId) => {
+                                addRewardToHistory({
+                                  name: reward.name,
+                                  rarity: reward.rarity,
+                                  source: 'Explore',
+                                  type: reward.type,
+                                  amount: reward.amount,
+                                  itemType: reward.itemType
+                                }, sessionId);
+                                playSound('reward', state.soundVolume, state.soundEnabled);
+                              }}
+                              setShowCoinRain={setShowCoinRain}
+                              isFullscreen={isFullscreenExplore}
+                              secretCode={state.secretCode}
+                              pushEnabled={state.pushEnabled}
+                              onTogglePip={togglePip}
+                              focusDuration={focusDuration}
+                              restDuration={restDuration}
+                              enableRest={enableRest}
+                              isLooping={isLooping}
+                              setIsResting={setIsResting}
+                              isResting={isResting}
+                              setDuration={setDuration}
+                              duration={duration}
+                              setTimeLeft={setTimerTimeLeft}
+                              timeLeft={timerTimeLeft}
+                              setIsActive={setIsTimerActive}
+                              isActive={isTimerActive}
+                              setEndTime={setTimerEndTime}
+                              endTime={timerEndTime}
+                            />
+                          </div>
+                        )}
+                      </div>
+
+                    {/* Right Column: Active Talents & Current Build */}
+                    {!isFullscreenExplore && (
+                      <div className="w-full h-full flex flex-col gap-6 min-h-0 overflow-y-auto lg:overflow-visible custom-scrollbar">
+                        {/* Timer Settings (Moved Here for Wide Screens) */}
+                        <TimerSettings 
+                          focusDuration={focusDuration}
+                          setFocusDuration={setFocusDuration}
+                          restDuration={restDuration}
+                          setRestDuration={setRestDuration}
+                          enableRest={enableRest}
+                          setEnableRest={setEnableRest}
+                          isLooping={isLooping}
+                          setIsLooping={setIsLooping}
+                          isActive={isTimerActive}
+                          isResting={isResting}
+                          applyPreset={applyTimerPreset}
+                          handleCustomChange={handleTimerCustomChange}
+                          presets={timerPresets}
+                          addPreset={addTimerPreset}
+                          removePreset={removeTimerPreset}
+                        />
+
+                        {/* Active Talents */}
+                        <div className="bg-slate-900/50 rounded-3xl border border-slate-800 p-6 backdrop-blur-sm shrink-0">
+                          <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2 mb-6">
+                            <Zap size={14} className="text-indigo-400" />
+                            Active Talents
+                          </h3>
+                          
+                          <div className="flex flex-wrap gap-4 justify-start">
+                            {state.activeTalents.length === 0 ? (
+                              <p className="text-xs text-slate-600 italic">No talents active...</p>
+                            ) : (
+                              state.activeTalents
+                                .map(id => TALENTS.find(t => t.id === id))
+                                .filter((t): t is typeof TALENTS[0] => !!t)
+                                .sort((a, b) => {
+                                  if (a.branch !== b.branch) {
+                                    return a.branch.localeCompare(b.branch);
+                                  }
+                                  return a.tier - b.tier;
+                                })
+                                .map(talent => {
+                                  const branchColors: Record<string, string> = {
+                                    'A': 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20',
+                                    'B': 'text-amber-400 bg-amber-500/10 border-amber-500/20',
+                                    'C': 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
+                                  };
+                                  const colorClass = branchColors[talent.branch] || 'text-slate-400 bg-slate-800 border-slate-700';
+                                  
+                                  return (
+                                    <div key={talent.id} className="group relative hover:z-[100]">
+                                      <div className={cn(
+                                        "w-12 h-12 flex items-center justify-center rounded-xl border transition-all hover:scale-110",
+                                        colorClass
+                                      )}>
+                                        <TalentIcon iconName={talent.icon || 'Scroll'} size={24} />
+                                      </div>
+
+                                      {/* Tooltip */}
+                                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 z-[100] invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none">
+                                        <div className="bg-slate-900 border border-slate-700 p-4 rounded-2xl shadow-2xl min-w-[200px]">
+                                          <div className={cn("text-sm font-black mb-1", branchColors[talent.branch].split(' ')[0])}>
+                                            {talent.name}
+                                          </div>
+                                          <p className="text-xs text-slate-400 leading-relaxed">
+                                            {talent.description}
+                                          </p>
+                                          <div className="mt-2 pt-2 border-t border-slate-800 flex items-center gap-2">
+                                            <div className={cn("w-1.5 h-1.5 rounded-full", branchColors[talent.branch].split(' ')[1])} />
+                                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                                              Branch {talent.branch} • Tier {talent.tier}
+                                            </span>
+                                          </div>
+                                        </div>
+                                        {/* Arrow */}
+                                        <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-8 border-transparent border-t-slate-700" />
+                                      </div>
+                                    </div>
+                                  );
+                                })
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Current Build */}
+                        <div className="bg-slate-900/50 rounded-3xl border border-slate-800 p-6 backdrop-blur-sm flex-1 min-h-0 flex flex-col justify-between">
+                          <div>
+                            <div className="flex items-center justify-between mb-6">
+                              <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest">Current Build</h3>
+                              <button 
+                                onClick={() => setShowBuildDetails(true)}
+                                className="p-1 text-slate-500 hover:text-white transition-colors rounded-full hover:bg-slate-800"
+                                title="View Reward Breakdown"
+                              >
+                                <HelpCircle size={16} />
+                              </button>
+                            </div>
+                            <div className="space-y-4">
+                              <div className="flex justify-between items-center">
+                                <span className="text-xs text-slate-400">Next XP Gain</span>
+                                <span className="text-sm font-bold text-emerald-400">+{nextSessionStats.xp}</span>
+                              </div>
+                              <div className="flex justify-between items-center">
+                                <span className="text-xs text-slate-400">Next Gold Gain</span>
+                                <span className="text-sm font-bold text-amber-400">
+                                  +{nextSessionStats.minCoins === nextSessionStats.maxCoins 
+                                    ? nextSessionStats.minCoins 
+                                    : `${nextSessionStats.minCoins}-${nextSessionStats.maxCoins}`}
                                 </span>
                               </div>
-                            )}
-
-                            {/* Dungeon Title Row */}
-                            {!isFullscreenExplore && (
-                              <div className="flex items-center w-full min-w-0 gap-2 sm:gap-4 mt-0.5 sm:mt-2 mb-0.5 sm:mb-1">
-                                <div className="w-7 h-7 sm:w-12 sm:h-12 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-400 group-hover:bg-indigo-500 group-hover:text-white transition-all shrink-0 shadow-inner">
-                                  <Sword size={14} className="sm:w-6 sm:h-6" />
-                                </div>
-                                <h3 
-                                  className="font-black text-white truncate pr-0" 
-                                  style={{ fontSize: 'clamp(0.625rem, 4vw, 1.5rem)' }}
-                                >
-                                  {currentDungeon.name}
-                                </h3>
-                              </div>
-                            )}
-
-                            {/* Progress Bar */}
-                            <div className={cn(
-                              "relative bg-slate-950 rounded-full overflow-hidden border border-slate-800", 
-                              isFullscreenExplore ? "h-1.5 w-48 sm:w-64" : "h-2 w-full mt-2"
-                            )}>
-                              <motion.div 
-                                initial={{ width: 0 }}
-                                animate={{ width: `${(currentDungeon.completedSessions / currentDungeon.totalSessions) * 100}%` }}
-                                className="absolute top-0 left-0 h-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]"
-                              />
+                              <div className="h-px bg-slate-800" />
+                            </div>
+                          </div>
+                          <div className="space-y-4 mt-6">
+                            <div className="flex justify-between items-center">
+                              <span className="text-xs text-slate-400">Daily Sessions</span>
+                              <span className="text-sm font-bold text-white">{state.dailySessions}</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-xs text-slate-400">No-Damage Streak</span>
+                              <span className="text-sm font-bold text-indigo-400">{state.streak}</span>
                             </div>
                           </div>
                         </div>
 
-                        {/* Completed State Actions */}
-                        {!isFullscreenExplore && currentDungeon.completedSessions >= currentDungeon.totalSessions && (
-                          <div className="px-4 pb-4 sm:px-5 sm:pb-5 relative z-10 pt-2">
-                            <button 
-                              onClick={(e) => { e.stopPropagation(); setActiveTab('dungeons'); }}
-                              className="w-full py-3 bg-emerald-600 border border-emerald-500 hover:bg-emerald-500 text-white rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/20"
-                            >
-                              <RotateCcw size={16} />
-                              Change Dungeon
-                            </button>
-                          </div>
-                        )}
-                        {isFullscreenExplore && currentDungeon.completedSessions >= currentDungeon.totalSessions && (
-                          <button 
-                            onClick={(e) => { e.stopPropagation(); setActiveTab('dungeons'); }}
-                            className="mt-6 mx-auto px-6 py-2 bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 rounded-full font-bold text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 hover:bg-emerald-500 hover:text-white relative z-10"
-                          >
-                            <RotateCcw size={14} />
-                            Change Dungeon
-                          </button>
-                        )}
+                        {/* Mobile/Small Screen Recent Sessions Link */}
+                        <div className="lg:hidden shrink-0 mt-auto pt-4">
+                           <button 
+                             onClick={() => {
+                               const el = document.getElementById('recent-sessions-anchor');
+                               el?.scrollIntoView({ behavior: 'smooth' });
+                             }}
+                             className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-400 rounded-xl text-xs font-bold uppercase tracking-widest transition-all"
+                           >
+                             View Recent Sessions
+                           </button>
+                        </div>
                       </div>
-                    </div>
-                  )}
-                  <Timer 
-                    currentDungeon={currentDungeon || null}
-                    rewardPool={state.rewardPool || []}
-                    activeTalents={state.activeTalents}
-                    dailyRerollUsed={state.dailyRerollUsed}
-                    history={state.history}
-                    onComplete={(duration, fDur, rDur) => {
-                      const result = completeSession(state.currentDungeonId || null, duration, fDur, rDur);
-                      playSound('success', state.soundVolume, state.soundEnabled);
-                      if (result && state.secretCode) {
-                        syncToCloud(true);
-                      }
-                      return result;
-                    }}
-                    onRestComplete={() => {
-                      playSound('success', state.soundVolume, state.soundEnabled);
-                    }}
-                    onInventoryAdd={(id) => setState(prev => ({ ...prev, inventory: [...prev.inventory, id] }))}
-                    onReroll={() => setState(prev => ({ ...prev, dailyRerollUsed: true }))}
-                    onRewardSelect={(reward, sessionId) => {
-                      addRewardToHistory({
-                        name: reward.name,
-                        rarity: reward.rarity,
-                        source: 'Explore',
-                        type: reward.type,
-                        amount: reward.amount,
-                        itemType: reward.itemType
-                      }, sessionId);
-                      playSound('reward', state.soundVolume, state.soundEnabled);
-                    }}
-                    setShowCoinRain={setShowCoinRain}
-                    isFullscreen={isFullscreenExplore}
-                    secretCode={state.secretCode}
-                    pushEnabled={state.pushEnabled}
-                  />
-                </div>
-
-                {/* Status & Talents Row (Below Timer) */}
-                {!isFullscreenExplore && (
-                  <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-8">
-                    {/* Active Talents */}
-                    <div className="bg-slate-900/50 rounded-3xl border border-slate-800 p-6 backdrop-blur-sm">
-                    <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2 mb-6">
-                      <Zap size={14} className="text-indigo-400" />
-                      Active Talents
-                    </h3>
-                    
-                    <div className="flex flex-wrap gap-4 justify-center md:justify-start">
-                      {state.activeTalents.length === 0 ? (
-                        <p className="text-xs text-slate-600 italic">No talents active...</p>
-                      ) : (
-                        state.activeTalents
-                          .map(id => TALENTS.find(t => t.id === id))
-                          .filter((t): t is typeof TALENTS[0] => !!t)
-                          .sort((a, b) => {
-                            if (a.branch !== b.branch) {
-                              return a.branch.localeCompare(b.branch);
-                            }
-                            return a.tier - b.tier;
-                          })
-                          .map(talent => {
-                            const branchColors: Record<string, string> = {
-                              'A': 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20',
-                              'B': 'text-amber-400 bg-amber-500/10 border-amber-500/20',
-                              'C': 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
-                            };
-                            const colorClass = branchColors[talent.branch] || 'text-slate-400 bg-slate-800 border-slate-700';
-                            
-                            return (
-                              <div key={talent.id} className="group relative hover:z-[100]">
-                                <div className={cn(
-                                  "w-12 h-12 flex items-center justify-center rounded-xl border transition-all hover:scale-110",
-                                  colorClass
-                                )}>
-                                  <TalentIcon iconName={talent.icon || 'Scroll'} size={24} />
-                                </div>
-
-                                {/* Tooltip */}
-                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 z-[100] invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none">
-                                  <div className="bg-slate-900 border border-slate-700 p-4 rounded-2xl shadow-2xl min-w-[200px]">
-                                    <div className={cn("text-sm font-black mb-1", branchColors[talent.branch].split(' ')[0])}>
-                                      {talent.name}
-                                    </div>
-                                    <p className="text-xs text-slate-400 leading-relaxed">
-                                      {talent.description}
-                                    </p>
-                                    <div className="mt-2 pt-2 border-t border-slate-800 flex items-center gap-2">
-                                      <div className={cn("w-1.5 h-1.5 rounded-full", branchColors[talent.branch].split(' ')[1])} />
-                                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                                        Branch {talent.branch} • Tier {talent.tier}
-                                      </span>
-                                    </div>
-                                  </div>
-                                  {/* Arrow */}
-                                  <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-8 border-transparent border-t-slate-700" />
-                                </div>
-                              </div>
-                            );
-                          })
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Current Build */}
-                  <div className="bg-slate-900/50 rounded-3xl border border-slate-800 p-6 backdrop-blur-sm">
-                    <div className="flex items-center justify-between mb-6">
-                      <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest">Current Build</h3>
-                      <button 
-                        onClick={() => setShowBuildDetails(true)}
-                        className="p-1 text-slate-500 hover:text-white transition-colors rounded-full hover:bg-slate-800"
-                        title="View Reward Breakdown"
-                      >
-                        <HelpCircle size={16} />
-                      </button>
-                    </div>
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs text-slate-400">Next XP Gain</span>
-                        <span className="text-sm font-bold text-emerald-400">+{nextSessionStats.xp}</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs text-slate-400">Next Gold Gain</span>
-                        <span className="text-sm font-bold text-amber-400">
-                          +{nextSessionStats.minCoins === nextSessionStats.maxCoins 
-                            ? nextSessionStats.minCoins 
-                            : `${nextSessionStats.minCoins}-${nextSessionStats.maxCoins}`}
-                        </span>
-                      </div>
-                      <div className="h-px bg-slate-800" />
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs text-slate-400">Daily Sessions</span>
-                        <span className="text-sm font-bold text-white">{state.dailySessions}</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs text-slate-400">No-Damage Streak</span>
-                        <span className="text-sm font-bold text-indigo-400">{state.streak}</span>
-                      </div>
-                    </div>
+                    )}
                   </div>
                 </div>
-                )}
 
                 {!isFullscreenExplore && (
-                  <RecentSessions 
-                    history={state.history}
-                    dungeons={dungeons}
-                    majorDungeons={majorDungeons}
-                    updateSession={updateSession}
-                    deleteSession={deleteSession}
-                  />
+                  <div id="recent-sessions-anchor" className="mt-8 shrink-0 w-full">
+                    <RecentSessions 
+                      history={state.history}
+                      dungeons={dungeons}
+                      majorDungeons={majorDungeons}
+                      updateSession={updateSession}
+                      deleteSession={deleteSession}
+                    />
+                  </div>
                 )}
 
       {createPortal(
@@ -1136,9 +1388,8 @@ function App() {
       )}
 
                 {/* Recent Explorations (At the very bottom) */}
-              </div>
-            </motion.div>
-          )}
+              </motion.div>
+            )}
 
             {activeTab === 'vault' && (
               <motion.div
@@ -1170,16 +1421,6 @@ function App() {
                   title={dungeonSubTab === 'list' ? "Dungeon Explorer" : dungeonSubTab === 'quests' ? "Quest Board" : "Achievements"} 
                   description={dungeonSubTab === 'list' ? "Manage your study challenges" : dungeonSubTab === 'quests' ? "Complete tasks for extra rewards" : "Your legendary milestones"} 
                   icon={dungeonSubTab === 'list' ? Sword : dungeonSubTab === 'quests' ? Target : Trophy} 
-                  stats={dungeonSubTab === 'list' ? [
-                    { label: 'Major', value: majorDungeons.length, icon: FolderPlus, color: 'text-indigo-400' },
-                    { label: 'Cleared', value: majorDungeons.filter(m => m.status === 'completed').length, icon: CheckCircle2, color: 'text-emerald-400' }
-                  ] : dungeonSubTab === 'quests' ? [
-                    { label: 'Quests', value: state.quests.filter(q => !q.isAchievement).length, icon: Target, color: 'text-indigo-400' },
-                    { label: 'Unclaimed', value: state.unclaimedQuests, icon: Gift, color: 'text-amber-400' }
-                  ] : [
-                    { label: 'Achievements', value: state.quests.filter(q => q.isAchievement).length, icon: Trophy, color: 'text-amber-400' },
-                    { label: 'Completed', value: state.quests.filter(q => q.isAchievement && q.completed).length, icon: CheckCircle2, color: 'text-emerald-400' }
-                  ]}
                 >
                   <div className="flex flex-wrap items-center gap-3 mt-4">
                     <div className="flex gap-1 bg-slate-900 p-1 rounded-xl border border-slate-800">
@@ -1244,6 +1485,21 @@ function App() {
                           <Plus size={18} />
                         </button>
                       )}
+                      
+                      {dungeonSubTab === 'list' && (
+                        <button
+                          onClick={() => setIsArchiveView(!isArchiveView)}
+                          className={cn(
+                            "flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-xl transition-all shadow-lg border shrink-0",
+                            isArchiveView 
+                              ? "bg-amber-600 border-amber-500 text-white" 
+                              : "bg-slate-800 border-slate-700 text-slate-400 hover:text-white"
+                          )}
+                          title="Toggle Archive"
+                        >
+                          <Archive size={18} />
+                        </button>
+                      )}
 
                       {dungeonSubTab === 'quests' && (
                         <button
@@ -1276,7 +1532,8 @@ function App() {
                     isAddingMajor={isAddingMajor}
                     setIsAddingMajor={setIsAddingMajor}
                     isEditMode={isDungeonEditMode}
-                    onSelect={(id) => setState(prev => ({ ...prev, currentDungeonId: id }))}
+                    activeTab={isArchiveView ? 'archive' : 'active'}
+                    onSelect={(id) => setState(prev => ({ ...prev, currentDungeonId: prev.currentDungeonId === id ? null : id }))}
                     onCreateMajor={handleCreateMajor}
                     onCreateSub={handleCreateSub}
                     onUpdateMajor={handleUpdateMajor}
@@ -1440,7 +1697,7 @@ function App() {
                           <input 
                             value={editName}
                             onChange={(e) => setEditName(e.target.value)}
-                            className="bg-transparent border-b-2 border-indigo-500 text-2xl sm:text-3xl font-black text-white tracking-tight italic uppercase focus:outline-none w-full"
+                            className="bg-transparent border-b-2 border-indigo-500 text-2xl sm:text-3xl font-black text-white tracking-tight italic pr-1 uppercase focus:outline-none w-full"
                             placeholder="Your Name"
                             autoFocus
                           />
@@ -1458,7 +1715,7 @@ function App() {
                       ) : (
                         <div className="group">
                           <div className="flex items-center justify-between gap-3 w-full">
-                            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight italic uppercase truncate flex-grow">
+                            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight italic pr-1 uppercase truncate flex-grow">
                               {state.userName || 'Scholar'}
                             </h2>
                             <button 
@@ -1540,7 +1797,7 @@ function App() {
                       <div className="flex justify-between items-end mb-4 sm:mb-6">
                         <div>
                           <h4 className="text-[10px] sm:text-xs font-black text-indigo-400 uppercase tracking-[0.2em] mb-1">Experience Progress</h4>
-                          <div className="text-2xl sm:text-3xl font-black text-white italic uppercase tracking-tighter">Level {state.level}</div>
+                          <div className="text-2xl sm:text-3xl font-black text-white italic pr-1 uppercase tracking-tighter">Level {state.level}</div>
                         </div>
                         <div className="text-right">
                           <div className="text-[10px] sm:text-sm font-black text-slate-400 uppercase tracking-widest mb-1">Next Level</div>
@@ -1669,7 +1926,7 @@ function App() {
                        state.lastCompletionRewards.type === 'quest' ? 'Quest Completed!' : 
                        'Achievement Unlocked!'}
                     </h2>
-                    <h3 className="text-3xl font-black text-white tracking-tighter mb-8 italic uppercase">{state.lastCompletionRewards.dungeonName}</h3>
+                    <h3 className="text-3xl font-bold text-white tracking-tighter mb-8 italic pr-1">{state.lastCompletionRewards.dungeonName}</h3>
                   </motion.div>
                   <div className="space-y-3 mb-10">
                     <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Rewards Acquired</p>

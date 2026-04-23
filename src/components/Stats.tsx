@@ -394,7 +394,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
                       return <Star key={i} size={16} className="text-slate-800" />;
                     })
                   ) : (
-                    <span className="text-xs text-slate-600 italic">No rating recorded</span>
+                    <span className="text-xs text-slate-600 italic pr-1">No rating recorded</span>
                   )}
                 </div>
                 <div className="text-sm text-slate-300 leading-relaxed">
@@ -403,7 +403,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
                       <Markdown>{currentLog.reflection}</Markdown>
                     </div>
                   ) : (
-                    <p className="italic text-slate-600">The day's reflections are yet to be chronicled.</p>
+                    <p className="italic pr-1 text-slate-600">The day's reflections are yet to be chronicled.</p>
                   )}
                 </div>
               </div>

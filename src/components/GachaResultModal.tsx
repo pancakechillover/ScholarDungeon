@@ -194,7 +194,7 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({
             animate={{ y: 0, opacity: 1 }}
             className="inline-block"
           >
-            <h2 className="text-2xl sm:text-5xl font-black text-white tracking-tighter italic uppercase mb-1 drop-shadow-2xl">
+            <h2 className="text-2xl sm:text-5xl font-black text-white tracking-tighter italic pr-1 uppercase mb-1 drop-shadow-2xl">
               {showSummary ? 'Summoning Summary' : (isMulti ? 'Summoning Results' : 'New Treasure!')}
             </h2>
             <div className="h-1 w-12 sm:w-20 bg-indigo-500 mx-auto rounded-full mb-2" />
@@ -245,7 +245,7 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({
               </div>
               <div className="p-6 bg-indigo-500/5 border-t border-white/5">
                 <p className="text-indigo-300 text-[10px] font-bold text-center leading-relaxed">
-                  TIP: Visit your <span className="text-white underline decoration-indigo-500/50 underline-offset-4 font-black italic">Vault & Records</span> to view your full collection and claim physical rewards.
+                  TIP: Visit your <span className="text-white underline decoration-indigo-500/50 underline-offset-4 font-black italic pr-1">Vault & Records</span> to view your full collection and claim physical rewards.
                 </p>
               </div>
             </div>
@@ -432,7 +432,7 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({
                       </div>
                       <div className="w-full text-center px-0.5">
                         <h3 className={cn(
-                          "font-black leading-tight uppercase italic mb-1 line-clamp-3",
+                          "font-black leading-tight uppercase italic pr-1 mb-1 line-clamp-3",
                           isTenPull ? "text-[10px] sm:text-xs" : "text-xs sm:text-sm",
                           styles.text
                         )}>
@@ -480,7 +480,7 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({
         <div className="flex flex-col items-center gap-4 py-6 shrink-0">
           <AnimatePresence>
             {!allScratched && gachaEffect === 'scratch' && (
-              <p className="text-slate-500 text-[10px] sm:text-xs font-black uppercase tracking-widest animate-pulse italic">
+              <p className="text-slate-500 text-[10px] sm:text-xs font-black uppercase tracking-widest animate-pulse italic pr-1">
                 Scratch cards to reveal prize
               </p>
             )}
@@ -505,7 +505,7 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({
               <motion.button
                 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
                 onClick={handleClaim}
-                className="group relative flex items-center gap-2 px-8 py-4 bg-white text-slate-950 rounded-full font-black uppercase tracking-[0.2em] italic text-sm sm:text-base transition-all hover:scale-105 active:scale-95 shadow-[0_15px_30px_-5px_rgba(255,255,255,0.3)]"
+                className="group relative flex items-center gap-2 px-8 py-4 bg-white text-slate-950 rounded-full font-black uppercase tracking-[0.2em] italic pr-1 text-sm sm:text-base transition-all hover:scale-105 active:scale-95 shadow-[0_15px_30px_-5px_rgba(255,255,255,0.3)]"
               >
                 <CheckCircle2 size={20} className="group-hover:rotate-12 transition-transform" />
                 {showSummary ? 'Finish Summon' : 'Claim Rewards'}

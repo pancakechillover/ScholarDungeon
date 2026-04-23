@@ -330,44 +330,32 @@ export const QuestManager = React.memo<QuestManagerProps>(({ quests, activeTalen
 
       <div className="space-y-4">
         {filteredQuests.map((quest, index) => (
-          <div key={quest.id} className="bg-slate-900/40 border border-slate-800 rounded-[2rem] p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 group hover:border-slate-700 transition-all">
-            <div className="flex items-start sm:items-center gap-6">
+          <div key={quest.id} className="bg-slate-900/20 border border-slate-800/50 rounded-lg p-4 flex items-center justify-between gap-4 group hover:border-slate-700 transition-all">
+            <div className="flex items-center gap-4 flex-1 min-w-0">
               <div className={cn(
-                "w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center border shrink-0 transition-transform group-hover:scale-105",
+                "w-10 h-10 rounded-lg flex items-center justify-center border shrink-0",
                 quest.completed ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" : "bg-slate-800 border-slate-700 text-slate-500"
               )}>
-                {quest.completed ? <CheckCircle2 size={24} /> : (quest.isAchievement ? <Trophy size={24} /> : <Target size={24} />)}
+                {quest.completed ? <CheckCircle2 size={20} /> : (quest.isAchievement ? <Trophy size={20} /> : <Target size={20} />)}
               </div>
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-3 mb-1">
-                  <h4 className="font-black text-white text-base sm:text-lg uppercase italic tracking-tight pr-2">{quest.title}</h4>
-                  {quest.talentRequired && <span className="px-2 py-0.5 bg-indigo-500/20 text-indigo-400 text-[10px] uppercase tracking-widest rounded-lg font-black border border-indigo-500/30 shrink-0">Talents</span>}
-                </div>
-                <p className="text-sm text-slate-400 font-medium line-clamp-2">{quest.description}</p>
-                
-                <div className="flex flex-wrap items-center gap-4 mt-3">
+              <div className="min-w-0 flex-1">
+                <h4 className="font-bold text-slate-200 text-sm truncate">{quest.title}</h4>
+                <p className="text-xs text-slate-400 truncate">{quest.description}</p>
+                <div className="flex flex-wrap items-center gap-4 mt-1">
                   {quest.reward && (
-                    <div className="flex items-center gap-2 px-3 py-1 bg-slate-950/50 rounded-xl text-[10px] font-bold text-slate-300 border border-slate-800/50 uppercase tracking-widest">
-                      {quest.reward.type === 'coins' ? <Coins size={12} className="text-amber-400" /> : 
-                       quest.reward.type === 'xp' ? <Zap size={12} className="text-indigo-400" /> :
-                       quest.reward.type === 'talentPoint' ? <Trophy size={12} className="text-purple-400" /> :
-                       <Gift size={12} className="text-indigo-400" />}
-                      <span>
-                        {quest.reward.type === 'text' ? quest.reward.rewardText : 
-                         quest.reward.type === 'talentPoint' ? `${quest.reward.amount} PT` :
-                         `${quest.reward.amount} ${quest.reward.type === 'item' ? (quest.reward.itemName || 'Item') : quest.reward.type}`}
-                      </span>
+                    <div className="flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold text-slate-400">
+                      {quest.reward.type === 'coins' ? <Coins size={10} className="text-amber-500" /> : <Zap size={10} className="text-indigo-400" />}
+                      <span>{quest.reward.amount}</span>
                     </div>
                   )}
-
-                  <div className="flex items-center gap-3">
-                    <div className="h-2 w-24 sm:w-32 bg-slate-950 rounded-full overflow-hidden border border-slate-800">
+                  <div className="flex items-center gap-2">
+                    <div className="h-1.5 w-16 bg-slate-950 rounded-full overflow-hidden border border-slate-800">
                       <div 
-                        className={cn("h-full transition-all shadow-[0_0_8px_rgba(99,102,241,0.4)]", quest.completed ? "bg-emerald-500" : "bg-indigo-500")}
+                        className={cn("h-full", quest.completed ? "bg-emerald-500" : "bg-indigo-500")}
                         style={{ width: `${Math.min(100, (quest.progress / quest.target) * 100)}%` }}
                       />
                     </div>
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{quest.progress} / {quest.target}</span>
+                    <span className="text-[10px] font-bold text-slate-500">{quest.progress} / {quest.target}</span>
                   </div>
                 </div>
               </div>

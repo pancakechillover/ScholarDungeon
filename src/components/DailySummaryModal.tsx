@@ -122,7 +122,7 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
         {/* Header */}
         <div className="p-5 sm:p-8 border-b border-slate-800 flex justify-between items-center bg-gradient-to-r from-indigo-500/10 to-transparent">
           <div>
-            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tighter uppercase italic">End of the Day</h2>
+            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tighter uppercase italic pr-1">End of the Day</h2>
             <p className="text-sm sm:text-base text-slate-400 font-medium">Reflect on your progress and rest for tomorrow.</p>
           </div>
           <button onClick={onClose} className="p-2 text-slate-500 hover:text-white rounded-full hover:bg-slate-800 transition-all">
@@ -279,7 +279,7 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
                       <Markdown>{reflection}</Markdown>
                     </div>
                   ) : (
-                    <p className="text-slate-600 text-sm italic">Preview will appear here...</p>
+                    <p className="text-slate-600 text-sm italic pr-1">Preview will appear here...</p>
                   )}
                 </div>
               )}
@@ -288,7 +288,7 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
 
           {/* Encouragement */}
           <div className="text-center p-8 bg-indigo-500/5 rounded-3xl border border-indigo-500/10">
-            <p className="text-indigo-400 font-bold italic text-lg mb-1">Rest well, Seeker.</p>
+            <p className="text-indigo-400 font-bold italic pr-1 text-lg mb-1">Rest well, Seeker.</p>
             <p className="text-slate-500 text-sm">The dungeon will be waiting for your return tomorrow.</p>
           </div>
         </div>

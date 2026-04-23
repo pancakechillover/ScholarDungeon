@@ -29,7 +29,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   return (
     <div className={cn("flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8", className)}>
       <div className="flex-1">
-        <h2 className="text-xl sm:text-3xl font-black text-white tracking-tighter uppercase italic flex items-center gap-2 sm:gap-3">
+        <h2 className="text-xl sm:text-3xl font-black text-white tracking-tighter uppercase italic pr-2 flex items-center gap-2 sm:gap-3">
           <Icon className="text-indigo-500 w-5 h-5 sm:w-7 sm:h-7" />
           {title}
         </h2>

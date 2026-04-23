@@ -10,9 +10,17 @@ Whenever you complete a task or make changes to the application:
 2. Log the completed task in the `Task History` section below.
 3. Update the version number and release date in `src/components/Settings.tsx` (under the 'about' section) to match the new version and date.
 
+**VERSIONING POLICY (x.y.z):**
+- **x (Major):** Critical architectural changes or full-scale system overhauls.
+- **y (Minor):** New features, significant UI additions, or functional enhancements.
+- **z (Patch):** Bug fixes, micro-optimizations, documentation updates, and UI refinements.
+
+**CSS & UI STANDARDS:**
+- **Italic Clipping:** To prevent right-side clipping of italic text (especially in browsers with tight bounding boxes), always add a small right padding (e.g., `pr-1` or `px-0.5`) to the element or its immediate container.
+
 ## Current Status
-- **Current Version:** v3.4.2
-- **Last Update Date:** 2026-04-20
+- **Current Version:** v3.7.6
+- **Last Update Date:** 2026-04-23
 
 ## Light Themes Definition
 The following themes are considered "Light Themes" and require special CSS handling (e.g., avoiding white text on light backgrounds, using theme-aware colors for modals and charts):
@@ -30,6 +38,102 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v3.7.6 (2026-04-23):** Floating Compact Timer (PiP Mode).
+  - *Feature:* Implemented a "Floating Mode" for Desktop PWA users. When active, the application opens a small, always-on-top window containing only the countdown timer and the current dungeon progress bar.
+  - *Tech:* Leveraged the modern Document Picture-in-Picture API for the true "Always on Top" experience.
+  - *UI:* Added a "Floating Mode" toggle button in the Timer component, conditionally displayed for Desktop PWA environments.
+- **v3.7.5 (2026-04-23):** Push Notification Performance Fix.
+  - *Bugfix:* Resolved "Failed to fetch" errors during push scheduling by removing `timeLeft` from the `useEffect` dependencies in the Timer component. This prevents high-frequency network requests (every second) and stabilizes push communication.
+- **v3.7.4 (2026-04-23):** Timer Animation Fix.
+  - *Bugfix:* Restored the character jumping (bobbing) animation for the main timer digits when the timer is active.
+- **v3.7.3 (2026-04-23):** Timer Direction & Preset Management.
+  - *UI:* Restored clockwise timer progress starting from 12 o'clock and moving towards 1 o'clock.
+  - *UI:* Refined Timer Settings labels to display full units (e.g., "25 min + 5 min").
+  - *Feature:* Implemented dynamic preset management in Explore tab.
+  - *Feature:* Added "Save as Preset" button to quickly store custom focus/rest durations.
+  - *Feature:* Added delete functionality for presets with a double-check confirmation modal.
+- **v3.7.2 (2026-04-23):** Timer Direction & Layout Breadth.
+  - *UI:* Reversed timer progress direction to flow clockwise (from top).
+  - *UI:* Expanded the "Recent Sessions" table to fill the entire application width on wide screens by removing container constraints in the Explore tab.
+- **v3.7.1 (2026-04-23):** Explore Layout Refinement & Architecture Optimization.
+  - *UI:* Moved "Timer Settings" from the left column to the right column on wide screens, creating a more balanced and efficient two-column layout.
+  - *Refactor:* Extracted Timer Settings into a dedicated `TimerSettings.tsx` component for better modularity.
+  - *Architecture:* Lifted Timer state management to `App.tsx` and implemented persistent `localStorage` synchronization for focus/rest durations, rest toggle, and looping settings.
+  - *UX:* Ensured the Explore tab remains a "one-screen" non-scrolling experience on wide displays.
+- **v3.7.0 (2026-04-23):** Explore Tab Non-Scrolling Layout.
+  - *UX:* Redesigned the Explore tab for wide screens to achieve a "one-screen" layout.
+  - *Layout:* Implemented a responsive grid that fits Timer, Timer Settings, Active Talents, and Current Build within the calculated viewport height to avoid scrolling.
+  - *UI:* Optimized component density and spacing for better visibility on large displays.
+- **v3.6.5 (2026-04-23):** Dungeon Selection Toggling.
+  - *UX:* Implemented a toggle mechanism for active dungeons – clicking an already selected dungeon now deactivates it, allowing for "Free Study" sessions.
+- **v3.6.4 (2026-04-23):** Explore Layout Overhaul.
+  - *UI:* Implemented a responsive split-screen layout for the Explore tab on wide screens.
+  - *Layout:* Moved Timer and Settings to the left column (sticky), with Active Talents and Current Build on the right column.
+  - *UI:* Relocated the Fullscreen button to the top-right corner of the Timer container for better accessibility.
+  - *UX:* Removed session and streak statistics from the Explore header to reduce visual noise.
+- **v3.6.3 (2026-04-23):** Navigation & Expansion Refinement.
+  - *UX:* Enabled default expansion for all sub-dungeons in the Explorer view.
+  - *UI:* Removed the active dungeon progress tracker from the Explore tab (above the timer) to provide a more focused study environment.
+- **v3.6.2 (2026-04-23):** Versioning Policy Update.
+  - *Documentation:* Established and recorded the x.y.z versioning policy (Major.Minor.Patch) in project instructions.
+- **v3.6.1 (2026-04-21):** Dungeon Hierarchy & UI Polish.
+  - *Naming:* Implemented level-based naming (1级副本, 2级副本, etc.) across the application.
+  - *UI:* Ensured hierarchical vertical lines are visible for all nested levels, including 2nd-level dungeons.
+  - *UX:* Unified sub-dungeon display to show both sequential numbering and expansion toggles simultaneously.
+  - *Visual:* Darkened description text and added inline reward badges (Gold, XP, Items) to both major and sub-dungeon rows for better scannability.
+- **v3.6.0 (2026-04-21):** Recursive Nested Dungeons.
+  - *Feature:* Enabled multi-level nesting for sub-dungeons (up to 3 levels deep).
+  - *UI:* Implemented a recursive tree view in the Dungeon Explorer with hierarchical vertical lines and horizontal connectors.
+  - *UX:* Added a "Plus" button on sub-dungeon rows in Edit Mode to create nested sub-tasks.
+  - *Logic:* Implemented recursive deletion – deleting a parent dungeon (Major or Sub) now automatically cleans up all nested descendants to prevent orphan data.
+  - *Logic:* Added expansion/collapse toggles for nested sub-dungeon branches.
+- **v3.5.8 (2026-04-21):** Edit Mode Layout Fix.
+  - *Bugfix:* Removed borders from all dungeon action buttons (edit, delete, reorder, archive) to prevent layout shifting and "stretching" when Edit Mode is enabled.
+- **v3.5.7 (2026-04-21):** Dungeon Explorer UI Refinements.
+  - *UI:* Darkened sub-dungeon numbering and completed text for better contrast.
+  - *UI:* Replaced major dungeon folder icons with a `Sword` icon for thematic consistency.
+  - *UI:* Removed the "Active" textual label from sub-dungeons to clean up the row layout.
+  - *UX:* Unified edit button visibility; sub-dungeon management buttons are now permanently visible when Edit Mode is enabled.
+- **v3.5.6 (2026-04-21):** Sub-Dungeon Creation UI Overhaul.
+  - *UX:* Migrated the "New Sub Dungeon" creation form from an inline layout to a unified modal, matching the "Edit Sub Dungeon" experience.
+  - *UI:* Standardized modal titles and field logic for a cleaner, consistent management workflow.
+- **v3.5.5 (2026-04-21):** Typography Softening - Dungeon Explorer.
+  - *UI:* Softened the typography in the Dungeon Manager to match the "Quest Board" aesthetic.
+  - *UI:* Replaced `font-black` with `font-bold` for dungeon titles and headers across the application.
+  - *UI:* Disabled forced `uppercase` for major and sub-dungeon names, adopting the more readable mixed-case style of the Quest system.
+  - *UI:* Synchronized typography for the Active Dungeon widget and table headers in the Archives.
+- **v3.5.4 (2026-04-21):** UI Polish & Italic Clipping Fix.
+  - *UI:* Increased font size for sub-dungeon descriptions and progress bar text.
+  - *Bugfix:* Fixed right-side clipping of italic text across the application (restored hidden padding).
+  - *Standard:* Added a project rule to avoid future italic clipping issues.
+- **v3.5.3 (2026-04-21):** Sub-Dungeon Numbering & Reordering.
+  - *UI:* Added sequential numbering ("1.", "2.") to sub-dungeons for better clarity.
+  - *UX:* Enabled manual reordering for sub-dungeons via Up/Down arrows in Edit Mode.
+- **v3.5.2 (2026-04-21):** XP Bar Visual Polish.
+  - *UI:* Inverted the experience bar gradient to follow a "Light-to-Dark" (Left-to-Right) progression for a more professional aesthetic.
+- **v3.5.1 (2026-04-21):** Refined Header Dungeon Widget.
+  - *UI:* Simplified the active dungeon header widget by removing outer frames, backgrounds, and borders for a cleaner look.
+  - *UI:* Only sword icon, title, and progress bar are retained in a minimal layout.
+- **v3.5.0 (2026-04-21):** Persistent Global Active Dungeon Header.
+  - *UX:* Moved the active dungeon display from the Dungeon Explorer list to the global top header.
+  - *UI:* Implemented a compact, interactive dungeon widget in the header for persistent tracking across all tabs.
+  - *UX:* Clicking the header dungeon widget now navigates directly to the Explore tab.
+- **v3.4.6 (2026-04-21):** Description Restoration & Archiving Polish.
+  - *Bugfix:* Restored descriptions for both Major and Sub Dungeons within the list view.
+  - *UX:* Automatically clears the active dungeon status when its parent major dungeon is archived.
+- **v3.4.5 (2026-04-21):** Final UI Refinements.
+  - *UI:* Polished "Ready for Finalization" button styling and size for better fit in Major titles.
+  - *Code:* Refactored conditional logic for Finalization indicator to improve readability.
+- **v3.4.4 (2026-04-21):** Dungeon Explorer UX Polish.
+  - *UI:* Moved "Ready for Finalization" button to the right of Major Dungeon title for better visibility.
+  - *UI:* Repositioned sub-dungeon checkboxes to the right side for a modern to-do look.
+  - *UX:* Renamed "Running" session indicator to "Active" and removed the pulse animation to reduce visual fatigue.
+- **v3.4.3 (2026-04-21):** Dungeon Explorer UI Refinement.
+  - *UI:* Completely refactored the Dungeon list into a minimalist "Paper To-Do List" aesthetic.
+  - *UX:* All major dungeons are now expanded by default for immediate tracking.
+  - *UI:* Simplified "Active Dungeon" display to a high-density single row.
+  - *Archive:* Refined the Archive view by removing row icons and moving them to headers for a technical, data-driven look.
+  - *Logic:* Improved editing logic to allow name changes for completed dungeons while strictly locking rewards.
 - **v3.4.2 (2026-04-20):** Explore Tab UI Refinement.
   - *Removal:* Removed the "How to get XP" guide button from the Explore tab header.
   - *Feature:* Replaced "Level" statistic in the Explore header with today's "Sessions" count for immediate activity tracking.

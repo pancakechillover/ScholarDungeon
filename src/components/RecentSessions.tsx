@@ -459,7 +459,7 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
                               </span>
                             </div>
                           ) : (
-                            <span className="text-[10px] sm:text-xs text-slate-600 italic">None</span>
+                            <span className="text-[10px] sm:text-xs text-slate-600 italic pr-1">None</span>
                           )}
                         </td>
                         <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-center text-[9px] sm:text-[10px]">
@@ -543,7 +543,7 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
                     onChange={(e) => setEditingSession({ ...editingSession, timestamp: new Date(e.target.value).toISOString() })}
                     className="w-full bg-slate-800 border-none rounded-xl py-3 px-4 text-white focus:ring-2 focus:ring-indigo-500 outline-none"
                   />
-                  <p className="text-[10px] text-slate-500 mt-2 italic">Adjusting this helps the "Daily Activity" calculation in Record charts.</p>
+                  <p className="text-[10px] text-slate-500 mt-2 italic pr-1">Adjusting this helps the "Daily Activity" calculation in Record charts.</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -575,7 +575,7 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
                     onChange={(e) => setEditingSession({ ...editingSession, duration: parseInt(e.target.value) || 0 })}
                     className="w-full bg-slate-800 border-none rounded-xl py-3 px-4 text-white focus:ring-2 focus:ring-indigo-500 outline-none"
                   />
-                  <p className="text-[10px] text-slate-500 mt-2 italic">Note: Changing duration does NOT automatically adjust XP/Gold already earned.</p>
+                  <p className="text-[10px] text-slate-500 mt-2 italic pr-1">Note: Changing duration does NOT automatically adjust XP/Gold already earned.</p>
                 </div>
 
                 <div className="flex gap-3">
