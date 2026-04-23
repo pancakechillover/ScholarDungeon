@@ -352,19 +352,6 @@ export const Timer = React.memo<TimerProps>(({
         </button>
       </div>
 
-      {/* PiP Mode Toggle - Desktop PWA Only */}
-      {canPip && isPWA && isDesktop && onTogglePip && (
-        <div className="pt-4">
-          <button
-            onClick={onTogglePip}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-600/10 text-indigo-400 rounded-xl border border-indigo-500/20 hover:bg-indigo-600/20 transition-all text-xs font-bold uppercase tracking-widest"
-          >
-            <Maximize size={14} />
-            <span>Floating Mode</span>
-          </button>
-        </div>
-      )}
-
       {/* Timer Settings UI removed from here - moved to TimerSettings.tsx */}
 
 

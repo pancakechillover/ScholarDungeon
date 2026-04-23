@@ -19,7 +19,7 @@ Whenever you complete a task or make changes to the application:
 - **Italic Clipping:** To prevent right-side clipping of italic text (especially in browsers with tight bounding boxes), always add a small right padding (e.g., `pr-1` or `px-0.5`) to the element or its immediate container.
 
 ## Current Status
-- **Current Version:** v3.8.2
+- **Current Version:** v3.8.8
 - **Last Update Date:** 2026-04-23
 
 ## Light Themes Definition
@@ -38,6 +38,21 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v3.8.8 (2026-04-23):** Floating PiP Timer Fix.
+  - *Feature/Fix:* Fixed "Floating Mode" (Picture-in-Picture) React rendering overlap bug.
+  - *UI:* Added PiP toggle button `<PictureInPicture>` to the top right corner of the Timer container on desktop PWAs.
+- **v3.8.7 (2026-04-23):** UI Polish - Explore Layout.
+  - *UX:* Reduced vertical spacing between Explore header and timer module for tighter UI.
+- **v3.8.6 (2026-04-23):** UI Refinement - Talent Icon.
+  - *UI:* Replaced "Active Talents" icon with `Sparkles`.
+- **v3.8.5 (2026-04-23):** UI Refinement - Module Icons.
+  - *UI:* Updated "Active Talents" icon to `Dna`.
+  - *UI:* Updated "Current Build" icon to `Layers`.
+- **v3.8.4 (2026-04-23):** UI Refinement - Timer Settings & Current Build Icons.
+  - *UI:* Removed Loop toggle icon for a cleaner look.
+  - *UI:* Added Flame icon (matching "Active Talents" size) to "Current Build" title.
+- **v3.8.3 (2026-04-23):** Explore Layout Tuning.
+  - *UI:* Further narrowed the Timer module column on wide screens and expanded the Timer Settings column to 500px to ensure full visibility of settings controls.
 - **v3.8.2 (2026-04-23):** PiP Fix.
   - *Bugfix:* Resolved an issue where Floating Mode (PiP) would open the window properly but fail to render the timer content.
 - **v3.8.1 (2026-04-23):** Explore Layout Tuning.

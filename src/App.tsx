@@ -18,6 +18,9 @@ import {
   Zap,
   Target,
   X,
+  Dna,
+  Layers,
+  Sparkles,
   Flame,
   Trophy,
   Gift,
@@ -33,7 +36,8 @@ import {
   Minimize,
   RefreshCw,
   Edit2,
-  Archive
+  Archive,
+  PictureInPicture
 } from 'lucide-react';
 import { Timer } from './components/Timer';
 import { TimerSettings } from './components/TimerSettings';
@@ -84,6 +88,10 @@ function App() {
   const [appReady, setAppReady] = useState(false);
   const [activeTab, setActiveTab] = useState<'dashboard' | 'explore' | 'dungeons' | 'talents' | 'shop' | 'stats' | 'settings' | 'vault'>('explore');
   const [pipWindow, setPipWindow] = useState<Window | null>(null);
+
+  const canPip = 'documentPictureInPicture' in window;
+  const isPWA = window.matchMedia('(display-mode: standalone)').matches;
+  const isDesktop = !('ontouchstart' in window);
 
   // Timer States
   const [focusDuration, setFocusDuration] = useState(() => parseInt(localStorage.getItem('timer_focusDuration') || '25', 10));
@@ -192,18 +200,7 @@ function App() {
         pip.document.body.style.margin = '0';
         pip.document.body.style.overflow = 'hidden';
 
-        const root = createRoot(pip.document.body);
-        root.render(
-          <React.StrictMode>
-             <div className="text-white w-full h-full flex flex-col items-center justify-center">
-                 <div className="text-4xl font-bold font-mono">{Math.floor(timerTimeLeft / 60).toString().padStart(2, '0')}:{(timerTimeLeft % 60).toString().padStart(2, '0')}</div>
-                 <div className="text-xs uppercase tracking-widest text-slate-400 mt-2">{isTimerActive ? "Focusing" : "Paused"}</div>
-             </div>
-          </React.StrictMode>
-        );
-
         pip.addEventListener("pagehide", () => {
-             root.unmount();
              setPipWindow(null);
         });
         setPipWindow(pip);
@@ -1019,7 +1016,7 @@ function App() {
                 )}
               >
                 {!isFullscreenExplore && (
-                  <div className="shrink-0 mb-4 sm:mb-6">
+                  <div className="shrink-0 mb-2 sm:mb-3">
                     <PageHeader 
                       title="Explore"
                       description="Venture into the unknown and sharpen your mind"
@@ -1048,7 +1045,7 @@ function App() {
                 )}>
                   <div className={cn(
                     "w-full h-full",
-                    !isFullscreenExplore ? "grid grid-cols-1 lg:grid-cols-[minmax(300px,1fr)_440px] gap-6 xl:gap-12" : "flex flex-col items-center justify-center h-full w-full"
+                    !isFullscreenExplore ? "grid grid-cols-1 lg:grid-cols-[minmax(200px,1fr)_500px] gap-6 xl:gap-12" : "flex flex-col items-center justify-center h-full w-full"
                   )}>
                     {/* Left Column: Timer & Timer Settings area */}
                     <div className={cn(
@@ -1057,18 +1054,29 @@ function App() {
                     )}>
                       {!isFullscreenExplore && (
                         <div className="flex-1 min-h-0 relative bg-slate-900/20 rounded-[2.5rem] border border-slate-800/50 p-4 sm:p-8 flex flex-col items-center justify-center">
-                          <button 
-                            onClick={() => {
-                              setIsFullscreenExplore(true);
-                              if (document.documentElement.requestFullscreen) {
-                                document.documentElement.requestFullscreen().catch(() => {});
-                              }
-                            }}
-                            className="absolute top-6 right-6 z-[20] p-2 bg-slate-800/80 hover:bg-indigo-600 text-slate-400 hover:text-white rounded-xl transition-all shadow-lg border border-slate-700/50 group"
-                            title="Fullscreen Mode"
-                          >
-                            <Maximize size={18} className="group-hover:scale-110 transition-transform" />
-                          </button>
+                          <div className="absolute top-6 right-6 z-[20] flex items-center gap-2">
+                            {canPip && isPWA && isDesktop && (
+                              <button 
+                                onClick={togglePip}
+                                className="p-2 bg-slate-800/80 hover:bg-indigo-600 text-slate-400 hover:text-white rounded-xl transition-all shadow-lg border border-slate-700/50 group"
+                                title="Floating Mini Timer (Always on Top)"
+                              >
+                                <PictureInPicture size={18} className="group-hover:scale-110 transition-transform" />
+                              </button>
+                            )}
+                            <button 
+                              onClick={() => {
+                                setIsFullscreenExplore(true);
+                                if (document.documentElement.requestFullscreen) {
+                                  document.documentElement.requestFullscreen().catch(() => {});
+                                }
+                              }}
+                              className="p-2 bg-slate-800/80 hover:bg-indigo-600 text-slate-400 hover:text-white rounded-xl transition-all shadow-lg border border-slate-700/50 group"
+                              title="Fullscreen Mode"
+                            >
+                              <Maximize size={18} className="group-hover:scale-110 transition-transform" />
+                            </button>
+                          </div>
                           
                           <div className="w-full max-w-md aspect-square sm:aspect-auto flex items-center justify-center scale-90 sm:scale-100">
                             <Timer 
@@ -1206,7 +1214,7 @@ function App() {
                         {/* Active Talents */}
                         <div className="bg-slate-900/50 rounded-3xl border border-slate-800 p-6 backdrop-blur-sm shrink-0">
                           <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2 mb-6">
-                            <Zap size={14} className="text-indigo-400" />
+                            <Sparkles size={14} className="text-indigo-400" />
                             Active Talents
                           </h3>
                           
@@ -1270,7 +1278,10 @@ function App() {
                         <div className="bg-slate-900/50 rounded-3xl border border-slate-800 p-6 backdrop-blur-sm flex-1 min-h-0 flex flex-col justify-between">
                           <div>
                             <div className="flex items-center justify-between mb-6">
-                              <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest">Current Build</h3>
+                              <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                                <Layers size={14} className="text-indigo-400" />
+                                Current Build
+                              </h3>
                               <button 
                                 onClick={() => setShowBuildDetails(true)}
                                 className="p-1 text-slate-500 hover:text-white transition-colors rounded-full hover:bg-slate-800"

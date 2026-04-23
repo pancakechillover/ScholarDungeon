@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Settings2, RefreshCw, Plus, Trash2, Check, X } from 'lucide-react';
+import { Settings2, Plus, Trash2, Check, X } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 interface TimerSettingsProps {
@@ -109,7 +109,6 @@ export const TimerSettings: React.FC<TimerSettingsProps> = ({
               checked={isLooping}
               onChange={(e) => setIsLooping(e.target.checked)}
             />
-            <RefreshCw size={14} className={isLooping ? "text-indigo-400" : "text-slate-500"} />
             Loop
           </label>
         </div>
