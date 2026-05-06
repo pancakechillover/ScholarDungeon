@@ -44,8 +44,8 @@ export const RewardHistory: React.FC<RewardHistoryProps> = ({ history, onToggleR
   const filteredHistory = useMemo(() => {
     return history.filter(item => {
       // Tab Filtering
-      if (activeTab === 'treasures' && item.type === 'text') return false;
-      if (activeTab === 'custom' && item.type !== 'text') return false;
+      if (activeTab === 'treasures' && (item.type === 'text' || item.source === 'Shop')) return false;
+      if (activeTab === 'custom' && item.type !== 'text' && item.source !== 'Shop') return false;
 
       // Search Filtering
       if (searchQuery && !item.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
@@ -86,9 +86,9 @@ export const RewardHistory: React.FC<RewardHistoryProps> = ({ history, onToggleR
   }, [history, activeTab, timeRange, sourceFilter, statusFilter, rarityFilter, searchQuery]);
 
   const stats = useMemo(() => {
-    const treasures = history.filter(i => i.type !== 'text').length;
-    const custom = history.filter(i => i.type === 'text').length;
-    const pending = history.filter(i => i.type === 'text' && !i.redeemed).length;
+    const treasures = history.filter(i => i.type !== 'text' && i.source !== 'Shop').length;
+    const custom = history.filter(i => i.type === 'text' || i.source === 'Shop').length;
+    const pending = history.filter(i => (i.type === 'text' || i.source === 'Shop') && !i.redeemed).length;
     return { treasures, custom, pending };
   }, [history]);
 
@@ -344,7 +344,7 @@ export const RewardHistory: React.FC<RewardHistoryProps> = ({ history, onToggleR
                       </div>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      {item.type === 'text' ? (
+                      {(item.type === 'text' || item.source === 'Shop') ? (
                         <button
                           onClick={() => onToggleRedeemed(item.id)}
                           className={cn(

@@ -9,6 +9,9 @@ export interface RewardCard {
   amount?: number;
   itemType?: 'double_xp' | 'double_coin' | 'talent_shard' | 'death_defying_medal' | 'xp_bonus_percent' | 'coin_bonus_percent';
   weight: number;
+  limitCount?: number; // Max occurrences in the period
+  limitPeriodDays?: number; // Period in days
+  claimHistory?: string[]; // Timestamps of claims
 }
 
 export interface Talent {

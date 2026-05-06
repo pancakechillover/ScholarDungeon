@@ -19,8 +19,8 @@ Whenever you complete a task or make changes to the application:
 - **Italic Clipping:** To prevent right-side clipping of italic text (especially in browsers with tight bounding boxes), always add a small right padding (e.g., `pr-1` or `px-0.5`) to the element or its immediate container.
 
 ## Current Status
-- **Current Version:** v3.8.8
-- **Last Update Date:** 2026-04-23
+- **Current Version:** v3.9.3
+- **Last Update Date:** 2026-05-06
 
 ## Light Themes Definition
 The following themes are considered "Light Themes" and require special CSS handling (e.g., avoiding white text on light backgrounds, using theme-aware colors for modals and charts):
@@ -38,6 +38,36 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v3.9.3 (2026-05-06):** Editor UI Symmetry & Spacing Fixes.
+  - *UI:* Balanced the vertical height of Loot Pool and Shop Item editors by making description textareas expandable and taller.
+  - *UI:* Moved "Infinite" stock hint to label text for cleaner input alignment.
+  - *UI:* Harmonized icon grid spacing (gap-3) and removed redundant horizontal scrolling by using aspect-ratio square buttons.
+- **v3.9.2 (2026-05-06):** Editor UI Polish & Shop Modal Overhaul.
+  - *UI:* Balanced the two-column layout in the Reward Editor for better vertical symmetry.
+  - *UI:* Implemented visual rarity selectors with color-coded buttons (Common, Rare, Epic, Legendary).
+  - *UI:* Upgraded the Shop Item Editor to a wide two-column layout for consistency with the Reward Editor.
+  - *UI:* Refined input focus states and background contrasts across all editor modals.
+- **v3.9.1 (2026-05-06):** Reward Editor UI Overhaul.
+  - *UI:* Transformed the Reward Editor modal into a wider two-column layout to reduce vertical height.
+  - *UI:* Added internal scrolling for smaller viewports to prevent "Off-screen" issues.
+  - *UI:* Cleaned up Drop Weight input styling and Item Functional Type container CSS for better visual consistency.
+- **v3.9.0 (2026-05-06):** Loot Pool Overhaul & Frequency Limits.
+  - *Feature:* Overhauled the Loot Pool system to support frequency-based limits (e.g., "1 occurrence per 1 day").
+  - *UI:* Transformed the Loot Pool settings into a technical table view with automated probability calculations.
+  - *UI:* Added frequency control inputs (Max Occurrences, Period Days) to the Reward Editor.
+  - *Logic:* Implemented reward filtering logic in the Timer component to respect frequency limits and varied weights.
+  - *Architecture:* Centralized reward selection and history tracking in the `useGameState` hook.
+- **v3.8.12 (2026-05-06):** Shop Item Editor UI Overhaul.
+  - *UI:* Replaced the Shop Item icon selection dropdown with a visual, scrollable grid of icons for better UX.
+  - *UI:* Improved the overall layout of the "Edit Shop Item" form with better grouping and spaced elements.
+- **v3.8.11 (2026-05-06):** Shop Settings Icon Preview.
+  - *UI:* Added dynamic Lucide icon rendering to the "Fixed Shop Items" list in Settings.
+  - *UI:* Added a live icon preview box next to the Icon dropdown in the "Edit Shop Item" form.
+- **v3.8.10 (2026-05-06):** Reward Vault Shop Categorization.
+  - *Feature/Fix:* Items purchased from the Shop are now classified as "Custom" rewards in the Reward Vault instead of "Treasures", and users can properly toggle their states between "Pending/Secure" and "Reaped".
+- **v3.8.9 (2026-05-06):** Force Complete Task.
+  - *Feature:* Added a "Force Complete" functionality inside the Dungeon Explorer allowing users to magically complete a sub-dungeon task without finishing all required sessions.
+  - *UI:* The square checkbox now acts as a button that triggers a confirmation modal before forcefully completing the task.
 - **v3.8.8 (2026-04-23):** Floating PiP Timer Fix.
   - *Feature/Fix:* Fixed "Floating Mode" (Picture-in-Picture) React rendering overlap bug.
   - *UI:* Added PiP toggle button `<PictureInPicture>` to the top right corner of the Timer container on desktop PWAs.

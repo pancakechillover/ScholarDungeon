@@ -22,6 +22,7 @@ interface DungeonManagerProps {
   onReorderSub: (id: string, direction: 'up' | 'down') => void;
   onFinalizeMajor: (id: string) => void;
   onArchiveMajor: (id: string) => void;
+  onForceCompleteSub?: (id: string) => void;
   isEditMode?: boolean;
   activeTab: 'active' | 'archive';
 }
@@ -43,6 +44,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
   onReorderSub,
   onFinalizeMajor,
   onArchiveMajor,
+  onForceCompleteSub,
   isEditMode = false,
   activeTab
 }) => {
@@ -52,6 +54,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
   const [expandedMajors, setExpandedMajors] = useState<string[]>([]);
   const [expandedSubDungeons, setExpandedSubDungeons] = useState<string[]>([]);
   const [deletingDungeon, setDeletingDungeon] = useState<{ id: string, name: string, isMajor: boolean } | null>(null);
+  const [forceCompletePrompt, setForceCompletePrompt] = useState<{ id: string, name: string } | null>(null);
 
   const [archiveSearch, setArchiveSearch] = useState('');
   const [dateFilter, setDateFilter] = useState<'all' | 'week' | 'month'>('all');
@@ -271,7 +274,16 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                       {sub.status === 'completed' ? (
                         <CheckSquare size={16} className="text-emerald-500" />
                       ) : (
-                        <Square size={16} />
+                        <button 
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            setForceCompletePrompt({ id: sub.id, name: sub.name }); 
+                          }}
+                          className="hover:text-amber-400 transition-colors flex items-center justify-center p-0.5 rounded cursor-pointer"
+                          title="Force Complete Task"
+                        >
+                          <Square size={16} />
+                        </button>
                       )}
                     </div>
                   </div>
@@ -286,7 +298,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                           <button
                             onClick={(e) => { e.stopPropagation(); setIsAddingSub({ parentId: sub.id }); }}
                             className="p-1 bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 rounded transition-all"
-                            title={`添加 ${currentDepth + 1}级副本`}
+                            title={`ADD LEVEL ${currentDepth + 1} DUNGEON`}
                           >
                             <Plus size={11} />
                           </button>
@@ -380,8 +392,8 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
               className="bg-slate-900 border border-indigo-500/30 rounded-3xl p-6 max-w-2xl w-full shadow-2xl space-y-6 overflow-y-auto max-h-[90vh]"
             >
               <div className="flex items-center justify-between">
-                <h3 className="text-xl font-bold text-white">
-                  {isAddingMajor ? '创建 1级副本' : isAddingSub ? `创建 ${getSubDungeonDepth(isAddingSub.parentId) + 1}级副本` : `编辑 ${editingMajor ? '1级' : getSubDungeonDepth(editingSub?.id || '') + '级'}副本`}
+                <h3 className="text-xl font-bold text-white uppercase tracking-tight">
+                  {isAddingMajor ? 'CREATE LEVEL 1 DUNGEON' : isAddingSub ? `CREATE LEVEL ${getSubDungeonDepth(isAddingSub.parentId) + 1} DUNGEON` : `EDIT ${editingMajor ? 'LEVEL 1' : 'LEVEL ' + getSubDungeonDepth(editingSub?.id || '')} DUNGEON`}
                 </h3>
                 <button onClick={() => { setEditingMajor(null); setEditingSub(null); setIsAddingMajor(false); setIsAddingSub(null); }} className="text-slate-500 hover:text-white">
                   <X size={24} />
@@ -594,7 +606,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                   }}
                   className="px-8 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors"
                 >
-                  {isAddingMajor || isAddingSub ? 'Create Dungeon' : 'Save Changes'}
+                  {isAddingMajor ? 'CREATE LEVEL 1 DUNGEON' : isAddingSub ? 'CREATE SUB DUNGEON' : 'SAVE CHANGES'}
                 </button>
               </div>
             </motion.div>
@@ -757,7 +769,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                             className="w-full py-2 flex items-center justify-center gap-1 text-slate-500 hover:text-indigo-400 hover:bg-indigo-500/5 rounded-xl transition-all border border-dashed border-slate-800/50 mt-1"
                           >
                             <Plus size={14} />
-                            <span className="text-[10px] font-bold uppercase tracking-wider">创建 2级副本</span>
+                            <span className="text-[10px] font-bold uppercase tracking-wider">CREATE LEVEL 2 DUNGEON</span>
                           </button>
                         )}
                   </motion.div>
@@ -766,6 +778,17 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
             </div>
             ))}
             </div>
+            
+            {/* Add Major Dungeon Button at Bottom */}
+            <button 
+              onClick={() => setIsAddingMajor(true)}
+              className="w-full py-4 mt-2 flex flex-col items-center justify-center gap-2 bg-slate-900/30 hover:bg-indigo-500/5 text-slate-500 hover:text-indigo-400 rounded-3xl border border-dashed border-slate-800/50 transition-all hover:border-indigo-500/30 group"
+            >
+              <div className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center border border-slate-800 group-hover:border-indigo-500/30 transition-all">
+                <Plus size={20} />
+              </div>
+              <span className="text-xs font-bold uppercase tracking-[0.2em]">CREATE LEVEL 1 DUNGEON</span>
+            </button>
           </>
         )) : (
           <div className="space-y-6">
@@ -939,6 +962,45 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                   className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold transition-colors"
                 >
                   Delete
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {forceCompletePrompt && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              className="bg-slate-900 border border-amber-500/30 rounded-3xl p-6 max-w-sm w-full shadow-2xl space-y-6"
+            >
+              <div className="flex items-center gap-3 text-amber-500">
+                <CheckCircle2 size={24} />
+                <h3 className="text-xl font-bold">Force Complete Task</h3>
+              </div>
+              <p className="text-slate-300">
+                Are you sure you want to magically force complete <span className="font-bold text-white">{forceCompletePrompt.name}</span>? This will grant the remaining rewards immediately without completing the required sessions.
+              </p>
+              <div className="flex justify-end space-x-3">
+                <button onClick={() => setForceCompletePrompt(null)} className="px-4 py-2 text-slate-400 hover:text-white transition-colors">Cancel</button>
+                <button 
+                  onClick={() => {
+                    if (onForceCompleteSub) {
+                      onForceCompleteSub(forceCompletePrompt.id);
+                    }
+                    setForceCompletePrompt(null);
+                  }}
+                  className="px-6 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold transition-colors"
+                >
+                  Force Complete
                 </button>
               </div>
             </motion.div>

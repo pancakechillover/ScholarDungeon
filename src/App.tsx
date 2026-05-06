@@ -277,7 +277,9 @@ function App() {
     deleteSession,
     claimQuestReward,
     saveDailyLog,
-    purchaseShopItem
+    purchaseShopItem,
+    forceCompleteSubDungeon,
+    selectReward
   } = useGameState();
 
   const {
@@ -1099,14 +1101,7 @@ function App() {
                               onInventoryAdd={(id) => setState(prev => ({ ...prev, inventory: [...prev.inventory, id] }))}
                               onReroll={() => setState(prev => ({ ...prev, dailyRerollUsed: true }))}
                               onRewardSelect={(reward, sessionId) => {
-                                addRewardToHistory({
-                                  name: reward.name,
-                                  rarity: reward.rarity,
-                                  source: 'Explore',
-                                  type: reward.type,
-                                  amount: reward.amount,
-                                  itemType: reward.itemType
-                                }, sessionId);
+                                selectReward(reward, sessionId);
                                 playSound('reward', state.soundVolume, state.soundEnabled);
                               }}
                               setShowCoinRain={setShowCoinRain}
@@ -1155,14 +1150,7 @@ function App() {
                               onInventoryAdd={(id) => setState(prev => ({ ...prev, inventory: [...prev.inventory, id] }))}
                               onReroll={() => setState(prev => ({ ...prev, dailyRerollUsed: true }))}
                               onRewardSelect={(reward, sessionId) => {
-                                addRewardToHistory({
-                                  name: reward.name,
-                                  rarity: reward.rarity,
-                                  source: 'Explore',
-                                  type: reward.type,
-                                  amount: reward.amount,
-                                  itemType: reward.itemType
-                                }, sessionId);
+                                selectReward(reward, sessionId);
                                 playSound('reward', state.soundVolume, state.soundEnabled);
                               }}
                               setShowCoinRain={setShowCoinRain}
@@ -1492,7 +1480,7 @@ function App() {
                         <button
                           onClick={() => setIsAddingMajor(true)}
                           className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-all shadow-lg shadow-indigo-500/20 shrink-0"
-                          title="New Major Dungeon"
+                          title="CREATE LEVEL 1 DUNGEON"
                         >
                           <Plus size={18} />
                         </button>
@@ -1556,6 +1544,7 @@ function App() {
                     onReorderSub={reorderSubDungeon}
                     onFinalizeMajor={finalizeMajorDungeon}
                     onArchiveMajor={archiveMajorDungeon}
+                    onForceCompleteSub={forceCompleteSubDungeon}
                   />
                 ) : dungeonSubTab === 'quests' ? (
                   <QuestManager 

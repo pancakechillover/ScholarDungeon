@@ -768,6 +768,95 @@ export function useGameState() {
     return session;
   }, [addXP, addCoins, state.activeTalents, state.dailySessions, state.streak, state.inventory, state.rewardPool, state.devModeEnabled, state.devBaseXP, state.devCoinMode, state.devBaseCoins, state.devMinCoins, state.devMaxCoins, state.devCritChance, state.devCritMultiplier]);
 
+  const forceCompleteSubDungeon = useCallback((dungeonId: string) => {
+    setDungeons(prevDungeons => {
+      const dungeonIndex = prevDungeons.findIndex(d => d.id === dungeonId);
+      if (dungeonIndex === -1) return prevDungeons;
+      const d = prevDungeons[dungeonIndex];
+      if (d.status === 'completed') return prevDungeons;
+
+      const updatedDungeons = [...prevDungeons];
+      
+      const allRewards: DungeonReward[] = [];
+      if (d.rewardXP > 0) allRewards.push({ type: 'xp', amount: d.rewardXP });
+      if (d.rewardCoins > 0) allRewards.push({ type: 'coins', amount: d.rewardCoins });
+      if (d.rewards) allRewards.push(...d.rewards);
+
+      allRewards.forEach(reward => {
+        if (reward.type === 'coins') addCoins(reward.amount);
+        else if (reward.type === 'talentPoint') setState(s => ({ ...s, talentPoints: s.talentPoints + reward.amount }));
+        else if (reward.type === 'xp') addXP(reward.amount);
+        
+        addRewardToHistory({
+          name: reward.type === 'text' ? (reward.rewardText || 'Dungeon Reward') : 
+                reward.type === 'talentPoint' ? `+${reward.amount} Talent Points` :
+                reward.type === 'coins' ? `+${reward.amount} Gold Coins` :
+                reward.type === 'xp' ? `+${reward.amount} Experience` :
+                (reward.itemName || 'Item'),
+          rarity: 'common',
+          source: 'Explore',
+          type: reward.type === 'text' ? 'text' : (reward.type === 'coins' ? 'coins' : (reward.type === 'xp' ? 'xp' : 'item')),
+          amount: reward.amount,
+          itemType: reward.itemType
+        });
+      });
+
+      setState(s => ({
+        ...s,
+        lastCompletionRewards: {
+          dungeonName: d.name,
+          type: 'dungeon',
+          rewards: allRewards
+        }
+      }));
+
+      if (d.parentId) {
+        setMajorDungeons(prevMajors => {
+          const major = prevMajors.find(m => m.id === d.parentId);
+          const otherSubs = updatedDungeons.filter(sd => sd.parentId === d.parentId && sd.id !== d.id);
+          const allOtherCompleted = otherSubs.every(sd => sd.status === 'completed');
+          
+          if (allOtherCompleted && major?.isFinalized && major.status !== 'completed') {
+            if (major.rewards) {
+              major.rewards.forEach(reward => {
+                if (reward.type === 'coins') addCoins(reward.amount);
+                else if (reward.type === 'talentPoint') setState(s => ({ ...s, talentPoints: s.talentPoints + reward.amount }));
+                else if (reward.type === 'xp') addXP(reward.amount);
+                
+                addRewardToHistory({
+                  name: reward.type === 'text' ? (reward.rewardText || 'Major Reward') : 
+                        reward.type === 'talentPoint' ? `+${reward.amount} Talent Points` :
+                        reward.type === 'coins' ? `+${reward.amount} Gold Coins` :
+                        reward.type === 'xp' ? `+${reward.amount} Experience` :
+                        (reward.itemName || 'Item'),
+                  rarity: 'rare',
+                  source: 'Explore',
+                  type: reward.type === 'text' ? 'text' : (reward.type === 'coins' ? 'coins' : (reward.type === 'xp' ? 'xp' : 'item')),
+                  amount: reward.amount,
+                  itemType: reward.itemType
+                });
+              });
+
+              setState(s => ({
+                ...s,
+                lastCompletionRewards: {
+                  dungeonName: `MAJOR CLEAR: ${major.name}`,
+                  type: 'dungeon',
+                  rewards: major.rewards || []
+                }
+              }));
+            }
+            return prevMajors.map(m => m.id === d.parentId ? { ...m, status: 'completed', completedAt: new Date().toISOString() } : m);
+          }
+          return prevMajors;
+        });
+      }
+
+      updatedDungeons[dungeonIndex] = { ...d, status: 'completed', completedAt: new Date().toISOString() };
+      return updatedDungeons;
+    });
+  }, [addXP, addCoins, addRewardToHistory]);
+
   const drawGacha = useCallback((poolId: string, amount: number = 1) => {
     let pullResults: { item: string; rarity: string; poolType: 'gacha' | 'ichiban' }[] = [];
     let success = false;
@@ -1139,6 +1228,26 @@ export function useGameState() {
     });
   }, [addRewardToHistory]);
 
+  const selectReward = useCallback((reward: RewardCard, sessionId: string) => {
+    addRewardToHistory({
+      name: reward.name,
+      rarity: reward.rarity,
+      source: 'Explore',
+      type: reward.type,
+      amount: reward.amount,
+      itemType: reward.itemType
+    }, sessionId);
+
+    setState(prev => ({
+      ...prev,
+      rewardPool: (prev.rewardPool || []).map(card => 
+        card.id === reward.id 
+          ? { ...card, claimHistory: [...(card.claimHistory || []), new Date().toISOString()] }
+          : card
+      )
+    }));
+  }, [addRewardToHistory]);
+
   return {
     state,
     dungeons,
@@ -1150,6 +1259,8 @@ export function useGameState() {
     addRewardToHistory,
     toggleRewardRedeemed,
     completeSession,
+    selectReward,
+    forceCompleteSubDungeon,
     purchaseShopItem,
     drawGacha,
     resetIchibanPool,

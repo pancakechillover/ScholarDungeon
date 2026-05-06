@@ -151,17 +151,26 @@ export const Timer = React.memo<TimerProps>(({
       if (session) {
         // Generate choices from rewardPool
         const choices: RewardCard[] = [];
-        const pool = [...rewardPool];
+        const now = Date.now();
+        const pool = (rewardPool || []).filter(card => {
+          if (card.limitCount && card.limitPeriodDays) {
+            const periodMs = card.limitPeriodDays * 24 * 60 * 60 * 1000;
+            const claimsInPeriod = (card.claimHistory || []).filter(ts => (now - new Date(ts).getTime()) < periodMs).length;
+            return claimsInPeriod < card.limitCount;
+          }
+          return true;
+        });
+        const selectedPool = [...pool];
         const count = activeTalents.includes('c1') ? 4 : 3; // Extra Chance
 
-        for (let i = 0; i < Math.min(count, pool.length); i++) {
-          const totalWeight = pool.reduce((acc, r) => acc + r.weight, 0);
+        for (let i = 0; i < Math.min(count, selectedPool.length); i++) {
+          const totalWeight = selectedPool.reduce((acc, r) => acc + r.weight, 0);
           let rand = Math.random() * totalWeight;
-          for (let j = 0; j < pool.length; j++) {
-            rand -= pool[j].weight;
+          for (let j = 0; j < selectedPool.length; j++) {
+            rand -= selectedPool[j].weight;
             if (rand <= 0) {
-              choices.push(pool[j]);
-              pool.splice(j, 1);
+              choices.push(selectedPool[j]);
+              selectedPool.splice(j, 1);
               break;
             }
           }

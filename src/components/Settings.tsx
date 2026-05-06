@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { RewardCard, ShopItem, GachaPool, Rarity } from '../types';
 import { INITIAL_GACHA } from '../constants';
 import { Plus, Trash2, Save, Edit2, X, ChevronRight, Coins, Zap, Sparkles, Trophy, Timer as TimerIcon, Package, Flame, AlertTriangle, Scroll, Volume2, VolumeX, Sun, Moon, Settings as SettingsIcon, ShoppingBag, Trees, Waves, Database, Download, Upload, Target, Gift, User, Sword, Eye, Palette, Check, Bell, BellOff, RefreshCw, Key, Layers } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
 import { cn, getXPForLevel, getDefaultRewardForLevel } from '../lib/utils';
 import { playSound } from '../lib/sound';
 
@@ -1660,10 +1661,10 @@ export const Settings = React.memo<SettingsProps>(({
                 <h3 className="text-3xl font-black text-white tracking-tight">Scholar's Dungeon</h3>
                 <div className="flex flex-col items-center gap-1 mt-2">
                   <span className="px-3 py-1 bg-indigo-500/20 text-indigo-400 rounded-full font-bold tracking-widest uppercase text-xs border border-indigo-500/30">
-                    Version 3.8.8
+                    Version 3.9.3
                   </span>
                   <span className="text-slate-500 text-xs font-medium">
-                    Updated: 2026-04-23
+                    Updated: 2026-05-06
                   </span>
                 </div>
               </div>
@@ -1862,29 +1863,71 @@ const RewardSettings = ({ pool, onUpdate }: { pool: RewardCard[], onUpdate: (p: 
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {pool.map(card => (
-          <div key={card.id} className="p-4 bg-slate-900 border border-slate-800 rounded-xl flex items-center justify-between group">
-            <div>
-              <div className="flex items-center gap-2">
-                <span className={cn("text-xs font-bold uppercase px-1.5 py-0.5 rounded", 
-                  card.rarity === 'common' ? "bg-slate-700 text-slate-300" :
-                  card.rarity === 'rare' ? "bg-blue-600 text-white" :
-                  card.rarity === 'epic' ? "bg-purple-600 text-white" : "bg-amber-500 text-slate-900"
-                )}>
-                  {card.rarity}
-                </span>
-                <h4 className="font-bold text-white">{card.name}</h4>
-              </div>
-              <p className="text-xs text-slate-500 mt-1">{card.description}</p>
-              <div className="text-xs text-indigo-400 font-bold mt-2 uppercase">Weight: {card.weight}</div>
-            </div>
-            <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button onClick={() => setEditing(card)} className="p-2 text-slate-400 hover:text-white"><Edit2 size={16} /></button>
-              <button onClick={() => onUpdate(pool.filter(c => c.id !== card.id))} className="p-2 text-slate-600 hover:text-red-400"><Trash2 size={16} /></button>
-            </div>
-          </div>
-        ))}
+      <div className="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900/40">
+        <table className="w-full text-left text-xs md:text-sm border-collapse">
+          <thead>
+            <tr className="bg-slate-900/80 border-b border-slate-800 text-slate-500 font-bold uppercase tracking-widest text-[10px]">
+              <th className="px-4 py-3">Rarity</th>
+              <th className="px-4 py-3">Reward Details</th>
+              <th className="px-4 py-3">Type</th>
+              <th className="px-4 py-3 text-right">Weight</th>
+              <th className="px-4 py-3 text-right">Prob.</th>
+              <th className="px-4 py-3 text-right whitespace-nowrap">Daily Limit</th>
+              <th className="px-4 py-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-800/50">
+            {(() => {
+              const totalWeight = pool.reduce((sum, item) => sum + (item.weight || 0), 0);
+              return pool.map(card => {
+                const prob = totalWeight > 0 ? ((card.weight / totalWeight) * 100).toFixed(1) : '0.0';
+                return (
+                  <tr key={card.id} className="group hover:bg-slate-800/30 transition-colors">
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <span className={cn("px-2 py-0.5 rounded-full text-[9px] font-black tracking-tighter uppercase border", 
+                        card.rarity === 'common' ? "bg-slate-800 text-slate-400 border-slate-700" :
+                        card.rarity === 'rare' ? "bg-blue-500/10 text-blue-400 border-blue-500/20" :
+                        card.rarity === 'epic' ? "bg-purple-500/10 text-purple-400 border-purple-500/20" : 
+                        "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                      )}>
+                        {card.rarity}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="font-bold text-slate-200">{card.name}</div>
+                      <div className="text-[10px] text-slate-500 mt-0.5 italic">{card.description}</div>
+                    </td>
+                    <td className="px-4 py-4">
+                      <span className="text-slate-400 capitalize bg-slate-800/50 px-2 py-0.5 rounded-md border border-slate-700/50 text-[10px]">
+                        {card.type}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4 text-right font-mono text-indigo-400 font-bold">{card.weight}</td>
+                    <td className="px-4 py-4 text-right font-mono text-emerald-400 font-bold">{prob}%</td>
+                    <td className="px-4 py-4 text-right">
+                      {card.limitCount ? (
+                        <span className="text-[10px] text-slate-400 bg-slate-800 px-2 py-0.5 rounded-full border border-slate-700">
+                          {card.limitCount}x / {card.limitPeriodDays}d
+                        </span>
+                      ) : (
+                        <span className="text-[10px] text-slate-600">None</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-4 text-right">
+                      <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                        <button onClick={() => setEditing(card)} className="p-1.5 text-slate-500 hover:text-indigo-400 hover:bg-slate-800 rounded-lg transition-colors"><Edit2 size={14} /></button>
+                        <button onClick={() => onUpdate(pool.filter(c => c.id !== card.id))} className="p-1.5 text-slate-500 hover:text-rose-500 hover:bg-slate-800 rounded-lg transition-colors"><Trash2 size={14} /></button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              });
+            })()}
+          </tbody>
+        </table>
+        {pool.length === 0 && (
+          <div className="py-12 text-center text-slate-500 italic text-sm">No rewards currently in the pool.</div>
+        )}
       </div>
 
       {createPortal(
@@ -1895,78 +1938,148 @@ const RewardSettings = ({ pool, onUpdate }: { pool: RewardCard[], onUpdate: (p: 
                 initial={{ scale: 0.9, opacity: 0 }} 
                 animate={{ scale: 1, opacity: 1 }} 
                 exit={{ scale: 0.9, opacity: 0 }}
-                className="bg-slate-900 p-8 rounded-3xl border border-slate-700 w-full max-w-md space-y-4"
+                className="bg-slate-900 p-8 rounded-[2rem] border border-slate-700 w-full max-w-2xl flex flex-col max-h-[90vh] shadow-2xl"
               >
-                <h4 className="text-xl font-bold text-white">Edit Reward</h4>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-slate-500 uppercase">Reward Type</label>
-                      <select value={editing.type} onChange={e => setEditing({...editing, type: e.target.value as any})} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white">
-                        <option value="coins">Coins</option>
-                        <option value="xp">XP</option>
-                        <option value="item">Advanced Item</option>
-                        <option value="text">Custom Text</option>
-                      </select>
+                <div className="flex items-center justify-between mb-6 shrink-0">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-indigo-500/20 text-indigo-400 rounded-xl">
+                      <Edit2 size={20} />
                     </div>
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-slate-500 uppercase">Rarity</label>
-                      <select value={editing.rarity} onChange={e => setEditing({...editing, rarity: e.target.value as Rarity})} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white">
-                        <option value="common">Common</option>
-                        <option value="rare">Rare</option>
-                        <option value="epic">Epic</option>
-                        <option value="legendary">Legendary</option>
-                      </select>
-                    </div>
+                    <h4 className="text-xl font-bold text-white tracking-tight">Edit Reward</h4>
                   </div>
+                  <div className="px-3 py-1 bg-slate-800 rounded-full text-[10px] font-bold text-slate-500 uppercase tracking-widest border border-slate-700">Config</div>
+                </div>
 
-                  <input type="text" placeholder="Name" value={editing.name} onChange={e => setEditing({...editing, name: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white" />
-                  <textarea placeholder="Description" value={editing.description} onChange={e => setEditing({...editing, description: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white h-20" />
-                  
-                  {editing.type === 'coins' && (
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-slate-500 uppercase">Coin Amount</label>
-                      <input type="number" placeholder="Amount" value={editing.amount || ''} onChange={e => setEditing({...editing, amount: parseInt(e.target.value) || 0})} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white" />
-                    </div>
-                  )}
-                  {editing.type === 'xp' && (
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-slate-500 uppercase">XP Amount</label>
-                      <input type="number" placeholder="Amount" value={editing.amount || ''} onChange={e => setEditing({...editing, amount: parseInt(e.target.value) || 0})} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white" />
-                    </div>
-                  )}
-                  {editing.type === 'item' && (
-                    <div className="space-y-4">
-                      <div className="space-y-1">
-                        <label className="text-xs font-bold text-slate-500 uppercase">Item Type</label>
-                        <select value={editing.itemType || 'double_xp'} onChange={e => setEditing({...editing, itemType: e.target.value as any})} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white">
-                          <option value="double_xp">Double XP Card</option>
-                          <option value="double_coin">Double Coins Card</option>
-                          <option value="talent_shard">Talent Shard</option>
-                          <option value="death_defying_medal">Death Defying Gold Medal</option>
-                          <option value="xp_bonus_percent">Next XP Bonus %</option>
-                          <option value="coin_bonus_percent">Next Coins Bonus %</option>
-                        </select>
-                      </div>
-                      {(editing.itemType === 'xp_bonus_percent' || editing.itemType === 'coin_bonus_percent' || editing.itemType === 'talent_shard' || editing.itemType === 'death_defying_medal') && (
-                        <div className="space-y-1">
-                          <label className="text-xs font-bold text-slate-500 uppercase">
-                            {(editing.itemType === 'xp_bonus_percent' || editing.itemType === 'coin_bonus_percent') ? 'Bonus Percent (%)' : 'Amount'}
-                          </label>
-                          <input type="number" placeholder="Value" value={editing.amount || ''} onChange={e => setEditing({...editing, amount: parseInt(e.target.value) || 0})} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white" />
+                <div className="flex-1 overflow-y-auto pr-2 -mr-2 space-y-6 scrollbar-thin scrollbar-thumb-slate-800">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {/* Left Column: Basic Info */}
+                    <div className="flex flex-col gap-6">
+                      <div className="space-y-4">
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Reward Name</label>
+                          <input type="text" placeholder="Reward Name" value={editing.name} onChange={e => setEditing({...editing, name: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:border-indigo-500 transition-colors" />
                         </div>
-                      )}
-                    </div>
-                  )}
 
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-500 uppercase">Drop Weight (Higher = More Common)</label>
-                    <input type="number" placeholder="Weight" value={editing.weight} onChange={e => setEditing({...editing, weight: parseInt(e.target.value) || 0})} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white" />
+                        <div className="space-y-1.5 flex-1 flex flex-col">
+                          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Description</label>
+                          <textarea placeholder="Describe the reward..." value={editing.description} onChange={e => setEditing({...editing, description: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm flex-1 min-h-[160px] resize-none focus:border-indigo-500 transition-colors" />
+                        </div>
+                      </div>
+
+                      <div className="space-y-3 p-4 bg-slate-800/30 rounded-2xl border border-slate-800/50 shrink-0">
+                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Rarity Grade</label>
+                        <div className="grid grid-cols-2 gap-2">
+                          {[
+                            { id: 'common', label: 'Common', color: 'bg-slate-700 border-slate-600 text-slate-300' },
+                            { id: 'rare', label: 'Rare', color: 'bg-blue-600 border-blue-400 text-white' },
+                            { id: 'epic', label: 'Epic', color: 'bg-purple-600 border-purple-400 text-white' },
+                            { id: 'legendary', label: 'Legendary', color: 'bg-amber-500 border-amber-300 text-slate-900' }
+                          ].map(r => (
+                            <button
+                              key={r.id}
+                              onClick={() => setEditing({...editing, rarity: r.id as Rarity})}
+                              className={cn(
+                                "py-2 px-3 rounded-xl border-2 text-[10px] font-black uppercase tracking-tighter transition-all",
+                                editing.rarity === r.id ? r.color : "bg-slate-900/50 border-slate-800 text-slate-600 hover:border-slate-700"
+                              )}
+                            >
+                              {r.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right Column: Values & Limits */}
+                    <div className="flex flex-col gap-6">
+                      <div className="space-y-4">
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Type</label>
+                          <select value={editing.type} onChange={e => setEditing({...editing, type: e.target.value as any})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:border-indigo-500 transition-colors">
+                            <option value="coins">Coins</option>
+                            <option value="xp">XP</option>
+                            <option value="item">Advanced Item</option>
+                            <option value="text">Bonus/Action</option>
+                          </select>
+                        </div>
+
+                        {editing.type === 'coins' && (
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Coin Amount</label>
+                            <input type="number" placeholder="e.g. 10" value={editing.amount || ''} onChange={e => setEditing({...editing, amount: parseInt(e.target.value) || 0})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:border-amber-500 transition-colors" />
+                          </div>
+                        )}
+                        {editing.type === 'xp' && (
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">XP Amount</label>
+                            <input type="number" placeholder="e.g. 50" value={editing.amount || ''} onChange={e => setEditing({...editing, amount: parseInt(e.target.value) || 0})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:border-emerald-500 transition-colors" />
+                          </div>
+                        )}
+                        {editing.type === 'item' && (
+                          <div className="p-4 bg-indigo-500/5 rounded-2xl border border-indigo-500/20 space-y-4">
+                            <div className="space-y-1.5">
+                              <label className="text-[10px] font-bold text-indigo-400/60 uppercase tracking-wider ml-1">Item Function</label>
+                              <select value={editing.itemType || 'double_xp'} onChange={e => setEditing({...editing, itemType: e.target.value as any})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-xs">
+                                <option value="double_xp">Double XP Card (x2)</option>
+                                <option value="double_coin">Double Coins Card (x2)</option>
+                                <option value="talent_shard">Talent Shard</option>
+                                <option value="death_defying_medal">Death Defying Medal</option>
+                                <option value="xp_bonus_percent">Next XP Bonus %</option>
+                                <option value="coin_bonus_percent">Next Coins Bonus %</option>
+                              </select>
+                            </div>
+                            {(editing.itemType === 'xp_bonus_percent' || editing.itemType === 'coin_bonus_percent' || editing.itemType === 'talent_shard' || editing.itemType === 'death_defying_medal') && (
+                              <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-indigo-400/60 uppercase tracking-wider ml-1">
+                                  {(editing.itemType === 'xp_bonus_percent' || editing.itemType === 'coin_bonus_percent') ? 'Bonus %' : 'Quantity'}
+                                </label>
+                                <input type="number" placeholder="Value" value={editing.amount || ''} onChange={e => setEditing({...editing, amount: parseInt(e.target.value) || 0})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-xs" />
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider ml-1">Drop Weight</label>
+                            <input type="number" placeholder="Weight" value={editing.weight} onChange={e => setEditing({...editing, weight: parseInt(e.target.value) || 0})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm font-mono focus:border-indigo-500 transition-colors" />
+                          </div>
+                          <div className="space-y-1.5 text-right flex flex-col justify-end">
+                            <p className="text-[10px] text-slate-500 uppercase font-bold tracking-tighter">Current Probability</p>
+                            <p className="text-xl font-mono text-emerald-400 font-black">
+                              {(() => {
+                                const poolWithoutThis = pool.filter(c => c.id !== editing.id);
+                                const newTotalWeight = poolWithoutThis.reduce((s, i) => s + (i.weight || 0), 0) + (editing.weight || 0);
+                                return newTotalWeight > 0 ? ((editing.weight / newTotalWeight) * 100).toFixed(1) : '0.0';
+                              })()}%
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="p-4 bg-slate-800/30 rounded-2xl border border-slate-800/50 space-y-3">
+                        <div className="flex items-center justify-between mb-1 border-b border-white/5 pb-1">
+                          <h5 className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em]">Frequency Control</h5>
+                          <span className="text-[8px] text-slate-600 font-bold uppercase tracking-widest">(Optional)</span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Max Occurrences</label>
+                            <input type="number" placeholder="e.g. 1" value={editing.limitCount || ''} onChange={e => setEditing({...editing, limitCount: parseInt(e.target.value) || 0})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm" />
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Period (Days)</label>
+                            <input type="number" placeholder="e.g. 1" value={editing.limitPeriodDays || ''} onChange={e => setEditing({...editing, limitPeriodDays: parseInt(e.target.value) || 0})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div className="flex justify-end gap-3 pt-4">
-                  <button onClick={() => setEditing(null)} className="px-4 py-2 text-slate-400">Cancel</button>
-                  <button onClick={() => handleSave(editing)} className="px-6 py-2 bg-indigo-600 text-white rounded-lg font-bold">Save</button>
+
+                <div className="flex justify-end gap-3 pt-6 border-t border-slate-800 shrink-0">
+                  <button onClick={() => setEditing(null)} className="px-5 py-2.5 text-slate-400 font-bold hover:text-white transition-colors">Cancel</button>
+                  <button onClick={() => handleSave(editing)} className="px-8 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold transition-all shadow-lg shadow-indigo-500/20 active:scale-95">Save Reward</button>
                 </div>
               </motion.div>
             </div>
@@ -1991,21 +2104,28 @@ const ShopSettings = ({ items, onUpdate }: { items: ShopItem[], onUpdate: (i: Sh
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {items.map(item => (
+        {items.map(item => {
+          const IconComp = (item.icon && (LucideIcons as any)[item.icon]) ? (LucideIcons as any)[item.icon] : LucideIcons.ShoppingBag;
+          return (
           <div key={item.id} className="p-4 bg-slate-900 border border-slate-800 rounded-xl flex items-center justify-between group">
-            <div>
-              <h4 className="font-bold text-white">{item.name}</h4>
-              <p className="text-xs text-slate-500 mt-1">{item.description}</p>
-              <div className="flex items-center gap-1 text-amber-500 font-bold mt-2 text-xs">
-                <Coins size={12} /> {item.price.toLocaleString()}
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center shrink-0 border border-indigo-500/20">
+                <IconComp size={20} />
+              </div>
+              <div>
+                <h4 className="font-bold text-white tracking-tight">{item.name}</h4>
+                <p className="text-xs text-slate-500 mt-1 line-clamp-1">{item.description}</p>
+                <div className="flex items-center gap-1.5 text-amber-500 font-bold mt-2 text-xs bg-amber-500/10 w-fit px-2 py-0.5 rounded border border-amber-500/20">
+                  <Coins size={12} /> {item.price.toLocaleString()}
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button onClick={() => setEditing(item)} className="p-2 text-slate-400 hover:text-white"><Edit2 size={16} /></button>
-              <button onClick={() => onUpdate(items.filter(i => i.id !== item.id))} className="p-2 text-slate-600 hover:text-red-400"><Trash2 size={16} /></button>
+            <div className="flex flex-col items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-4">
+              <button onClick={() => setEditing(item)} className="p-1.5 text-slate-500 hover:text-indigo-400 hover:bg-slate-800 rounded transition-colors"><Edit2 size={16} /></button>
+              <button onClick={() => onUpdate(items.filter(i => i.id !== item.id))} className="p-1.5 text-slate-500 hover:text-rose-500 hover:bg-slate-800 rounded transition-colors"><Trash2 size={16} /></button>
             </div>
           </div>
-        ))}
+        )})}
       </div>
 
       {createPortal(
@@ -2016,48 +2136,87 @@ const ShopSettings = ({ items, onUpdate }: { items: ShopItem[], onUpdate: (i: Sh
                 initial={{ scale: 0.9, opacity: 0 }} 
                 animate={{ scale: 1, opacity: 1 }} 
                 exit={{ scale: 0.9, opacity: 0 }}
-                className="bg-slate-900 p-8 rounded-3xl border border-slate-700 w-full max-w-md space-y-4"
+                className="bg-slate-900 p-8 rounded-[2rem] border border-slate-700 w-full max-w-2xl flex flex-col max-h-[90vh] shadow-2xl"
               >
-                <h4 className="text-xl font-bold text-white">Edit Shop Item</h4>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-slate-500 uppercase">Item Name</label>
-                      <input type="text" placeholder="Name" value={editing.name} onChange={e => setEditing({...editing, name: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white" />
+                <div className="flex items-center justify-between mb-6 shrink-0">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-amber-500/20 text-amber-500 rounded-xl">
+                      <ShoppingBag size={20} />
                     </div>
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-slate-500 uppercase">Price (Gold)</label>
-                      <input type="number" placeholder="Price" value={editing.price} onChange={e => setEditing({...editing, price: parseInt(e.target.value) || 0})} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white" />
-                    </div>
+                    <h4 className="text-xl font-bold text-white tracking-tight">Edit Shop Item</h4>
                   </div>
+                  <div className="px-3 py-1 bg-slate-800 rounded-full text-[10px] font-bold text-slate-500 uppercase tracking-widest border border-slate-700">Market</div>
+                </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-slate-500 uppercase">Stock (-1 for infinite)</label>
-                      <input type="number" placeholder="Stock" value={editing.stock ?? -1} onChange={e => setEditing({...editing, stock: parseInt(e.target.value)})} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white" />
+                <div className="flex-1 overflow-y-auto pr-2 -mr-2 space-y-6 scrollbar-thin scrollbar-thumb-slate-800">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {/* Left Column */}
+                    <div className="space-y-6">
+                      <div className="space-y-4">
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Item Name</label>
+                          <input type="text" placeholder="e.g. Ancient Relic" value={editing.name} onChange={e => setEditing({...editing, name: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:border-amber-500 transition-colors" />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Price (Gold)</label>
+                            <div className="relative">
+                              <input type="number" placeholder="Price" value={editing.price} onChange={e => setEditing({...editing, price: parseInt(e.target.value) || 0})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 pl-10 text-white text-sm focus:border-amber-500 transition-colors" />
+                              <Coins className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-500" size={16} />
+                            </div>
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1 flex items-center justify-between">
+                              Stock Availability
+                              <span className="text-[8px] text-slate-500 font-bold uppercase opacity-50 tracking-tighter">(-1 = Infinite)</span>
+                            </label>
+                            <input type="number" placeholder="Stock" value={editing.stock ?? -1} onChange={e => setEditing({...editing, stock: parseInt(e.target.value)})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:border-amber-500 transition-colors" />
+                          </div>
+                        </div>
+                        <div className="space-y-1.5 flex-1 flex flex-col">
+                          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Description</label>
+                          <textarea placeholder="What does this item do?..." value={editing.description} onChange={e => setEditing({...editing, description: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm flex-1 min-h-[160px] resize-none focus:border-amber-500 transition-colors" />
+                        </div>
+                      </div>
                     </div>
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-slate-500 uppercase">Icon</label>
-                      <select 
-                        value={editing.icon || 'ShoppingBag'} 
-                        onChange={e => setEditing({...editing, icon: e.target.value})}
-                        className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white"
-                      >
-                        {['ShoppingBag', 'Sparkles', 'Trophy', 'Coins', 'Zap', 'Flame', 'Gem', 'Target', 'Star', 'Heart', 'Shield', 'Sword', 'Coffee', 'Pizza', 'Gift', 'Package', 'Camera', 'Music', 'Book', 'Gamepad2', 'Ghost', 'Moon', 'Sun', 'Cloud', 'Anchor', 'Compass', 'Map', 'Key', 'Lock', 'Unlock', 'Bell', 'BellOff', 'Eye', 'EyeOff', 'Search', 'Settings'].map(icon => (
-                          <option key={icon} value={icon}>{icon}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
 
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-500 uppercase">Description</label>
-                    <textarea placeholder="Description" value={editing.description} onChange={e => setEditing({...editing, description: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white h-20" />
+                    {/* Right Column */}
+                    <div className="space-y-6">
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1 flex items-center justify-between">
+                          <span>Visual Identifier (Icon)</span>
+                          <span className="text-[10px] font-black text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">{editing.icon || 'ShoppingBag'}</span>
+                        </label>
+                        <div className="grid grid-cols-6 gap-3 p-4 bg-slate-950/50 rounded-2xl border border-slate-800/50 scrollbar-thin scrollbar-thumb-slate-800">
+                          {['ShoppingBag', 'Sparkles', 'Trophy', 'Coins', 'Zap', 'Flame', 'Gem', 'Target', 'Star', 'Heart', 'Shield', 'Sword', 'Coffee', 'Pizza', 'Gift', 'Package', 'Camera', 'Music', 'Book', 'Gamepad2', 'Ghost', 'Moon', 'Sun', 'Cloud', 'Anchor', 'Compass', 'Map', 'Key', 'Lock', 'Unlock', 'Bell', 'BellOff', 'Eye', 'EyeOff', 'Search', 'Settings'].map(iconName => {
+                            const IconComponent = (LucideIcons as any)[iconName] || LucideIcons.ShoppingBag;
+                            const isSelected = (editing.icon || 'ShoppingBag') === iconName;
+                            return (
+                              <button
+                                key={iconName}
+                                type="button"
+                                onClick={() => setEditing({...editing, icon: iconName})}
+                                className={cn(
+                                  "aspect-square flex items-center justify-center rounded-xl transition-all border",
+                                  isSelected 
+                                    ? "bg-amber-500 border-amber-400 text-slate-900 shadow-lg shadow-amber-500/20 scale-110 z-10" 
+                                    : "bg-slate-900/50 border-slate-800 text-slate-500 hover:border-slate-700 hover:text-slate-300"
+                                )}
+                                title={iconName}
+                              >
+                                <IconComponent size={20} />
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div className="flex justify-end gap-3 pt-4">
-                  <button onClick={() => setEditing(null)} className="px-4 py-2 text-slate-400">Cancel</button>
-                  <button onClick={() => { onUpdate(items.some(i => i.id === editing.id) ? items.map(i => i.id === editing.id ? editing : i) : [...items, editing]); setEditing(null); }} className="px-6 py-2 bg-indigo-600 text-white rounded-lg font-bold">Save</button>
+
+                <div className="flex justify-end gap-3 pt-6 border-t border-slate-800 shrink-0">
+                  <button onClick={() => setEditing(null)} className="px-5 py-2.5 text-slate-400 font-bold hover:text-white transition-colors">Cancel</button>
+                  <button onClick={() => { onUpdate(items.some(i => i.id === editing.id) ? items.map(i => i.id === editing.id ? editing : i) : [...items, editing]); setEditing(null); }} className="px-8 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-900 rounded-xl font-black transition-all shadow-lg shadow-amber-500/20 active:scale-95">Save Item</button>
                 </div>
               </motion.div>
             </div>

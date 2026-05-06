@@ -28,80 +28,39 @@ export const DEFAULT_QUESTS: Quest[] = [
 ];
 
 export const INITIAL_REWARD_POOL: RewardCard[] = [
-  {
-    id: 'energy_drink',
-    name: 'Energy Drink',
-    description: 'Next session XP +20%',
-    rarity: 'common',
-    type: 'item',
-    itemType: 'xp_bonus_percent',
-    amount: 20,
-    weight: 70
-  },
-  {
-    id: 'lucky_charm',
-    name: 'Lucky Charm',
-    description: 'Next session coins +20%',
-    rarity: 'common',
-    type: 'item',
-    itemType: 'coin_bonus_percent',
-    amount: 20,
-    weight: 70
-  },
-  {
-    id: 'tea_break',
-    name: 'Tea Break',
-    description: 'Force a 10-min rest (Once per day)',
-    rarity: 'common',
-    type: 'text',
-    weight: 50
-  },
-  {
-    id: 'small_wallet',
-    name: 'Small Wallet',
-    description: 'Instantly gain 5 coins',
-    rarity: 'common',
-    type: 'coins',
-    amount: 5,
-    weight: 70
-  },
-  {
-    id: 'focus_potion',
-    name: 'Focus Potion',
-    description: 'Next session coins doubled',
-    rarity: 'rare',
-    type: 'item',
-    itemType: 'double_coin',
-    weight: 20
-  },
-  {
-    id: 'double_xp_card',
-    name: 'Double XP Card',
-    description: 'Next session XP doubled',
-    rarity: 'rare',
-    type: 'item',
-    itemType: 'double_xp',
-    weight: 20
-  },
-  {
-    id: 'talent_shard',
-    name: 'Talent Shard',
-    description: 'Collect 3 for 1 Talent Point',
-    rarity: 'epic',
-    type: 'item',
-    itemType: 'talent_shard',
-    amount: 1,
-    weight: 9
-  },
-  {
-    id: 'death_defying',
-    name: 'Death Defying Gold Medal',
-    description: 'Protects streak if a day is missed',
-    rarity: 'legendary',
-    type: 'item',
-    itemType: 'death_defying_medal',
-    amount: 1,
-    weight: 1
+  // 10 COMMON
+  { id: 'lucky_penny', name: 'Lucky Penny', description: 'Small fortune. Gain 1 Gold Coin.', rarity: 'common', type: 'coins', amount: 1, weight: 300 },
+  { id: 'tiny_spark', name: 'Tiny Spark', description: 'A spark of insight. Gain 5 XP.', rarity: 'common', type: 'xp', amount: 5, weight: 250 },
+  { id: 'copper_bag', name: 'Copper Bag', description: 'Contains some loose change. Gain 5 Gold Coins.', rarity: 'common', type: 'coins', amount: 5, weight: 150 },
+  { id: 'focused_breath', name: 'Focused Breath', description: 'Deep focus reward. Gain 10 XP.', rarity: 'common', type: 'xp', amount: 10, weight: 100 },
+  { id: 'hydration_txt', name: 'Hydration Break', description: 'Water is life. Drink a glass of water.', rarity: 'common', type: 'text', weight: 80 },
+  { id: 'stretch_txt', name: 'Quick Stretch', description: 'Relieve tension. Stretch for 1 minute.', rarity: 'common', type: 'text', weight: 60 },
+  { id: 'eye_care_txt', name: '20-20-20 Rule', description: 'Look 20ft away for 20s to rest eyes.', rarity: 'common', type: 'text', weight: 50 },
+  { id: 'meditation_txt', name: 'Zen Moment', description: 'Calm the mind. 1-minute deep breathing.', rarity: 'common', type: 'text', weight: 40 },
+  { id: 'tidy_desk_txt', name: 'Desk Tidy', description: 'Clear space, clear mind. 2min workspace cleanup.', rarity: 'common', type: 'text', weight: 30 },
+  { id: 'motivation_txt', name: 'Pure Motivation', description: 'You are doing great! Keep it up.', rarity: 'common', type: 'text', weight: 20 },
+
+  // 4 RARE
+  { id: 'iron_chest', name: 'Iron Chest', description: 'A solid find. Gain 20 Gold Coins.', rarity: 'rare', type: 'coins', amount: 20, weight: 80 },
+  { id: 'wisdom_essence', name: 'Wisdom Essence', description: 'Concentrated knowledge. Gain 35 XP.', rarity: 'rare', type: 'xp', amount: 35, weight: 60 },
+  { id: 'study_booster', name: 'Study Booster', description: 'Next session XP +50%.', rarity: 'rare', type: 'item', itemType: 'xp_bonus_percent', amount: 50, weight: 40 },
+  { id: 'luck_charm_rare', name: 'Fortune Charm', description: 'Next session coins +50%.', rarity: 'rare', type: 'item', itemType: 'coin_bonus_percent', amount: 50, weight: 30 },
+
+  // 3 EPIC
+  { id: 'gold_chalice', name: 'Golden Chalice', description: 'A kingly sum. Gain 100 Gold Coins.', rarity: 'epic', type: 'coins', amount: 100, weight: 20 },
+  { id: 'ancient_tome', name: 'Ancient Tome', description: 'Forbidden research. Gain 150 XP.', rarity: 'epic', type: 'xp', amount: 150, weight: 15 },
+  { id: 'talent_shard_ep', name: 'Talent Shard', description: 'A piece of pure potential.', rarity: 'epic', type: 'item', itemType: 'talent_shard', amount: 1, weight: 12 },
+
+  // 1 LEGENDARY
+  { 
+    id: 'legend_reward_1', 
+    name: 'Milk Tea / Dessert!', 
+    description: 'Reward your hard work with a treat. (Limit 1 per day)', 
+    rarity: 'legendary', 
+    type: 'text', 
+    weight: 5,
+    limitCount: 1,
+    limitPeriodDays: 1
   }
 ];
 
