@@ -1,9 +1,9 @@
 import { useState, useCallback } from 'react';
-import { UserState } from '../types';
+import { AppState } from '../types';
 
 export function useCloudSync(
-  state: UserState, 
-  setState: React.Dispatch<React.SetStateAction<UserState>>,
+  state: AppState, 
+  setState: React.Dispatch<React.SetStateAction<AppState>>,
   setDungeons: React.Dispatch<React.SetStateAction<any[]>>,
   setMajorDungeons: React.Dispatch<React.SetStateAction<any[]>>
 ) {
@@ -24,7 +24,7 @@ export function useCloudSync(
     });
   }, [setState]);
 
-  const syncToCloud = useCallback(async (forceOverwrite = false, specificState?: UserState) => {
+  const syncToCloud = useCallback(async (forceOverwrite = false, specificState?: AppState) => {
     const currentState = specificState || state;
     if (!currentState.secretCode) return;
 

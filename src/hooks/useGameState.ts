@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { UserState, Dungeon, StudySession, Talent, RewardCard, MajorDungeon, RewardHistoryItem, DungeonReward, Quest } from '../types';
+import { AppState, Dungeon, StudySession, Talent, RewardCard, MajorDungeon, RewardHistoryItem, DungeonReward, Quest } from '../types';
 import { TALENTS, INITIAL_REWARD_POOL, INITIAL_GACHA, DEFAULT_QUESTS } from '../constants';
 import { format, isSameDay, parseISO, differenceInDays } from 'date-fns';
 
@@ -8,9 +8,9 @@ import { getXPForLevel, getDefaultRewardForLevel, getDeviceType } from '../lib/u
 const STORAGE_KEY = 'scholars_dungeon_state';
 
 export function useGameState() {
-  const [state, setState] = useState<UserState>(() => {
+  const [state, setState] = useState<AppState>(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
-    const defaultState: UserState = {
+    const defaultState: AppState = {
       level: 1,
       xp: 0,
       coins: 0,
@@ -237,7 +237,7 @@ export function useGameState() {
     const currentMonthStr = format(now, 'yyyy-MM');
 
     let needsUpdate = false;
-    let updates: Partial<UserState> = {};
+    let updates: Partial<AppState> = {};
 
     if (state.lastDailyReset !== todayStr) {
       needsUpdate = true;
@@ -289,7 +289,7 @@ export function useGameState() {
   }, [state.lastDailyReset, state.lastWeeklyReset, state.lastMonthlyReset, state.lastStudyDate, state.streak, state.quests]);
 
   // Helper functions for state updates
-  const processXP = (state: UserState, amount: number): UserState => {
+  const processXP = (state: AppState, amount: number): AppState => {
     let newXP = state.xp + amount;
     let newLevel = state.level;
     let newTalentPoints = state.talentPoints;
@@ -336,7 +336,7 @@ export function useGameState() {
     return { ...state, xp: newXP, level: newLevel, talentPoints: newTalentPoints, coins: newCoins, rewardHistory: newRewardHistory };
   };
 
-  const processShards = (state: UserState, amount: number): UserState => {
+  const processShards = (state: AppState, amount: number): AppState => {
     let newShards = state.talentShards + amount;
     let newTalentPoints = state.talentPoints;
 

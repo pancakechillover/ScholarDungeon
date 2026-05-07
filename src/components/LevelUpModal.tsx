@@ -1,0 +1,120 @@
+import React from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Trophy, HelpCircle, Zap, Coins, Scroll } from 'lucide-react';
+import { AppState } from '../types';
+
+interface LevelUpModalProps {
+  levels: number[] | null;
+  onClose: () => void;
+  state: AppState;
+  setShowXPGuide: (val: boolean) => void;
+  isTalentLevel: (lvl: number) => boolean;
+  getNextTalentLevel: (lvl: number, rewards?: any[]) => number;
+}
+
+export const LevelUpModal: React.FC<LevelUpModalProps> = ({
+  levels,
+  onClose,
+  state,
+  setShowXPGuide,
+  isTalentLevel,
+  getNextTalentLevel
+}) => {
+  const currentLevelUp = levels?.[0];
+
+  if (!levels || !currentLevelUp) return null;
+
+  return (
+    <AnimatePresence>
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+        <motion.div
+          key={currentLevelUp}
+          initial={{ scale: 0.9, opacity: 0, y: 20 }}
+          animate={{ scale: 1, opacity: 1, y: 0 }}
+          exit={{ scale: 0.9, opacity: 0, y: -20 }}
+          className="bg-slate-900 w-full max-w-md rounded-3xl border border-indigo-500/30 overflow-hidden text-center"
+        >
+          <div className="p-8 bg-gradient-to-b from-indigo-500/10 to-transparent">
+            <div className="w-20 h-20 bg-indigo-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Trophy className="text-indigo-400 w-10 h-10" />
+            </div>
+            <h2 className="text-3xl font-black text-slate-50 mb-2">Level Up!</h2>
+            <p className="text-indigo-400 font-bold text-xl mb-6">You reached Level {currentLevelUp}</p>
+            
+            <div className="bg-slate-800/50 rounded-2xl p-6 border border-slate-700/50 mb-8">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest">Rewards</h3>
+                <button 
+                  onClick={() => setShowXPGuide(true)}
+                  className="text-[10px] font-bold text-slate-500 hover:text-indigo-400 flex items-center gap-1 uppercase tracking-widest transition-colors"
+                >
+                  <HelpCircle size={12} />
+                  How to get XP
+                </button>
+              </div>
+              <div className="flex flex-col items-center justify-center gap-2 text-lg font-bold text-white">
+                {state.levelRewards?.find(r => r.level === currentLevelUp) ? (
+                  <div className="w-full space-y-3">
+                    {(() => {
+                      const reward = state.levelRewards.find(r => r.level === currentLevelUp);
+                      if (reward?.type === 'text') {
+                        return (
+                          <div className="flex flex-col items-center gap-3 py-2">
+                            <div className="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center">
+                              <Scroll className="text-emerald-400" size={24} />
+                            </div>
+                            <span className="text-xl font-black text-slate-50 text-center leading-tight">
+                              {reward.rewardText}
+                            </span>
+                          </div>
+                        );
+                      }
+                      return (
+                        <>
+                          <div className="flex items-center justify-center gap-2">
+                            {reward?.type === 'talentPoint' && <Zap size={20} className="text-indigo-400" />}
+                            {reward?.type === 'coins' && <Coins size={20} className="text-amber-400" />}
+                            <span>+{reward?.amount} {reward?.type === 'talentPoint' ? 'Talent Point' : 'Gold'}</span>
+                          </div>
+                          {reward?.type === 'talentPoint' && (
+                            <p className="text-xs text-slate-500 mt-2">Check the Talents tab to spend it!</p>
+                          )}
+                        </>
+                      );
+                    })()}
+                  </div>
+                ) : (
+                  <>
+                    {isTalentLevel(currentLevelUp) ? (
+                      <>
+                        <div className="flex items-center gap-2">
+                          <Zap size={20} className="text-indigo-400" />
+                          <span>+1 Talent Point</span>
+                        </div>
+                        <p className="text-xs text-slate-500 mt-2">Check the Talents tab to spend it!</p>
+                      </>
+                    ) : (
+                      <div className="flex flex-col items-center gap-2">
+                        <span className="text-slate-500 text-sm">No specific reward for this level</span>
+                        <span className="text-indigo-400/80 text-xs font-medium">
+                          Next Talent Point in {getNextTalentLevel(currentLevelUp, state.levelRewards) - currentLevelUp} level(s)
+                        </span>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+
+            <button
+              onClick={onClose}
+              className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-black uppercase tracking-widest rounded-2xl transition-all"
+            >
+              {levels.length > 1 ? `Next Level (${levels.length - 1} more)` : 'Claim Rewards'}
+            </button>
+          </div>
+        </motion.div>
+      </div>
+    </AnimatePresence>
+  );
+};

@@ -23,10 +23,10 @@ import {
 } from 'lucide-react';
 import Markdown from 'react-markdown';
 import { cn } from '../lib/utils';
-import { UserState, StudySession, RewardHistoryItem, Dungeon, MajorDungeon } from '../types';
+import { AppState, StudySession, RewardHistoryItem, Dungeon, MajorDungeon } from '../types';
 
 interface DailySummaryModalProps {
-  state: UserState;
+  state: AppState;
   dungeons: Dungeon[];
   majorDungeons: MajorDungeon[];
   onClose: () => void;

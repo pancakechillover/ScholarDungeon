@@ -1,0 +1,111 @@
+import React from 'react';
+import { motion } from 'motion/react';
+import { 
+  Sword, 
+  ChevronRight, 
+  Calendar 
+} from 'lucide-react';
+import { AppState, Dungeon } from '../types';
+import { playSound } from '../lib/sound';
+
+interface DashboardViewProps {
+  state: AppState;
+  currentDungeon: Dungeon | null;
+  setActiveTab: (tab: any) => void;
+  setShowDailySummary: (show: boolean) => void;
+  saveDailyLog: (date: string, rating: number, reflection: string) => void;
+}
+
+export const DashboardView: React.FC<DashboardViewProps> = ({
+  state,
+  currentDungeon,
+  setActiveTab,
+  setShowDailySummary,
+  saveDailyLog
+}) => {
+  return (
+    <motion.div
+      key="dashboard"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="w-full p-6 lg:p-8 space-y-8"
+    >
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="md:col-span-2 bg-slate-900 rounded-3xl border border-slate-800 p-8 relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-8 opacity-10">
+            <Sword size={120} />
+          </div>
+          <h2 className="text-3xl font-bold text-white mb-2">
+            {state.history.length === 0 ? "Welcome, Brave Seeker." : "Welcome back, Seeker."}
+          </h2>
+          <p className="text-slate-400 mb-8 max-w-md">
+            {state.history.length === 0 
+              ? "A new legend is about to be written. Are you ready to begin your first exploration?" 
+              : "Your journey through the Scholar's Dungeon continues. Ready for the next session?"}
+          </p>
+          
+          {currentDungeon ? (
+            <div className="bg-slate-950/50 p-4 sm:p-6 rounded-2xl border border-indigo-500/20">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 mb-3 sm:mb-4">
+                <span className="text-[10px] sm:text-xs font-bold text-indigo-400 uppercase tracking-widest">Current Quest</span>
+                <span className="text-[9px] sm:text-xs text-slate-500">{currentDungeon.completedSessions}/{currentDungeon.totalSessions} Sessions Cleared</span>
+              </div>
+              <h3 className="font-bold text-white mb-4 truncate pr-2" style={{ fontSize: 'clamp(1rem, 4vw, 1.25rem)' }}>{currentDungeon.name}</h3>
+              <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden mb-6">
+                <motion.div 
+                  initial={{ width: 0 }}
+                  animate={{ width: `${(currentDungeon.completedSessions / currentDungeon.totalSessions) * 100}%` }}
+                  className="h-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]"
+                />
+              </div>
+              <button 
+                onClick={() => setActiveTab('explore')}
+                className="flex items-center space-x-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold transition-all"
+              >
+                <span>Enter Dungeon</span>
+                <ChevronRight size={18} />
+              </button>
+            </div>
+          ) : (
+            <div className="p-8 text-center border-2 border-dashed border-slate-800 rounded-3xl">
+              <p className="text-slate-500 mb-4">No active dungeon exploration.</p>
+              <button 
+                onClick={() => setActiveTab('dungeons')}
+                className="px-6 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-colors"
+              >
+                {state.history.length === 0 ? "Start Your First Dungeon" : "Delve into Goal"}
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-6">
+          <div className="bg-slate-900 rounded-3xl border border-slate-800 p-6">
+            <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-4">Daily Progress</h3>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-2xl font-bold text-white">{state.dailySessions}</span>
+              <span className="text-slate-500 text-xs">/ 16 Sessions</span>
+            </div>
+            <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden mb-6">
+              <div 
+                className="h-full bg-emerald-500" 
+                style={{ width: `${Math.min((state.dailySessions / 16) * 100, 100)}%` }}
+              />
+            </div>
+            <button
+              onClick={() => {
+                setShowDailySummary(true);
+                playSound('success', state.soundVolume, state.soundEnabled);
+              }}
+              className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold uppercase tracking-widest transition-all border border-slate-700 flex items-center justify-center gap-2"
+            >
+              <Calendar size={14} className="text-indigo-400" />
+              End the Day
+            </button>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+};

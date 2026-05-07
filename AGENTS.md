@@ -17,9 +17,11 @@ Whenever you complete a task or make changes to the application:
 
 **CSS & UI STANDARDS:**
 - **Italic Clipping:** To prevent right-side clipping of italic text (especially in browsers with tight bounding boxes), always add a small right padding (e.g., `pr-1` or `px-0.5`) to the element or its immediate container.
+- **Red Dot / Notification Placement:** Unread message or notification badges (red dots) on icons and buttons MUST ALWAYS be placed in the bottom-right corner (e.g. `absolute -bottom-0.5 -right-0.5`), NEVER in the top-right corner.
+- **Theme-Aware Colors:** When designing UI elements that highlight based on themes, note that ONLY `indigo-400`, `indigo-500`, and `indigo-600` are overridden by the custom theme variables in `index.css`. DO NOT use `indigo-300` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v4.2.13
+- **Current Version:** v4.3.13
 - **Last Update Date:** 2026-05-07
 
 ## Dark Themes Definition
@@ -44,6 +46,64 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v4.3.13 (2026-05-07):** Talent Icon Overhaul.
+  - *UI:* Replaced all talent tree node icons with newly assigned Lucide equivalents mapped specifically for each branch and tier.
+- **v4.3.12 (2026-05-07):** Ichiban Ticket Icon Replacement.
+  - *UI:* Replaced all Lucide icons representing the 'Ichiban' feature with `Ticket` across `Settings.tsx` (Ichiban Draw animation settings and Ichiban pool list).
+  - *UI:* Added `Ticket` to the available icon selection array for custom shop and loot items.
+- **v4.3.11 (2026-05-07):** Timer Loop Counting Display Polish.
+  - *Feature:* Loop count display now strictly starts at `0/n` and logically updates to `1/n` only when a full focus task (one cycle unit) is completed.
+  - *Feature:* Stopping at maximum loops will naturally show `n/n`.
+  - *Bugfix:* Modifying loop target or loop activity naturally resets current counts to `0/n`, keeping state and UX synchronized.
+- **v4.3.10 (2026-05-07):** Timer Settings Loop Polish.
+  - *Feature:* Extracted loop logic into `TimerLoopSettings.tsx`.
+  - *Feature:* Allowed user to choose infinite or custom target loop counts.
+  - *UI:* Displayed "{current}/{target} loops" format within the timer circle when looping is active.
+- **v4.3.9 (2026-05-07):** Compact Timer Banner Theme Fix & Theme Standard Rule.
+  - *Bugfix:* Replaced fixed `indigo-300` text colors with `indigo-400` in the Compact Timer Banner settings so the text scales properly with the selected custom theme.
+  - *Documentation:* Added a rule to `AGENTS.md` explicitly defining which `indigo` scale ranges correctly adopt theme colors (`400`, `500`, `600`).
+- **v4.3.8 (2026-05-07):** Timer Banner Customization.
+  - *Feature:* Added a toggle in Settings to use a Compact Timer Banner (hide navigation shortcuts).
+  - *Feature:* Added the ability to customize which navigation shortcuts appear in the Timer Banner when not in compact mode.
+- **v4.3.7 (2026-05-07):** Recent Sessions UI Polish.
+  - *UI:* Centered the contents of the Actions column in the Recent Sessions table for better alignment with the header.
+- **v4.3.6 (2026-05-07):** Reward Details View in Recent Sessions.
+  - *Feature:* Added the ability to click on a Reward in the 'Recent Sessions' table to view its full details (description, rarity, type) matching the current Loot Pool.
+- **v4.3.5 (2026-05-07):** Centralized Versioning System.
+  - *Architecture:* Created `src/version.ts` to centralize application version and release history.
+  - *Refactor:* Updated `Settings.tsx` and `SplashScreen.tsx` to consume data from the centralized source, streamlining future updates.
+- **v4.3.4 (2026-05-07):** Clockwise Timer Progress Fix.
+  - *Bugfix:* Corrected the timer progress ring direction to be clockwise starting from 12 o'clock for both focus and rest states, providing a more intuitive visual experience.
+- **v4.3.3 (2026-05-07):** Theme-Aware Banner Hover Finish.
+  - *UI:* Unified all hover states in the Explore tab's timer navigation banner to use the theme-aware primary color (`indigo-600/30`) for consistent visual feedback across all themes (Light & Dark).
+- **v4.3.2 (2026-05-07):** Timer Banner Hover Polish.
+  - *UI:* Unified all hover states in the Explore tab's timer navigation banner to use a deep, theme-aware dark color (`indigo-950`) for a more consistent and premium look.
+- **v4.3.1 (2026-05-07):** Type Error Fixes & Technical Infrastructure.
+  - *TypeScript:* Resolved all reported `TS2322`, `TS2305`, and `TS2304` errors across the codebase.
+  - *Refactor:* Completed the global renaming of `UserState` to `AppState` for better semantic clarity.
+  - *Bugfix:* Corrected function signatures for `reorderMajorDungeon`, `reorderSubDungeon`, `handleDraw`, and `saveDailyLog` in their respective props and call sites.
+  - *Bugfix:* Resolved the `ReferenceError: Flame is not defined` by ensuring correct icon imports in `App.tsx`.
+- **v4.3.0 (2026-05-07):** App.tsx Refactoring & Componentization.
+  - *Architecture:* Successfully refactored the massive `App.tsx` file by extracting all major tab views (`Dashboard`, `Explore`, `Dungeons`, `Vault`, `Talents`, `Shop`, `Stats`, `Settings`) into dedicated component files.
+  - *Architecture:* Encapsulated complex modal logic (Profile, XP/Coin/Talent Guides, Level Up, Reward Completion) into standalone components, improving code maintainability and readability.
+  - *UI:* Enhanced the Reward Completion experience by integrating the new `RewardCompletionModal` component.
+  - *Cleanup:* Removed redundant inline JSX and unused imports from the main `App.tsx` orchestrator.
+- **v4.2.20 (2026-05-07):** Banner Button Polish.
+  - *UI:* Removed shadows from buttons within the Timer navigation banner for a flatter aesthetic.
+- **v4.2.19 (2026-05-07):** Timer Container Polish.
+  - *UI:* Removed the outer shadow from the Timer container on the Explore tab for a flatter, cleaner design.
+- **v4.2.18 (2026-05-07):** Timer Navigation Icon Polish.
+  - *UI:* Updated the "Recent Sessions" icon in the Timer navigation banner to the `History` icon for better semantic representation.
+- **v4.2.17 (2026-05-07):** Timer Navigation Expanded.
+  - *UI:* Attached the top navigation banner seamlessly to the Timer container edge to form a single cohesive panel.
+  - *UI:* Added additional direct navigation shortcuts for Data/Recent Sessions (Record) and Vault to the banner.
+- **v4.2.16 (2026-05-07):** Timer Navigation Banner.
+  - *UI:* Consolidated the floating navigation shortcuts and Fullscreen/PiP controls into a unified, dedicated banner at the top of the Explore tab's Timer column for a cleaner layout.
+- **v4.2.15 (2026-05-07):** Red Dot Placement Fix.
+  - *UI:* Moved the unread notification badges (red dots) on the Timer navigation icons to the bottom-right corner for consistency.
+  - *Documentation:* Added a rule in `AGENTS.md` enforcing bottom-right placement for all short red dot badges.
+- **v4.2.14 (2026-05-07):** Timer Navigation Shortcuts.
+  - *UI:* Added quick navigation buttons (Dungeons, Quests, Achievements) to the top-left corner of the Timer module in the Explore tab.
 - **v4.2.13 (2026-05-07):** Fullscreen Explore & Tablet Layout Polish.
   - *UI:* Optimized the Explore tab layout for tablet landscape widths by balancing the column ratios.
   - *UI:* Enhanced the Fullscreen mode to be strictly non-scrolling and added a minimalist task progress bar at the top for focused sessions.

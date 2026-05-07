@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { History, Clock, Trophy, Edit2, Trash2, Filter, Search, X, Check, SearchX, Calendar, Sword, ArrowUp, ArrowDown, ChevronUp, ChevronDown, GripVertical, Zap } from 'lucide-react';
-import { StudySession, Dungeon, MajorDungeon } from '../types';
+import { History, Clock, Trophy, Edit2, Trash2, Filter, Search, X, Check, SearchX, Calendar, Sword, ArrowUp, ArrowDown, ChevronUp, ChevronDown, Zap } from 'lucide-react';
+import { StudySession, Dungeon, MajorDungeon, RewardCard } from '../types';
 import { cn } from '../lib/utils';
 import { format, parseISO, isAfter, isBefore, startOfDay, endOfDay } from 'date-fns';
 
@@ -11,6 +11,7 @@ interface RecentSessionsProps {
   majorDungeons: MajorDungeon[];
   updateSession: (id: string, updates: Partial<StudySession>) => void;
   deleteSession: (id: string) => void;
+  rewardPool: RewardCard[];
 }
 
 export const RecentSessions: React.FC<RecentSessionsProps> = ({
@@ -18,9 +19,11 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
   dungeons,
   majorDungeons,
   updateSession,
-  deleteSession
+  deleteSession,
+  rewardPool
 }) => {
   const [editingSession, setEditingSession] = useState<StudySession | null>(null);
+  const [viewingRewardName, setViewingRewardName] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterDungeon, setFilterDungeon] = useState<string>('all');
   const [showFilters, setShowFilters] = useState(false);
@@ -401,8 +404,7 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
                     />
                   </th>
                   <th className="px-6 py-5 text-center" style={{ width: columnWidths.actions }}>
-                    <div className="flex items-center justify-center gap-2.5 text-[11px] font-black text-slate-500 uppercase tracking-widest">
-                      <GripVertical size={16} className="shrink-0" />
+                    <div className="flex items-center justify-center text-[11px] font-black text-slate-500 uppercase tracking-widest">
                       <span className="whitespace-nowrap">Actions</span>
                     </div>
                   </th>
@@ -454,9 +456,13 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
                         <td className="px-3 sm:px-6 py-4 text-center">
                           {session.rewardName ? (
                             <div className="flex items-center justify-center gap-2 overflow-hidden">
-                              <span className="text-[10px] sm:text-xs font-bold text-amber-500/90 truncate">
+                              <button 
+                                onClick={() => setViewingRewardName(session.rewardName || null)}
+                                className="text-[10px] sm:text-xs font-bold text-amber-500/90 hover:text-amber-400 truncate underline decoration-amber-500/30 underline-offset-2 transition-colors cursor-pointer"
+                                title="Click to view details"
+                              >
                                 {session.rewardName}
-                              </span>
+                              </button>
                             </div>
                           ) : (
                             <span className="text-[10px] sm:text-xs text-slate-600 italic pr-1">None</span>
@@ -468,8 +474,8 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
                             <span className="font-black text-amber-400">+{session.coinsEarned}G</span>
                           </div>
                         </td>
-                        <td className="px-3 sm:px-6 py-3 whitespace-nowrap text-right">
-                          <div className="flex items-center justify-end gap-0.5 sm:gap-1">
+                        <td className="px-3 sm:px-6 py-3 whitespace-nowrap text-center">
+                          <div className="flex items-center justify-center gap-0.5 sm:gap-1">
                             <button
                               onClick={() => setEditingSession(session)}
                               className="p-1.5 sm:p-2 text-slate-500 hover:text-white hover:bg-slate-800 rounded-lg transition-all"
@@ -603,6 +609,80 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
                   </button>
                 </div>
               </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+      {/* Reward Details Modal */}
+      <AnimatePresence>
+        {viewingRewardName && (
+          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+               onClick={() => setViewingRewardName(null)}>
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-slate-900 w-full max-w-sm rounded-3xl border border-amber-500/20 overflow-hidden shadow-2xl relative"
+            >
+              {(() => {
+                const reward = rewardPool.find(r => r.name === viewingRewardName);
+                
+                return (
+                  <>
+                    <div className="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-800/30">
+                      <h3 className="text-xl font-bold text-amber-500 flex items-center gap-2">
+                        <Trophy size={20} />
+                        Reward Details
+                      </h3>
+                      <button onClick={() => setViewingRewardName(null)} className="text-slate-500 hover:text-white transition-colors">
+                        <X size={20} />
+                      </button>
+                    </div>
+                    
+                    <div className="p-6 space-y-4">
+                      <div className="text-center">
+                        <h4 className="text-lg font-black text-white mb-2">{viewingRewardName}</h4>
+                        {reward ? (
+                          <p className="text-slate-300 text-sm leading-relaxed bg-slate-800/50 p-4 rounded-xl border border-slate-700/50">
+                            {reward.description}
+                          </p>
+                        ) : (
+                          <div className="text-slate-400 text-sm italic py-4">
+                            This reward is no longer in your active Loot Pool, or it is a custom item.
+                          </div>
+                        )}
+                      </div>
+                      
+                      {reward && (
+                        <div className="flex gap-2 justify-center pt-2">
+                          <span className={cn(
+                            "text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded",
+                            reward.rarity === 'legendary' ? "bg-amber-500/10 text-amber-400 border border-amber-500/20" :
+                            reward.rarity === 'epic' ? "bg-purple-500/10 text-purple-400 border border-purple-500/20" :
+                            reward.rarity === 'rare' ? "bg-blue-500/10 text-blue-400 border border-blue-500/20" :
+                            "bg-slate-500/10 text-slate-400 border border-slate-500/20"
+                          )}>
+                            {reward.rarity}
+                          </span>
+                          <span className="bg-slate-800 text-slate-400 text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded border border-slate-700">
+                            {reward.type === 'coins' ? 'Gold Coins' : 
+                             reward.type === 'xp' ? 'Experience' : 
+                             reward.type === 'item' ? 'Functional Item' : 'Text Entry'}
+                          </span>
+                        </div>
+                      )}
+                      
+                      <button 
+                        onClick={() => setViewingRewardName(null)}
+                        className="w-full mt-4 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-colors"
+                      >
+                        Close
+                      </button>
+                    </div>
+                  </>
+                );
+              })()}
             </motion.div>
           </div>
         )}

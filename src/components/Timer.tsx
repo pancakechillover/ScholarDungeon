@@ -27,6 +27,9 @@ interface TimerProps {
   restDuration: number;
   enableRest: boolean;
   isLooping: boolean;
+  loopTarget: number;
+  loopCount: number;
+  setLoopCount: (val: number) => void;
   setIsResting: (val: boolean) => void;
   isResting: boolean;
   setDuration: (val: number) => void;
@@ -69,6 +72,9 @@ export const Timer = React.memo<TimerProps>(({
   restDuration,
   enableRest,
   isLooping,
+  loopTarget,
+  loopCount,
+  setLoopCount,
   setIsResting,
   isResting,
   setDuration,
@@ -145,10 +151,15 @@ export const Timer = React.memo<TimerProps>(({
         onRestComplete();
       }
       
-      if (isLooping) {
+      const shouldContinueLoop = isLooping && (loopTarget === 0 || loopCount < loopTarget);
+      
+      if (shouldContinueLoop) {
         // Automatically start the next loop
         setIsActive(true);
         setEndTime(Date.now() + focusDuration * 60 * 1000);
+      } else {
+        // done, keep loopCount as is to show n/n loops
+        setIsActive(false);
       }
     } else {
       // Finished focus
@@ -226,6 +237,9 @@ export const Timer = React.memo<TimerProps>(({
       setIsActive(false);
       setEndTime(null);
     } else {
+      if (isLooping && loopTarget > 0 && loopCount >= loopTarget) {
+        setLoopCount(0);
+      }
       setIsActive(true);
       setEndTime(Date.now() + timeLeft * 1000);
     }
@@ -237,6 +251,7 @@ export const Timer = React.memo<TimerProps>(({
     setIsResting(false);
     setDuration(focusDuration);
     setTimeLeft(focusDuration * 60);
+    setLoopCount(0);
   };
 
   const formatTime = (seconds: number) => {
@@ -267,11 +282,18 @@ export const Timer = React.memo<TimerProps>(({
             strokeWidth="8"
             fill="transparent"
             strokeDasharray={2 * Math.PI * 150}
-            initial={{ strokeDashoffset: (2 * Math.PI * 150) * (1 - timeLeft / ((duration || 25) * 60)) }}
-            animate={{ strokeDashoffset: (2 * Math.PI * 150) * (1 - timeLeft / ((duration || 25) * 60)) }}
+            initial={{ strokeDashoffset: -(2 * Math.PI * 150) * (1 - timeLeft / ((duration || 25) * 60)) }}
+            animate={{ strokeDashoffset: -(2 * Math.PI * 150) * (1 - timeLeft / ((duration || 25) * 60)) }}
             className={isResting ? "text-emerald-500" : "text-indigo-500"}
           />
         </svg>
+        <div className="absolute inset-x-0 top-[20%] flex flex-col items-center justify-end z-10 pointer-events-none pb-2">
+          {isLooping && (
+             <span className="bg-slate-900/80 backdrop-blur-sm border border-slate-700/50 px-3 py-1 rounded-full text-xs font-bold text-slate-300">
+               {loopCount}/{loopTarget > 0 ? loopTarget : '∞'} loops
+             </span>
+          )}
+        </div>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <div 
             className={cn(
@@ -510,21 +532,35 @@ export const Timer = React.memo<TimerProps>(({
                           setTimeout(() => {
                             setShowRewards(null);
                             
-                            // Automatically start rest or next loop
+                            const nextLoopCount = loopCount + 1;
+                            setLoopCount(nextLoopCount);
+                            const shouldContinueLoop = isLooping && (loopTarget === 0 || nextLoopCount < loopTarget);
+                            
                             if (enableRest) {
                               setIsResting(true);
                               setDuration(restDuration);
                               setTimeLeft(restDuration * 60);
-                              setIsActive(true);
-                              setEndTime(Date.now() + restDuration * 60 * 1000);
-                            } else if (isLooping) {
-                              setDuration(focusDuration);
-                              setTimeLeft(focusDuration * 60);
-                              setIsActive(true);
-                              setEndTime(Date.now() + focusDuration * 60 * 1000);
+                              
+                              if (shouldContinueLoop || loopTarget === 0) {
+                                setIsActive(true);
+                                setEndTime(Date.now() + restDuration * 60 * 1000);
+                              } else {
+                                // final cycle rest, do not start automatically 
+                                setIsActive(false); 
+                                setEndTime(null);
+                              }
                             } else {
                               setDuration(focusDuration);
                               setTimeLeft(focusDuration * 60);
+                              
+                              if (shouldContinueLoop) {
+                                setIsActive(true);
+                                setEndTime(Date.now() + focusDuration * 60 * 1000);
+                              } else {
+                                // final cycle, do not start automatically, do not reset loopCount
+                                setIsActive(false);
+                                setEndTime(null);
+                              }
                             }
                           }, 400);
                         }}

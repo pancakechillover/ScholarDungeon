@@ -1,0 +1,45 @@
+import React from 'react';
+import { motion } from 'motion/react';
+import { Shop } from './Shop';
+import { AppState } from '../types';
+
+interface ShopViewProps {
+  state: AppState;
+  handlePurchase: (item: any) => void;
+  handleDraw: (poolId: string, amount: number) => void;
+  resetIchibanPool: (poolId: string) => void;
+  setDrawResult: (result: any) => void;
+  setShowCoinGuide: (show: boolean) => void;
+}
+
+export const ShopView: React.FC<ShopViewProps> = ({ 
+  state, 
+  handlePurchase, 
+  handleDraw, 
+  resetIchibanPool, 
+  setDrawResult,
+  setShowCoinGuide
+}) => {
+  return (
+    <motion.div
+      key="shop"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="w-full"
+    >
+      <Shop 
+        coins={state.coins} 
+        shopItems={state.shopItems || []}
+        gachaPools={state.gachaPools || []}
+        onPurchase={handlePurchase}
+        onDrawGacha={handleDraw}
+        onResetIchiban={(id) => {
+          resetIchibanPool(id);
+          setTimeout(() => setDrawResult(null), 50);
+        }}
+        onShowCoinGuide={() => setShowCoinGuide(true)}
+      />
+    </motion.div>
+  );
+};

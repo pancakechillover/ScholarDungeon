@@ -22,7 +22,7 @@ interface TalentTreeProps {
   shards: number;
   unlockedIds: string[];
   activeIds: string[];
-  onUnlock: (id: string) => void;
+  onUnlock: (id: string, cost: number) => void;
   onToggle: (id: string) => void;
 }
 
@@ -226,7 +226,7 @@ export const TalentTree = React.memo<TalentTreeProps>(({
                         )}
                         onClick={() => {
                           if (isUnlocked) onToggle(talent.id);
-                          else if (unlockable) onUnlock(talent.id);
+                          else if (unlockable) onUnlock(talent.id, talent.cost);
                         }}
                       >
                         {isCollapsed ? (

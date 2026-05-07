@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Sword } from 'lucide-react';
+import { APP_VERSION } from '../version';
 
 export function SplashScreen({ onComplete }: { onComplete: () => void }) {
   useEffect(() => {
@@ -65,7 +66,7 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
         transition={{ delay: 1.5 }}
         className="absolute bottom-12 text-slate-600 text-[10px] font-bold tracking-[0.2em] uppercase"
       >
-        Version 4.2.13
+        Version {APP_VERSION.replace('v', '')}
       </motion.div>
     </motion.div>
   );

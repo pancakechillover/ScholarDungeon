@@ -116,7 +116,7 @@ export interface TimeSettings {
   night: { start: number; end: number };
 }
 
-export interface UserState {
+export interface AppState {
   level: number;
   xp: number;
   coins: number;
@@ -159,6 +159,8 @@ export interface UserState {
   soundEnabled?: boolean;
   soundVolume?: number;
   defaultMarkdownEnabled?: boolean;
+  timerBannerCompactMode?: boolean;
+  timerBannerShortcuts?: string[];
   // Editable Pools
   rewardPool: RewardCard[];
   shopItems: ShopItem[];

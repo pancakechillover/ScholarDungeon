@@ -9,6 +9,15 @@ import {
   Target, 
   BarChart3, 
   Scroll,
+  BicepsFlexed,
+  BrainCircuit,
+  Rocket,
+  Pickaxe,
+  BrainCog,
+  Goal,
+  HeartPlus,
+  Dices,
+  HandCoins,
   LucideIcon
 } from 'lucide-react';
 import { cn } from '../lib/utils';
@@ -22,7 +31,16 @@ export const IconMap: Record<string, LucideIcon> = {
   ShoppingBag,
   Target,
   BarChart3,
-  Scroll
+  Scroll,
+  BicepsFlexed,
+  BrainCircuit,
+  Rocket,
+  Pickaxe,
+  BrainCog,
+  Goal,
+  HeartPlus,
+  Dices,
+  HandCoins
 };
 
 interface TalentIconProps {

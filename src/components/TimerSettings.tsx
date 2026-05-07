@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Settings2, Plus, Trash2, Check, X } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { TimerLoopSettings } from './TimerLoopSettings';
 
 interface TimerSettingsProps {
   focusDuration: number;
@@ -11,6 +12,10 @@ interface TimerSettingsProps {
   setEnableRest: (val: boolean) => void;
   isLooping: boolean;
   setIsLooping: (val: boolean) => void;
+  loopTarget: number;
+  setLoopTarget: (val: number) => void;
+  loopCount: number;
+  setLoopCount: (val: number) => void;
   isActive: boolean;
   isResting: boolean;
   applyPreset: (focus: number, rest: number) => void;
@@ -29,6 +34,10 @@ export const TimerSettings: React.FC<TimerSettingsProps> = ({
   setEnableRest,
   isLooping,
   setIsLooping,
+  loopTarget,
+  setLoopTarget,
+  loopCount,
+  setLoopCount,
   isActive,
   isResting,
   applyPreset,
@@ -93,24 +102,13 @@ export const TimerSettings: React.FC<TimerSettingsProps> = ({
             />
             Rest
           </label>
-          <label className="flex items-center gap-2 text-sm font-bold text-slate-300 cursor-pointer group">
-            <div className={cn(
-              "w-8 h-5 rounded-full transition-colors relative",
-              isLooping ? "bg-indigo-500" : "bg-slate-700"
-            )}>
-              <div className={cn(
-                "absolute top-1 left-1 w-3 h-3 rounded-full bg-white transition-transform",
-                isLooping ? "translate-x-3" : "translate-x-0"
-              )} />
-            </div>
-            <input 
-              type="checkbox" 
-              className="hidden"
-              checked={isLooping}
-              onChange={(e) => setIsLooping(e.target.checked)}
-            />
-            Loop
-          </label>
+          <TimerLoopSettings 
+            isLooping={isLooping}
+            setIsLooping={setIsLooping}
+            loopTarget={loopTarget}
+            setLoopTarget={setLoopTarget}
+            setLoopCount={setLoopCount}
+          />
         </div>
       </div>
 

@@ -5,7 +5,7 @@ import {
   startOfMonth, endOfMonth, startOfYear, endOfYear, addMonths, subMonths, addYears, subYears,
   parseISO, isWithinInterval
 } from 'date-fns';
-import { StudySession, UserState, RewardHistoryItem } from '../types';
+import { StudySession, AppState, RewardHistoryItem } from '../types';
 import { cn } from '../lib/utils';
 import { BarChart2, Zap, Coins, ChevronLeft, ChevronRight, Calendar, Star, StarHalf, Edit2, Save, X, Eye, EyeOff, LineChart as LineChartIcon, Trophy, Sword } from 'lucide-react';
 import { PageHeader } from './PageHeader';
@@ -13,7 +13,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, Legend
 import Markdown from 'react-markdown';
 
 interface StatsProps {
-  state: UserState;
+  state: AppState;
   saveDailyLog: (date: string, rating: number, reflection: string) => void;
 }
 

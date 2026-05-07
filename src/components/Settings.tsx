@@ -3,8 +3,9 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { RewardCard, ShopItem, GachaPool, Rarity } from '../types';
 import { INITIAL_GACHA } from '../constants';
-import { Plus, Trash2, Save, Edit2, X, ChevronRight, Coins, Zap, Sparkles, Trophy, Timer as TimerIcon, Package, Flame, AlertTriangle, Scroll, Volume2, VolumeX, Sun, Moon, Settings as SettingsIcon, ShoppingBag, Trees, Waves, Database, Download, Upload, Target, Gift, User, Sword, Eye, Palette, Check, Bell, BellOff, RefreshCw, Key, Layers, Sunrise, Cloud, CloudSun, Lollipop, Wrench } from 'lucide-react';
+import { Plus, Trash2, Save, Edit2, X, ChevronRight, Coins, Zap, Sparkles, Trophy, Timer as TimerIcon, Package, Flame, AlertTriangle, Scroll, Volume2, VolumeX, Sun, Moon, Settings as SettingsIcon, ShoppingBag, Trees, Waves, Database, Download, Upload, Target, Gift, User, Sword, Eye, Palette, Check, Bell, BellOff, RefreshCw, Key, Layers, Sunrise, Cloud, CloudSun, Lollipop, Wrench, History, Ticket } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
+import { APP_VERSION, LAST_UPDATE_DATE, RELEASE_HISTORY } from '../version';
 import { cn, getXPForLevel, getDefaultRewardForLevel } from '../lib/utils';
 import { playSound } from '../lib/sound';
 
@@ -802,7 +803,7 @@ const GeneralSettings = ({ state, setState, setShowClearConfirm }: { state: any,
 
           <div className="space-y-4 p-5 bg-slate-900/50 rounded-3xl border border-indigo-500/10 shadow-inner">
             <div className="flex items-center gap-2 mb-1">
-              <Sparkles size={16} className="text-indigo-400" />
+              <Ticket size={16} className="text-indigo-400" />
               <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Ichiban Draw</label>
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -871,6 +872,75 @@ const GeneralSettings = ({ state, setState, setShowClearConfirm }: { state: any,
         </div>
 
         <div className="space-y-4">
+          <div className="flex flex-col gap-4 p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className={cn("p-2 rounded-xl", state.timerBannerCompactMode ? "bg-indigo-500/10 text-indigo-400" : "bg-slate-800 text-slate-500")}>
+                  <TimerIcon size={20} />
+                </div>
+                <div>
+                  <div className="font-bold text-white">Compact Timer Banner</div>
+                  <div className="text-xs text-slate-500">Only show Fullscreen/PiP (hide quick navigation shortcuts)</div>
+                </div>
+              </div>
+              <button
+                onClick={() => setState(prev => ({ ...prev, timerBannerCompactMode: !prev.timerBannerCompactMode }))}
+                className={cn(
+                  "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors",
+                  state.timerBannerCompactMode ? "bg-indigo-500" : "bg-slate-700"
+                )}
+              >
+                <span
+                  className={cn(
+                    "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+                    state.timerBannerCompactMode ? "translate-x-6" : "translate-x-1"
+                  )}
+                />
+              </button>
+            </div>
+            
+            {!state.timerBannerCompactMode && (
+              <div className="pt-4 border-t border-slate-800/50">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest pl-2 mb-3 block">Visible Shortcuts</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { id: 'dungeons', name: 'Dungeons', icon: Sword },
+                    { id: 'quests', name: 'Quests', icon: Target },
+                    { id: 'achievements', name: 'Achievements', icon: Trophy },
+                    { id: 'recent', name: 'Recent Sessions', icon: History },
+                    { id: 'vault', name: 'Vault', icon: Package }
+                  ].map(shortcut => {
+                    const isVisible = !(state.timerBannerShortcuts) || state.timerBannerShortcuts.includes(shortcut.id);
+                    return (
+                      <button
+                        key={shortcut.id}
+                        onClick={() => {
+                          setState(prev => {
+                            const current = prev.timerBannerShortcuts || ['dungeons', 'quests', 'achievements', 'recent', 'vault'];
+                            if (current.includes(shortcut.id)) {
+                              return { ...prev, timerBannerShortcuts: current.filter(id => id !== shortcut.id) };
+                            } else {
+                              return { ...prev, timerBannerShortcuts: [...current, shortcut.id] };
+                            }
+                          });
+                        }}
+                        className={cn(
+                          "flex items-center gap-2 p-2 px-3 rounded-lg border transition-all text-sm font-medium",
+                          isVisible
+                            ? "bg-indigo-500/10 border-indigo-500/30 text-indigo-400"
+                            : "bg-slate-900 border-slate-800 text-slate-500 hover:border-slate-700"
+                        )}
+                      >
+                        <shortcut.icon size={14} className={isVisible ? "text-indigo-400" : "text-slate-600"} />
+                        {shortcut.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
           <div className="flex items-center justify-between p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
             <div className="flex items-center gap-3">
               <div className={cn("p-2 rounded-xl", defaultMarkdownEnabled ? "bg-indigo-500/10 text-indigo-400" : "bg-slate-800 text-slate-500")}>
@@ -1663,7 +1733,7 @@ export const Settings = React.memo<SettingsProps>(({
                 <h3 className="text-3xl font-black text-white tracking-tight">Scholar's Dungeon</h3>
                 <div className="flex flex-col items-center gap-1 mt-2">
                   <span className="px-3 py-1 bg-indigo-500/20 text-indigo-400 rounded-full font-bold tracking-widest uppercase text-xs border border-indigo-500/30">
-                    Version 4.2.13
+                    Version 4.2.20
                   </span>
                   <span className="text-slate-500 text-xs font-medium">
                     Updated: 2026-05-07
@@ -1729,94 +1799,34 @@ export const Settings = React.memo<SettingsProps>(({
                 Release History
               </h4>
               <div className="space-y-6">
-                <div className="space-y-2 relative pl-6 border-l-2 border-indigo-500/30">
-                  <div className="absolute top-1.5 -left-[5px] w-2 h-2 rounded-full bg-indigo-400" />
-                  <div className="flex items-center gap-3">
-                    <span className="font-black text-white text-lg">v4.2.13</span>
-                    <span className="text-slate-500 text-xs font-bold font-mono">2026-05-07</span>
+                {RELEASE_HISTORY.map((log, index) => (
+                  <div key={log.version} className={cn(
+                    "space-y-2 relative pl-6 border-l-2",
+                    index === 0 ? "border-indigo-500/30" : "border-slate-700/50"
+                  )}>
+                    <div className={cn(
+                      "absolute top-1.5 -left-[5px] w-2 h-2 rounded-full",
+                      index === 0 ? "bg-indigo-400" : "bg-slate-600"
+                    )} />
+                    <div className="flex items-center gap-3">
+                      <span className={cn(
+                        "text-lg",
+                        index === 0 ? "font-black text-white" : "font-bold text-slate-300"
+                      )}>{log.version}</span>
+                      <span className="text-slate-500 text-xs font-bold font-mono">{log.date}</span>
+                    </div>
+                    <h5 className={cn(
+                      index === 0 ? "font-bold text-indigo-300" : "font-medium text-slate-400"
+                    )}>{log.title}</h5>
+                    <ul className="text-slate-400 text-sm space-y-2 list-disc ml-4">
+                      {log.items.map((item, i) => (
+                        <li key={i}>
+                          <span className="text-indigo-400 font-bold">{item.category}:</span> {item.description}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                  <h5 className="font-bold text-indigo-300">Fullscreen Explore & Tablet Layout Polish</h5>
-                  <ul className="text-slate-400 text-sm space-y-2 list-disc ml-4">
-                    <li><span className="text-indigo-400 font-bold">UI:</span> Optimized Explore tab layout for tablet widths.</li>
-                    <li><span className="text-indigo-400 font-bold">UI:</span> Added task progress bar to non-scrolling Fullscreen mode.</li>
-                  </ul>
-                </div>
-
-                <div className="space-y-2 relative pl-6 border-l-2 border-slate-700/50">
-                  <div className="absolute top-1.5 -left-[5px] w-2 h-2 rounded-full bg-slate-600" />
-                  <div className="flex items-center gap-3">
-                    <span className="font-bold text-slate-300">v4.2.12</span>
-                    <span className="text-slate-600 text-xs font-bold font-mono">2026-05-07</span>
-                  </div>
-                  <h5 className="font-medium text-slate-400">Push Notification Error Handle Fix</h5>
-                  <ul className="text-slate-400 text-sm space-y-2 list-disc ml-4">
-                    <li><span className="text-slate-300 font-bold">Bugfix:</span> Extended push notification error catching to clear bad/invalid subscriptions reporting HTTP 400/401/403 status codes.</li>
-                  </ul>
-                </div>
-
-                <div className="space-y-2 relative pl-6 border-l-2 border-slate-700/50">
-                  <div className="absolute top-1.5 -left-[5px] w-2 h-2 rounded-full bg-slate-600" />
-                  <div className="flex items-center gap-3">
-                    <span className="font-bold text-slate-300">v4.2.11</span>
-                    <span className="text-slate-600 text-xs font-bold font-mono">2026-05-07</span>
-                  </div>
-                  <h5 className="font-medium text-slate-400">Critical Victory Polish</h5>
-                  <ul className="text-slate-500 text-sm space-y-2 list-disc ml-4">
-                    <li><span className="text-slate-400 font-bold">Bugfix:</span> Fixed an issue where the Gold Coin Rain effect would trigger twice upon a critical victory.</li>
-                    <li><span className="text-slate-400 font-bold">UI:</span> Updated the Critical Victory notification text to dynamically display the actual configured gold multiplier and trigger probability.</li>
-                  </ul>
-                </div>
-
-                <div className="space-y-2 relative pl-6 border-l-2 border-slate-700/50">
-                  <div className="absolute top-1.5 -left-[5px] w-2 h-2 rounded-full bg-slate-600" />
-                  <div className="flex items-center gap-3">
-                    <span className="font-bold text-slate-300">v4.2.10</span>
-                    <span className="text-slate-600 text-xs font-bold font-mono">2026-05-07</span>
-                  </div>
-                  <h5 className="font-medium text-slate-400">Reward Selection Rendering Polish</h5>
-                  <ul className="text-slate-400 text-sm space-y-2 list-disc ml-4">
-                    <li><span className="text-slate-300 font-bold">Bugfix:</span> Fixed an issue where a "0" would inadvertently render on the Reward Selection card when the limit count (Lmt) was set to 0.</li>
-                  </ul>
-                </div>
-                
-                <div className="space-y-2 relative pl-6 border-l-2 border-slate-700/50">
-                  <div className="absolute top-1.5 -left-[5px] w-2 h-2 rounded-full bg-slate-600" />
-                  <div className="flex items-center gap-3">
-                    <span className="font-bold text-slate-300">v4.2.9</span>
-                    <span className="text-slate-600 text-xs font-bold font-mono">2026-05-07</span>
-                  </div>
-                  <h5 className="font-medium text-slate-400">Version Management & Design Review</h5>
-                  <ul className="text-slate-500 text-sm space-y-2 list-disc ml-4">
-                    <li><span className="text-slate-400 font-bold">Documentation:</span> Formally defined "Dark Themes" (Night, Forest, Ocean) to ensure consistency in targeted styling and VFX design.</li>
-                    <li><span className="text-slate-400 font-bold">UI:</span> Updated version strings across the app (Splash Screen, Settings, AGENTS.md) and integrated a Release History tracker directly into the About page.</li>
-                  </ul>
-                </div>
-                
-                <div className="space-y-2 relative pl-6 border-l-2 border-slate-700/50">
-                  <div className="absolute top-1.5 -left-[5px] w-2 h-2 rounded-full bg-slate-600" />
-                  <div className="flex items-center gap-3">
-                    <span className="font-bold text-slate-300">v4.2.8</span>
-                    <span className="text-slate-600 text-xs font-bold font-mono">2026-05-07</span>
-                  </div>
-                  <h5 className="font-medium text-slate-400">Reward Rarity Special Effects</h5>
-                  <ul className="text-slate-500 text-sm space-y-2 list-disc ml-4">
-                    <li><span className="text-slate-400 font-bold">UI:</span> Introduced customized 'gorgeous' visual effects for non-Common rewards to make them stand out.</li>
-                    <li><span className="text-slate-400 font-bold">UI:</span> Specifically added slowly rotating <code className="text-xs bg-slate-900 px-1 py-0.5 rounded">Sparkles</code> particles and a glowing base border effect to Legendary cards.</li>
-                  </ul>
-                </div>
-
-                <div className="space-y-2 relative pl-6 border-l-2 border-slate-700/50">
-                  <div className="absolute top-1.5 -left-[5px] w-2 h-2 rounded-full bg-slate-600" />
-                  <div className="flex items-center gap-3">
-                    <span className="font-bold text-slate-300">v4.2.7</span>
-                    <span className="text-slate-600 text-xs font-bold font-mono">2026-05-07</span>
-                  </div>
-                  <h5 className="font-medium text-slate-400">Victory Screen Desktop Density & Light Theme Polish</h5>
-                  <ul className="text-slate-500 text-sm space-y-2 list-disc ml-4">
-                    <li><span className="text-slate-400 font-bold">UI:</span> Eliminated opacity-based backgrounds from Reward Selection cards to fully support Light Mode text visibility.</li>
-                    <li><span className="text-slate-400 font-bold">UI:</span> Condensed modal paddings, margins, and textual sizing across the Victory screen to ensure it fits completely within a single desktop viewport.</li>
-                  </ul>
-                </div>
+                ))}
               </div>
             </div>
 
@@ -2343,7 +2353,7 @@ const ShopSettings = ({ items, onUpdate }: { items: ShopItem[], onUpdate: (i: Sh
                           <span className="text-[10px] font-black text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">{editing.icon || 'ShoppingBag'}</span>
                         </label>
                         <div className="grid grid-cols-6 gap-3 p-4 bg-slate-950/50 rounded-2xl border border-slate-800/50 scrollbar-thin scrollbar-thumb-slate-800">
-                          {['ShoppingBag', 'Sparkles', 'Trophy', 'Coins', 'Zap', 'Flame', 'Gem', 'Target', 'Star', 'Heart', 'Shield', 'Sword', 'Coffee', 'Pizza', 'Gift', 'Package', 'Camera', 'Music', 'Book', 'Gamepad2', 'Ghost', 'Moon', 'Sun', 'Cloud', 'Anchor', 'Compass', 'Map', 'Key', 'Lock', 'Unlock', 'Bell', 'BellOff', 'Eye', 'EyeOff', 'Search', 'Settings'].map(iconName => {
+                          {['ShoppingBag', 'Sparkles', 'Trophy', 'Coins', 'Zap', 'Flame', 'Gem', 'Target', 'Star', 'Heart', 'Shield', 'Sword', 'Coffee', 'Pizza', 'Gift', 'Package', 'Camera', 'Music', 'Book', 'Gamepad2', 'Ghost', 'Moon', 'Sun', 'Cloud', 'Anchor', 'Compass', 'Map', 'Key', 'Lock', 'Unlock', 'Bell', 'BellOff', 'Eye', 'EyeOff', 'Search', 'Settings', 'Ticket'].map(iconName => {
                             const IconComponent = (LucideIcons as any)[iconName] || LucideIcons.ShoppingBag;
                             const isSelected = (editing.icon || 'ShoppingBag') === iconName;
                             return (
@@ -2399,7 +2409,7 @@ const GachaSettings = ({ pools, onUpdate }: { pools: GachaPool[], onUpdate: (p: 
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className={cn("p-2 rounded-lg", pool.type === 'gacha' ? "bg-purple-500/10 text-purple-400" : "bg-emerald-500/10 text-emerald-400")}>
-                  {pool.type === 'gacha' ? <Sparkles size={20} /> : <Trophy size={20} />}
+                  {pool.type === 'gacha' ? <Sparkles size={20} /> : <Ticket size={20} />}
                 </div>
                 <div>
                   <h4 className="font-bold text-white">{pool.name}</h4>

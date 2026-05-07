@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ShopItem, GachaPool } from '../types';
-import { ShoppingBag, Sparkles, Trophy, Coins, RefreshCw, HelpCircle, Zap, Flame, Gem, Target, Star, Heart, Shield, Sword, Coffee, Pizza, Gift, Package, Camera, Music, Book, Gamepad2, Ghost, Moon, Sun, Cloud, Anchor, Compass, Map, Key, Lock, Unlock, Bell, BellOff, Eye, EyeOff, Search, Settings, Trash2, Edit2, Plus, X, Check, CheckCircle2, AlertCircle, Info, HelpCircle as HelpIcon } from 'lucide-react';
+import { ShoppingBag, Sparkles, Trophy, Coins, RefreshCw, HelpCircle, Zap, Flame, Gem, Target, Star, Heart, Shield, Sword, Coffee, Pizza, Gift, Package, Camera, Music, Book, Gamepad2, Ghost, Moon, Sun, Cloud, Anchor, Compass, Map, Key, Lock, Unlock, Bell, BellOff, Eye, EyeOff, Search, Settings, Trash2, Edit2, Plus, X, Check, CheckCircle2, AlertCircle, Info, HelpCircle as HelpIcon, Ticket } from 'lucide-react';
 import { PageHeader } from './PageHeader';
 import { cn } from '../lib/utils';
 
 const ICON_MAP: Record<string, any> = {
-  ShoppingBag, Sparkles, Trophy, Coins, RefreshCw, HelpCircle, Zap, Flame, Gem, Target, Star, Heart, Shield, Sword, Coffee, Pizza, Gift, Package, Camera, Music, Book, Gamepad2, Ghost, Moon, Sun, Cloud, Anchor, Compass, Map, Key, Lock, Unlock, Bell, BellOff, Eye, EyeOff, Search, Settings, Trash2, Edit2, Plus, X, Check, CheckCircle2, AlertCircle, Info, HelpIcon
+  ShoppingBag, Sparkles, Trophy, Coins, RefreshCw, HelpCircle, Zap, Flame, Gem, Target, Star, Heart, Shield, Sword, Coffee, Pizza, Gift, Package, Camera, Music, Book, Gamepad2, Ghost, Moon, Sun, Cloud, Anchor, Compass, Map, Key, Lock, Unlock, Bell, BellOff, Eye, EyeOff, Search, Settings, Trash2, Edit2, Plus, X, Check, CheckCircle2, AlertCircle, Info, HelpIcon, Ticket
 };
 
 interface ShopProps {
