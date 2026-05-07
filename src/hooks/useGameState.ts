@@ -29,7 +29,7 @@ export function useGameState() {
       dailyRerollUsed: false,
       inventory: [],
       userName: 'Scholar',
-      userBio: 'Master of the Study Dungeon',
+      userBio: 'Master of the Study Expedition',
       quests: DEFAULT_QUESTS,
       questNotificationStyle: 'red_dot',
       unclaimedQuests: 0,
@@ -416,7 +416,7 @@ export function useGameState() {
             else if (reward.type === 'xp') addXP(reward.amount);
             
             addRewardToHistory({
-              name: reward.type === 'text' ? (reward.rewardText || 'Major Reward') : 
+              name: reward.type === 'text' ? (reward.rewardText || 'Expedition Goal Reward') : 
                     reward.type === 'talentPoint' ? `+${reward.amount} Talent Points` :
                     reward.type === 'coins' ? `+${reward.amount} Gold Coins` :
                     reward.type === 'xp' ? `+${reward.amount} Experience` :
@@ -432,7 +432,7 @@ export function useGameState() {
           setState(s => ({
             ...s,
             lastCompletionRewards: {
-              dungeonName: `MAJOR CLEAR: ${major.name}`,
+              dungeonName: `GOAL ACHIEVED: ${major.name}`,
               type: 'dungeon',
               rewards: major.rewards || []
             }
@@ -688,7 +688,7 @@ export function useGameState() {
                 else if (reward.type === 'xp') addXP(reward.amount);
                 
                 addRewardToHistory({
-                  name: reward.type === 'text' ? (reward.rewardText || 'Dungeon Reward') : 
+                  name: reward.type === 'text' ? (reward.rewardText || 'Expedition Reward') : 
                         reward.type === 'talentPoint' ? `+${reward.amount} Talent Points` :
                         reward.type === 'coins' ? `+${reward.amount} Gold Coins` :
                         reward.type === 'xp' ? `+${reward.amount} Experience` :
@@ -727,7 +727,7 @@ export function useGameState() {
                         else if (reward.type === 'xp') addXP(reward.amount);
                         
                         addRewardToHistory({
-                          name: reward.type === 'text' ? (reward.rewardText || 'Major Reward') : 
+                          name: reward.type === 'text' ? (reward.rewardText || 'Expedition Goal Reward') : 
                                 reward.type === 'talentPoint' ? `+${reward.amount} Talent Points` :
                                 reward.type === 'coins' ? `+${reward.amount} Gold Coins` :
                                 reward.type === 'xp' ? `+${reward.amount} Experience` :
@@ -743,7 +743,7 @@ export function useGameState() {
                       setState(s => ({
                         ...s,
                         lastCompletionRewards: {
-                          dungeonName: `MAJOR CLEAR: ${major.name}`,
+                          dungeonName: `GOAL ACHIEVED: ${major.name}`,
                           type: 'dungeon',
                           rewards: major.rewards || []
                         }
@@ -788,7 +788,7 @@ export function useGameState() {
         else if (reward.type === 'xp') addXP(reward.amount);
         
         addRewardToHistory({
-          name: reward.type === 'text' ? (reward.rewardText || 'Dungeon Reward') : 
+          name: reward.type === 'text' ? (reward.rewardText || 'Expedition Reward') : 
                 reward.type === 'talentPoint' ? `+${reward.amount} Talent Points` :
                 reward.type === 'coins' ? `+${reward.amount} Gold Coins` :
                 reward.type === 'xp' ? `+${reward.amount} Experience` :
@@ -1200,6 +1200,13 @@ export function useGameState() {
     }));
   }, []);
 
+  const resetLootPool = useCallback(() => {
+    setState(prev => ({
+      ...prev,
+      rewardPool: INITIAL_REWARD_POOL
+    }));
+  }, []);
+
   const purchaseShopItem = useCallback((itemId: string) => {
     setState(prev => {
       const item = prev.shopItems.find(i => i.id === itemId);
@@ -1258,6 +1265,7 @@ export function useGameState() {
     addCoins,
     addRewardToHistory,
     toggleRewardRedeemed,
+    resetLootPool,
     completeSession,
     selectReward,
     forceCompleteSubDungeon,

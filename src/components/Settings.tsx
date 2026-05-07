@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { RewardCard, ShopItem, GachaPool, Rarity } from '../types';
 import { INITIAL_GACHA } from '../constants';
-import { Plus, Trash2, Save, Edit2, X, ChevronRight, Coins, Zap, Sparkles, Trophy, Timer as TimerIcon, Package, Flame, AlertTriangle, Scroll, Volume2, VolumeX, Sun, Moon, Settings as SettingsIcon, ShoppingBag, Trees, Waves, Database, Download, Upload, Target, Gift, User, Sword, Eye, Palette, Check, Bell, BellOff, RefreshCw, Key, Layers } from 'lucide-react';
+import { Plus, Trash2, Save, Edit2, X, ChevronRight, Coins, Zap, Sparkles, Trophy, Timer as TimerIcon, Package, Flame, AlertTriangle, Scroll, Volume2, VolumeX, Sun, Moon, Settings as SettingsIcon, ShoppingBag, Trees, Waves, Database, Download, Upload, Target, Gift, User, Sword, Eye, Palette, Check, Bell, BellOff, RefreshCw, Key, Layers, Sunrise, Cloud, CloudSun, Lollipop, Wrench } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { cn, getXPForLevel, getDefaultRewardForLevel } from '../lib/utils';
 import { playSound } from '../lib/sound';
@@ -33,6 +33,7 @@ interface SettingsProps {
   onUpdateRewards: (pool: RewardCard[]) => void;
   onUpdateShop: (items: ShopItem[]) => void;
   onUpdateGacha: (pools: GachaPool[]) => void;
+  onResetRewards?: () => void;
   addXP: (amount: number) => void;
 }
 
@@ -372,7 +373,7 @@ const LevelRewardsSettings = ({ state, setState }: { state: any, setState: (fn: 
                         value={editing.rewardText || ''}
                         onChange={e => setEditing({ ...editing, rewardText: e.target.value })}
                         className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white"
-                        placeholder="e.g. Unlock Secret Dungeon"
+                        placeholder="e.g. Unlock Secret Expedition"
                       />
                     </div>
                   )}
@@ -407,14 +408,14 @@ const LevelRewardsSettings = ({ state, setState }: { state: any, setState: (fn: 
 
 const GeneralSettings = ({ state, setState, setShowClearConfirm }: { state: any, setState: (fn: (prev: any) => any) => void, setShowClearConfirm: (show: boolean) => void }) => {
   const themes = [
-    { id: 'night', name: 'Night', color: '#020617', icon: Moon, iconColor: '#ffffff' },
-    { id: 'daylight', name: 'Daylight', color: '#f8fafc', icon: Sun, iconColor: '#0f172a' },
-    { id: 'warm', name: 'Warm Sun', color: '#ea580c', icon: Sun, iconColor: '#ffffff' },
-    { id: 'candy', name: 'Candy', color: '#ec4899', icon: Sparkles, iconColor: '#ffffff' },
+    { id: 'night', name: 'Night', color: '#4F39F6', icon: Moon, iconColor: '#f1efff' },
+    { id: 'daylight', name: 'Daylight', color: '#f8fafc', icon: CloudSun, iconColor: '#4F39F6' },
+    { id: 'warm', name: 'Warm Sun', color: '#F97C1E', icon: Sun, iconColor: '#FDE68A' },
+    { id: 'candy', name: 'Candy', color: '#e656b1', icon: Lollipop, iconColor: '#fff2ff' },
     { id: 'forest', name: 'Forest', color: '#34d399', icon: Trees, iconColor: '#064e3b' },
     { id: 'ocean', name: 'Ocean', color: '#38bdf8', icon: Waves, iconColor: '#0c4a6e' },
   ];
-
+  
   const soundEnabled = state.soundEnabled ?? true;
   const soundVolume = state.soundVolume ?? 0.5;
   const defaultMarkdownEnabled = state.defaultMarkdownEnabled ?? true;
@@ -668,7 +669,7 @@ const GeneralSettings = ({ state, setState, setShowClearConfirm }: { state: any,
     <div className="space-y-8">
       <div className="space-y-6">
         <div className="flex items-center gap-2 text-indigo-400 mb-6">
-          <Sparkles size={18} />
+          <Palette size={18} />
           <h4 className="font-bold uppercase text-sm tracking-widest">Global Effects & Theme</h4>
         </div>
 
@@ -1088,6 +1089,7 @@ export const Settings = React.memo<SettingsProps>(({
   onUpdateRewards,
   onUpdateShop,
   onUpdateGacha,
+  onResetRewards,
   addXP
 }) => {
   const [activeSection, setActiveSection] = useState<'general' | 'rewards' | 'shop' | 'gacha' | 'dev' | 'levelRewards' | 'about'>('general');
@@ -1114,7 +1116,7 @@ export const Settings = React.memo<SettingsProps>(({
     URL.revokeObjectURL(url);
   };
 
-  const [testNotificationTitle, setTestNotificationTitle] = useState('Dungeon Alert!');
+  const [testNotificationTitle, setTestNotificationTitle] = useState('Expedition Alert!');
   const [testNotificationBody, setTestNotificationBody] = useState('Your focus session has ended.');
   const [isTestingNotification, setIsTestingNotification] = useState(false);
 
@@ -1199,7 +1201,7 @@ export const Settings = React.memo<SettingsProps>(({
     <div className="p-6 space-y-8">
       <div className="flex items-center justify-between bg-slate-900 p-6 rounded-2xl border border-slate-700">
         <div>
-          <h2 className="text-2xl font-bold text-white">Dungeon Settings</h2>
+          <h2 className="text-2xl font-bold text-white">Expedition Settings</h2>
           <p className="text-slate-400">Customize your rewards and merchant stock</p>
         </div>
       </div>
@@ -1228,7 +1230,7 @@ export const Settings = React.memo<SettingsProps>(({
           <GeneralSettings state={state} setState={setState} setShowClearConfirm={setShowClearConfirm} />
         )}
         {activeSection === 'rewards' && (
-          <RewardSettings pool={rewardPool} onUpdate={onUpdateRewards} />
+          <RewardSettings pool={rewardPool} onUpdate={onUpdateRewards} onReset={onResetRewards} />
         )}
         {activeSection === 'levelRewards' && (
           <LevelRewardsSettings state={state} setState={setState} />
@@ -1265,7 +1267,7 @@ export const Settings = React.memo<SettingsProps>(({
               <div className="space-y-10">
                 <div className="flex items-center justify-between border-b border-slate-800 pb-4">
                   <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                    <Sparkles className="text-indigo-400" /> Developer Tools
+                    <Wrench className="text-indigo-400" /> Developer Tools
                   </h3>
                   <button 
                     onClick={() => {
@@ -1592,7 +1594,7 @@ export const Settings = React.memo<SettingsProps>(({
                           const permission = await Notification.requestPermission();
                           if (permission === 'granted') {
                             const reg = await navigator.serviceWorker.ready;
-                            await reg.showNotification('Scholar\'s Dungeon', {
+                            await reg.showNotification("Scholar's Expedition", {
                               body: 'Direct thread notification test successful!',
                               icon: '/pwa-icon.svg'
                             });
@@ -1658,13 +1660,13 @@ export const Settings = React.memo<SettingsProps>(({
                 <SettingsIcon size={40} className="text-white" />
               </div>
               <div>
-                <h3 className="text-3xl font-black text-white tracking-tight">Scholar's Dungeon</h3>
+                <h3 className="text-3xl font-black text-white tracking-tight">Scholar's Expedition</h3>
                 <div className="flex flex-col items-center gap-1 mt-2">
                   <span className="px-3 py-1 bg-indigo-500/20 text-indigo-400 rounded-full font-bold tracking-widest uppercase text-xs border border-indigo-500/30">
-                    Version 3.9.3
+                    Version 4.2.2
                   </span>
                   <span className="text-slate-500 text-xs font-medium">
-                    Updated: 2026-05-06
+                    Updated: 2026-05-07
                   </span>
                 </div>
               </div>
@@ -1677,7 +1679,7 @@ export const Settings = React.memo<SettingsProps>(({
                   Project Info
                 </h4>
                 <p className="text-slate-400 leading-relaxed">
-                  Scholar's Dungeon is a gamified learning system designed to turn study sessions into an immersive Roguelike adventure. 
+                  Scholar's Expedition is a gamified learning system designed to turn study sessions into an immersive Roguelike adventure. 
                   By combining the Pomodoro technique with RPG progression, it helps students and lifelong learners maintain focus and motivation.
                 </p>
               </div>
@@ -1840,8 +1842,9 @@ const DevResourceControl = ({ label, value, onAdd, onSub, icon, defaultAmount = 
   );
 };
 
-const RewardSettings = ({ pool, onUpdate }: { pool: RewardCard[], onUpdate: (p: RewardCard[]) => void }) => {
+const RewardSettings = ({ pool, onUpdate, onReset }: { pool: RewardCard[], onUpdate: (p: RewardCard[]) => void, onReset?: () => void }) => {
   const [editing, setEditing] = useState<RewardCard | null>(null);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   const handleSave = (card: RewardCard) => {
     const newPool = pool.some(c => c.id === card.id)
@@ -1855,25 +1858,37 @@ const RewardSettings = ({ pool, onUpdate }: { pool: RewardCard[], onUpdate: (p: 
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h3 className="text-xl font-bold text-white">Loot Pool</h3>
-        <button 
-          onClick={() => setEditing({ id: Math.random().toString(36).substr(2, 9), name: '', description: '', rarity: 'common', type: 'text', weight: 10 })}
-          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold"
-        >
-          <Plus size={16} /> Add Reward
-        </button>
+        <div className="flex gap-2">
+          {onReset && (
+            <button 
+              onClick={() => setShowResetConfirm(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-sm font-bold transition-colors"
+              title="Reset to Defaults"
+            >
+              <RefreshCw size={16} /> Reset
+            </button>
+          )}
+          <button 
+            onClick={() => setEditing({ id: Math.random().toString(36).substr(2, 9), name: '', description: '', rarity: 'common', type: 'text', weight: 10 })}
+            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold shadow-lg shadow-indigo-600/20"
+          >
+            <Plus size={16} /> Add Reward
+          </button>
+        </div>
       </div>
 
       <div className="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900/40">
-        <table className="w-full text-left text-xs md:text-sm border-collapse">
+        <table className="w-full text-center text-xs md:text-sm border-collapse">
           <thead>
             <tr className="bg-slate-900/80 border-b border-slate-800 text-slate-500 font-bold uppercase tracking-widest text-[10px]">
               <th className="px-4 py-3">Rarity</th>
-              <th className="px-4 py-3">Reward Details</th>
+              <th className="px-4 py-3">Reward</th>
+              <th className="px-4 py-3">Description</th>
               <th className="px-4 py-3">Type</th>
-              <th className="px-4 py-3 text-right">Weight</th>
-              <th className="px-4 py-3 text-right">Prob.</th>
-              <th className="px-4 py-3 text-right whitespace-nowrap">Daily Limit</th>
-              <th className="px-4 py-3 text-right">Actions</th>
+              <th className="px-4 py-3">Weight</th>
+              <th className="px-4 py-3">Prob.</th>
+              <th className="px-4 py-3 whitespace-nowrap">Daily Limit</th>
+              <th className="px-4 py-3">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-800/50">
@@ -1894,29 +1909,31 @@ const RewardSettings = ({ pool, onUpdate }: { pool: RewardCard[], onUpdate: (p: 
                       </span>
                     </td>
                     <td className="px-4 py-4">
-                      <div className="font-bold text-slate-200">{card.name}</div>
-                      <div className="text-[10px] text-slate-500 mt-0.5 italic">{card.description}</div>
+                      <div className="font-bold text-slate-200 whitespace-nowrap">{card.name}</div>
                     </td>
                     <td className="px-4 py-4">
+                      <div className="text-[10px] text-slate-500 italic mx-auto" title={card.description}>{card.description}</div>
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap">
                       <span className="text-slate-400 capitalize bg-slate-800/50 px-2 py-0.5 rounded-md border border-slate-700/50 text-[10px]">
                         {card.type}
                       </span>
                     </td>
-                    <td className="px-4 py-4 text-right font-mono text-indigo-400 font-bold">{card.weight}</td>
-                    <td className="px-4 py-4 text-right font-mono text-emerald-400 font-bold">{prob}%</td>
-                    <td className="px-4 py-4 text-right">
+                    <td className="px-4 py-4 font-mono text-indigo-400 font-bold">{card.weight}</td>
+                    <td className="px-4 py-4 font-mono text-emerald-400 font-bold">{prob}%</td>
+                    <td className="px-4 py-4">
                       {card.limitCount ? (
-                        <span className="text-[10px] text-slate-400 bg-slate-800 px-2 py-0.5 rounded-full border border-slate-700">
+                        <span className="text-[10px] text-slate-400 bg-slate-800 px-2 py-0.5 rounded-full border border-slate-700 whitespace-nowrap mx-auto inline-block">
                           {card.limitCount}x / {card.limitPeriodDays}d
                         </span>
                       ) : (
-                        <span className="text-[10px] text-slate-600">None</span>
+                        <span className="text-[10px] text-slate-600">—</span>
                       )}
                     </td>
-                    <td className="px-4 py-4 text-right">
-                      <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-all">
-                        <button onClick={() => setEditing(card)} className="p-1.5 text-slate-500 hover:text-indigo-400 hover:bg-slate-800 rounded-lg transition-colors"><Edit2 size={14} /></button>
-                        <button onClick={() => onUpdate(pool.filter(c => c.id !== card.id))} className="p-1.5 text-slate-500 hover:text-rose-500 hover:bg-slate-800 rounded-lg transition-colors"><Trash2 size={14} /></button>
+                    <td className="px-4 py-4">
+                      <div className="flex justify-center gap-1">
+                        <button onClick={() => setEditing(card)} className="p-1.5 text-slate-400 hover:text-indigo-400 hover:bg-slate-800 rounded-lg transition-colors focus:ring-2 focus:ring-indigo-500/50"><Edit2 size={14} /></button>
+                        <button onClick={() => onUpdate(pool.filter(c => c.id !== card.id))} className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-slate-800 rounded-lg transition-colors focus:ring-2 focus:ring-rose-500/50"><Trash2 size={14} /></button>
                       </div>
                     </td>
                   </tr>
@@ -1929,6 +1946,47 @@ const RewardSettings = ({ pool, onUpdate }: { pool: RewardCard[], onUpdate: (p: 
           <div className="py-12 text-center text-slate-500 italic text-sm">No rewards currently in the pool.</div>
         )}
       </div>
+
+      {/* Reset Confirmation Modal */}
+      <AnimatePresence>
+        {showResetConfirm && (
+          <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-slate-900 p-8 rounded-[2rem] border border-slate-700 w-full max-w-md shadow-2xl"
+            >
+              <div className="flex flex-col items-center text-center space-y-4">
+                <div className="p-4 bg-amber-500/10 text-amber-500 rounded-full">
+                  <AlertTriangle size={32} />
+                </div>
+                <h4 className="text-xl font-bold text-white">Reset Loot Pool?</h4>
+                <p className="text-slate-400 text-sm leading-relaxed">
+                  Are you sure you want to reset the entire Loot Pool to its default state? Your custom reward modifications will be lost.
+                </p>
+                <div className="flex gap-3 w-full pt-4">
+                  <button
+                    onClick={() => setShowResetConfirm(false)}
+                    className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => {
+                      onReset?.();
+                      setShowResetConfirm(false);
+                    }}
+                    className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold shadow-lg shadow-indigo-600/20 transition-all"
+                  >
+                    Confirm Reset
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {createPortal(
         <AnimatePresence>
@@ -2120,9 +2178,9 @@ const ShopSettings = ({ items, onUpdate }: { items: ShopItem[], onUpdate: (i: Sh
                 </div>
               </div>
             </div>
-            <div className="flex flex-col items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-4">
-              <button onClick={() => setEditing(item)} className="p-1.5 text-slate-500 hover:text-indigo-400 hover:bg-slate-800 rounded transition-colors"><Edit2 size={16} /></button>
-              <button onClick={() => onUpdate(items.filter(i => i.id !== item.id))} className="p-1.5 text-slate-500 hover:text-rose-500 hover:bg-slate-800 rounded transition-colors"><Trash2 size={16} /></button>
+            <div className="flex flex-col items-center gap-2 shrink-0 ml-4">
+              <button onClick={() => setEditing(item)} className="p-1.5 text-slate-400 hover:text-indigo-400 hover:bg-slate-800 rounded transition-colors"><Edit2 size={16} /></button>
+              <button onClick={() => onUpdate(items.filter(i => i.id !== item.id))} className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-slate-800 rounded transition-colors"><Trash2 size={16} /></button>
             </div>
           </div>
         )})}

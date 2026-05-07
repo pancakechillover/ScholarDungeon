@@ -298,7 +298,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                           <button
                             onClick={(e) => { e.stopPropagation(); setIsAddingSub({ parentId: sub.id }); }}
                             className="p-1 bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 rounded transition-all"
-                            title={`ADD LEVEL ${currentDepth + 1} DUNGEON`}
+                            title={`ADD TIER ${currentDepth + 1}`}
                           >
                             <Plus size={11} />
                           </button>
@@ -393,7 +393,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
             >
               <div className="flex items-center justify-between">
                 <h3 className="text-xl font-bold text-white uppercase tracking-tight">
-                  {isAddingMajor ? 'CREATE LEVEL 1 DUNGEON' : isAddingSub ? `CREATE LEVEL ${getSubDungeonDepth(isAddingSub.parentId) + 1} DUNGEON` : `EDIT ${editingMajor ? 'LEVEL 1' : 'LEVEL ' + getSubDungeonDepth(editingSub?.id || '')} DUNGEON`}
+                  {isAddingMajor ? 'CREATE EXPEDITION GOAL' : isAddingSub ? `CREATE TIER ${getSubDungeonDepth(isAddingSub.parentId) + 1}` : `EDIT ${editingMajor ? 'EXPEDITION GOAL' : 'TIER ' + getSubDungeonDepth(editingSub?.id || '')}`}
                 </h3>
                 <button onClick={() => { setEditingMajor(null); setEditingSub(null); setIsAddingMajor(false); setIsAddingSub(null); }} className="text-slate-500 hover:text-white">
                   <X size={24} />
@@ -414,7 +414,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                         else if (editingSub) setEditingSub({ ...editingSub, name: e.target.value });
                       }}
                       className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
-                      placeholder={isAddingMajor || isAddingSub ? "Dungeon Name" : ""}
+                      placeholder={isAddingMajor || isAddingSub ? "Goal Name" : ""}
                     />
                   </div>
                   {(editingSub || isAddingSub) && (
@@ -459,8 +459,8 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                         <span className="text-sm font-bold uppercase tracking-wider">Finalization Check</span>
                       </div>
                       <p className="text-xs text-slate-400 leading-relaxed">
-                        Once finalized, you cannot add more sub-dungeons or edit rewards. 
-                        Major rewards are only granted if the dungeon is finalized before completion.
+                        Once finalized, you cannot add more tiers or edit rewards. 
+                        Major rewards are only granted if the goal is finalized before completion.
                       </p>
                       <button
                         onClick={() => {
@@ -606,7 +606,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                   }}
                   className="px-8 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors"
                 >
-                  {isAddingMajor ? 'CREATE LEVEL 1 DUNGEON' : isAddingSub ? 'CREATE SUB DUNGEON' : 'SAVE CHANGES'}
+                  {isAddingMajor ? 'CREATE EXPEDITION GOAL' : isAddingSub ? 'CREATE TIER' : 'SAVE CHANGES'}
                 </button>
               </div>
             </motion.div>
@@ -625,8 +625,8 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
             <div className="w-24 h-24 bg-slate-900 rounded-full flex items-center justify-center mb-6 text-slate-700 border border-slate-800">
               <Sword size={48} />
             </div>
-            <h3 className="text-2xl font-bold text-white mb-2 italic pr-1 tracking-tight">No Dungeons Found</h3>
-            <p className="text-slate-500 text-center max-w-xs text-sm font-medium">Your journey is just beginning. Create your first major dungeon to start tracking your progress!</p>
+            <h3 className="text-2xl font-bold text-white mb-2 italic pr-1 tracking-tight">No Expeditions Found</h3>
+            <p className="text-slate-500 text-center max-w-xs text-sm font-medium">Your journey is just beginning. Create your first expedition goal to start tracking your progress!</p>
           </div>
         ) : (
           <>
@@ -769,7 +769,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                             className="w-full py-2 flex items-center justify-center gap-1 text-slate-500 hover:text-indigo-400 hover:bg-indigo-500/5 rounded-xl transition-all border border-dashed border-slate-800/50 mt-1"
                           >
                             <Plus size={14} />
-                            <span className="text-[10px] font-bold uppercase tracking-wider">CREATE LEVEL 2 DUNGEON</span>
+                            <span className="text-[10px] font-bold uppercase tracking-wider">CREATE TIER 1</span>
                           </button>
                         )}
                   </motion.div>
@@ -787,7 +787,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
               <div className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center border border-slate-800 group-hover:border-indigo-500/30 transition-all">
                 <Plus size={20} />
               </div>
-              <span className="text-xs font-bold uppercase tracking-[0.2em]">CREATE LEVEL 1 DUNGEON</span>
+              <span className="text-xs font-bold uppercase tracking-[0.2em]">CREATE EXPEDITION GOAL</span>
             </button>
           </>
         )) : (
@@ -798,7 +798,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                 <input 
                   type="text"
-                  placeholder="Search archived dungeons..."
+                  placeholder="Search archived expeditions..."
                   value={archiveSearch}
                   onChange={(e) => setArchiveSearch(e.target.value)}
                   className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-sm text-white focus:border-indigo-500 outline-none"
@@ -840,7 +840,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                       <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest italic pr-1">
                         <div className="flex items-center gap-2">
                           <Archive size={14} className="text-slate-600" />
-                          <span>Dungeon</span>
+                          <span>Expedition Goal</span>
                         </div>
                       </th>
                       <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest italic pr-1">
@@ -915,7 +915,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                             <div className="p-4 bg-slate-800/50 rounded-full text-slate-600">
                               <Archive size={32} />
                             </div>
-                            <p className="text-slate-500 italic pr-1 text-sm">No archived dungeons found.</p>
+                            <p className="text-slate-500 italic pr-1 text-sm">No archived expeditions found.</p>
                           </div>
                         </td>
                       </tr>
@@ -943,7 +943,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
             >
               <div className="flex items-center gap-3 text-red-400">
                 <Trash2 size={24} />
-                <h3 className="text-xl font-bold">Delete Dungeon</h3>
+                <h3 className="text-xl font-bold">Delete {deletingDungeon.isMajor ? 'Expedition Goal' : 'Tier'}</h3>
               </div>
               <p className="text-slate-300">
                 Are you sure you want to delete <span className="font-bold text-white">{deletingDungeon.name}</span>? This action cannot be undone.

@@ -179,7 +179,7 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
                   <input
                     type="text"
-                    placeholder="Search dungeon or reward..."
+                    placeholder="Search goal or reward..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full bg-slate-800 border-none rounded-xl py-2 pl-10 pr-4 text-sm text-white focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
@@ -190,7 +190,7 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
                   onChange={(e) => setFilterDungeon(e.target.value)}
                   className="bg-slate-800 border-none rounded-xl py-2 px-4 text-sm text-white focus:ring-2 focus:ring-indigo-500 outline-none flex-1"
                 >
-                  <option value="all">All Dungeons</option>
+                  <option value="all">All Expeditions</option>
                   <option value="free_study">Free Study</option>
                   {dungeons.map(d => (
                     <option key={d.id} value={d.id}>{d.name}</option>
@@ -306,7 +306,7 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
                       className="flex items-center justify-center gap-2.5 text-[11px] font-black text-slate-500 uppercase tracking-widest hover:text-indigo-400 transition-colors w-full"
                     >
                       <Sword size={16} className="shrink-0" />
-                      <span className="whitespace-nowrap">Dungeon</span>
+                      <span className="whitespace-nowrap">Expedition Goal</span>
                       {sortConfig.key === 'dungeon' && (
                         sortConfig.direction === 'asc' ? <ChevronUp size={12} /> : <ChevronDown size={12} />
                       )}
@@ -522,7 +522,7 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
               
               <div className="p-6 space-y-6">
                 <div>
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Dungeon</label>
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Expedition</label>
                   <select
                     value={editingSession.dungeonId}
                     onChange={(e) => setEditingSession({ ...editingSession, dungeonId: e.target.value })}
@@ -536,7 +536,7 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Dungeon Start Time</label>
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Expedition Start Time</label>
                   <input
                     type="datetime-local"
                     value={format(parseISO(editingSession.timestamp), "yyyy-MM-dd'T'HH:mm")}

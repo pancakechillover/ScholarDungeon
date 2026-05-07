@@ -143,7 +143,7 @@ export const TalentTree = React.memo<TalentTreeProps>(({
                     <div>
                       <p className="font-bold text-white">Finding Shards</p>
                       <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                        Shards are rare drops in <span className="text-indigo-400">Dungeons</span> or won from the <span className="text-amber-400">Gacha</span>.
+                        Shards are rare drops in <span className="text-indigo-400">Expeditions</span> or won from the <span className="text-amber-400">Gacha</span>.
                       </p>
                     </div>
                   </div>
@@ -152,7 +152,7 @@ export const TalentTree = React.memo<TalentTreeProps>(({
                 <div className="p-4 bg-amber-500/10 rounded-2xl border border-amber-500/20">
                   <p className="text-xs text-amber-300 font-bold uppercase tracking-widest mb-2">Pro Tip: Customization</p>
                   <p className="text-xs text-slate-400 leading-relaxed">
-                    Want more Talent Points? You can set them as rewards for clearing Dungeons or reaching specific levels in <strong>Settings</strong>!
+                    Want more Talent Points? You can set them as rewards for clearing Expedition Goals or reaching specific levels in <strong>Settings</strong>!
                   </p>
                 </div>
 

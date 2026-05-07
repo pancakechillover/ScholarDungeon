@@ -309,7 +309,7 @@ export const RewardHistory: React.FC<RewardHistoryProps> = ({ history, onToggleR
                              item.itemType === 'death_defying_medal' ? "Streak shield" :
                              item.itemType === 'xp_bonus_percent' ? `+${item.amount}% XP` :
                              item.itemType === 'coin_bonus_percent' ? `+${item.amount}% Coins` :
-                             "Dungeon item"
+                             "Expedition item"
                            ) : "Message reward"}
                         </span>
                       </div>

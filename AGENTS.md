@@ -19,8 +19,8 @@ Whenever you complete a task or make changes to the application:
 - **Italic Clipping:** To prevent right-side clipping of italic text (especially in browsers with tight bounding boxes), always add a small right padding (e.g., `pr-1` or `px-0.5`) to the element or its immediate container.
 
 ## Current Status
-- **Current Version:** v3.9.3
-- **Last Update Date:** 2026-05-06
+- **Current Version:** v4.2.2
+- **Last Update Date:** 2026-05-07
 
 ## Light Themes Definition
 The following themes are considered "Light Themes" and require special CSS handling (e.g., avoiding white text on light backgrounds, using theme-aware colors for modals and charts):
@@ -38,6 +38,41 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v4.2.2 (2026-05-07):** Victory Modal Fullscreen & Theme Compatibility.
+  - *Bugfix:* Overrode `node-domexception` to native `domexception` to resolve npm deprecation warnings during builds.
+  - *UI:* Upgraded the Victory modal to render via a React Portal directly to `document.body`, ensuring a true full-screen experience that escapes container scale transforms.
+  - *UI:* Switched hardware-black background gradients to CSS-theme aware mask-images to ensure the immersive background effect respects and integrates smoothly with Daylight, Warm, and Candy light themes.
+- **v4.2.1 (2026-05-07):** Loot Pool UI & Description Refinement.
+  - *UI:* Optimized table display in Settings to ensure all text is visible without truncation.
+  - *UI:* Ensured all table content is perfectly centered for better visual balance.
+  - *Data:* Further simplified default reward descriptions for maximum clarity.
+- **v4.2.0 (2026-05-07):** Victory Modal & Celebration Overhaul.
+  - *Feature:* Transformed the Victory (Reward Selection) modal into a full-screen immersive experience with atmospheric background gradients and blurred accents.
+  - *Animation:* Added a celebratory confetti effect (`triggerSimpleConfetti`) triggered upon reward selection for better feedback.
+  - *UI:* Enhanced typography and layout density in the Victory screen, including staggered entrance animations for reward cards.
+- **v4.1.2 (2026-05-07):** Loot Pool UI & Description Polish.
+  - *UI:* Centered all content in the Loot Pool table for better visual balance.
+  - *Data:* Simplified default reward descriptions (e.g., "Gain 1 Gold Coin" instead of long sentences).
+- **v4.1.1 (2026-05-07):** Loot Pool UI & Mobile UX Polish.
+  - *UI:* Separated Name and Description into dedicated columns in the Loot Pool settings.
+  - *UX:* Made item action buttons (Edit/Delete) always visible in Settings to fix mobile interaction issues.
+  - *UI:* Improved table layout density and responsiveness in management modules.
+- **v4.1.0 (2026-05-06):** Overhauled Default Loot Pool & Reset Feature.
+  - *Data:* Updated the default Loot Pool with 17 specialized rewards, including item weights and frequency limits (e.g., 3x/day).
+  - *Feature:* Added a "Reset to Defaults" button in Loot Pool settings with a double-check confirmation modal.
+  - *Localization:* Ensured all default reward names and descriptions are in English.
+- **v4.0.0 (2026-05-06):** Major Renaming: Expedition Goal & Tier X.
+  - *Refactor:* Systematically renamed "Dungeon" to "Expedition" across the entire UI and logic strings.
+  - *Naming:* Implemented "Expedition Goal" for top-level folders and "Tier X" for nested levels.
+  - *UI:* Updated buttons, notifications, placeholders, and descriptions to ensure a consistent terminology shift.
+  - *UI:* Changed "Scholar's Dungeon" to "Scholar's Expedition" in various branding elements to align with the new theme.
+- **v3.9.6 (2026-05-06):** Theme Icon & Header Polish.
+  - *UI:* Changed "Daylight" theme icon to `CloudSun` and "Candy" to `Lollipop`.
+  - *UI:* Updated "Global Effects & Theme" section icon to `Palette` and "Developer Tools" to `Wrench`.
+- **v3.9.5 (2026-05-06):** Theme Icon Polish.
+  - *UI:* Changed "Daylight" theme icon to `Cloud` as requested.
+- **v3.9.4 (2026-05-06):** Theme Icon Polish.
+  - *UI:* Changed "Daylight" theme icon to `Sunrise` for a more thematic visual.
 - **v3.9.3 (2026-05-06):** Editor UI Symmetry & Spacing Fixes.
   - *UI:* Balanced the vertical height of Loot Pool and Shop Item editors by making description textareas expandable and taller.
   - *UI:* Moved "Infinite" stock hint to label text for cleaner input alignment.
