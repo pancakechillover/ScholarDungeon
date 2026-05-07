@@ -393,7 +393,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
             >
               <div className="flex items-center justify-between">
                 <h3 className="text-xl font-bold text-white uppercase tracking-tight">
-                  {isAddingMajor ? 'CREATE EXPEDITION GOAL' : isAddingSub ? `CREATE TIER ${getSubDungeonDepth(isAddingSub.parentId) + 1}` : `EDIT ${editingMajor ? 'EXPEDITION GOAL' : 'TIER ' + getSubDungeonDepth(editingSub?.id || '')}`}
+                  {isAddingMajor ? 'CREATE EXPEDITION GOAL' : isAddingSub ? `CREATE TIER ${getSubDungeonDepth(isAddingSub.parentId) + 1}` : `EDIT ${editingMajor ? 'DUNGEON GOAL' : 'TIER ' + getSubDungeonDepth(editingSub?.id || '')}`}
                 </h3>
                 <button onClick={() => { setEditingMajor(null); setEditingSub(null); setIsAddingMajor(false); setIsAddingSub(null); }} className="text-slate-500 hover:text-white">
                   <X size={24} />
@@ -625,8 +625,8 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
             <div className="w-24 h-24 bg-slate-900 rounded-full flex items-center justify-center mb-6 text-slate-700 border border-slate-800">
               <Sword size={48} />
             </div>
-            <h3 className="text-2xl font-bold text-white mb-2 italic pr-1 tracking-tight">No Expeditions Found</h3>
-            <p className="text-slate-500 text-center max-w-xs text-sm font-medium">Your journey is just beginning. Create your first expedition goal to start tracking your progress!</p>
+            <h3 className="text-2xl font-bold text-white mb-2 italic pr-1 tracking-tight">No Dungeons Found</h3>
+            <p className="text-slate-500 text-center max-w-xs text-sm font-medium">Your journey is just beginning. Create your first dungeon goal to start tracking your progress!</p>
           </div>
         ) : (
           <>
@@ -798,7 +798,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                 <input 
                   type="text"
-                  placeholder="Search archived expeditions..."
+                  placeholder="Search archived dungeons..."
                   value={archiveSearch}
                   onChange={(e) => setArchiveSearch(e.target.value)}
                   className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-sm text-white focus:border-indigo-500 outline-none"
@@ -840,7 +840,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                       <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest italic pr-1">
                         <div className="flex items-center gap-2">
                           <Archive size={14} className="text-slate-600" />
-                          <span>Expedition Goal</span>
+                          <span>Dungeon Goal</span>
                         </div>
                       </th>
                       <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest italic pr-1">
@@ -915,7 +915,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                             <div className="p-4 bg-slate-800/50 rounded-full text-slate-600">
                               <Archive size={32} />
                             </div>
-                            <p className="text-slate-500 italic pr-1 text-sm">No archived expeditions found.</p>
+                            <p className="text-slate-500 italic pr-1 text-sm">No archived dungeons found.</p>
                           </div>
                         </td>
                       </tr>
@@ -943,7 +943,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
             >
               <div className="flex items-center gap-3 text-red-400">
                 <Trash2 size={24} />
-                <h3 className="text-xl font-bold">Delete {deletingDungeon.isMajor ? 'Expedition Goal' : 'Tier'}</h3>
+                <h3 className="text-xl font-bold">Delete {deletingDungeon.isMajor ? 'Dungeon Goal' : 'Tier'}</h3>
               </div>
               <p className="text-slate-300">
                 Are you sure you want to delete <span className="font-bold text-white">{deletingDungeon.name}</span>? This action cannot be undone.

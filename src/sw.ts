@@ -24,20 +24,20 @@ self.addEventListener('push', (event) => {
       console.log('[Service Worker] Push Data:', data);
       
       const options = {
-        body: data.body || "New update from Scholar's Expedition",
+        body: data.body || "New update from Scholar's Dungeon",
         icon: '/pwa-icon.svg',
         badge: '/pwa-icon.svg',
         vibrate: [100, 50, 100],
         data: data.data,
-        tag: 'expedition-notification', // Group notifications
+        tag: 'dungeon-notification', // Group notifications
         renotify: true,
         actions: [
-          { action: 'open', title: 'Back to Expedition' }
+          { action: 'open', title: 'Back to Dungeon' }
         ]
       };
 
       event.waitUntil(
-        self.registration.showNotification(data.title || 'Expedition Alert', options)
+        self.registration.showNotification(data.title || 'Dungeon Alert', options)
           .then(() => console.log('[Service Worker] Notification shown.'))
           .catch(err => console.error('[Service Worker] Failed to show notification:', err))
       );
@@ -46,7 +46,7 @@ self.addEventListener('push', (event) => {
       // Fallback for non-JSON data
       const text = event.data.text();
       event.waitUntil(
-        self.registration.showNotification('Expedition Alert', { body: text })
+        self.registration.showNotification('Dungeon Alert', { body: text })
       );
     }
   } else {

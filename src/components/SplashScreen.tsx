@@ -45,7 +45,7 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
           className="text-center"
         >
           <h1 className="text-3xl font-bold text-indigo-400 tracking-widest uppercase mb-2">
-            Scholar's Expedition
+            Scholar's Dungeon
           </h1>
           <motion.div 
             className="h-0.5 bg-indigo-500/50 mx-auto"
@@ -65,7 +65,7 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
         transition={{ delay: 1.5 }}
         className="absolute bottom-12 text-slate-600 text-[10px] font-bold tracking-[0.2em] uppercase"
       >
-        Version 3.8.9
+        Version 4.2.9
       </motion.div>
     </motion.div>
   );

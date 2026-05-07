@@ -19,8 +19,14 @@ Whenever you complete a task or make changes to the application:
 - **Italic Clipping:** To prevent right-side clipping of italic text (especially in browsers with tight bounding boxes), always add a small right padding (e.g., `pr-1` or `px-0.5`) to the element or its immediate container.
 
 ## Current Status
-- **Current Version:** v4.2.3
+- **Current Version:** v4.2.9
 - **Last Update Date:** 2026-05-07
+
+## Dark Themes Definition
+The following themes are considered "Dark Themes" and form the baseline for vibrant visual effects and high-contrast glowing elements:
+- **Night** (`data-theme="night"`)
+- **Forest** (`data-theme="forest"`)
+- **Ocean** (`data-theme="ocean"`)
 
 ## Light Themes Definition
 The following themes are considered "Light Themes" and require special CSS handling (e.g., avoiding white text on light backgrounds, using theme-aware colors for modals and charts):
@@ -38,6 +44,27 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v4.2.9 (2026-05-07):** Version Management & Design Review.
+  - *Documentation:* Formally defined "Dark Themes" (Night, Forest, Ocean) to ensure consistency in targeted styling and VFX design.
+  - *UI:* Updated version strings across the app (Splash Screen, Settings, AGENTS.md) and integrated a Release History tracker directly into the About page.
+- **v4.2.8 (2026-05-07):** Reward Rarity Special Effects.
+  - *UI:* Introduced customized 'gorgeous' visual effects for non-Common rewards to make them stand out, including animated sweeping light shimmers for Rare/Epic/Legendary cards.
+  - *UI:* Specifically added slowly rotating `Sparkles` particles and a glowing base border effect to Legendary cards.
+  - *UI:* Designed the effects to execute securely behind text layers using absolute positioning and SVG elements to avoid opacity background conflicts in light themes.
+- **v4.2.7 (2026-05-07):** Victory Screen Desktop Density & Light Theme Polish.
+  - *UI:* Eliminated opacity-based backgrounds (`bg-blue-900/20`, etc.) from Reward Selection cards to fully support Light Mode text visibility.
+  - *UI:* Condensed modal paddings, margins, and textual sizing across the Victory screen to ensure it fits completely within a single desktop viewport without vertical scrolling.
+- **v4.2.6 (2026-05-07):** Victory Screen Polish & Refinement.
+  - *UI:* Removed the "Claim Reward" visual indicator from reward cards for a cleaner minimal look.
+  - *UI:* Increased the font size of the daily limit ('Lmt') text on reward cards for better readability.
+  - *UI:* Removed container shadows from various elements in the Victory modal (reward cards, indicators, icons) to natively integrate with light mode themes.
+- **v4.2.5 (2026-05-07):** Victory Screen Typography & Alignment Polish.
+  - *UI:* Further scaled down typography and icons in the Victory modal to perfectly match the application's overall font sizing and aesthetic density.
+  - *UI:* Centered the "Claim Reward" text and icon within the reward selection cards, adding a subtle background and border for better button affordance.
+- **v4.2.4 (2026-05-07):** Victory Screen Layout & Font Scaling.
+  - *Bugfix:* Changed Victory screen vertical alignment from 'center' to 'start' to prevent top-level content from being cut off on smaller screens.
+  - *UI:* Scaled down headings and statistics (XP/Gold) in the Victory modal to better fit standard resolutions while maintaining a premium feel.
+  - *UI:* Tightened overall vertical spacing and added bottom padding to ensure clean scrolling.
 - **v4.2.3 (2026-05-07):** Victory Screen Polish & Responsive Scaling.
   - *UI:* Implemented fluid typography and adaptive scaling for the Victory (Reward Selection) screen, ensuring text and stats are appropriately sized on large displays.
   - *UX:* Removed the staggered entrance animation for reward cards to improve perceived performance and responsiveness.

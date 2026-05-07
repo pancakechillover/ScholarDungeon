@@ -373,7 +373,7 @@ const LevelRewardsSettings = ({ state, setState }: { state: any, setState: (fn: 
                         value={editing.rewardText || ''}
                         onChange={e => setEditing({ ...editing, rewardText: e.target.value })}
                         className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white"
-                        placeholder="e.g. Unlock Secret Expedition"
+                        placeholder="e.g. Unlock Secret Dungeon"
                       />
                     </div>
                   )}
@@ -1116,7 +1116,7 @@ export const Settings = React.memo<SettingsProps>(({
     URL.revokeObjectURL(url);
   };
 
-  const [testNotificationTitle, setTestNotificationTitle] = useState('Expedition Alert!');
+  const [testNotificationTitle, setTestNotificationTitle] = useState('Dungeon Alert!');
   const [testNotificationBody, setTestNotificationBody] = useState('Your focus session has ended.');
   const [isTestingNotification, setIsTestingNotification] = useState(false);
 
@@ -1201,7 +1201,7 @@ export const Settings = React.memo<SettingsProps>(({
     <div className="p-6 space-y-8">
       <div className="flex items-center justify-between bg-slate-900 p-6 rounded-2xl border border-slate-700">
         <div>
-          <h2 className="text-2xl font-bold text-white">Expedition Settings</h2>
+          <h2 className="text-2xl font-bold text-white">Dungeon Settings</h2>
           <p className="text-slate-400">Customize your rewards and merchant stock</p>
         </div>
       </div>
@@ -1594,7 +1594,7 @@ export const Settings = React.memo<SettingsProps>(({
                           const permission = await Notification.requestPermission();
                           if (permission === 'granted') {
                             const reg = await navigator.serviceWorker.ready;
-                            await reg.showNotification("Scholar's Expedition", {
+                            await reg.showNotification("Scholar's Dungeon", {
                               body: 'Direct thread notification test successful!',
                               icon: '/pwa-icon.svg'
                             });
@@ -1660,10 +1660,10 @@ export const Settings = React.memo<SettingsProps>(({
                 <SettingsIcon size={40} className="text-white" />
               </div>
               <div>
-                <h3 className="text-3xl font-black text-white tracking-tight">Scholar's Expedition</h3>
+                <h3 className="text-3xl font-black text-white tracking-tight">Scholar's Dungeon</h3>
                 <div className="flex flex-col items-center gap-1 mt-2">
                   <span className="px-3 py-1 bg-indigo-500/20 text-indigo-400 rounded-full font-bold tracking-widest uppercase text-xs border border-indigo-500/30">
-                    Version 4.2.3
+                    Version 4.2.9
                   </span>
                   <span className="text-slate-500 text-xs font-medium">
                     Updated: 2026-05-07
@@ -1679,7 +1679,7 @@ export const Settings = React.memo<SettingsProps>(({
                   Project Info
                 </h4>
                 <p className="text-slate-400 leading-relaxed">
-                  Scholar's Expedition is a gamified learning system designed to turn study sessions into an immersive Roguelike adventure. 
+                  Scholar's Dungeon is a gamified learning system designed to turn study sessions into an immersive Roguelike adventure. 
                   By combining the Pomodoro technique with RPG progression, it helps students and lifelong learners maintain focus and motivation.
                 </p>
               </div>
@@ -1719,6 +1719,53 @@ export const Settings = React.memo<SettingsProps>(({
                       <ChevronRight size={16} className="text-slate-500 group-hover:text-indigo-400 transition-colors" />
                     </a>
                   </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-slate-800/30 p-8 rounded-3xl border border-slate-700/50 space-y-6">
+              <h4 className="text-lg font-bold text-white flex items-center gap-2">
+                <Scroll size={20} className="text-indigo-400" />
+                Release History
+              </h4>
+              <div className="space-y-6">
+                <div className="space-y-2 relative pl-6 border-l-2 border-indigo-500/30">
+                  <div className="absolute top-1.5 -left-[5px] w-2 h-2 rounded-full bg-indigo-400" />
+                  <div className="flex items-center gap-3">
+                    <span className="font-black text-white text-lg">v4.2.9</span>
+                    <span className="text-slate-500 text-xs font-bold font-mono">2026-05-07</span>
+                  </div>
+                  <h5 className="font-bold text-indigo-300">Version Management & Design Review</h5>
+                  <ul className="text-slate-400 text-sm space-y-2 list-disc ml-4">
+                    <li><span className="text-indigo-400 font-bold">Documentation:</span> Formally defined "Dark Themes" (Night, Forest, Ocean) to ensure consistency in targeted styling and VFX design.</li>
+                    <li><span className="text-indigo-400 font-bold">UI:</span> Updated version strings across the app (Splash Screen, Settings, AGENTS.md) and integrated a Release History tracker directly into the About page.</li>
+                  </ul>
+                </div>
+                
+                <div className="space-y-2 relative pl-6 border-l-2 border-slate-700/50">
+                  <div className="absolute top-1.5 -left-[5px] w-2 h-2 rounded-full bg-slate-600" />
+                  <div className="flex items-center gap-3">
+                    <span className="font-bold text-slate-300">v4.2.8</span>
+                    <span className="text-slate-600 text-xs font-bold font-mono">2026-05-07</span>
+                  </div>
+                  <h5 className="font-medium text-slate-400">Reward Rarity Special Effects</h5>
+                  <ul className="text-slate-500 text-sm space-y-2 list-disc ml-4">
+                    <li><span className="text-slate-400 font-bold">UI:</span> Introduced customized 'gorgeous' visual effects for non-Common rewards to make them stand out.</li>
+                    <li><span className="text-slate-400 font-bold">UI:</span> Specifically added slowly rotating <code className="text-xs bg-slate-900 px-1 py-0.5 rounded">Sparkles</code> particles and a glowing base border effect to Legendary cards.</li>
+                  </ul>
+                </div>
+
+                <div className="space-y-2 relative pl-6 border-l-2 border-slate-700/50">
+                  <div className="absolute top-1.5 -left-[5px] w-2 h-2 rounded-full bg-slate-600" />
+                  <div className="flex items-center gap-3">
+                    <span className="font-bold text-slate-300">v4.2.7</span>
+                    <span className="text-slate-600 text-xs font-bold font-mono">2026-05-07</span>
+                  </div>
+                  <h5 className="font-medium text-slate-400">Victory Screen Desktop Density & Light Theme Polish</h5>
+                  <ul className="text-slate-500 text-sm space-y-2 list-disc ml-4">
+                    <li><span className="text-slate-400 font-bold">UI:</span> Eliminated opacity-based backgrounds from Reward Selection cards to fully support Light Mode text visibility.</li>
+                    <li><span className="text-slate-400 font-bold">UI:</span> Condensed modal paddings, margins, and textual sizing across the Victory screen to ensure it fits completely within a single desktop viewport.</li>
+                  </ul>
                 </div>
               </div>
             </div>

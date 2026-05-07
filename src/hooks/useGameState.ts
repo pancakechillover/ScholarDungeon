@@ -29,7 +29,7 @@ export function useGameState() {
       dailyRerollUsed: false,
       inventory: [],
       userName: 'Scholar',
-      userBio: 'Master of the Study Expedition',
+      userBio: 'Master of the Study Dungeon',
       quests: DEFAULT_QUESTS,
       questNotificationStyle: 'red_dot',
       unclaimedQuests: 0,
@@ -416,7 +416,7 @@ export function useGameState() {
             else if (reward.type === 'xp') addXP(reward.amount);
             
             addRewardToHistory({
-              name: reward.type === 'text' ? (reward.rewardText || 'Expedition Goal Reward') : 
+              name: reward.type === 'text' ? (reward.rewardText || 'Dungeon Goal Reward') : 
                     reward.type === 'talentPoint' ? `+${reward.amount} Talent Points` :
                     reward.type === 'coins' ? `+${reward.amount} Gold Coins` :
                     reward.type === 'xp' ? `+${reward.amount} Experience` :
@@ -688,7 +688,7 @@ export function useGameState() {
                 else if (reward.type === 'xp') addXP(reward.amount);
                 
                 addRewardToHistory({
-                  name: reward.type === 'text' ? (reward.rewardText || 'Expedition Reward') : 
+                  name: reward.type === 'text' ? (reward.rewardText || 'Dungeon Reward') : 
                         reward.type === 'talentPoint' ? `+${reward.amount} Talent Points` :
                         reward.type === 'coins' ? `+${reward.amount} Gold Coins` :
                         reward.type === 'xp' ? `+${reward.amount} Experience` :
@@ -727,7 +727,7 @@ export function useGameState() {
                         else if (reward.type === 'xp') addXP(reward.amount);
                         
                         addRewardToHistory({
-                          name: reward.type === 'text' ? (reward.rewardText || 'Expedition Goal Reward') : 
+                          name: reward.type === 'text' ? (reward.rewardText || 'Dungeon Goal Reward') : 
                                 reward.type === 'talentPoint' ? `+${reward.amount} Talent Points` :
                                 reward.type === 'coins' ? `+${reward.amount} Gold Coins` :
                                 reward.type === 'xp' ? `+${reward.amount} Experience` :
@@ -788,7 +788,7 @@ export function useGameState() {
         else if (reward.type === 'xp') addXP(reward.amount);
         
         addRewardToHistory({
-          name: reward.type === 'text' ? (reward.rewardText || 'Expedition Reward') : 
+          name: reward.type === 'text' ? (reward.rewardText || 'Dungeon Reward') : 
                 reward.type === 'talentPoint' ? `+${reward.amount} Talent Points` :
                 reward.type === 'coins' ? `+${reward.amount} Gold Coins` :
                 reward.type === 'xp' ? `+${reward.amount} Experience` :

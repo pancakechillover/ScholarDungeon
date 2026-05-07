@@ -656,7 +656,7 @@ function App() {
 
   const navItems = [
     { id: 'dashboard', label: 'Sanctum', icon: LayoutDashboard },
-    { id: 'dungeons', label: 'Expeditions', icon: Sword },
+    { id: 'dungeons', label: 'Dungeons', icon: Sword },
     { id: 'explore', label: 'Explore', icon: TimerIcon },
     { id: 'talents', label: 'Talents', icon: Zap },
     { id: 'shop', label: 'Merchant', icon: ShoppingBag },
@@ -733,7 +733,7 @@ function App() {
                 animate={{ opacity: 1, x: 0 }}
                 className="font-bold text-lg tracking-tight text-white whitespace-nowrap"
               >
-                Scholar's Expedition
+                Scholar's Dungeon
               </motion.span>
             )}
           </div>
@@ -797,7 +797,7 @@ function App() {
             <h1 className="text-base font-black text-white uppercase tracking-tighter italic pr-1">{activeTab}</h1>
           </div>
 
-          {/* Persistent Active Expedition Widget - Simplified */}
+          {/* Persistent Active Dungeon Widget - Simplified */}
           {currentDungeon && (
             <motion.div 
               initial={{ opacity: 0, y: -10 }}
@@ -939,7 +939,7 @@ function App() {
                     <p className="text-slate-400 mb-8 max-w-md">
                       {state.history.length === 0 
                         ? "A new legend is about to be written. Are you ready to begin your first exploration?" 
-                        : "Your journey through the Scholar's Expedition continues. Ready for the next session?"}
+                        : "Your journey through the Scholar's Dungeon continues. Ready for the next session?"}
                     </p>
                     
                     {currentDungeon ? (
@@ -960,18 +960,18 @@ function App() {
                           onClick={() => setActiveTab('explore')}
                           className="flex items-center space-x-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold transition-all"
                         >
-                          <span>Enter Expedition</span>
+                          <span>Enter Dungeon</span>
                           <ChevronRight size={18} />
                         </button>
                       </div>
                     ) : (
                       <div className="p-8 text-center border-2 border-dashed border-slate-800 rounded-3xl">
-                        <p className="text-slate-500 mb-4">No active expedition exploration.</p>
+                        <p className="text-slate-500 mb-4">No active dungeon exploration.</p>
                         <button 
                           onClick={() => setActiveTab('dungeons')}
                           className="px-6 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-colors"
                         >
-                          {state.history.length === 0 ? "Start Your First Expedition" : "Delve into Goal"}
+                          {state.history.length === 0 ? "Start Your First Dungeon" : "Delve into Goal"}
                         </button>
                       </div>
                     )}
@@ -1419,7 +1419,7 @@ function App() {
                 className="w-full p-6 lg:p-8 space-y-8"
               >
                 <PageHeader 
-                  title={dungeonSubTab === 'list' ? "Expedition Explorer" : dungeonSubTab === 'quests' ? "Quest Board" : "Achievements"} 
+                  title={dungeonSubTab === 'list' ? "Dungeon Explorer" : dungeonSubTab === 'quests' ? "Quest Board" : "Achievements"} 
                   description={dungeonSubTab === 'list' ? "Manage your study goals" : dungeonSubTab === 'quests' ? "Complete tasks for extra rewards" : "Your legendary milestones"} 
                   icon={dungeonSubTab === 'list' ? Sword : dungeonSubTab === 'quests' ? Target : Trophy} 
                 >
@@ -1433,7 +1433,7 @@ function App() {
                         )}
                       >
                         <Sword size={14} className="sm:w-4 sm:h-4" />
-                        Expeditions
+                        Dungeons
                       </button>
                       <button
                         onClick={() => setDungeonSubTab('quests')}
@@ -1728,7 +1728,7 @@ function App() {
                               <SettingsIcon size={16} />
                             </button>
                           </div>
-                          <p className="text-xs sm:text-sm text-slate-400 font-medium line-clamp-2">{state.userBio || 'Master of the Study Expedition'}</p>
+                          <p className="text-xs sm:text-sm text-slate-400 font-medium line-clamp-2">{state.userBio || 'Master of the Study Dungeon'}</p>
                           <div className="flex flex-wrap items-center gap-2 mt-2">
                             <span className="px-2 py-0.5 bg-indigo-500/10 text-indigo-400 text-[9px] sm:text-[10px] font-black uppercase tracking-widest rounded-md border border-indigo-500/20">
                               {state.level >= 20 ? 'Grandmaster' : state.level >= 10 ? 'Veteran' : 'Novice'} Explorer
@@ -1828,7 +1828,7 @@ function App() {
                             {state.levelRewards?.find(r => r.level === state.level + 1) ? (
                               `+${state.levelRewards.find(r => r.level === state.level + 1)?.amount} ${state.levelRewards.find(r => r.level === state.level + 1)?.type === 'talentPoint' ? 'Talent Point' : 'Gold'}`
                             ) : (
-                              ((state.level + 1) <= 3 || ((state.level + 1) <= 9 && ((state.level + 1) - 3) % 2 === 0) || ((state.level + 1) > 9 && ((state.level + 1) - 9) % 3 === 0)) ? '+1 Talent Point' : 'New Expedition Access'
+                              ((state.level + 1) <= 3 || ((state.level + 1) <= 9 && ((state.level + 1) - 3) % 2 === 0) || ((state.level + 1) > 9 && ((state.level + 1) - 9) % 3 === 0)) ? '+1 Talent Point' : 'New Dungeon Access'
                             )}
                           </p>
                         </div>
@@ -1895,7 +1895,7 @@ function App() {
                         onClick={() => setShowProfile(false)}
                         className="w-full py-3 sm:py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl sm:rounded-2xl font-black uppercase tracking-widest text-[10px] sm:text-xs transition-all shadow-xl shadow-indigo-500/20"
                       >
-                        Return to Expedition
+                        Return to Dungeon
                       </button>
                     </div>
                   </div>
@@ -1925,7 +1925,7 @@ function App() {
                       <Trophy size={48} className="text-white -rotate-12" />
                     </div>
                     <h2 className="text-sm font-black text-indigo-400 uppercase tracking-[0.3em] mb-2">
-                      {state.lastCompletionRewards.type === 'dungeon' ? 'Expedition Cleared!' : 
+                      {state.lastCompletionRewards.type === 'dungeon' ? 'Dungeon Cleared!' : 
                        state.lastCompletionRewards.type === 'quest' ? 'Quest Completed!' : 
                        'Achievement Unlocked!'}
                     </h2>
@@ -1951,7 +1951,7 @@ function App() {
                   </div>
                   <div className="flex flex-col gap-3">
                     <button onClick={() => setState(s => ({ ...s, lastCompletionRewards: null }))} className="w-full py-5 bg-white text-slate-900 rounded-2xl font-black uppercase tracking-widest hover:bg-indigo-400 transition-colors shadow-xl">
-                      {state.lastCompletionRewards.type === 'dungeon' ? 'Claim Expedition Rewards' : 
+                      {state.lastCompletionRewards.type === 'dungeon' ? 'Claim Dungeon Rewards' : 
                        state.lastCompletionRewards.type === 'quest' ? 'Claim Quest Rewards' : 
                        'Claim Achievement Rewards'}
                     </button>
@@ -1964,7 +1964,7 @@ function App() {
                       }} 
                       className="w-full py-4 bg-slate-800 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-slate-700 transition-colors"
                     >
-                      {state.lastCompletionRewards.type === 'dungeon' ? 'Back to Expedition' : 
+                      {state.lastCompletionRewards.type === 'dungeon' ? 'Back to Dungeon' : 
                        state.lastCompletionRewards.type === 'quest' ? 'View Quests' : 
                        'View Achievements'}
                     </button>
@@ -2055,7 +2055,7 @@ function App() {
                       </li>
                       <li className="flex items-center gap-2">
                         <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                        <span>Clear rooms in <strong>Expeditions</strong></span>
+                        <span>Clear rooms in <strong>Dungeons</strong></span>
                       </li>
                       <li className="flex items-center gap-2">
                         <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
@@ -2117,7 +2117,7 @@ function App() {
                       </li>
                       <li className="flex items-center gap-2">
                         <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                        <span>Clear rooms in <strong>Expeditions</strong></span>
+                        <span>Clear rooms in <strong>Dungeons</strong></span>
                       </li>
                       <li className="flex items-center gap-2">
                         <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
@@ -2200,7 +2200,7 @@ function App() {
                       <div>
                         <p className="font-bold text-white">Finding Shards</p>
                         <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                          Shards are rare drops in <span className="text-indigo-400">Expeditions</span> or won from the <span className="text-amber-400">Gacha</span>.
+                          Shards are rare drops in <span className="text-indigo-400">Dungeons</span> or won from the <span className="text-amber-400">Gacha</span>.
                         </p>
                       </div>
                     </div>
@@ -2209,7 +2209,7 @@ function App() {
                   <div className="p-4 bg-amber-500/10 rounded-2xl border border-amber-500/20">
                     <p className="text-xs text-amber-300 font-bold uppercase tracking-widest mb-2">Pro Tip: Customization</p>
                     <p className="text-xs text-slate-400 leading-relaxed">
-                      Want more Talent Points? You can set them as rewards for clearing Expeditions or reaching specific levels in <strong>Settings</strong>!
+                      Want more Talent Points? You can set them as rewards for clearing Dungeons or reaching specific levels in <strong>Settings</strong>!
                     </p>
                   </div>
 

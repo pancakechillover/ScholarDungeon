@@ -73,14 +73,14 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
     const xp = periodSessions.reduce((acc, s) => acc + s.xpEarned, 0) + 
                periodRewards.filter(r => r.type === 'xp').reduce((acc, r) => acc + (r.amount || 0), 0);
     
-    // Tasks = Sessions + Unique Quest/Expedition reward events
+    // Tasks = Sessions + Unique Quest/Dungeon reward events
     const questRewards = periodRewards.filter(r => 
       r.name.includes('Quest') || 
       r.name.includes('MAJOR CLEAR') || 
       r.name.includes('QUEST COMPLETE') ||
       r.name.includes('Achievement') ||
       r.name.includes('GOAL ACHIEVED') ||
-      r.name.includes('Expedition Reward')
+      r.name.includes('Dungeon Reward')
     );
     const uniqueQuests = new Set(questRewards.map(r => r.timestamp)).size;
     
@@ -102,7 +102,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
       r.name.includes('QUEST COMPLETE') ||
       r.name.includes('Achievement') ||
       r.name.includes('GOAL ACHIEVED') ||
-      r.name.includes('Expedition Reward')
+      r.name.includes('Dungeon Reward')
     );
     const uniqueQuests = new Set(questRewards.map(r => r.timestamp)).size;
     
@@ -220,7 +220,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
     <div className="p-6 space-y-8">
       <PageHeader 
         title="Record"
-        description="Your journey through the expedition"
+        description="Your journey through the dungeon"
         icon={BarChart2}
         stats={[
           { label: 'Total XP', value: history.reduce((acc, s) => acc + s.xpEarned, 0).toLocaleString(), icon: Zap, color: 'text-indigo-400' },

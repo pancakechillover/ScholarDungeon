@@ -190,7 +190,7 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
                   onChange={(e) => setFilterDungeon(e.target.value)}
                   className="bg-slate-800 border-none rounded-xl py-2 px-4 text-sm text-white focus:ring-2 focus:ring-indigo-500 outline-none flex-1"
                 >
-                  <option value="all">All Expeditions</option>
+                  <option value="all">All Dungeons</option>
                   <option value="free_study">Free Study</option>
                   {dungeons.map(d => (
                     <option key={d.id} value={d.id}>{d.name}</option>
@@ -306,7 +306,7 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
                       className="flex items-center justify-center gap-2.5 text-[11px] font-black text-slate-500 uppercase tracking-widest hover:text-indigo-400 transition-colors w-full"
                     >
                       <Sword size={16} className="shrink-0" />
-                      <span className="whitespace-nowrap">Expedition Goal</span>
+                      <span className="whitespace-nowrap">Dungeon Goal</span>
                       {sortConfig.key === 'dungeon' && (
                         sortConfig.direction === 'asc' ? <ChevronUp size={12} /> : <ChevronDown size={12} />
                       )}
@@ -522,7 +522,7 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
               
               <div className="p-6 space-y-6">
                 <div>
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Expedition</label>
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Dungeon</label>
                   <select
                     value={editingSession.dungeonId}
                     onChange={(e) => setEditingSession({ ...editingSession, dungeonId: e.target.value })}
@@ -536,7 +536,7 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Expedition Start Time</label>
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Dungeon Start Time</label>
                   <input
                     type="datetime-local"
                     value={format(parseISO(editingSession.timestamp), "yyyy-MM-dd'T'HH:mm")}
