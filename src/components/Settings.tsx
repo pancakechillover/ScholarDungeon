@@ -1663,7 +1663,7 @@ export const Settings = React.memo<SettingsProps>(({
                 <h3 className="text-3xl font-black text-white tracking-tight">Scholar's Dungeon</h3>
                 <div className="flex flex-col items-center gap-1 mt-2">
                   <span className="px-3 py-1 bg-indigo-500/20 text-indigo-400 rounded-full font-bold tracking-widest uppercase text-xs border border-indigo-500/30">
-                    Version 4.2.9
+                    Version 4.2.13
                   </span>
                   <span className="text-slate-500 text-xs font-medium">
                     Updated: 2026-05-07
@@ -1732,13 +1732,63 @@ export const Settings = React.memo<SettingsProps>(({
                 <div className="space-y-2 relative pl-6 border-l-2 border-indigo-500/30">
                   <div className="absolute top-1.5 -left-[5px] w-2 h-2 rounded-full bg-indigo-400" />
                   <div className="flex items-center gap-3">
-                    <span className="font-black text-white text-lg">v4.2.9</span>
+                    <span className="font-black text-white text-lg">v4.2.13</span>
                     <span className="text-slate-500 text-xs font-bold font-mono">2026-05-07</span>
                   </div>
-                  <h5 className="font-bold text-indigo-300">Version Management & Design Review</h5>
+                  <h5 className="font-bold text-indigo-300">Fullscreen Explore & Tablet Layout Polish</h5>
                   <ul className="text-slate-400 text-sm space-y-2 list-disc ml-4">
-                    <li><span className="text-indigo-400 font-bold">Documentation:</span> Formally defined "Dark Themes" (Night, Forest, Ocean) to ensure consistency in targeted styling and VFX design.</li>
-                    <li><span className="text-indigo-400 font-bold">UI:</span> Updated version strings across the app (Splash Screen, Settings, AGENTS.md) and integrated a Release History tracker directly into the About page.</li>
+                    <li><span className="text-indigo-400 font-bold">UI:</span> Optimized Explore tab layout for tablet widths.</li>
+                    <li><span className="text-indigo-400 font-bold">UI:</span> Added task progress bar to non-scrolling Fullscreen mode.</li>
+                  </ul>
+                </div>
+
+                <div className="space-y-2 relative pl-6 border-l-2 border-slate-700/50">
+                  <div className="absolute top-1.5 -left-[5px] w-2 h-2 rounded-full bg-slate-600" />
+                  <div className="flex items-center gap-3">
+                    <span className="font-bold text-slate-300">v4.2.12</span>
+                    <span className="text-slate-600 text-xs font-bold font-mono">2026-05-07</span>
+                  </div>
+                  <h5 className="font-medium text-slate-400">Push Notification Error Handle Fix</h5>
+                  <ul className="text-slate-400 text-sm space-y-2 list-disc ml-4">
+                    <li><span className="text-slate-300 font-bold">Bugfix:</span> Extended push notification error catching to clear bad/invalid subscriptions reporting HTTP 400/401/403 status codes.</li>
+                  </ul>
+                </div>
+
+                <div className="space-y-2 relative pl-6 border-l-2 border-slate-700/50">
+                  <div className="absolute top-1.5 -left-[5px] w-2 h-2 rounded-full bg-slate-600" />
+                  <div className="flex items-center gap-3">
+                    <span className="font-bold text-slate-300">v4.2.11</span>
+                    <span className="text-slate-600 text-xs font-bold font-mono">2026-05-07</span>
+                  </div>
+                  <h5 className="font-medium text-slate-400">Critical Victory Polish</h5>
+                  <ul className="text-slate-500 text-sm space-y-2 list-disc ml-4">
+                    <li><span className="text-slate-400 font-bold">Bugfix:</span> Fixed an issue where the Gold Coin Rain effect would trigger twice upon a critical victory.</li>
+                    <li><span className="text-slate-400 font-bold">UI:</span> Updated the Critical Victory notification text to dynamically display the actual configured gold multiplier and trigger probability.</li>
+                  </ul>
+                </div>
+
+                <div className="space-y-2 relative pl-6 border-l-2 border-slate-700/50">
+                  <div className="absolute top-1.5 -left-[5px] w-2 h-2 rounded-full bg-slate-600" />
+                  <div className="flex items-center gap-3">
+                    <span className="font-bold text-slate-300">v4.2.10</span>
+                    <span className="text-slate-600 text-xs font-bold font-mono">2026-05-07</span>
+                  </div>
+                  <h5 className="font-medium text-slate-400">Reward Selection Rendering Polish</h5>
+                  <ul className="text-slate-400 text-sm space-y-2 list-disc ml-4">
+                    <li><span className="text-slate-300 font-bold">Bugfix:</span> Fixed an issue where a "0" would inadvertently render on the Reward Selection card when the limit count (Lmt) was set to 0.</li>
+                  </ul>
+                </div>
+                
+                <div className="space-y-2 relative pl-6 border-l-2 border-slate-700/50">
+                  <div className="absolute top-1.5 -left-[5px] w-2 h-2 rounded-full bg-slate-600" />
+                  <div className="flex items-center gap-3">
+                    <span className="font-bold text-slate-300">v4.2.9</span>
+                    <span className="text-slate-600 text-xs font-bold font-mono">2026-05-07</span>
+                  </div>
+                  <h5 className="font-medium text-slate-400">Version Management & Design Review</h5>
+                  <ul className="text-slate-500 text-sm space-y-2 list-disc ml-4">
+                    <li><span className="text-slate-400 font-bold">Documentation:</span> Formally defined "Dark Themes" (Night, Forest, Ocean) to ensure consistency in targeted styling and VFX design.</li>
+                    <li><span className="text-slate-400 font-bold">UI:</span> Updated version strings across the app (Splash Screen, Settings, AGENTS.md) and integrated a Release History tracker directly into the About page.</li>
                   </ul>
                 </div>
                 

@@ -1048,7 +1048,7 @@ function App() {
                 )}>
                   <div className={cn(
                     "w-full h-full",
-                    !isFullscreenExplore ? "grid grid-cols-1 lg:grid-cols-[minmax(200px,1fr)_500px] gap-6 xl:gap-12" : "flex flex-col items-center justify-center h-full w-full"
+                    !isFullscreenExplore ? "grid grid-cols-1 lg:grid-cols-[1fr_360px] xl:grid-cols-[1fr_440px] 2xl:grid-cols-[1fr_500px] gap-6 xl:gap-8 2xl:gap-12" : "flex flex-col items-center justify-center h-full w-full"
                   )}>
                     {/* Left Column: Timer & Timer Settings area */}
                     <div className={cn(
@@ -1088,6 +1088,8 @@ function App() {
                               activeTalents={state.activeTalents}
                               dailyRerollUsed={state.dailyRerollUsed}
                               history={state.history}
+                              critChance={state.devModeEnabled ? (state.devCritChance ?? 0.05) : 0.05}
+                              critMultiplier={state.devModeEnabled ? (state.devCritMultiplier ?? 5) : 5}
                               onComplete={(duration, fDur, rDur) => {
                                 const result = completeSession(state.currentDungeonId || null, duration, fDur, rDur);
                                 playSound('success', state.soundVolume, state.soundEnabled);
@@ -1130,50 +1132,76 @@ function App() {
                       )}
 
                        {isFullscreenExplore && (
-                        <div className="w-full h-full flex flex-col items-center justify-center scale-125">
-                           <Timer 
-                              currentDungeon={currentDungeon || null}
-                              rewardPool={state.rewardPool || []}
-                              activeTalents={state.activeTalents}
-                              dailyRerollUsed={state.dailyRerollUsed}
-                              history={state.history}
-                              onComplete={(duration, fDur, rDur) => {
-                                const result = completeSession(state.currentDungeonId || null, duration, fDur, rDur);
-                                playSound('success', state.soundVolume, state.soundEnabled);
-                                if (result && state.secretCode) {
-                                  syncToCloud(true);
-                                }
-                                return result;
-                              }}
-                              onRestComplete={() => {
-                                playSound('success', state.soundVolume, state.soundEnabled);
-                              }}
-                              onInventoryAdd={(id) => setState(prev => ({ ...prev, inventory: [...prev.inventory, id] }))}
-                              onReroll={() => setState(prev => ({ ...prev, dailyRerollUsed: true }))}
-                              onRewardSelect={(reward, sessionId) => {
-                                selectReward(reward, sessionId);
-                                playSound('reward', state.soundVolume, state.soundEnabled);
-                              }}
-                              setShowCoinRain={setShowCoinRain}
-                              isFullscreen={isFullscreenExplore}
-                              secretCode={state.secretCode}
-                              pushEnabled={state.pushEnabled}
-                              onTogglePip={togglePip}
-                              focusDuration={focusDuration}
-                              restDuration={restDuration}
-                              enableRest={enableRest}
-                              isLooping={isLooping}
-                              setIsResting={setIsResting}
-                              isResting={isResting}
-                              setDuration={setDuration}
-                              duration={duration}
-                              setTimeLeft={setTimerTimeLeft}
-                              timeLeft={timerTimeLeft}
-                              setIsActive={setIsTimerActive}
-                              isActive={isTimerActive}
-                              setEndTime={setTimerEndTime}
-                              endTime={timerEndTime}
-                            />
+                        <div className="w-full h-[100dvh] flex flex-col items-center justify-center p-8 relative overflow-hidden bg-slate-950">
+                           {/* Simplified Progress Bar for Fullscreen Mode */}
+                           {currentDungeon && (
+                             <motion.div 
+                               initial={{ opacity: 0, y: -20 }}
+                               animate={{ opacity: 1, y: 0 }}
+                               className="absolute top-8 sm:top-12 left-1/2 -translate-x-1/2 w-full max-w-sm space-y-2 z-[30] px-8"
+                             >
+                                <div className="flex justify-between items-center px-1">
+                                  <span className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em]">{currentDungeon.name}</span>
+                                  <span className="text-[10px] font-bold text-slate-500">{currentDungeon.completedSessions}/{currentDungeon.totalSessions} Sessions</span>
+                                </div>
+                                <div className="h-1.5 w-full bg-slate-900 rounded-full border border-slate-800 overflow-hidden">
+                                   <motion.div 
+                                      initial={{ width: 0 }}
+                                      animate={{ width: `${(currentDungeon.completedSessions / currentDungeon.totalSessions) * 100}%` }}
+                                      className="h-full bg-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.6)]"
+                                   />
+                                </div>
+                             </motion.div>
+                           )}
+
+                           {/* Scaled Timer for Fullscreen Experience */}
+                           <div className="scale-110 md:scale-125 lg:scale-[1.35] origin-center transform transition-transform">
+                             <Timer 
+                                currentDungeon={currentDungeon || null}
+                                rewardPool={state.rewardPool || []}
+                                activeTalents={state.activeTalents}
+                                dailyRerollUsed={state.dailyRerollUsed}
+                                history={state.history}
+                                critChance={state.devModeEnabled ? (state.devCritChance ?? 0.05) : 0.05}
+                                critMultiplier={state.devModeEnabled ? (state.devCritMultiplier ?? 5) : 5}
+                                onComplete={(duration, fDur, rDur) => {
+                                  const result = completeSession(state.currentDungeonId || null, duration, fDur, rDur);
+                                  playSound('success', state.soundVolume, state.soundEnabled);
+                                  if (result && state.secretCode) {
+                                    syncToCloud(true);
+                                  }
+                                  return result;
+                                }}
+                                onRestComplete={() => {
+                                  playSound('success', state.soundVolume, state.soundEnabled);
+                                }}
+                                onInventoryAdd={(id) => setState(prev => ({ ...prev, inventory: [...prev.inventory, id] }))}
+                                onReroll={() => setState(prev => ({ ...prev, dailyRerollUsed: true }))}
+                                onRewardSelect={(reward, sessionId) => {
+                                  selectReward(reward, sessionId);
+                                  playSound('reward', state.soundVolume, state.soundEnabled);
+                                }}
+                                setShowCoinRain={setShowCoinRain}
+                                isFullscreen={isFullscreenExplore}
+                                secretCode={state.secretCode}
+                                pushEnabled={state.pushEnabled}
+                                onTogglePip={togglePip}
+                                focusDuration={focusDuration}
+                                restDuration={restDuration}
+                                enableRest={enableRest}
+                                isLooping={isLooping}
+                                setIsResting={setIsResting}
+                                isResting={isResting}
+                                setDuration={setDuration}
+                                duration={duration}
+                                setTimeLeft={setTimerTimeLeft}
+                                timeLeft={timerTimeLeft}
+                                setIsActive={setIsTimerActive}
+                                isActive={isTimerActive}
+                                setEndTime={setTimerEndTime}
+                                endTime={timerEndTime}
+                              />
+                            </div>
                           </div>
                         )}
                       </div>

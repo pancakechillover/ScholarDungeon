@@ -19,7 +19,7 @@ Whenever you complete a task or make changes to the application:
 - **Italic Clipping:** To prevent right-side clipping of italic text (especially in browsers with tight bounding boxes), always add a small right padding (e.g., `pr-1` or `px-0.5`) to the element or its immediate container.
 
 ## Current Status
-- **Current Version:** v4.2.9
+- **Current Version:** v4.2.13
 - **Last Update Date:** 2026-05-07
 
 ## Dark Themes Definition
@@ -44,6 +44,16 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v4.2.13 (2026-05-07):** Fullscreen Explore & Tablet Layout Polish.
+  - *UI:* Optimized the Explore tab layout for tablet landscape widths by balancing the column ratios.
+  - *UI:* Enhanced the Fullscreen mode to be strictly non-scrolling and added a minimalist task progress bar at the top for focused sessions.
+- **v4.2.12 (2026-05-07):** Push Notification Error Handle Fix.
+  - *Bugfix:* Extended push notification error catching to clear bad/invalid subscriptions reporting 400, 401, and 403 status codes instead of solely 410 and 404. This resolves the "Received unexpected response code" loop.
+- **v4.2.11 (2026-05-07):** Critical Victory Polish.
+  - *Bugfix:* Fixed an issue where the Gold Coin Rain effect would trigger twice upon a critical victory.
+  - *UI:* Updated the Critical Victory notification text to dynamically display the actual configured gold multiplier and trigger probability.
+- **v4.2.10 (2026-05-07):** Reward Selection Rendering Polish.
+  - *Bugfix:* Fixed an issue where a "0" would inadvertently render on the Reward Selection card when the limit count (Lmt) was set to 0.
 - **v4.2.9 (2026-05-07):** Version Management & Design Review.
   - *Documentation:* Formally defined "Dark Themes" (Night, Forest, Ocean) to ensure consistency in targeted styling and VFX design.
   - *UI:* Updated version strings across the app (Splash Screen, Settings, AGENTS.md) and integrated a Release History tracker directly into the About page.

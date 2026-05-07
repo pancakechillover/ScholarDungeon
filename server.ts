@@ -218,8 +218,8 @@ const processPushQueue = async (client: any) => {
             data: { type: task.type }
           }));
         } catch (err: any) {
-          console.error(`Push failed for ${task.secretCode}:`, err.message);
-          if (err.statusCode === 410 || err.statusCode === 404) {
+          console.error(`Push failed for ${task.secretCode}:`, err.message, err.body ? err.body : '');
+          if (err.statusCode === 410 || err.statusCode === 404 || err.statusCode === 400 || err.statusCode === 401 || err.statusCode === 403) {
             await client.sRem(`scholar_push_subs_${task.secretCode}`, subStr);
           }
         }
@@ -236,7 +236,8 @@ const processPushQueue = async (client: any) => {
             data: { type: task.type }
           }));
         } catch (err: any) {
-          if (err.statusCode === 410 || err.statusCode === 404) {
+          console.error(`Legacy push failed for ${task.secretCode}:`, err.message, err.body ? err.body : '');
+          if (err.statusCode === 410 || err.statusCode === 404 || err.statusCode === 400 || err.statusCode === 401 || err.statusCode === 403) {
             await client.del(`scholar_push_sub_${task.secretCode}`);
           }
         }

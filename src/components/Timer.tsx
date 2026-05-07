@@ -37,6 +37,8 @@ interface TimerProps {
   isActive: boolean;
   setEndTime: (val: number | null) => void;
   endTime: number | null;
+  critChance: number;
+  critMultiplier: number;
 }
 
 export interface TimerRef {
@@ -76,7 +78,9 @@ export const Timer = React.memo<TimerProps>(({
   setIsActive,
   isActive,
   setEndTime,
-  endTime
+  endTime,
+  critChance,
+  critMultiplier
 }) => {
   const [showRewards, setShowRewards] = useState<{ session: StudySession; choices: RewardCard[] } | null>(null);
   const [showTalentPopup, setShowTalentPopup] = useState<StudySession['triggeredTalents'] | null>(null);
@@ -420,7 +424,7 @@ export const Timer = React.memo<TimerProps>(({
                     className="text-xs md:text-sm text-slate-400 px-4 font-medium"
                   >
                     {showRewards.session.isCrit 
-                      ? "Fortune favors the bold. 5x Gold bonus triggered!" 
+                      ? `Fortune favors the bold. ${critMultiplier}x Gold bonus triggered! (${Math.round(critChance * 100)}%)` 
                       : "Dungeon room cleared. Claim your rewards."}
                   </motion.p>
                 </div>
@@ -599,11 +603,11 @@ export const Timer = React.memo<TimerProps>(({
                               {card.rarity}
                             </span>
                             
-                            {card.limitCount && (
+                            {card.limitCount && card.limitCount > 0 ? (
                               <span className="text-xs font-bold text-slate-500 uppercase tracking-tighter">
                                 {claimsInPeriod}/{card.limitCount} Lmt
                               </span>
-                            )}
+                            ) : null}
                           </div>
                           <h4 className="text-base md:text-lg font-bold text-white mb-1 md:mb-2 leading-tight">{card.name}</h4>
                           <p className="text-xs md:text-sm text-slate-400 flex-grow leading-relaxed">{card.description}</p>

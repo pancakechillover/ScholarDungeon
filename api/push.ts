@@ -155,8 +155,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               }));
               results.push({ secretCode: task.secretCode, status: 'sent', endpoint: subscription.endpoint.substring(0, 20) });
             } catch (err: any) {
-              console.error(`Push failed for sub:`, err.message);
-              if (err.statusCode === 410 || err.statusCode === 404) {
+              console.error(`Push failed for sub:`, err.message, err.body ? err.body : '');
+              if (err.statusCode === 410 || err.statusCode === 404 || err.statusCode === 400 || err.statusCode === 401 || err.statusCode === 403) {
                 await client.sRem(`scholar_push_subs_${task.secretCode}`, subStr);
               }
               results.push({ secretCode: task.secretCode, status: 'failed_sub', error: err.message });
@@ -175,7 +175,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               }));
               results.push({ secretCode: task.secretCode, status: 'sent_legacy' });
             } catch (err: any) {
-              if (err.statusCode === 410 || err.statusCode === 404) {
+              console.error(`Legacy push failed for sub:`, err.message, err.body ? err.body : '');
+              if (err.statusCode === 410 || err.statusCode === 404 || err.statusCode === 400 || err.statusCode === 401 || err.statusCode === 403) {
                 await client.del(`scholar_push_sub_${task.secretCode}`);
               }
             }

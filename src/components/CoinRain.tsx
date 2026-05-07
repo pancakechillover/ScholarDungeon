@@ -40,7 +40,7 @@ export const CoinRain: React.FC<CoinRainProps> = ({ active, onComplete }) => {
 
       return () => clearTimeout(timer);
     }
-  }, [active, onComplete]);
+  }, [active]); // Removed onComplete from dependencies to prevent re-triggering
 
   return (
     <AnimatePresence>

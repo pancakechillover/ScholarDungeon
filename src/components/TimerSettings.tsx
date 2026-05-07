@@ -43,7 +43,7 @@ export const TimerSettings: React.FC<TimerSettingsProps> = ({
 
   return (
     <div className="bg-slate-900/50 border border-slate-800 rounded-3xl p-6 space-y-6 backdrop-blur-sm relative overflow-hidden">
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2 shrink-0">
           <Settings2 size={16} />
           Timer Settings
