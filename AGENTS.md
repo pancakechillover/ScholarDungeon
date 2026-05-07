@@ -19,7 +19,7 @@ Whenever you complete a task or make changes to the application:
 - **Italic Clipping:** To prevent right-side clipping of italic text (especially in browsers with tight bounding boxes), always add a small right padding (e.g., `pr-1` or `px-0.5`) to the element or its immediate container.
 
 ## Current Status
-- **Current Version:** v4.2.2
+- **Current Version:** v4.2.3
 - **Last Update Date:** 2026-05-07
 
 ## Light Themes Definition
@@ -38,6 +38,10 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v4.2.3 (2026-05-07):** Victory Screen Polish & Responsive Scaling.
+  - *UI:* Implemented fluid typography and adaptive scaling for the Victory (Reward Selection) screen, ensuring text and stats are appropriately sized on large displays.
+  - *UX:* Removed the staggered entrance animation for reward cards to improve perceived performance and responsiveness.
+  - *UI:* Added real-time daily claim limits (e.g., "1/3 Lmt") directly to the reward selection cards for better player awareness.
 - **v4.2.2 (2026-05-07):** Victory Modal Fullscreen & Theme Compatibility.
   - *Bugfix:* Overrode `node-domexception` to native `domexception` to resolve npm deprecation warnings during builds.
   - *UI:* Upgraded the Victory modal to render via a React Portal directly to `document.body`, ensuring a true full-screen experience that escapes container scale transforms.

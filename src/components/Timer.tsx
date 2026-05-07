@@ -385,7 +385,7 @@ export const Timer = React.memo<TimerProps>(({
                 initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 1.05, opacity: 0 }}
-                className="w-full max-w-6xl space-y-8 md:space-y-16 text-center relative z-10 py-10"
+                className="w-full max-w-7xl space-y-6 md:space-y-12 lg:space-y-16 text-center relative z-10 py-6 md:py-10"
               >
               <div className="space-y-2 md:space-y-6">
                 <motion.div
@@ -393,13 +393,13 @@ export const Timer = React.memo<TimerProps>(({
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.2, type: "spring", stiffness: 100 }}
                   className={cn(
-                    "inline-block p-4 md:p-6 rounded-full border mb-2 md:mb-6 shadow-2xl",
+                    "inline-block p-4 md:p-6 lg:p-8 rounded-full border mb-2 md:mb-6 shadow-2xl",
                     showRewards.session.isCrit 
                       ? "bg-amber-500/20 border-amber-500/30 text-amber-400" 
                       : "bg-indigo-500/20 border-indigo-500/30 text-indigo-400"
                   )}
                 >
-                  <Trophy size={32} className="md:w-16 md:h-16" />
+                  <Trophy className="w-8 h-8 md:w-16 md:h-16 lg:w-20 lg:h-20" />
                 </motion.div>
                 <div className="space-y-2">
                   <motion.h2 
@@ -407,7 +407,7 @@ export const Timer = React.memo<TimerProps>(({
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ delay: 0.3 }}
                     className={cn(
-                      "text-4xl sm:text-6xl md:text-8xl font-black tracking-tighter italic uppercase",
+                      "text-4xl sm:text-6xl md:text-8xl lg:text-9xl font-black tracking-tighter italic uppercase",
                       showRewards.session.isCrit ? "text-amber-400" : "text-white"
                     )}
                   >
@@ -417,7 +417,7 @@ export const Timer = React.memo<TimerProps>(({
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.5 }}
-                    className="text-sm md:text-xl text-slate-400 px-4 font-medium"
+                    className="text-sm md:text-xl lg:text-2xl text-slate-400 px-4 font-medium"
                   >
                     {showRewards.session.isCrit 
                       ? "Fortune favors the bold. 5x Gold bonus triggered!" 
@@ -426,17 +426,17 @@ export const Timer = React.memo<TimerProps>(({
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row justify-center gap-4 md:gap-12 px-4">
+              <div className="flex flex-col sm:flex-row justify-center gap-4 md:gap-12 lg:gap-16 px-4">
                 <motion.div 
                   initial={{ x: -20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: 0.6 }}
-                  className="flex items-center gap-4 bg-slate-900/50 backdrop-blur-md px-6 md:px-10 py-4 md:py-6 rounded-2xl md:rounded-[2.5rem] border border-emerald-500/30 shadow-xl"
+                  className="flex items-center gap-4 bg-slate-900/50 backdrop-blur-md px-6 md:px-10 lg:px-14 py-4 md:py-6 lg:py-8 rounded-2xl md:rounded-[2.5rem] border border-emerald-500/30 shadow-xl"
                 >
-                  <Zap className="text-emerald-400 md:w-10 md:h-10" size={24} />
+                  <Zap className="text-emerald-400 w-6 h-6 md:w-10 md:h-10 lg:w-12 lg:h-12" />
                   <div className="text-left">
-                    <p className="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">XP Gained</p>
-                    <p className="text-2xl md:text-4xl font-black text-white">+{showRewards.session.xpEarned}</p>
+                    <p className="text-[10px] md:text-xs lg:text-sm font-bold text-slate-500 uppercase tracking-widest mb-1">XP Gained</p>
+                    <p className="text-2xl md:text-4xl lg:text-5xl font-black text-white">+{showRewards.session.xpEarned}</p>
                   </div>
                 </motion.div>
                 <motion.div 
@@ -444,26 +444,26 @@ export const Timer = React.memo<TimerProps>(({
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: 0.6 }}
                   className={cn(
-                    "flex items-center gap-4 bg-slate-900/50 backdrop-blur-md px-6 md:px-10 py-4 md:py-6 rounded-2xl md:rounded-[2.5rem] border transition-all shadow-xl",
+                    "flex items-center gap-4 bg-slate-900/50 backdrop-blur-md px-6 md:px-10 lg:px-14 py-4 md:py-6 lg:py-8 rounded-2xl md:rounded-[2.5rem] border transition-all shadow-xl",
                     showRewards.session.isCrit ? "border-amber-400 shadow-amber-500/10" : "border-amber-500/30"
                   )}
                 >
-                  <Coins className="text-amber-400 md:w-10 md:h-10" size={24} />
+                  <Coins className="text-amber-400 w-6 h-6 md:w-10 md:h-10 lg:w-12 lg:h-12" />
                   <div className="text-left">
-                    <p className="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Gold Found</p>
-                    <p className="text-2xl md:text-4xl font-black text-white">+{showRewards.session.coinsEarned}</p>
+                    <p className="text-[10px] md:text-xs lg:text-sm font-bold text-slate-500 uppercase tracking-widest mb-1">Gold Found</p>
+                    <p className="text-2xl md:text-4xl lg:text-5xl font-black text-white">+{showRewards.session.coinsEarned}</p>
                   </div>
                 </motion.div>
               </div>
 
-              <div className="space-y-8 px-4 max-w-5xl mx-auto w-full">
+              <div className="space-y-8 px-4 max-w-6xl mx-auto w-full">
                 <motion.div 
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.8 }}
                   className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-white/5 pb-4"
                 >
-                  <h3 className="text-xs md:text-sm font-bold text-slate-500 uppercase tracking-widest">Rewards Selection</h3>
+                  <h3 className="text-xs md:text-sm lg:text-base font-bold text-slate-500 uppercase tracking-widest">Rewards Selection</h3>
                   {activeTalents.includes('c2') && !dailyRerollUsed && (
                     <button
                       onClick={onReroll}
@@ -475,81 +475,91 @@ export const Timer = React.memo<TimerProps>(({
                   )}
                 </motion.div>
                 <div className={cn(
-                  "grid gap-6",
-                  showRewards.choices.length === 3 ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
+                  "grid gap-6 justify-center",
+                  showRewards.choices.length === 3 ? "grid-cols-1 sm:grid-cols-3 max-w-5xl mx-auto" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
                 )}>
-                  {showRewards.choices.map((card, idx) => (
-                    <motion.button
-                      key={idx}
-                      initial={{ y: 20, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      transition={{ delay: 0.9 + idx * 0.1 }}
-                      whileHover={{ y: -10, scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => {
-                        triggerSimpleConfetti();
-                        
-                        onRewardSelect(card, showRewards.session.id);
-                        if (card.type === 'item' && card.itemType !== 'talent_shard' && card.itemType !== 'death_defying_medal') {
-                          onInventoryAdd(card.id);
-                        }
-                        if (showRewards.session.triggeredTalents) {
-                          setShowTalentPopup(showRewards.session.triggeredTalents);
-                        }
-                        
-                        // Short delay to let the confetti pop before closing
-                        setTimeout(() => {
-                          setShowRewards(null);
+                  {showRewards.choices.map((card, idx) => {
+                    const now = Date.now();
+                    const periodMs = (card.limitPeriodDays || 1) * 24 * 60 * 60 * 1000;
+                    const claimsInPeriod = (card.claimHistory || []).filter(ts => (now - new Date(ts).getTime()) < periodMs).length;
+                    
+                    return (
+                      <motion.button
+                        key={idx}
+                        initial={{ y: 20, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        transition={{ delay: 0.9 }} // Removed staggered delay
+                        whileHover={{ y: -10, scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => {
+                          triggerSimpleConfetti();
                           
-                          // Automatically start rest or next loop
-                          if (enableRest) {
-                            setIsResting(true);
-                            setDuration(restDuration);
-                            setTimeLeft(restDuration * 60);
-                            // If loop is on, start rest immediately. 
-                            // If loop is off but rest is on, we still start rest automatically as requested.
-                            setIsActive(true);
-                            setEndTime(Date.now() + restDuration * 60 * 1000);
-                          } else if (isLooping) {
-                            setDuration(focusDuration);
-                            setTimeLeft(focusDuration * 60);
-                            setIsActive(true);
-                            setEndTime(Date.now() + focusDuration * 60 * 1000);
-                          } else {
-                            // Reset timer if not looping and no rest
-                            setDuration(focusDuration);
-                            setTimeLeft(focusDuration * 60);
+                          onRewardSelect(card, showRewards.session.id);
+                          if (card.type === 'item' && card.itemType !== 'talent_shard' && card.itemType !== 'death_defying_medal') {
+                            onInventoryAdd(card.id);
                           }
-                        }, 400);
-                      }}
-                      className={cn(
-                        "relative p-5 md:p-6 rounded-2xl md:rounded-3xl border-2 text-left transition-all h-full flex flex-col",
-                        card.rarity === 'common' ? "bg-slate-900 border-slate-800 hover:border-slate-600" :
-                        card.rarity === 'rare' ? "bg-blue-900/20 border-blue-500/50 hover:border-blue-400" :
-                        card.rarity === 'epic' ? "bg-purple-900/20 border-purple-500/50 hover:border-purple-400" :
-                        "bg-amber-900/20 border-amber-500/50 hover:border-amber-400"
-                      )}
-                    >
-                      <div className="mb-3 md:mb-4">
-                        <span className={cn(
-                          "text-xs font-bold uppercase px-2 py-0.5 rounded",
-                          card.rarity === 'common' ? "bg-slate-800 text-slate-400" :
-                          card.rarity === 'rare' ? "bg-blue-600 text-white" :
-                          card.rarity === 'epic' ? "bg-purple-600 text-white" : "bg-amber-500 text-slate-900"
-                        )}>
-                          {card.rarity}
-                        </span>
-                      </div>
-                      <h4 className="text-lg md:text-xl font-bold text-white mb-1 md:mb-2 leading-tight">{card.name}</h4>
-                      <p className="text-xs md:text-sm text-slate-400 flex-grow leading-relaxed">{card.description}</p>
-                      <div className="mt-4 md:mt-6 flex items-center gap-2 text-indigo-400">
-                        <Scroll size={14} />
-                        <span className="text-xs font-bold uppercase tracking-widest">Claim Reward</span>
-                      </div>
-                    </motion.button>
-                  ))}
+                          if (showRewards.session.triggeredTalents) {
+                            setShowTalentPopup(showRewards.session.triggeredTalents);
+                          }
+                          
+                          // Short delay to let the confetti pop before closing
+                          setTimeout(() => {
+                            setShowRewards(null);
+                            
+                            // Automatically start rest or next loop
+                            if (enableRest) {
+                              setIsResting(true);
+                              setDuration(restDuration);
+                              setTimeLeft(restDuration * 60);
+                              setIsActive(true);
+                              setEndTime(Date.now() + restDuration * 60 * 1000);
+                            } else if (isLooping) {
+                              setDuration(focusDuration);
+                              setTimeLeft(focusDuration * 60);
+                              setIsActive(true);
+                              setEndTime(Date.now() + focusDuration * 60 * 1000);
+                            } else {
+                              setDuration(focusDuration);
+                              setTimeLeft(focusDuration * 60);
+                            }
+                          }, 400);
+                        }}
+                        className={cn(
+                          "relative p-5 md:p-6 lg:p-8 rounded-2xl md:rounded-3xl border-2 text-left transition-all h-full flex flex-col min-h-[160px] md:min-h-[200px]",
+                          card.rarity === 'common' ? "bg-slate-900 border-slate-800 hover:border-slate-600" :
+                          card.rarity === 'rare' ? "bg-blue-900/20 border-blue-500/50 hover:border-blue-400" :
+                          card.rarity === 'epic' ? "bg-purple-900/20 border-purple-500/50 hover:border-purple-400" :
+                          "bg-amber-900/20 border-amber-500/50 hover:border-amber-400"
+                        )}
+                      >
+                        <div className="mb-3 md:mb-4 flex items-center justify-between">
+                          <span className={cn(
+                            "text-xs font-bold uppercase px-2 py-0.5 rounded",
+                            card.rarity === 'common' ? "bg-slate-800 text-slate-400" :
+                            card.rarity === 'rare' ? "bg-blue-600 text-white" :
+                            card.rarity === 'epic' ? "bg-purple-600 text-white" : "bg-amber-500 text-slate-900"
+                          )}>
+                            {card.rarity}
+                          </span>
+                          
+                          {card.limitCount && (
+                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">
+                              {claimsInPeriod}/{card.limitCount} Lmt
+                            </span>
+                          )}
+                        </div>
+                        <h4 className="text-lg md:text-xl lg:text-2xl font-bold text-white mb-1 md:mb-2 leading-tight">{card.name}</h4>
+                        <p className="text-xs md:text-sm lg:text-base text-slate-400 flex-grow leading-relaxed">{card.description}</p>
+                        <div className="mt-4 md:mt-6 flex items-center gap-2 text-indigo-400">
+                          <Scroll size={14} className="md:w-4 md:h-4 lg:w-5 lg:h-5" />
+                          <span className="text-xs md:text-sm font-bold uppercase tracking-widest">Claim Reward</span>
+                        </div>
+                      </motion.button>
+                    );
+                  })}
                 </div>
               </div>
+
             </motion.div>
           </div>
           )}
