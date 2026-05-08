@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sword, Play, Pause, RotateCcw, SkipForward, Trophy, Coins, Zap, Scroll, Flame, Settings2, RefreshCw, Coffee, Maximize, Sparkles } from 'lucide-react';
+import { TreasureChestIcon } from './icons/TreasureChestIcon';
 import { RewardCard, StudySession, Dungeon } from '../types';
 import { cn } from '../lib/utils';
 import { triggerSimpleConfetti } from '../lib/effects';
@@ -10,6 +11,7 @@ interface TimerProps {
   currentDungeon: Dungeon | null;
   rewardPool: RewardCard[];
   activeTalents: string[];
+  timerSkipVictoryMode?: 'none' | 'auto_pick_highest' | 'skip_rewards' | 'defer_to_chest';
   dailyRerollUsed: boolean;
   history: StudySession[];
   onComplete: (duration: number, focusDuration?: number, restDuration?: number) => StudySession | null;
@@ -17,6 +19,7 @@ interface TimerProps {
   onInventoryAdd: (id: string) => void;
   onReroll: () => void;
   onRewardSelect: (reward: RewardCard, sessionId: string) => void;
+  onDeferReward: (session: StudySession, choices: RewardCard[]) => void;
   setShowCoinRain: (show: boolean) => void;
   isFullscreen?: boolean;
   secretCode?: string;
@@ -56,6 +59,7 @@ export const Timer = React.memo<TimerProps>(({
   currentDungeon, 
   rewardPool, 
   activeTalents,
+  timerSkipVictoryMode,
   dailyRerollUsed,
   history,
   onComplete, 
@@ -63,6 +67,7 @@ export const Timer = React.memo<TimerProps>(({
   onInventoryAdd,
   onReroll,
   onRewardSelect,
+  onDeferReward,
   setShowCoinRain,
   isFullscreen = false,
   secretCode,
@@ -120,6 +125,50 @@ export const Timer = React.memo<TimerProps>(({
       }).catch(err => console.debug('Push cancel skipped or failed:', err));
     }
   }, [isActive, endTime, pushEnabled, secretCode, isResting]);
+
+  const handleRewardSelection = useCallback((card: RewardCard | null, session: StudySession) => {
+    if (card) {
+      onRewardSelect(card, session.id);
+      if (card.type === 'item' && card.itemType !== 'talent_shard' && card.itemType !== 'death_defying_medal') {
+        onInventoryAdd(card.id);
+      }
+    }
+    
+    if (session.triggeredTalents) {
+      setShowTalentPopup(session.triggeredTalents);
+    }
+    
+    setShowRewards(null);
+    
+    const nextLoopCount = loopCount + 1;
+    setLoopCount(nextLoopCount);
+    const shouldContinueLoop = isLooping && (loopTarget === 0 || nextLoopCount < loopTarget);
+    
+    if (enableRest) {
+      setIsResting(true);
+      setDuration(restDuration);
+      setTimeLeft(restDuration * 60);
+      
+      if (shouldContinueLoop || loopTarget === 0) {
+        setIsActive(true);
+        setEndTime(Date.now() + restDuration * 60 * 1000);
+      } else {
+        setIsActive(false); 
+        setEndTime(null);
+      }
+    } else {
+      setDuration(focusDuration);
+      setTimeLeft(focusDuration * 60);
+      
+      if (shouldContinueLoop) {
+        setIsActive(true);
+        setEndTime(Date.now() + focusDuration * 60 * 1000);
+      } else {
+        setIsActive(false);
+        setEndTime(null);
+      }
+    }
+  }, [loopCount, setLoopCount, isLooping, loopTarget, enableRest, setIsResting, setDuration, restDuration, setTimeLeft, setIsActive, setEndTime, focusDuration, onRewardSelect, onInventoryAdd, setShowTalentPopup, setShowRewards]);
 
   const handleComplete = useCallback((silent: boolean = false) => {
     setIsActive(false);
@@ -192,14 +241,34 @@ export const Timer = React.memo<TimerProps>(({
           }
         }
 
-        setShowRewards({ session, choices });
-        triggerSimpleConfetti();
-        if (session.isCrit) {
-          setShowCoinRain(true);
+        if (timerSkipVictoryMode && timerSkipVictoryMode !== 'none') {
+          if (timerSkipVictoryMode === 'auto_pick_highest' && choices.length > 0) {
+            const getRarityValue = (r: typeof choices[0]['rarity']) => {
+              switch(r) {
+                case 'legendary': return 4;
+                case 'epic': return 3;
+                case 'rare': return 2;
+                default: return 1;
+              }
+            };
+            const sortedChoices = [...choices].sort((a, b) => getRarityValue(b.rarity) - getRarityValue(a.rarity));
+            handleRewardSelection(sortedChoices[0], session);
+          } else if (timerSkipVictoryMode === 'defer_to_chest' && choices.length > 0) {
+            onDeferReward(session, choices);
+            handleRewardSelection(null, session);
+          } else {
+            handleRewardSelection(null, session);
+          }
+        } else {
+          setShowRewards({ session, choices });
+          triggerSimpleConfetti();
+          if (session.isCrit) {
+            setShowCoinRain(true);
+          }
         }
       }
     }
-  }, [duration, isResting, focusDuration, restDuration, enableRest, isLooping, onComplete, onRestComplete, rewardPool, activeTalents, setShowCoinRain, setIsActive, setEndTime, setIsResting, setDuration, setTimeLeft, pushEnabled]);
+  }, [duration, isResting, focusDuration, restDuration, enableRest, isLooping, onComplete, onRestComplete, rewardPool, activeTalents, setShowCoinRain, setIsActive, setEndTime, setIsResting, setDuration, setTimeLeft, pushEnabled, timerSkipVictoryMode, handleRewardSelection, onDeferReward]);
 
   useEffect(() => {
     let interval: any = null;
@@ -490,15 +559,56 @@ export const Timer = React.memo<TimerProps>(({
                   className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-white/5 pb-4"
                 >
                   <h3 className="text-xs md:text-sm lg:text-base font-bold text-slate-500 uppercase tracking-widest">Rewards Selection</h3>
-                  {activeTalents.includes('c2') && !dailyRerollUsed && (
+                  <div className="flex items-center gap-3">
                     <button
-                      onClick={onReroll}
-                      className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-full font-bold uppercase text-[10px] md:text-xs hover:bg-indigo-500 transition-all"
+                      onClick={() => {
+                        onDeferReward(showRewards.session, showRewards.choices);
+                        setShowRewards(null);
+                        
+                        const nextLoopCount = loopCount + 1;
+                        setLoopCount(nextLoopCount);
+                        const shouldContinueLoop = isLooping && (loopTarget === 0 || nextLoopCount < loopTarget);
+                        
+                        if (enableRest) {
+                          setIsResting(true);
+                          setDuration(restDuration);
+                          setTimeLeft(restDuration * 60);
+                          
+                          if (shouldContinueLoop || loopTarget === 0) {
+                            setIsActive(true);
+                            setEndTime(Date.now() + restDuration * 60 * 1000);
+                          } else {
+                            setIsActive(false); 
+                            setEndTime(null);
+                          }
+                        } else {
+                          setDuration(focusDuration);
+                          setTimeLeft(focusDuration * 60);
+                          
+                          if (shouldContinueLoop) {
+                            setIsActive(true);
+                            setEndTime(Date.now() + focusDuration * 60 * 1000);
+                          } else {
+                            setIsActive(false);
+                            setEndTime(null);
+                          }
+                        }
+                      }}
+                      className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 rounded-full font-bold uppercase text-[10px] md:text-xs hover:bg-emerald-600/30 transition-all"
                     >
-                      <RotateCcw size={14} />
-                      Reroll (1 Daily)
+                      <TreasureChestIcon size={14} />
+                      Defer to Chest
                     </button>
-                  )}
+                    {activeTalents.includes('c2') && !dailyRerollUsed && (
+                      <button
+                        onClick={onReroll}
+                        className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-full font-bold uppercase text-[10px] md:text-xs hover:bg-indigo-500 transition-all"
+                      >
+                        <RotateCcw size={14} />
+                        Reroll (1 Daily)
+                      </button>
+                    )}
+                  </div>
                 </motion.div>
                 <div className={cn(
                   "grid gap-4 justify-center pb-4",

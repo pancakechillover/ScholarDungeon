@@ -1,5 +1,5 @@
-export const APP_VERSION = 'v4.3.13';
-export const LAST_UPDATE_DATE = '2026-05-07';
+export const APP_VERSION = 'v4.4.2';
+export const LAST_UPDATE_DATE = '2026-05-08';
 
 export interface ReleaseLog {
   version: string;
@@ -9,6 +9,48 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v4.4.2',
+    date: '2026-05-08',
+    title: 'Reward Chest & Deferred Rewards',
+    items: [
+      { category: 'Feature', description: 'Added a "Defer to Chest" option in the Timer Settings, allowing users to skip the Victory Screen but store the rewards in a Chest (stash) to review later.' },
+      { category: 'UX', description: 'Added a Reward Chest icon to the Timer banner that shows a notification dot when rewards are pending.' },
+      { category: 'UI', description: 'Created a Reward Chest modal to review and select pending rewards, with an "Auto-Pick Best" option for resolving multiple pending reward sessions instantly.' }
+    ]
+  },
+  {
+    version: 'v4.4.1',
+    date: '2026-05-08',
+    title: 'Skip Victory Screen Option',
+    items: [
+      { category: 'Feature', description: 'Added a setting to automatically skip the Victory screen when a timer session finishes, with options to automatically pick the highest rarity reward or discard rewards entirely.' }
+    ]
+  },
+  {
+    version: 'v4.4.0',
+    date: '2026-05-08',
+    title: 'Settings Page Componentization',
+    items: [
+      { category: 'Architecture', description: 'Completely refactored the massive Settings.tsx file by creating a dedicated settings folder and breaking down all sub-sections into independent component files for much better maintainability.' }
+    ]
+  },
+  {
+    version: 'v4.3.15',
+    date: '2026-05-08',
+    title: 'Timer Settings Quick Access',
+    items: [
+      { category: 'UI', description: 'Added a dedicated gear icon to the top-left corner of the Timer Banner for quick access to the Timer settings page.' }
+    ]
+  },
+  {
+    version: 'v4.3.14',
+    date: '2026-05-08',
+    title: 'Timer Settings Page Refactor',
+    items: [
+      { category: 'Architecture', description: 'Extracted Timer specifics (Compact Timer Banner, visible shortcuts, and Session Reward Settings) into a newly created dedicated Timer settings page within the Settings dialog.' }
+    ]
+  },
   {
     version: 'v4.3.13',
     date: '2026-05-07',

@@ -21,8 +21,8 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors:** When designing UI elements that highlight based on themes, note that ONLY `indigo-400`, `indigo-500`, and `indigo-600` are overridden by the custom theme variables in `index.css`. DO NOT use `indigo-300` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v4.3.13
-- **Last Update Date:** 2026-05-07
+- **Current Version:** v4.4.2
+- **Last Update Date:** 2026-05-08
 
 ## Dark Themes Definition
 The following themes are considered "Dark Themes" and form the baseline for vibrant visual effects and high-contrast glowing elements:
@@ -46,6 +46,17 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v4.4.2 (2026-05-08):** Reward Chest & Deferred Rewards.
+  - *Feature:* Added a "Defer to Chest" option in Timer Settings to store session rewards and skip the Victory screen.
+  - *UI:* Added a custom Reward Chest modal to view pending sessions and "Auto-Pick Best" for all of them at once.
+- **v4.4.1 (2026-05-08):** Skip Victory Screen Option.
+  - *Feature:* Added a "Skip Victory Screen" option under Timer UI Settings. Users can opt out of the session-end modal and either automatically pick the highest rarity reward or discard rewards entirely, ensuring a continuous timer loop isn't interrupted.
+- **v4.4.0 (2026-05-08):** Settings Page Componentization.
+  - *Architecture:* Completely refactored the massive `Settings.tsx` file by creating a dedicated `settings` folder and breaking down all sub-sections (General, Timer, Rewards, Shop, Gacha, Level Rewards) into independent component files for much better maintainability.
+- **v4.3.15 (2026-05-08):** Timer Settings Quick Access.
+  - *UI:* Added a dedicated gear icon to the top-left corner of the Timer Banner for quick access to the Timer settings page.
+- **v4.3.14 (2026-05-08):** Timer Settings Page Refactor.
+  - *Architecture:* Extracted Timer specifics (Compact Timer Banner, visible shortcuts, and Session Reward Settings) into a newly created dedicated Timer settings page within the Settings dialog.
 - **v4.3.13 (2026-05-07):** Talent Icon Overhaul.
   - *UI:* Replaced all talent tree node icons with newly assigned Lucide equivalents mapped specifically for each branch and tier.
 - **v4.3.12 (2026-05-07):** Ichiban Ticket Icon Replacement.

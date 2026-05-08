@@ -16,7 +16,9 @@ import {
   Zap,
   Coins,
   BarChart3,
-  X
+  X,
+  Settings as SettingsIcon,
+  Archive
 } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { PageHeader } from './PageHeader';
@@ -24,10 +26,12 @@ import { Timer } from './Timer';
 import { TimerSettings } from './TimerSettings';
 import { RecentSessions } from './RecentSessions';
 import { TalentIcon } from './TalentIcon';
+import { RewardChestModal } from './RewardChestModal';
+import { TreasureChestIcon } from './icons/TreasureChestIcon';
 import { TALENTS } from '../constants';
 import { cn } from '../lib/utils';
 import { playSound } from '../lib/sound';
-import { AppState, Dungeon, MajorDungeon } from '../types';
+import { AppState, Dungeon, MajorDungeon, RewardCard } from '../types';
 
 interface ExploreViewProps {
   state: AppState;
@@ -83,6 +87,7 @@ interface ExploreViewProps {
   isDesktop: boolean;
   unclaimedQuestsCount: number;
   unclaimedAchievementsCount: number;
+  openTimerSettings: () => void;
 }
 
 export const ExploreView: React.FC<ExploreViewProps> = ({
@@ -138,8 +143,11 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
   isPWA,
   isDesktop,
   unclaimedQuestsCount,
-  unclaimedAchievementsCount
+  unclaimedAchievementsCount,
+  openTimerSettings
 }) => {
+  const [showChestModal, setShowChestModal] = React.useState(false);
+  
   return (
     <motion.div
       key="explore"
@@ -191,10 +199,19 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
             {!isFullscreenExplore && (
               <div className="flex flex-col flex-1 min-h-0 bg-slate-900/20 rounded-[2.5rem] border border-slate-800/50 overflow-hidden">
                 {/* Top Banner: Navigation & Controls */}
-                <div className={cn("flex items-center bg-slate-900/40 border-b border-slate-800/50 p-3 px-5 backdrop-blur-sm shrink-0", state.timerBannerCompactMode ? "justify-end" : "justify-between")}>
-                  {!state.timerBannerCompactMode && (
-                    <div className="flex items-center gap-1.5 sm:gap-2">
-                      {(!state.timerBannerShortcuts || state.timerBannerShortcuts.includes('dungeons')) && (
+                <div className="flex items-center bg-slate-900/40 border-b border-slate-800/50 p-3 px-5 backdrop-blur-sm shrink-0 justify-between">
+                  <div className="flex items-center gap-1.5 sm:gap-2">
+                    <button
+                      onClick={openTimerSettings}
+                      className="p-2 bg-slate-800/80 hover:bg-indigo-600/30 text-slate-400 hover:text-indigo-400 rounded-xl transition-all border border-slate-700/50 hover:border-indigo-500/30 group"
+                      title="Timer Settings"
+                    >
+                      <SettingsIcon size={16} className="group-hover:rotate-90 transition-transform duration-500" />
+                    </button>
+                    {!state.timerBannerCompactMode && (
+                      <>
+                        <div className="w-[1px] h-6 bg-slate-800 mx-1"></div>
+                        {(!state.timerBannerShortcuts || state.timerBannerShortcuts.includes('dungeons')) && (
                         <button
                           onClick={() => { setActiveTab('dungeons'); setDungeonSubTab('list'); }}
                           className="p-2 bg-slate-800/80 hover:bg-indigo-600/30 text-slate-400 hover:text-indigo-400 rounded-xl transition-all border border-slate-700/50 hover:border-indigo-500/30 group"
@@ -256,10 +273,21 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
                           <Package size={16} className="group-hover:scale-110 transition-transform" />
                         </button>
                       )}
-                    </div>
-                  )}
+                      </>
+                    )}
+                  </div>
 
                   <div className="flex items-center gap-1.5 sm:gap-2">
+                    {state.pendingRewardChest && state.pendingRewardChest.length > 0 && (
+                      <button 
+                        onClick={() => setShowChestModal(true)}
+                        className="relative p-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 hover:text-emerald-300 rounded-xl transition-all border border-emerald-500/30 hover:border-emerald-400/50 group"
+                        title="Reward Chest"
+                      >
+                        <TreasureChestIcon size={20} className="group-hover:scale-110 transition-transform" />
+                        <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full border border-slate-900"></span>
+                      </button>
+                    )}
                     {canPip && isPWA && isDesktop && (
                       <button 
                         onClick={togglePip}
@@ -291,6 +319,7 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
                     currentDungeon={currentDungeon || null}
                     rewardPool={state.rewardPool || []}
                     activeTalents={state.activeTalents}
+                    timerSkipVictoryMode={state.timerSkipVictoryMode}
                     dailyRerollUsed={state.dailyRerollUsed}
                     history={state.history}
                     critChance={state.devModeEnabled ? (state.devCritChance ?? 0.05) : 0.05}
@@ -311,6 +340,12 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
                     onRewardSelect={(reward, sessionId) => {
                       selectReward(reward, sessionId);
                       playSound('reward', state.soundVolume, state.soundEnabled);
+                    }}
+                    onDeferReward={(session, choices) => {
+                      setState(prev => ({
+                        ...prev,
+                        pendingRewardChest: [...(prev.pendingRewardChest || []), { session, choices }]
+                      }));
                     }}
                     setShowCoinRain={setShowCoinRain}
                     isFullscreen={isFullscreenExplore}
@@ -369,6 +404,7 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
                       currentDungeon={currentDungeon || null}
                       rewardPool={state.rewardPool || []}
                       activeTalents={state.activeTalents}
+                      timerSkipVictoryMode={state.timerSkipVictoryMode}
                       dailyRerollUsed={state.dailyRerollUsed}
                       history={state.history}
                       critChance={state.devModeEnabled ? (state.devCritChance ?? 0.05) : 0.05}
@@ -389,6 +425,12 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
                       onRewardSelect={(reward, sessionId) => {
                         selectReward(reward, sessionId);
                         playSound('reward', state.soundVolume, state.soundEnabled);
+                      }}
+                      onDeferReward={(session, choices) => {
+                        setState(prev => ({
+                          ...prev,
+                          pendingRewardChest: [...(prev.pendingRewardChest || []), { session, choices }]
+                        }));
                       }}
                       setShowCoinRain={setShowCoinRain}
                       isFullscreen={isFullscreenExplore}
@@ -631,6 +673,32 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
           )}
         </AnimatePresence>,
         document.body
+      )}
+      
+      {showChestModal && state.pendingRewardChest && (
+        <RewardChestModal
+          chest={state.pendingRewardChest}
+          onSelect={(reward, sessionId) => {
+            if (reward) {
+              selectReward(reward, sessionId);
+              if (reward.type === 'item' && reward.itemType !== 'talent_shard' && reward.itemType !== 'death_defying_medal') {
+                setState(prev => ({ ...prev, inventory: [...(prev.inventory || []), reward.id] }));
+              }
+            }
+            // remove this session from pending chest
+            setState(prev => ({
+              ...prev,
+              pendingRewardChest: prev.pendingRewardChest?.filter(item => item.session.id !== sessionId) || []
+            }));
+            
+            // if empty, close it
+            setState(prev => {
+              if (prev.pendingRewardChest?.length === 0) setShowChestModal(false);
+              return prev;
+            });
+          }}
+          onClose={() => setShowChestModal(false)}
+        />
       )}
     </motion.div>
   );

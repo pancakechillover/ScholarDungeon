@@ -160,7 +160,9 @@ export interface AppState {
   soundVolume?: number;
   defaultMarkdownEnabled?: boolean;
   timerBannerCompactMode?: boolean;
+  timerSkipVictoryMode?: 'none' | 'auto_pick_highest' | 'skip_rewards' | 'defer_to_chest';
   timerBannerShortcuts?: string[];
+  pendingRewardChest?: { session: StudySession; choices: RewardCard[]; }[];
   // Editable Pools
   rewardPool: RewardCard[];
   shopItems: ShopItem[];

@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Settings } from './Settings';
+import { Settings } from './settings/Settings';
 import { AppState } from '../types';
 
 interface SettingsViewProps {
@@ -8,13 +8,17 @@ interface SettingsViewProps {
   setState: React.Dispatch<React.SetStateAction<AppState>>;
   resetLootPool: () => void;
   addXP: (amount: number) => void;
+  activeSection: 'general' | 'timer' | 'rewards' | 'shop' | 'gacha' | 'dev' | 'levelRewards' | 'about';
+  setActiveSection: (section: 'general' | 'timer' | 'rewards' | 'shop' | 'gacha' | 'dev' | 'levelRewards' | 'about') => void;
 }
 
 export const SettingsView: React.FC<SettingsViewProps> = ({
   state,
   setState,
   resetLootPool,
-  addXP
+  addXP,
+  activeSection,
+  setActiveSection
 }) => {
   return (
     <motion.div
@@ -35,6 +39,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         onUpdateGacha={(pools: any) => setState(prev => ({ ...prev, gachaPools: pools }))}
         onResetRewards={resetLootPool}
         addXP={addXP}
+        activeSection={activeSection}
+        setActiveSection={setActiveSection}
       />
     </motion.div>
   );

@@ -70,6 +70,8 @@ function App() {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'explore' | 'dungeons' | 'talents' | 'shop' | 'stats' | 'settings' | 'vault'>('explore');
   const [pipWindow, setPipWindow] = useState<Window | null>(null);
 
+  const [activeSettingsSection, setActiveSettingsSection] = useState<'general' | 'timer' | 'rewards' | 'shop' | 'gacha' | 'dev' | 'levelRewards' | 'about'>('general');
+
   const canPip = 'documentPictureInPicture' in window;
   const isPWA = window.matchMedia('(display-mode: standalone)').matches;
   const isDesktop = !('ontouchstart' in window);
@@ -971,6 +973,10 @@ function App() {
                  isDesktop={isDesktop}
                  unclaimedQuestsCount={unclaimedQuestsCount}
                  unclaimedAchievementsCount={unclaimedAchievementsCount}
+                 openTimerSettings={() => {
+                   setActiveSettingsSection('timer');
+                   setActiveTab('settings');
+                 }}
                />
              )}
 
@@ -1043,6 +1049,8 @@ function App() {
                 setState={setState}
                 resetLootPool={resetLootPool}
                 addXP={addXP}
+                activeSection={activeSettingsSection}
+                setActiveSection={setActiveSettingsSection}
               />
             )}
           </AnimatePresence>
