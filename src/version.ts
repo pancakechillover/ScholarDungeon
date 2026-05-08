@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v4.5.14';
+export const APP_VERSION = 'v4.5.21';
 export const LAST_UPDATE_DATE = '2026-05-08';
-export const LAST_UPDATE_TIME = '09:48:00';
+export const LAST_UPDATE_TIME = '12:05:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,74 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v4.5.21',
+    date: '2026-05-08',
+    time: '12:05:00',
+    title: 'Numeric Inputs Empty State & Validation Polish',
+    items: [
+      { category: 'UX', description: 'Rewrote numeric input controls across Settings to support empty string (`\'\'`) states during editing instead of jumping to 0.' },
+      { category: 'Feature', description: 'Added strict validation checks on save operations for numeric inputs, triggering popup alerts when saving missing or invalid numeric data.' }
+    ]
+  },
+  {
+    version: 'v4.5.20',
+    date: '2026-05-08',
+    time: '11:55:00',
+    title: 'Shop Stock Adjuster Buttons',
+    items: [
+      { category: 'UI', description: 'Added increment and decrement buttons to the Stock input in Shop Item settings.' },
+      { category: 'UX', description: 'Implemented logic to seamlessly transition between numeric values and infinite (∞) status via adjustment buttons.' }
+    ]
+  },
+  {
+    version: 'v4.5.19',
+    date: '2026-05-08',
+    time: '11:40:00',
+    title: 'Shop Stock UI Refinement',
+    items: [
+      { category: 'UI', description: 'Updated the Stock Availability input in the Shop Item settings to display the infinity symbol "∞" when the value is set to infinite (-1).' },
+      { category: 'UX', description: 'Improved input logic to treat empty values as infinite stock.' }
+    ]
+  },
+  {
+    version: 'v4.5.18',
+    date: '2026-05-08',
+    time: '11:35:00',
+    title: 'Merchant Settings Icon Update',
+    items: [
+      { category: 'UI', description: 'Updated Gacha section and pool icons in Merchant settings to use the custom SlotMachine component.' }
+    ]
+  },
+  {
+    version: 'v4.5.17',
+    date: '2026-05-08',
+    time: '11:31:00',
+    title: 'Gacha Icon Refinement',
+    items: [
+      { category: 'UI', description: 'Replaced the SlotMachine vector in SlotMachine.tsx with a new custom SVG.' }
+    ]
+  },
+  {
+    version: 'v4.5.16',
+    date: '2026-05-08',
+    time: '11:23:00',
+    title: 'Splash Screen Icon Polish',
+    items: [
+      { category: 'UI', description: 'Converted pwa-icon.svg into an inline React component (AppIcon.tsx) for dynamic styling.' },
+      { category: 'UI', description: 'Stripped background from the Splash Screen icon and applied the theme color, leveraging SVG masks for exact cutout shapes.' }
+    ]
+  },
+  {
+    version: 'v4.5.15',
+    date: '2026-05-08',
+    time: '11:15:00',
+    title: 'Splash Screen Icon Change',
+    items: [
+      { category: 'UI', description: 'Setup pwa-icon.svg as a central custom icon.' },
+      { category: 'UI', description: 'Replaced the generic Sword icon inside the Splash Screen with the dynamically responding pwa-icon.svg.' }
+    ]
+  },
   {
     version: 'v4.5.14',
     date: '2026-05-08',

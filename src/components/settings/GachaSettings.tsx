@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { RewardCard, ShopItem, GachaPool, Rarity } from '../../types';
 import { INITIAL_GACHA } from '../../constants';
 import { Plus, Trash2, Save, Edit2, X, ChevronRight, Coins, Zap, Sparkles, Trophy, Timer as TimerIcon, Package, Flame, AlertTriangle, Scroll, Volume2, VolumeX, Sun, Moon, Settings as SettingsIcon, ShoppingBag, Trees, Waves, Database, Download, Upload, Target, Gift, User, Sword, Eye, Palette, Check, Bell, BellOff, RefreshCw, Key, Layers, Sunrise, Cloud, CloudSun, Lollipop, Wrench, History, Ticket } from 'lucide-react';
+import { SlotMachine } from '../icons/SlotMachine';
 import * as LucideIcons from 'lucide-react';
 import { APP_VERSION, LAST_UPDATE_DATE, RELEASE_HISTORY } from '../../version';
 import { cn, getXPForLevel, getDefaultRewardForLevel } from '../../lib/utils';
@@ -36,7 +37,7 @@ export const GachaSettings = ({ pools, onUpdate }: { pools: GachaPool[], onUpdat
         {pools.some(p => p.type === 'gacha') && (
           <div className="space-y-6">
             <div className="flex items-center gap-2.5 text-purple-400 mb-6 pb-2">
-              <Sparkles size={20} />
+              <SlotMachine size={20} />
               <h3 className="text-lg font-bold uppercase tracking-widest pr-1">Standard Gacha</h3>
             </div>
             <div className="grid grid-cols-1 gap-6">
@@ -45,7 +46,7 @@ export const GachaSettings = ({ pools, onUpdate }: { pools: GachaPool[], onUpdat
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="p-2 rounded-lg bg-purple-500/10 text-purple-400">
-                        <Sparkles size={20} />
+                        <SlotMachine size={20} />
                       </div>
                       <div>
                         <h4 className="font-bold text-white">{pool.name}</h4>
@@ -153,9 +154,17 @@ export const GachaSettings = ({ pools, onUpdate }: { pools: GachaPool[], onUpdat
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Cost per Draw (Gold)</label>
                     <input 
-                      type="number"
-                      value={editing.cost}
-                      onChange={(e) => setEditing({ ...editing, cost: parseInt(e.target.value) || 0 })}
+                      type="text"
+                      inputMode="numeric"
+                      value={editing.cost === undefined || editing.cost === null ? '' : editing.cost}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val === '') setEditing({ ...editing, cost: '' as any });
+                        else {
+                          const parsed = parseInt(val);
+                          if (!isNaN(parsed)) setEditing({ ...editing, cost: parsed });
+                        }
+                      }}
                       className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition-colors"
                     />
                   </div>
@@ -165,27 +174,51 @@ export const GachaSettings = ({ pools, onUpdate }: { pools: GachaPool[], onUpdat
                       <div>
                         <label className="block text-xs font-bold text-amber-500 uppercase tracking-widest mb-2">SSR Weight</label>
                         <input 
-                          type="number"
-                          value={editing.weights.SSR}
-                          onChange={(e) => setEditing({ ...editing, weights: { ...editing.weights!, SSR: parseInt(e.target.value) || 0 } })}
+                          type="text"
+                          inputMode="numeric"
+                          value={editing.weights.SSR === undefined || editing.weights.SSR === null ? '' : editing.weights.SSR}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === '') setEditing({ ...editing, weights: { ...editing.weights!, SSR: '' as any } });
+                            else {
+                              const parsed = parseInt(val);
+                              if (!isNaN(parsed)) setEditing({ ...editing, weights: { ...editing.weights!, SSR: parsed } });
+                            }
+                          }}
                           className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-amber-500"
                         />
                       </div>
                       <div>
                         <label className="block text-xs font-bold text-purple-500 uppercase tracking-widest mb-2">SR Weight</label>
                         <input 
-                          type="number"
-                          value={editing.weights.SR}
-                          onChange={(e) => setEditing({ ...editing, weights: { ...editing.weights!, SR: parseInt(e.target.value) || 0 } })}
+                          type="text"
+                          inputMode="numeric"
+                          value={editing.weights.SR === undefined || editing.weights.SR === null ? '' : editing.weights.SR}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === '') setEditing({ ...editing, weights: { ...editing.weights!, SR: '' as any } });
+                            else {
+                              const parsed = parseInt(val);
+                              if (!isNaN(parsed)) setEditing({ ...editing, weights: { ...editing.weights!, SR: parsed } });
+                            }
+                          }}
                           className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-purple-500"
                         />
                       </div>
                       <div>
                         <label className="block text-xs font-bold text-blue-500 uppercase tracking-widest mb-2">R Weight</label>
                         <input 
-                          type="number"
-                          value={editing.weights.R}
-                          onChange={(e) => setEditing({ ...editing, weights: { ...editing.weights!, R: parseInt(e.target.value) || 0 } })}
+                          type="text"
+                          inputMode="numeric"
+                          value={editing.weights.R === undefined || editing.weights.R === null ? '' : editing.weights.R}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === '') setEditing({ ...editing, weights: { ...editing.weights!, R: '' as any } });
+                            else {
+                              const parsed = parseInt(val);
+                              if (!isNaN(parsed)) setEditing({ ...editing, weights: { ...editing.weights!, R: parsed } });
+                            }
+                          }}
                           className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
                         />
                       </div>
@@ -260,12 +293,18 @@ export const GachaSettings = ({ pools, onUpdate }: { pools: GachaPool[], onUpdat
                             <div className="col-span-4 flex items-center gap-2">
                               {item.rarity !== 'LastOne' ? (
                                 <input 
-                                  type="number" 
-                                  value={item.count} 
+                                  type="text" 
+                                  inputMode="numeric"
+                                  value={item.count === undefined || item.count === null ? '' : item.count} 
                                   onChange={e => {
                                     const newItems = [...editing.items];
-                                    const val = parseInt(e.target.value) || 0;
-                                    newItems[originalIdx] = { ...item, count: val, initialCount: val };
+                                    const val = e.target.value;
+                                    if (val === '') {
+                                      newItems[originalIdx] = { ...item, count: '' as any, initialCount: '' as any };
+                                    } else {
+                                      const parsed = parseInt(val);
+                                      if (!isNaN(parsed)) newItems[originalIdx] = { ...item, count: parsed, initialCount: parsed };
+                                    }
                                     setEditing({ ...editing, items: newItems });
                                   }}
                                   className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-white"
@@ -302,6 +341,29 @@ export const GachaSettings = ({ pools, onUpdate }: { pools: GachaPool[], onUpdat
                   <button onClick={() => setEditing(null)} className="px-6 py-2 text-slate-400 font-bold">Cancel</button>
                   <button 
                     onClick={() => { 
+                      if (editing.cost === '' as any || isNaN(editing.cost as number) || (editing.cost as number) < 0) {
+                        alert("Please enter a valid cost per draw.");
+                        return;
+                      }
+                      if (editing.type === 'gacha' && editing.weights) {
+                        if (
+                          editing.weights.SSR === '' as any || isNaN(editing.weights.SSR as number) || (editing.weights.SSR as number) < 0 ||
+                          editing.weights.SR === '' as any || isNaN(editing.weights.SR as number) || (editing.weights.SR as number) < 0 ||
+                          editing.weights.R === '' as any || isNaN(editing.weights.R as number) || (editing.weights.R as number) < 0
+                        ) {
+                          alert("Please enter valid weights for all rarity tiers.");
+                          return;
+                        }
+                      }
+                      if (editing.type === 'ichiban') {
+                        for (const item of editing.items) {
+                          if (item.rarity !== 'LastOne' && (item.count === '' as any || isNaN(item.count as number) || (item.count as number) < 0)) {
+                            alert("Please enter a valid quantity for all items.");
+                            return;
+                          }
+                        }
+                      }
+
                       let processedPool = { ...editing };
                       if (processedPool.type === 'ichiban') {
                         processedPool.items = processedPool.items.map(item => ({

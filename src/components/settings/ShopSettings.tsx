@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { RewardCard, ShopItem, GachaPool, Rarity } from '../../types';
 import { INITIAL_GACHA } from '../../constants';
-import { Plus, Trash2, Save, Edit2, X, ChevronRight, Coins, Zap, Sparkles, Trophy, Timer as TimerIcon, Package, Flame, AlertTriangle, Scroll, Volume2, VolumeX, Sun, Moon, Settings as SettingsIcon, ShoppingBag, Trees, Waves, Database, Download, Upload, Target, Gift, User, Sword, Eye, Palette, Check, Bell, RefreshCw, Key, Layers, Sunrise, Cloud, CloudSun, Lollipop, Wrench, History, Ticket, Apple, Citrus, Cookie, IceCream, Cake, Beer, Wine, GlassWater, Flower, Flower2, Sprout, Leaf, Car, Bike, Plane, Rocket, Ship, Gamepad2, Headphones, Monitor, Smartphone, Tv, Library, Dumbbell, Award, Medal, Compass, Map, Camera, Music, Book, BookOpen } from 'lucide-react';
+import { Plus, Trash2, Save, Edit2, X, ChevronRight, ChevronUp, ChevronDown, Coins, Zap, Sparkles, Trophy, Timer as TimerIcon, Package, Flame, AlertTriangle, Scroll, Volume2, VolumeX, Sun, Moon, Settings as SettingsIcon, ShoppingBag, Trees, Waves, Database, Download, Upload, Target, Gift, User, Sword, Eye, Palette, Check, Bell, RefreshCw, Key, Layers, Sunrise, Cloud, CloudSun, Lollipop, Wrench, History, Ticket, Apple, Citrus, Cookie, IceCream, Cake, Beer, Wine, GlassWater, Flower, Flower2, Sprout, Leaf, Car, Bike, Plane, Rocket, Ship, Gamepad2, Headphones, Monitor, Smartphone, Tv, Library, Dumbbell, Award, Medal, Compass, Map, Camera, Music, Book, BookOpen } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { APP_VERSION, LAST_UPDATE_DATE, RELEASE_HISTORY } from '../../version';
 import { cn, getXPForLevel, getDefaultRewardForLevel } from '../../lib/utils';
@@ -99,18 +99,75 @@ export const ShopSettings = ({ items, onUpdate }: { items: ShopItem[], onUpdate:
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Price (Gold)</label>
+                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Price</label>
                             <div className="relative">
-                              <input type="number" placeholder="Price" value={editing.price} onChange={e => setEditing({...editing, price: parseInt(e.target.value) || 0})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 pl-10 text-white text-sm focus:border-amber-500 transition-colors" />
+                              <input 
+                                type="text" 
+                                inputMode="numeric"
+                                placeholder="Price" 
+                                value={editing.price === undefined || editing.price === null ? '' : editing.price} 
+                                onChange={e => {
+                                  const val = e.target.value;
+                                  if (val === '') {
+                                    setEditing({...editing, price: '' as any});
+                                  } else {
+                                    const parsed = parseInt(val);
+                                    if (!isNaN(parsed)) setEditing({...editing, price: parsed});
+                                  }
+                                }} 
+                                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 pl-10 text-white text-sm focus:border-amber-500 transition-colors" 
+                              />
                               <Coins className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-500" size={16} />
                             </div>
                           </div>
                           <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1 flex items-center justify-between">
-                              Stock Availability
-                              <span className="text-[8px] text-slate-500 font-bold uppercase opacity-50 tracking-tighter">(-1 = Infinite)</span>
+                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">
+                              Stock
                             </label>
-                            <input type="number" placeholder="Stock" value={editing.stock ?? -1} onChange={e => setEditing({...editing, stock: parseInt(e.target.value)})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:border-amber-500 transition-colors" />
+                            <div className="relative group/stock">
+                              <input 
+                                type="text" 
+                                placeholder="Stock" 
+                                value={editing.stock === -1 || editing.stock === undefined ? '∞' : editing.stock} 
+                                onChange={e => {
+                                  const val = e.target.value;
+                                  if (val === '' || val === '∞') {
+                                    setEditing({...editing, stock: -1});
+                                  } else {
+                                    const parsed = parseInt(val);
+                                    if (!isNaN(parsed)) {
+                                      setEditing({...editing, stock: parsed});
+                                    }
+                                  }
+                                }} 
+                                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 pr-10 text-white text-sm focus:border-amber-500 transition-colors" 
+                              />
+                              <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex flex-col gap-0.5">
+                                <button 
+                                  type="button"
+                                  onClick={() => {
+                                    const current = editing.stock === undefined ? -1 : editing.stock;
+                                    if (current === -1) setEditing({...editing, stock: 1});
+                                    else setEditing({...editing, stock: current + 1});
+                                  }}
+                                  className="p-0.5 hover:bg-slate-700 rounded text-slate-500 hover:text-amber-500 transition-colors"
+                                >
+                                  <ChevronUp size={14} strokeWidth={3} />
+                                </button>
+                                <button 
+                                  type="button"
+                                  onClick={() => {
+                                    const current = editing.stock === undefined ? -1 : editing.stock;
+                                    if (current === -1) return;
+                                    if (current <= 1) setEditing({...editing, stock: -1});
+                                    else setEditing({...editing, stock: current - 1});
+                                  }}
+                                  className="p-0.5 hover:bg-slate-700 rounded text-slate-500 hover:text-amber-500 transition-colors"
+                                >
+                                  <ChevronDown size={14} strokeWidth={3} />
+                                </button>
+                              </div>
+                            </div>
                           </div>
                         </div>
                         <div className="space-y-1.5 flex-1 flex flex-col">
@@ -167,7 +224,14 @@ export const ShopSettings = ({ items, onUpdate }: { items: ShopItem[], onUpdate:
 
                 <div className="flex justify-end gap-3 pt-6 border-t border-slate-800 shrink-0">
                   <button onClick={() => setEditing(null)} className="px-5 py-2.5 text-slate-400 font-bold hover:text-white transition-colors">Cancel</button>
-                  <button onClick={() => { onUpdate(items.some(i => i.id === editing.id) ? items.map(i => i.id === editing.id ? editing : i) : [...items, editing]); setEditing(null); }} className="px-8 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-900 rounded-xl font-black transition-all shadow-lg shadow-amber-500/20 active:scale-95">Save Item</button>
+                  <button onClick={() => { 
+                    if (editing.price === '' as any || isNaN(editing.price) || editing.price < 0) {
+                      alert("Please enter a valid price.");
+                      return;
+                    }
+                    onUpdate(items.some(i => i.id === editing.id) ? items.map(i => i.id === editing.id ? editing : i) : [...items, editing]); 
+                    setEditing(null); 
+                  }} className="px-8 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-900 rounded-xl font-black transition-all shadow-lg shadow-amber-500/20 active:scale-95">Save Item</button>
                 </div>
               </motion.div>
             </div>

@@ -31,6 +31,16 @@ export const RewardSettings = ({ pool, onUpdate, onReset }: { pool: RewardCard[]
   const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   const handleSave = (card: RewardCard) => {
+    if (
+      card.weight === '' as any || isNaN(card.weight) || (card.weight as number) < 0 ||
+      (card.amount !== undefined && (card.amount === '' as any || isNaN(card.amount) || (card.amount as number) < 0)) ||
+      (card.limitCount !== undefined && (card.limitCount === '' as any || isNaN(card.limitCount) || (card.limitCount as number) < 0)) ||
+      (card.limitPeriodDays !== undefined && (card.limitPeriodDays === '' as any || isNaN(card.limitPeriodDays) || (card.limitPeriodDays as number) < 0))
+    ) {
+      alert("Please ensure all number inputs (Amount, Weight, Limits) are valid non-negative numbers.");
+      return;
+    }
+
     const newPool = pool.some(c => c.id === card.id)
       ? pool.map(c => c.id === card.id ? card : c)
       : [...pool, card];
@@ -291,13 +301,13 @@ export const RewardSettings = ({ pool, onUpdate, onReset }: { pool: RewardCard[]
                         {editing.type === 'coins' && (
                           <div className="space-y-1.5">
                             <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Coin Amount</label>
-                            <input type="number" placeholder="e.g. 10" value={editing.amount || ''} onChange={e => setEditing({...editing, amount: parseInt(e.target.value) || 0})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:border-amber-500 transition-colors" />
+                            <input type="text" inputMode="numeric" placeholder="e.g. 10" value={editing.amount === undefined || editing.amount === null ? '' : editing.amount} onChange={e => { const val = e.target.value; if (val === '') setEditing({...editing, amount: '' as any}); else { const parsed = parseInt(val); if (!isNaN(parsed)) setEditing({...editing, amount: parsed}); } }} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:border-amber-500 transition-colors" />
                           </div>
                         )}
                         {editing.type === 'xp' && (
                           <div className="space-y-1.5">
                             <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">XP Amount</label>
-                            <input type="number" placeholder="e.g. 50" value={editing.amount || ''} onChange={e => setEditing({...editing, amount: parseInt(e.target.value) || 0})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:border-emerald-500 transition-colors" />
+                            <input type="text" inputMode="numeric" placeholder="e.g. 50" value={editing.amount === undefined || editing.amount === null ? '' : editing.amount} onChange={e => { const val = e.target.value; if (val === '') setEditing({...editing, amount: '' as any}); else { const parsed = parseInt(val); if (!isNaN(parsed)) setEditing({...editing, amount: parsed}); } }} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:border-emerald-500 transition-colors" />
                           </div>
                         )}
                         {editing.type === 'item' && (
@@ -318,7 +328,7 @@ export const RewardSettings = ({ pool, onUpdate, onReset }: { pool: RewardCard[]
                                 <label className="text-[10px] font-bold text-indigo-400/60 uppercase tracking-wider ml-1">
                                   {(editing.itemType === 'xp_bonus_percent' || editing.itemType === 'coin_bonus_percent') ? 'Bonus %' : 'Quantity'}
                                 </label>
-                                <input type="number" placeholder="Value" value={editing.amount || ''} onChange={e => setEditing({...editing, amount: parseInt(e.target.value) || 0})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-xs" />
+                                <input type="text" inputMode="numeric" placeholder="Value" value={editing.amount === undefined || editing.amount === null ? '' : editing.amount} onChange={e => { const val = e.target.value; if (val === '') setEditing({...editing, amount: '' as any}); else { const parsed = parseInt(val); if (!isNaN(parsed)) setEditing({...editing, amount: parsed}); } }} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-xs" />
                               </div>
                             )}
                           </div>
@@ -327,7 +337,7 @@ export const RewardSettings = ({ pool, onUpdate, onReset }: { pool: RewardCard[]
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-1.5">
                             <label className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider ml-1">Drop Weight</label>
-                            <input type="number" placeholder="Weight" value={editing.weight} onChange={e => setEditing({...editing, weight: parseInt(e.target.value) || 0})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm font-mono focus:border-indigo-500 transition-colors" />
+                            <input type="text" inputMode="numeric" placeholder="Weight" value={editing.weight === undefined || editing.weight === null ? '' : editing.weight} onChange={e => { const val = e.target.value; if (val === '') setEditing({...editing, weight: '' as any}); else { const parsed = parseInt(val); if (!isNaN(parsed)) setEditing({...editing, weight: parsed}); } }} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm font-mono focus:border-indigo-500 transition-colors" />
                           </div>
                           <div className="space-y-1.5 text-right flex flex-col justify-end">
                             <p className="text-[10px] text-slate-500 uppercase font-bold tracking-tighter">Current Probability</p>
@@ -350,11 +360,11 @@ export const RewardSettings = ({ pool, onUpdate, onReset }: { pool: RewardCard[]
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-1.5">
                             <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Max Occurrences</label>
-                            <input type="number" placeholder="e.g. 1" value={editing.limitCount || ''} onChange={e => setEditing({...editing, limitCount: parseInt(e.target.value) || 0})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm" />
+                            <input type="text" inputMode="numeric" placeholder="e.g. 1" value={editing.limitCount === undefined || editing.limitCount === null ? '' : editing.limitCount} onChange={e => { const val = e.target.value; if (val === '') setEditing({...editing, limitCount: '' as any}); else { const parsed = parseInt(val); if (!isNaN(parsed)) setEditing({...editing, limitCount: parsed}); } }} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm" />
                           </div>
                           <div className="space-y-1.5">
                             <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Period (Days)</label>
-                            <input type="number" placeholder="e.g. 1" value={editing.limitPeriodDays || ''} onChange={e => setEditing({...editing, limitPeriodDays: parseInt(e.target.value) || 0})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm" />
+                            <input type="text" inputMode="numeric" placeholder="e.g. 1" value={editing.limitPeriodDays === undefined || editing.limitPeriodDays === null ? '' : editing.limitPeriodDays} onChange={e => { const val = e.target.value; if (val === '') setEditing({...editing, limitPeriodDays: '' as any}); else { const parsed = parseInt(val); if (!isNaN(parsed)) setEditing({...editing, limitPeriodDays: parsed}); } }} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm" />
                           </div>
                         </div>
                       </div>

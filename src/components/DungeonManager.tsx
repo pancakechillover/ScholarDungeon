@@ -421,12 +421,21 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                     <div className="space-y-1">
                       <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Total Rooms</label>
                       <input
-                        type="number"
-                        value={isAddingSub ? newSub.totalSessions : editingSub?.totalSessions}
+                        type="text"
+                        inputMode="numeric"
+                        value={isAddingSub ? (newSub.totalSessions === undefined ? '' : newSub.totalSessions) : (editingSub?.totalSessions === undefined ? '' : editingSub.totalSessions)}
                         onChange={e => {
-                          const val = parseInt(e.target.value) || 1;
-                          if (isAddingSub) setNewSub({ ...newSub, totalSessions: val });
-                          else if (editingSub) setEditingSub({ ...editingSub, totalSessions: val });
+                          const val = e.target.value;
+                          if (val === '') {
+                            if (isAddingSub) setNewSub({ ...newSub, totalSessions: '' as any });
+                            else if (editingSub) setEditingSub({ ...editingSub, totalSessions: '' as any });
+                          } else {
+                            const parsed = parseInt(val);
+                            if (!isNaN(parsed)) {
+                              if (isAddingSub) setNewSub({ ...newSub, totalSessions: parsed });
+                              else if (editingSub) setEditingSub({ ...editingSub, totalSessions: parsed });
+                            }
+                          }
                         }}
                         className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
                       />
@@ -519,10 +528,18 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                                   <option value="text">Custom Text</option>
                                 </select>
                                 <input 
-                                  type="number"
+                                  type="text"
+                                  inputMode="numeric"
                                   disabled={isRewardLocked}
-                                  value={reward.amount}
-                                  onChange={e => updateReward(idx, 'amount', parseInt(e.target.value) || 0, isAddingMajor || !!editingMajor || !!isAddingSub)}
+                                  value={reward.amount === undefined || reward.amount === null ? '' : reward.amount}
+                                  onChange={e => {
+                                    const val = e.target.value;
+                                    if (val === '') updateReward(idx, 'amount', '' as any, isAddingMajor || !!editingMajor || !!isAddingSub);
+                                    else {
+                                      const parsed = parseInt(val);
+                                      if (!isNaN(parsed)) updateReward(idx, 'amount', parsed, isAddingMajor || !!editingMajor || !!isAddingSub);
+                                    }
+                                  }}
                                   className={cn(
                                     "w-24 bg-slate-900 text-sm border-slate-700 rounded-lg px-2 py-1.5 focus:outline-none focus:border-indigo-500",
                                     isRewardLocked ? "text-slate-500 cursor-not-allowed opacity-70" : "text-white"
@@ -590,6 +607,38 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                 <button onClick={() => { setEditingMajor(null); setEditingSub(null); setIsAddingMajor(false); setIsAddingSub(null); }} className="px-4 py-2 text-slate-400 font-bold hover:text-white transition-colors">Cancel</button>
                 <button 
                   onClick={() => {
+                    const validateRewards = (rewards: DungeonReward[]) => {
+                      for (const r of rewards) {
+                        if (r.type !== 'item' && r.type !== 'text') {
+                          if (r.amount === '' as any || isNaN(r.amount as number) || (r.amount as number) < 0) {
+                            return false;
+                          }
+                        }
+                      }
+                      return true;
+                    };
+
+                    if (isAddingSub || editingSub) {
+                      const totalSessions = isAddingSub ? newSub.totalSessions : editingSub?.totalSessions;
+                      if (totalSessions === '' as any || isNaN(totalSessions as number) || (totalSessions as number) <= 0) {
+                        alert("Please enter a valid number for Total Rooms.");
+                        return;
+                      }
+                      const rewards = isAddingSub ? newSub.rewards : editingSub?.rewards;
+                      if (rewards && !validateRewards(rewards)) {
+                        alert("Please enter a valid reward amount for all rewards.");
+                        return;
+                      }
+                    }
+
+                    if (isAddingMajor || editingMajor) {
+                      const rewards = isAddingMajor ? newMajor.rewards : editingMajor?.rewards;
+                      if (rewards && !validateRewards(rewards)) {
+                        alert("Please enter a valid reward amount for all rewards.");
+                        return;
+                      }
+                    }
+
                     if (isAddingMajor) {
                       onCreateMajor(newMajor.name, newMajor.description, newMajor.rewards);
                       setIsAddingMajor(false);

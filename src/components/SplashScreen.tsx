@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Sword } from 'lucide-react';
 import { APP_VERSION } from '../version';
+import { AppIcon } from './icons/AppIcon';
 
 export function SplashScreen({ onComplete }: { onComplete: () => void }) {
   useEffect(() => {
@@ -34,8 +34,8 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="relative"
         >
-          <div className="p-6 bg-slate-900/50 rounded-full border border-indigo-500/30 backdrop-blur-sm mb-6">
-            <Sword size={64} className="text-indigo-400" strokeWidth={1.5} />
+          <div className="p-4 bg-slate-900/50 rounded-[40px] border border-indigo-500/30 backdrop-blur-sm mb-6 flex items-center justify-center">
+            <AppIcon size={64} className="text-indigo-400" />
           </div>
         </motion.div>
 

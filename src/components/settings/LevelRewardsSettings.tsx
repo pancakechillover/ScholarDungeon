@@ -182,9 +182,17 @@ export const LevelRewardsSettings = ({ state, setState }: { state: any, setState
                   <div className="space-y-2">
                     <label className="text-xs font-bold text-slate-500 uppercase">Target Level</label>
                     <input
-                      type="number"
-                      value={newLevel}
-                      onChange={e => setNewLevel(parseInt(e.target.value) || 0)}
+                      type="text"
+                      inputMode="numeric"
+                      value={newLevel === undefined || newLevel === null ? '' : newLevel}
+                      onChange={e => {
+                        const val = e.target.value;
+                        if (val === '') setNewLevel('' as any);
+                        else {
+                          const parsed = parseInt(val);
+                          if (!isNaN(parsed)) setNewLevel(parsed);
+                        }
+                      }}
                       className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white"
                       min="2"
                     />
@@ -195,6 +203,10 @@ export const LevelRewardsSettings = ({ state, setState }: { state: any, setState
                   <button onClick={() => setIsAddingNew(false)} className="px-4 py-2 text-slate-400 font-bold">Cancel</button>
                   <button 
                     onClick={() => {
+                      if (newLevel === '' as any || isNaN(newLevel) || newLevel < 2) {
+                        alert("Please enter a valid target level (must be 2 or higher).");
+                        return;
+                      }
                       setEditing({ level: newLevel, type: 'talentPoint', amount: 1 });
                       setIsAddingNew(false);
                     }}
@@ -242,9 +254,17 @@ export const LevelRewardsSettings = ({ state, setState }: { state: any, setState
                     <div className="space-y-2">
                       <label className="text-xs font-bold text-slate-500 uppercase">Amount</label>
                       <input
-                        type="number"
-                        value={editing.amount}
-                        onChange={e => setEditing({ ...editing, amount: parseInt(e.target.value) || 0 })}
+                        type="text"
+                        inputMode="numeric"
+                        value={editing.amount === undefined || editing.amount === null ? '' : editing.amount}
+                        onChange={e => {
+                          const val = e.target.value;
+                          if (val === '') setEditing({ ...editing, amount: '' as any });
+                          else {
+                            const parsed = parseInt(val);
+                            if (!isNaN(parsed)) setEditing({ ...editing, amount: parsed });
+                          }
+                        }}
                         className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white"
                       />
                     </div>
@@ -272,6 +292,10 @@ export const LevelRewardsSettings = ({ state, setState }: { state: any, setState
                   </button>
                   <button
                     onClick={() => {
+                      if (editing.type !== 'text' && (editing.amount === '' as any || isNaN(editing.amount as number) || (editing.amount as number) < 0)) {
+                        alert("Please enter a valid non-negative amount.");
+                        return;
+                      }
                       const newRewards = [...(state.levelRewards || [])].filter((r: any) => r.level !== editing.level);
                       setState(prev => ({ ...prev, levelRewards: [...newRewards, editing] }));
                       setEditing(null);

@@ -339,11 +339,10 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
       <div className="space-y-6">
         <div className="flex items-center gap-2.5 text-indigo-400 mb-6 pb-2">
           <Palette size={20} />
-          <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Global Effects & Theme</h4>
+          <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Themes</h4>
         </div>
 
-        <div className="space-y-4 pt-4">
-          <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">App Themes</label>
+        <div className="space-y-6">
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             {themes.map(theme => {
               const isActive = (state.theme || 'night') === theme.id;

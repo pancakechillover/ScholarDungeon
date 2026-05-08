@@ -21,7 +21,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors:** When designing UI elements that highlight based on themes, note that ONLY `indigo-400`, `indigo-500`, and `indigo-600` are overridden by the custom theme variables in `index.css`. DO NOT use `indigo-300` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v4.5.14
+- **Current Version:** v4.5.21
 - **Last Update Date:** 2026-05-08
 
 ## Dark Themes Definition
@@ -46,6 +46,25 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v4.5.21 (2026-05-08):** Numeric Inputs Empty State & Validation Polish.
+  - *UX:* Rewrote numeric input controls across `DungeonManager`, `ShopSettings`, `RewardSettings`, `GachaSettings`, and `LevelRewardsSettings` to support empty string (`''`) states during editing instead of aggressively snapping to `0` or `1`.
+  - *Feature:* Added strict validation checks on save operations for all previously modified numeric inputs, triggering popup alerts (`window.alert`) when users attempt to save with invalid, missing, or empty numeric data.
+- **v4.5.20 (2026-05-08):** Shop Stock Adjuster Buttons.
+  - *UI:* Added increment and decrement buttons to the Stock input in Shop Item settings.
+  - *UX:* Implemented logic to seamlessly transition between numeric values and infinite (∞) status via adjustment buttons.
+- **v4.5.19 (2026-05-08):** Shop Stock UI Refinement.
+  - *UI:* Updated the Stock Availability input in the Shop Item settings to display the infinity symbol "∞" when the value is set to infinite (-1).
+  - *UX:* Improved input logic to treat empty values as infinite stock.
+- **v4.5.18 (2026-05-08):** Merchant Settings Icon Update.
+  - *UI:* Updated the Gacha section and pool icons in the Merchant settings to use the custom `SlotMachine` component for visual consistency.
+- **v4.5.17 (2026-05-08):** Gacha Icon Refinement.
+  - *UI:* Replaced the SlotMachine vector in `SlotMachine.tsx` with a new custom SVG path provided by the user.
+- **v4.5.16 (2026-05-08):** Splash Screen Icon Polish.
+  - *UI:* Converted `pwa-icon.svg` into an inline React component (`AppIcon.tsx`).
+  - *UI:* Stripped the background from the Splash Screen icon and applied the theme color (`text-indigo-400`), leveraging SVG masks for negative space cutouts.
+- **v4.5.15 (2026-05-08):** Splash Screen Icon Change.
+  - *UI:* Setup `pwa-icon.svg` as a central custom icon.
+  - *UI:* Replaced the generic `Sword` icon inside the Splash Screen with the newly designed dynamic `pwa-icon.svg` reflecting deep textures and color scheme awareness.
 - **v4.5.14 (2026-05-08):** Gacha Icon Update.
   - *UI:* Created a custom `SlotMachine` SVG icon and integrated it into the Merchant's outposts.
   - *UI:* Replaced the generic `Sparkles` icon with the new `SlotMachine` icon in the Gacha tab to better represent the feature.
