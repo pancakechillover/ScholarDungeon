@@ -94,9 +94,9 @@ export const ActivityTimeSettings = ({ state, setState }: { state: any, setState
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2 text-indigo-400 mb-4">
-        <TimerIcon size={18} />
-        <h4 className="font-bold uppercase text-sm tracking-widest">Activity Time Peaks</h4>
+      <div className="flex items-center gap-2.5 text-indigo-400 mb-6 pb-2">
+        <TimerIcon size={20} />
+        <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Activity Time Peaks</h4>
       </div>
       <p className="text-[10px] text-slate-500 italic mb-4 leading-relaxed">
         Customize the segments for your Record tab's activity charts. 

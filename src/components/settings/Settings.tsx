@@ -35,6 +35,83 @@ import { RewardSettings } from './RewardSettings';
 import { ShopSettings } from './ShopSettings';
 import { GachaSettings } from './GachaSettings';
 
+interface VersionGroupProps {
+  group: string;
+  logs: typeof RELEASE_HISTORY;
+  isInitialExpanded: boolean;
+}
+
+const VersionGroup: React.FC<VersionGroupProps> = ({ group, logs, isInitialExpanded }) => {
+  const [isExpanded, setIsExpanded] = useState(isInitialExpanded);
+  
+  return (
+    <div className="bg-slate-900/40 rounded-2xl border border-slate-800 overflow-hidden">
+      <button 
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full flex items-center justify-between p-4 hover:bg-slate-800/50 transition-colors group"
+      >
+        <div className="flex items-center gap-3">
+          <Layers size={16} className={cn("transition-colors", isExpanded ? "text-indigo-400" : "text-slate-500")} />
+          <span className="text-sm font-black uppercase tracking-widest text-slate-200">Version {group}.x Series</span>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">{logs.length} Updates</span>
+          <ChevronRight size={16} className={cn("text-slate-600 transition-transform duration-300", isExpanded && "rotate-90")} />
+        </div>
+      </button>
+
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="px-6 pb-6 pt-2 space-y-8 border-t border-slate-800/50">
+              {logs.map((log) => (
+                <div key={log.version} className={cn(
+                  "space-y-2 relative pl-6 border-l-2",
+                  log.version === APP_VERSION ? "border-indigo-500/30" : "border-slate-700/50"
+                )}>
+                  <div className={cn(
+                    "absolute top-1.5 -left-[5px] w-2 h-2 rounded-full",
+                    log.version === APP_VERSION ? "bg-indigo-400" : "bg-slate-600"
+                  )} />
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                    <span className={cn(
+                      "text-lg",
+                      log.version === APP_VERSION ? "font-black text-white" : "font-bold text-slate-300"
+                    )}>{log.version}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-slate-500 text-xs font-bold font-mono">{log.date}</span>
+                      {log.time && (
+                        <span className="text-indigo-500/60 text-[10px] font-bold font-mono px-1.5 py-0.5 bg-indigo-500/5 rounded border border-indigo-500/10">
+                          {log.time}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <h5 className={cn(
+                    log.version === APP_VERSION ? "font-bold text-indigo-300" : "font-medium text-slate-400"
+                  )}>{log.title}</h5>
+                  <ul className="text-slate-400 text-sm space-y-2 list-disc ml-4">
+                    {log.items.map((item, i) => (
+                      <li key={i}>
+                        <span className="text-indigo-400 font-bold">{item.category}:</span> {item.description}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
 export interface SettingsProps {
   state: any;
   setState: React.Dispatch<React.SetStateAction<any>>;
@@ -48,6 +125,7 @@ export interface SettingsProps {
   addXP: (amount: number) => void;
   activeSection: string;
   setActiveSection: (sec: string) => void;
+  onTabChange?: (tab: any) => void;
 }
 
 export const Settings = React.memo<SettingsProps>(({
@@ -62,7 +140,8 @@ export const Settings = React.memo<SettingsProps>(({
   onResetRewards,
   addXP,
   activeSection,
-  setActiveSection
+  setActiveSection,
+  onTabChange
 }) => {
   const [devPassword, setDevPassword] = useState('');
   const [isDevUnlocked, setIsDevUnlocked] = useState(state.devModeEnabled || false);
@@ -170,27 +249,20 @@ export const Settings = React.memo<SettingsProps>(({
 
   return (
     <div className="p-6 space-y-8">
-      <div className="flex items-center justify-between bg-slate-900 p-6 rounded-2xl border border-slate-700">
-        <div>
-          <h2 className="text-2xl font-bold text-white">Dungeon Settings</h2>
-          <p className="text-slate-400">Customize your rewards and merchant stock</p>
-        </div>
-      </div>
-
-      <div className="flex flex-nowrap gap-2 p-2 bg-slate-900/80 backdrop-blur rounded-3xl w-full border border-slate-800 overflow-x-auto">
-        {(['general', 'timer', 'rewards', 'levelRewards', 'shop', 'gacha', 'dev', 'about'] as const).map(tab => {
+      <div className="flex flex-wrap items-center justify-center gap-1.5 p-1.5 bg-slate-900/80 backdrop-blur rounded-3xl w-full border border-slate-800">
+        {(['general', 'timer', 'level', 'merchant', 'dev', 'about'] as const).map(tab => {
           return (
             <button
               key={tab}
               onClick={() => setActiveSection(tab)}
               className={cn(
-                "px-5 py-3 rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] transition-all whitespace-nowrap",
+                "px-4 py-2 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap",
                 activeSection === tab 
-                  ? "bg-indigo-600 text-white shadow-xl shadow-indigo-600/30 scale-105 z-10" 
-                  : "text-slate-500 hover:text-slate-300 hover:bg-slate-800/50"
+                  ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20 scale-105 z-10" 
+                  : "text-slate-500 hover:text-slate-300 hover:bg-slate-800/30"
               )}
             >
-              {tab === 'dev' ? 'Developer' : tab === 'levelRewards' ? 'Level Rewards' : tab === 'about' ? 'About' : tab}
+              {tab === 'dev' ? 'Developer' : tab === 'level' ? 'Level' : tab === 'merchant' ? 'Merchant' : tab === 'about' ? 'About' : tab}
             </button>
           );
         })}
@@ -201,18 +273,138 @@ export const Settings = React.memo<SettingsProps>(({
           <GeneralSettings state={state} setState={setState} setShowClearConfirm={setShowClearConfirm} />
         )}
         {activeSection === 'timer' && (
-          <TimerSettingsSection state={state} setState={setState} />
+          <TimerSettingsSection 
+            state={state} 
+            setState={setState} 
+            rewardPool={rewardPool}
+            onUpdateRewards={onUpdateRewards}
+            onResetRewards={onResetRewards}
+            onTabChange={onTabChange}
+          />
         )}
-        {activeSection === 'rewards' && (
-          <RewardSettings pool={rewardPool} onUpdate={onUpdateRewards} onReset={onResetRewards} />
-        )}
-        {activeSection === 'levelRewards' && (
+        {(activeSection === 'level' as any || activeSection === 'levelRewards' as any) && (
           <LevelRewardsSettings state={state} setState={setState} />
         )}
-        {activeSection === 'shop' && (
+        {activeSection === 'merchant' && (
+          <div className="space-y-12">
+            <ShopSettings items={shopItems} onUpdate={onUpdateShop} />
+            
+            <div className="pt-12 border-t border-slate-800">
+              <GachaSettings pools={gachaPools} onUpdate={onUpdateGacha} />
+            </div>
+
+            {/* Draw Animation Section at the very end */}
+            <div className="pt-12 border-t border-slate-800 space-y-6">
+              <div className="flex items-center gap-2.5 text-indigo-400 mb-6 pb-2">
+                <Sparkles size={20} />
+                <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Draw Animation</h4>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4 p-5 bg-slate-900/50 rounded-3xl border border-indigo-500/10 shadow-inner">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Package size={16} className="text-indigo-400" />
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Gacha Draw</label>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { id: 'card', name: 'Classic Flip', icon: Layers, desc: 'Vertical flip' },
+                      { id: 'scratch', name: 'Scratch-off', icon: Scroll, desc: 'Reveal' }
+                    ].map(effect => {
+                      const isActive = (state.gachaAnimation || 'card') === effect.id;
+                      return (
+                        <button
+                          key={effect.id}
+                          onClick={() => setState((prev: any) => ({ ...prev, gachaAnimation: effect.id as 'card' | 'scratch' }))}
+                          className={cn(
+                            "flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all relative overflow-hidden group text-left",
+                            isActive 
+                              ? "bg-indigo-500/10 border-indigo-500" 
+                              : "bg-slate-950 border-slate-800 text-slate-500 hover:border-slate-700"
+                          )}
+                        >
+                          <effect.icon size={20} className={cn("transition-transform group-hover:scale-110", isActive ? "text-indigo-400" : "text-slate-600")} />
+                          <div>
+                            <div className={cn("text-[9px] font-black uppercase tracking-widest leading-none mb-0.5", isActive ? "text-white" : "text-slate-500")}>
+                              {effect.name}
+                            </div>
+                            <div className="text-[8px] opacity-60 font-medium whitespace-nowrap">{effect.desc}</div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="space-y-4 p-5 bg-slate-900/50 rounded-3xl border border-indigo-500/10 shadow-inner">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Ticket size={16} className="text-indigo-400" />
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Ichiban Draw</label>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { id: 'card', name: 'Classic Flip', icon: Layers, desc: 'Vertical flip' },
+                      { id: 'scratch', name: 'Scratch-off', icon: Scroll, desc: 'Reveal' }
+                    ].map(effect => {
+                      const isActive = (state.ichibanAnimation || 'scratch') === effect.id;
+                      return (
+                        <button
+                          key={effect.id}
+                          onClick={() => setState((prev: any) => ({ ...prev, ichibanAnimation: effect.id as 'card' | 'scratch' }))}
+                          className={cn(
+                            "flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all relative overflow-hidden group text-left",
+                            isActive 
+                              ? "bg-indigo-500/10 border-indigo-500" 
+                              : "bg-slate-950 border-slate-800 text-slate-500 hover:border-slate-700"
+                          )}
+                        >
+                          <effect.icon size={20} className={cn("transition-transform group-hover:scale-110", isActive ? "text-indigo-400" : "text-slate-600")} />
+                          <div>
+                            <div className={cn("text-[9px] font-black uppercase tracking-widest leading-none mb-0.5", isActive ? "text-white" : "text-slate-500")}>
+                              {effect.name}
+                            </div>
+                            <div className="text-[8px] opacity-60 font-medium whitespace-nowrap">{effect.desc}</div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              {/* Allow Overlap Toggle */}
+              <div className="flex items-center justify-between p-4 bg-slate-900/50 rounded-2xl border border-slate-800 mt-6">
+                <div className="flex items-center gap-3">
+                  <div className={cn("p-2 rounded-xl", state.gachaAllowOverlap ? "bg-indigo-500/10 text-indigo-400" : "bg-slate-800 text-slate-500")}>
+                    <Layers size={20} />
+                  </div>
+                  <div>
+                    <div className="font-bold text-white uppercase text-xs tracking-widest">Overlap Mode</div>
+                    <div className="text-[10px] text-slate-500">Show cards one by one with navigation</div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setState((prev: any) => ({ ...prev, gachaAllowOverlap: !prev.gachaAllowOverlap }))}
+                  className={cn(
+                    "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
+                    state.gachaAllowOverlap ? "bg-indigo-500" : "bg-slate-700"
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+                      state.gachaAllowOverlap ? "translate-x-6" : "translate-x-1"
+                    )}
+                  />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        {(activeSection === 'shop' as any) && (
           <ShopSettings items={shopItems} onUpdate={onUpdateShop} />
         )}
-        {activeSection === 'gacha' && (
+        {(activeSection === 'gacha' as any) && (
           <GachaSettings pools={gachaPools} onUpdate={onUpdateGacha} />
         )}
         {activeSection === 'dev' && (
@@ -239,10 +431,11 @@ export const Settings = React.memo<SettingsProps>(({
               </div>
             ) : (
               <div className="space-y-10">
-                <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-                  <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                    <Wrench className="text-indigo-400" /> Developer Tools
-                  </h3>
+                <div className="flex items-center justify-between gap-2.5 pb-4 mb-6">
+                  <div className="flex items-center gap-2.5 text-indigo-400">
+                    <Wrench size={20} />
+                    <h3 className="text-lg font-bold uppercase tracking-widest pr-1">Developer Tools</h3>
+                  </div>
                   <button 
                     onClick={() => {
                       setIsDevUnlocked(false);
@@ -256,9 +449,9 @@ export const Settings = React.memo<SettingsProps>(({
 
                 {/* Section 2: Resource Modification */}
                 <div className="space-y-6">
-                  <div className="flex items-center gap-2 text-amber-400">
-                    <Package size={18} />
-                    <h4 className="font-bold uppercase text-sm tracking-widest">Resource Modification</h4>
+                  <div className="flex items-center gap-2.5 text-amber-400 mb-6 pb-2">
+                    <Package size={20} />
+                    <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Resource Modification</h4>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <DevResourceControl 
@@ -310,9 +503,9 @@ export const Settings = React.memo<SettingsProps>(({
 
                 {/* Section 3: Notification Testing */}
                 <div className="space-y-6 pt-6 border-t border-slate-800">
-                  <div className="flex items-center gap-2 text-indigo-400">
-                    <Bell size={18} />
-                    <h4 className="font-bold uppercase text-sm tracking-widest">Notification Testing</h4>
+                  <div className="flex items-center gap-2.5 text-indigo-400 mb-6 pb-2">
+                    <Bell size={20} />
+                    <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Notification Testing</h4>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
@@ -547,10 +740,10 @@ export const Settings = React.memo<SettingsProps>(({
                 <h3 className="text-3xl font-black text-white tracking-tight">Scholar's Dungeon</h3>
                 <div className="flex flex-col items-center gap-1 mt-2">
                   <span className="px-3 py-1 bg-indigo-500/20 text-indigo-400 rounded-full font-bold tracking-widest uppercase text-xs border border-indigo-500/30">
-                    Version 4.2.20
+                    Version {APP_VERSION}
                   </span>
                   <span className="text-slate-500 text-xs font-medium">
-                    Updated: 2026-05-07
+                    Updated: {LAST_UPDATE_DATE}
                   </span>
                 </div>
               </div>
@@ -558,10 +751,10 @@ export const Settings = React.memo<SettingsProps>(({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="bg-slate-800/30 p-8 rounded-3xl border border-slate-700/50 space-y-4">
-                <h4 className="text-lg font-bold text-white flex items-center gap-2">
-                  <Scroll className="text-indigo-400" size={20} />
-                  Project Info
-                </h4>
+                <div className="flex items-center gap-2.5 text-indigo-400 mb-6 pb-2">
+                  <Scroll size={20} />
+                  <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Project Info</h4>
+                </div>
                 <p className="text-slate-400 leading-relaxed">
                   Scholar's Dungeon is a gamified learning system designed to turn study sessions into an immersive Roguelike adventure. 
                   By combining the Pomodoro technique with RPG progression, it helps students and lifelong learners maintain focus and motivation.
@@ -569,10 +762,10 @@ export const Settings = React.memo<SettingsProps>(({
               </div>
 
               <div className="bg-slate-800/30 p-8 rounded-3xl border border-slate-700/50 space-y-6">
-                <h4 className="text-lg font-bold text-white flex items-center gap-2">
-                  <User size={20} className="text-indigo-400" />
-                  Author & Links
-                </h4>
+                <div className="flex items-center gap-2.5 text-indigo-400 mb-6 pb-2">
+                  <User size={20} />
+                  <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Author & Links</h4>
+                </div>
                 
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
@@ -608,39 +801,31 @@ export const Settings = React.memo<SettingsProps>(({
             </div>
 
             <div className="bg-slate-800/30 p-8 rounded-3xl border border-slate-700/50 space-y-6">
-              <h4 className="text-lg font-bold text-white flex items-center gap-2">
-                <Scroll size={20} className="text-indigo-400" />
-                Release History
-              </h4>
-              <div className="space-y-6">
-                {RELEASE_HISTORY.map((log, index) => (
-                  <div key={log.version} className={cn(
-                    "space-y-2 relative pl-6 border-l-2",
-                    index === 0 ? "border-indigo-500/30" : "border-slate-700/50"
-                  )}>
-                    <div className={cn(
-                      "absolute top-1.5 -left-[5px] w-2 h-2 rounded-full",
-                      index === 0 ? "bg-indigo-400" : "bg-slate-600"
-                    )} />
-                    <div className="flex items-center gap-3">
-                      <span className={cn(
-                        "text-lg",
-                        index === 0 ? "font-black text-white" : "font-bold text-slate-300"
-                      )}>{log.version}</span>
-                      <span className="text-slate-500 text-xs font-bold font-mono">{log.date}</span>
-                    </div>
-                    <h5 className={cn(
-                      index === 0 ? "font-bold text-indigo-300" : "font-medium text-slate-400"
-                    )}>{log.title}</h5>
-                    <ul className="text-slate-400 text-sm space-y-2 list-disc ml-4">
-                      {log.items.map((item, i) => (
-                        <li key={i}>
-                          <span className="text-indigo-400 font-bold">{item.category}:</span> {item.description}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
+              <div className="flex items-center gap-2.5 text-indigo-400 mb-6 pb-2">
+                <History size={20} />
+                <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Release History</h4>
+              </div>
+              
+              <div className="space-y-4">
+                {(() => {
+                  // Group history by Minor Version (e.g., v4.5, v4.4)
+                  const grouped = RELEASE_HISTORY.reduce((acc, log) => {
+                    const parts = log.version.replace('v', '').split('.');
+                    const groupKey = `v${parts[0]}.${parts[1]}`;
+                    if (!acc[groupKey]) acc[groupKey] = [];
+                    acc[groupKey].push(log);
+                    return acc;
+                  }, {} as Record<string, typeof RELEASE_HISTORY>);
+
+                  return Object.entries(grouped).map(([group, logs]) => (
+                    <VersionGroup 
+                      key={group} 
+                      group={group} 
+                      logs={logs} 
+                      isInitialExpanded={logs.some(l => l.version === APP_VERSION)} 
+                    />
+                  ));
+                })()}
               </div>
             </div>
 

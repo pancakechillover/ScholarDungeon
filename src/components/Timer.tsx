@@ -140,16 +140,16 @@ export const Timer = React.memo<TimerProps>(({
     
     setShowRewards(null);
     
-    const nextLoopCount = loopCount + 1;
-    setLoopCount(nextLoopCount);
-    const shouldContinueLoop = isLooping && (loopTarget === 0 || nextLoopCount < loopTarget);
-    
+    let safeLoopCount = loopCount;
+    if (isLooping && loopTarget > 0 && safeLoopCount >= loopTarget) safeLoopCount = 0;
+
     if (enableRest) {
       setIsResting(true);
       setDuration(restDuration);
       setTimeLeft(restDuration * 60);
       
-      if (shouldContinueLoop || loopTarget === 0) {
+      const shouldAutoStartRest = isLooping && (loopTarget === 0 || safeLoopCount < loopTarget);
+      if (shouldAutoStartRest) {
         setIsActive(true);
         setEndTime(Date.now() + restDuration * 60 * 1000);
       } else {
@@ -157,6 +157,10 @@ export const Timer = React.memo<TimerProps>(({
         setEndTime(null);
       }
     } else {
+      const nextLoopCount = safeLoopCount + 1;
+      setLoopCount(nextLoopCount);
+      const shouldContinueLoop = isLooping && (loopTarget === 0 || nextLoopCount < loopTarget);
+      
       setDuration(focusDuration);
       setTimeLeft(focusDuration * 60);
       
@@ -200,7 +204,12 @@ export const Timer = React.memo<TimerProps>(({
         onRestComplete();
       }
       
-      const shouldContinueLoop = isLooping && (loopTarget === 0 || loopCount < loopTarget);
+      let safeLoopCount = loopCount;
+      if (isLooping && loopTarget > 0 && safeLoopCount >= loopTarget) safeLoopCount = 0;
+
+      const nextLoopCount = safeLoopCount + 1;
+      setLoopCount(nextLoopCount);
+      const shouldContinueLoop = isLooping && (loopTarget === 0 || nextLoopCount < loopTarget);
       
       if (shouldContinueLoop) {
         // Automatically start the next loop
@@ -209,6 +218,7 @@ export const Timer = React.memo<TimerProps>(({
       } else {
         // done, keep loopCount as is to show n/n loops
         setIsActive(false);
+        setEndTime(null);
       }
     } else {
       // Finished focus
@@ -306,7 +316,7 @@ export const Timer = React.memo<TimerProps>(({
       setIsActive(false);
       setEndTime(null);
     } else {
-      if (isLooping && loopTarget > 0 && loopCount >= loopTarget) {
+      if (!isResting && isLooping && loopTarget > 0 && loopCount >= loopTarget) {
         setLoopCount(0);
       }
       setIsActive(true);
@@ -449,7 +459,12 @@ export const Timer = React.memo<TimerProps>(({
           {isActive ? <Pause size={40} fill="currentColor" /> : <Play size={40} fill="currentColor" className="ml-2" />}
         </button>
         <button
-          onClick={() => handleComplete(true)}
+          onClick={() => {
+            if (!isActive && !isResting && isLooping && loopTarget > 0 && loopCount >= loopTarget) {
+              setLoopCount(0);
+            }
+            handleComplete(true);
+          }}
           className="p-4 bg-slate-900 text-slate-400 hover:text-white rounded-full border border-slate-800 transition-all"
           title="Skip Session"
         >
@@ -565,16 +580,16 @@ export const Timer = React.memo<TimerProps>(({
                         onDeferReward(showRewards.session, showRewards.choices);
                         setShowRewards(null);
                         
-                        const nextLoopCount = loopCount + 1;
-                        setLoopCount(nextLoopCount);
-                        const shouldContinueLoop = isLooping && (loopTarget === 0 || nextLoopCount < loopTarget);
-                        
+                        let safeLoopCount = loopCount;
+                        if (isLooping && loopTarget > 0 && safeLoopCount >= loopTarget) safeLoopCount = 0;
+
                         if (enableRest) {
                           setIsResting(true);
                           setDuration(restDuration);
                           setTimeLeft(restDuration * 60);
                           
-                          if (shouldContinueLoop || loopTarget === 0) {
+                          const shouldAutoStartRest = isLooping && (loopTarget === 0 || safeLoopCount < loopTarget);
+                          if (shouldAutoStartRest) {
                             setIsActive(true);
                             setEndTime(Date.now() + restDuration * 60 * 1000);
                           } else {
@@ -582,6 +597,10 @@ export const Timer = React.memo<TimerProps>(({
                             setEndTime(null);
                           }
                         } else {
+                          const nextLoopCount = safeLoopCount + 1;
+                          setLoopCount(nextLoopCount);
+                          const shouldContinueLoop = isLooping && (loopTarget === 0 || nextLoopCount < loopTarget);
+                          
                           setDuration(focusDuration);
                           setTimeLeft(focusDuration * 60);
                           
@@ -642,24 +661,27 @@ export const Timer = React.memo<TimerProps>(({
                           setTimeout(() => {
                             setShowRewards(null);
                             
-                            const nextLoopCount = loopCount + 1;
-                            setLoopCount(nextLoopCount);
-                            const shouldContinueLoop = isLooping && (loopTarget === 0 || nextLoopCount < loopTarget);
-                            
+                            let safeLoopCount = loopCount;
+                            if (isLooping && loopTarget > 0 && safeLoopCount >= loopTarget) safeLoopCount = 0;
+
                             if (enableRest) {
                               setIsResting(true);
                               setDuration(restDuration);
                               setTimeLeft(restDuration * 60);
                               
-                              if (shouldContinueLoop || loopTarget === 0) {
+                              const shouldAutoStartRest = isLooping && (loopTarget === 0 || safeLoopCount < loopTarget);
+                              if (shouldAutoStartRest) {
                                 setIsActive(true);
                                 setEndTime(Date.now() + restDuration * 60 * 1000);
                               } else {
-                                // final cycle rest, do not start automatically 
                                 setIsActive(false); 
                                 setEndTime(null);
                               }
                             } else {
+                              const nextLoopCount = safeLoopCount + 1;
+                              setLoopCount(nextLoopCount);
+                              const shouldContinueLoop = isLooping && (loopTarget === 0 || nextLoopCount < loopTarget);
+                              
                               setDuration(focusDuration);
                               setTimeLeft(focusDuration * 60);
                               
@@ -667,7 +689,6 @@ export const Timer = React.memo<TimerProps>(({
                                 setIsActive(true);
                                 setEndTime(Date.now() + focusDuration * 60 * 1000);
                               } else {
-                                // final cycle, do not start automatically, do not reset loopCount
                                 setIsActive(false);
                                 setEndTime(null);
                               }

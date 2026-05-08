@@ -3,10 +3,11 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ShopItem, GachaPool } from '../types';
 import { ShoppingBag, Sparkles, Trophy, Coins, RefreshCw, HelpCircle, Zap, Flame, Gem, Target, Star, Heart, Shield, Sword, Coffee, Pizza, Gift, Package, Camera, Music, Book, Gamepad2, Ghost, Moon, Sun, Cloud, Anchor, Compass, Map, Key, Lock, Unlock, Bell, BellOff, Eye, EyeOff, Search, Settings, Trash2, Edit2, Plus, X, Check, CheckCircle2, AlertCircle, Info, HelpCircle as HelpIcon, Ticket } from 'lucide-react';
 import { PageHeader } from './PageHeader';
+import { SlotMachine } from './icons/SlotMachine';
 import { cn } from '../lib/utils';
 
 const ICON_MAP: Record<string, any> = {
-  ShoppingBag, Sparkles, Trophy, Coins, RefreshCw, HelpCircle, Zap, Flame, Gem, Target, Star, Heart, Shield, Sword, Coffee, Pizza, Gift, Package, Camera, Music, Book, Gamepad2, Ghost, Moon, Sun, Cloud, Anchor, Compass, Map, Key, Lock, Unlock, Bell, BellOff, Eye, EyeOff, Search, Settings, Trash2, Edit2, Plus, X, Check, CheckCircle2, AlertCircle, Info, HelpIcon, Ticket
+  ShoppingBag, Sparkles, Trophy, Coins, RefreshCw, HelpCircle, Zap, Flame, Gem, Target, Star, Heart, Shield, Sword, Coffee, Pizza, Gift, Package, Camera, Music, Book, Gamepad2, Ghost, Moon, Sun, Cloud, Anchor, Compass, Map, Key, Lock, Unlock, Bell, BellOff, Eye, EyeOff, Search, Settings, Trash2, Edit2, Plus, X, Check, CheckCircle2, AlertCircle, Info, HelpIcon, Ticket, SlotMachine
 };
 
 interface ShopProps {
@@ -124,7 +125,7 @@ export const Shop = React.memo<ShopProps>(({ coins, shopItems, gachaPools, onPur
           >
             <div className="max-w-md w-full bg-slate-900 p-8 rounded-3xl border border-indigo-500/30 text-center space-y-6 relative">
               <div className="relative mx-auto w-32 h-32 flex items-center justify-center bg-indigo-500/20 rounded-full border-2 border-indigo-500 animate-pulse">
-                <Sparkles size={64} className="text-indigo-400" />
+                <SlotMachine size={64} className="text-indigo-400" />
               </div>
               <div className="flex items-center justify-center gap-3">
                 <h3 className="text-2xl font-bold text-white">{gachaPool.name}</h3>

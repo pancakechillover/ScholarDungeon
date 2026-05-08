@@ -8,8 +8,9 @@ interface SettingsViewProps {
   setState: React.Dispatch<React.SetStateAction<AppState>>;
   resetLootPool: () => void;
   addXP: (amount: number) => void;
-  activeSection: 'general' | 'timer' | 'rewards' | 'shop' | 'gacha' | 'dev' | 'levelRewards' | 'about';
-  setActiveSection: (section: 'general' | 'timer' | 'rewards' | 'shop' | 'gacha' | 'dev' | 'levelRewards' | 'about') => void;
+  activeSection: 'general' | 'timer' | 'rewards' | 'shop' | 'gacha' | 'dev' | 'levelRewards' | 'about' | 'level' | 'merchant';
+  setActiveSection: (section: 'general' | 'timer' | 'rewards' | 'shop' | 'gacha' | 'dev' | 'levelRewards' | 'about' | 'level' | 'merchant') => void;
+  onTabChange?: (tab: any) => void;
 }
 
 export const SettingsView: React.FC<SettingsViewProps> = ({
@@ -18,7 +19,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   resetLootPool,
   addXP,
   activeSection,
-  setActiveSection
+  setActiveSection,
+  onTabChange
 }) => {
   return (
     <motion.div
@@ -41,6 +43,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         addXP={addXP}
         activeSection={activeSection}
         setActiveSection={setActiveSection}
+        onTabChange={onTabChange}
       />
     </motion.div>
   );

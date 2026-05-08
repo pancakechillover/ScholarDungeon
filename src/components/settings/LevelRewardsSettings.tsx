@@ -86,10 +86,10 @@ export const LevelRewardsSettings = ({ state, setState }: { state: any, setState
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-emerald-400">
-          <Trophy size={14} className="sm:text-lg" />
-          <h4 className="font-bold uppercase text-[10px] sm:text-sm tracking-widest">Level Rewards & XP Table</h4>
+      <div className="flex items-center justify-between gap-2.5 text-emerald-400 mb-6 pb-2">
+        <div className="flex items-center gap-2.5">
+          <Trophy size={20} />
+          <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Level Rewards & XP Table</h4>
         </div>
         <div className="flex items-center gap-4">
           <button 

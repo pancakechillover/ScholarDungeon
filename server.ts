@@ -218,8 +218,11 @@ const processPushQueue = async (client: any) => {
             data: { type: task.type }
           }));
         } catch (err: any) {
-          console.error(`Push failed for ${task.secretCode}:`, err.message, err.body ? err.body : '');
-          if (err.statusCode === 410 || err.statusCode === 404 || err.statusCode === 400 || err.statusCode === 401 || err.statusCode === 403) {
+          const bodyMsg = err.body ? (typeof err.body === 'string' ? err.body : JSON.stringify(err.body)) : '';
+          console.error(`Push failed for ${task.secretCode}:`, err.message, bodyMsg);
+          
+          if (err.statusCode === 410 || err.statusCode === 404 || err.statusCode === 400 || err.statusCode === 401 || err.statusCode === 403 || bodyMsg.includes('VapidPkHashMismatch')) {
+            console.warn(`Removing invalid subscription for ${task.secretCode} due to error: ${err.message}`);
             await client.sRem(`scholar_push_subs_${task.secretCode}`, subStr);
           }
         }
@@ -236,8 +239,11 @@ const processPushQueue = async (client: any) => {
             data: { type: task.type }
           }));
         } catch (err: any) {
-          console.error(`Legacy push failed for ${task.secretCode}:`, err.message, err.body ? err.body : '');
-          if (err.statusCode === 410 || err.statusCode === 404 || err.statusCode === 400 || err.statusCode === 401 || err.statusCode === 403) {
+          const bodyMsg = err.body ? (typeof err.body === 'string' ? err.body : JSON.stringify(err.body)) : '';
+          console.error(`Legacy push failed for ${task.secretCode}:`, err.message, bodyMsg);
+          
+          if (err.statusCode === 410 || err.statusCode === 404 || err.statusCode === 400 || err.statusCode === 401 || err.statusCode === 403 || bodyMsg.includes('VapidPkHashMismatch')) {
+            console.warn(`Removing invalid legacy subscription for ${task.secretCode} due to error: ${err.message}`);
             await client.del(`scholar_push_sub_${task.secretCode}`);
           }
         }

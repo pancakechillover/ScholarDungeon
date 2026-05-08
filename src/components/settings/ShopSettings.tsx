@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { RewardCard, ShopItem, GachaPool, Rarity } from '../../types';
 import { INITIAL_GACHA } from '../../constants';
-import { Plus, Trash2, Save, Edit2, X, ChevronRight, Coins, Zap, Sparkles, Trophy, Timer as TimerIcon, Package, Flame, AlertTriangle, Scroll, Volume2, VolumeX, Sun, Moon, Settings as SettingsIcon, ShoppingBag, Trees, Waves, Database, Download, Upload, Target, Gift, User, Sword, Eye, Palette, Check, Bell, BellOff, RefreshCw, Key, Layers, Sunrise, Cloud, CloudSun, Lollipop, Wrench, History, Ticket } from 'lucide-react';
+import { Plus, Trash2, Save, Edit2, X, ChevronRight, Coins, Zap, Sparkles, Trophy, Timer as TimerIcon, Package, Flame, AlertTriangle, Scroll, Volume2, VolumeX, Sun, Moon, Settings as SettingsIcon, ShoppingBag, Trees, Waves, Database, Download, Upload, Target, Gift, User, Sword, Eye, Palette, Check, Bell, RefreshCw, Key, Layers, Sunrise, Cloud, CloudSun, Lollipop, Wrench, History, Ticket, Apple, Citrus, Cookie, IceCream, Cake, Beer, Wine, GlassWater, Flower, Flower2, Sprout, Leaf, Car, Bike, Plane, Rocket, Ship, Gamepad2, Headphones, Monitor, Smartphone, Tv, Library, Dumbbell, Award, Medal, Compass, Map, Camera, Music, Book, BookOpen } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { APP_VERSION, LAST_UPDATE_DATE, RELEASE_HISTORY } from '../../version';
 import { cn, getXPForLevel, getDefaultRewardForLevel } from '../../lib/utils';
@@ -31,8 +31,11 @@ export const ShopSettings = ({ items, onUpdate }: { items: ShopItem[], onUpdate:
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h3 className="text-xl font-bold text-white">Fixed Shop Items</h3>
+      <div className="flex justify-between items-center pb-4 mb-6">
+        <div className="flex items-center gap-2.5 text-amber-400">
+          <ShoppingBag size={20} />
+          <h3 className="text-lg font-bold uppercase tracking-widest pr-1">Fixed Shop Items</h3>
+        </div>
         <button onClick={() => setEditing({ id: Math.random().toString(36).substr(2, 9), name: '', price: 100, description: '' })} className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold">
           <Plus size={16} /> Add Item
         </button>
@@ -78,16 +81,18 @@ export const ShopSettings = ({ items, onUpdate }: { items: ShopItem[], onUpdate:
                     <div className="p-2 bg-amber-500/20 text-amber-500 rounded-xl">
                       <ShoppingBag size={20} />
                     </div>
-                    <h4 className="text-xl font-bold text-white tracking-tight">Edit Shop Item</h4>
+                    <h4 className="text-xl font-bold text-white tracking-tight">
+                      {items.some(i => i.id === editing.id) ? 'Edit Shop Item' : 'Add New Item'}
+                    </h4>
                   </div>
                   <div className="px-3 py-1 bg-slate-800 rounded-full text-[10px] font-bold text-slate-500 uppercase tracking-widest border border-slate-700">Market</div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto pr-2 -mr-2 space-y-6 scrollbar-thin scrollbar-thumb-slate-800">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="flex-1 overflow-y-auto pr-2 -mr-2 pb-6 space-y-6 scrollbar-thin scrollbar-thumb-slate-800">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
                     {/* Left Column */}
-                    <div className="space-y-6">
-                      <div className="space-y-4">
+                    <div className="flex flex-col h-full">
+                      <div className="space-y-4 flex flex-col flex-1">
                         <div className="space-y-1.5">
                           <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Item Name</label>
                           <input type="text" placeholder="e.g. Ancient Relic" value={editing.name} onChange={e => setEditing({...editing, name: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:border-amber-500 transition-colors" />
@@ -116,14 +121,25 @@ export const ShopSettings = ({ items, onUpdate }: { items: ShopItem[], onUpdate:
                     </div>
 
                     {/* Right Column */}
-                    <div className="space-y-6">
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1 flex items-center justify-between">
+                    <div className="flex flex-col h-full">
+                      <div className="space-y-2 flex flex-col flex-1">
+                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1 flex items-center justify-between shrink-0">
                           <span>Visual Identifier (Icon)</span>
                           <span className="text-[10px] font-black text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">{editing.icon || 'ShoppingBag'}</span>
                         </label>
-                        <div className="grid grid-cols-6 gap-3 p-4 bg-slate-950/50 rounded-2xl border border-slate-800/50 scrollbar-thin scrollbar-thumb-slate-800">
-                          {['ShoppingBag', 'Sparkles', 'Trophy', 'Coins', 'Zap', 'Flame', 'Gem', 'Target', 'Star', 'Heart', 'Shield', 'Sword', 'Coffee', 'Pizza', 'Gift', 'Package', 'Camera', 'Music', 'Book', 'Gamepad2', 'Ghost', 'Moon', 'Sun', 'Cloud', 'Anchor', 'Compass', 'Map', 'Key', 'Lock', 'Unlock', 'Bell', 'BellOff', 'Eye', 'EyeOff', 'Search', 'Settings', 'Ticket'].map(iconName => {
+                        <div className="flex-1 grid grid-cols-6 gap-3 p-4 bg-slate-950/50 rounded-2xl border border-slate-800/50 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-800 min-h-[200px]">
+                          {[
+                            // Essentials
+                            'ShoppingBag', 'Gift', 'Package', 'Ticket', 'Key', 'Coins', 'Gem', 'Trophy', 'Medal', 'Award', 'Target', 'Star', 'Heart', 
+                            // Food & Drink
+                            'Apple', 'Citrus', 'Pizza', 'Cookie', 'IceCream', 'Cake', 'Coffee', 'Beer', 'Wine', 'GlassWater',
+                            // Nature
+                            'Flame', 'Zap', 'Sparkles', 'Flower', 'Flower2', 'Sprout', 'Leaf', 'Trees', 'Sun', 'Moon', 'Cloud', 'Sunrise',
+                            // Travel & Adventure
+                            'Car', 'Bike', 'Plane', 'Rocket', 'Ship', 'Compass', 'Map', 'Anchor',
+                            // Hobbies & Tech
+                            'Gamepad2', 'Headphones', 'Camera', 'Music', 'Monitor', 'Smartphone', 'Tv', 'Dumbbell', 'Palette', 'Sword', 'Book', 'BookOpen', 'Library', 'History'
+                          ].map(iconName => {
                             const IconComponent = (LucideIcons as any)[iconName] || LucideIcons.ShoppingBag;
                             const isSelected = (editing.icon || 'ShoppingBag') === iconName;
                             return (

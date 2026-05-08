@@ -450,10 +450,18 @@ export function useGameState() {
     const todayStr = format(now, 'yyyy-MM-dd');
     
     // Calculate rewards
-    let baseXP = state.devModeEnabled ? (state.devBaseXP ?? 100) : 100;
+    let baseXP = 100;
     let baseCoins = 0;
     
     if (state.devModeEnabled) {
+      if (state.devXpMode === 'random') {
+        const minXP = state.devMinXP ?? 50;
+        const maxXP = state.devMaxXP ?? 150;
+        baseXP = Math.floor(minXP + Math.random() * (maxXP - minXP + 1));
+      } else {
+        baseXP = state.devBaseXP ?? 100;
+      }
+
       if (state.devCoinMode === 'fixed') {
         baseCoins = state.devBaseCoins ?? 10;
       } else {
@@ -766,7 +774,7 @@ export function useGameState() {
     }
 
     return session;
-  }, [addXP, addCoins, state.activeTalents, state.dailySessions, state.streak, state.inventory, state.rewardPool, state.devModeEnabled, state.devBaseXP, state.devCoinMode, state.devBaseCoins, state.devMinCoins, state.devMaxCoins, state.devCritChance, state.devCritMultiplier]);
+  }, [addXP, addCoins, state.activeTalents, state.dailySessions, state.streak, state.inventory, state.rewardPool, state.devModeEnabled, state.devBaseXP, state.devXpMode, state.devMinXP, state.devMaxXP, state.devCoinMode, state.devBaseCoins, state.devMinCoins, state.devMaxCoins, state.devCritChance, state.devCritMultiplier]);
 
   const forceCompleteSubDungeon = useCallback((dungeonId: string) => {
     setDungeons(prevDungeons => {

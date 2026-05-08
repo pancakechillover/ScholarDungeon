@@ -21,7 +21,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors:** When designing UI elements that highlight based on themes, note that ONLY `indigo-400`, `indigo-500`, and `indigo-600` are overridden by the custom theme variables in `index.css`. DO NOT use `indigo-300` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v4.4.2
+- **Current Version:** v4.5.14
 - **Last Update Date:** 2026-05-08
 
 ## Dark Themes Definition
@@ -46,6 +46,71 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v4.5.14 (2026-05-08):** Gacha Icon Update.
+  - *UI:* Created a custom `SlotMachine` SVG icon and integrated it into the Merchant's outposts.
+  - *UI:* Replaced the generic `Sparkles` icon with the new `SlotMachine` icon in the Gacha tab to better represent the feature.
+- **v4.5.13 (2026-05-08):** Settings UI & UX Polish.
+  - *UI:* Adjusted modal container layouts in ShopSettings and RewardSettings to ensure symmetrical column heights.
+  - *UX:* Dynamically updated modal titles to reflect "Add New" vs "Edit" depending on whether the item/reward is new.
+- **v4.5.12 (2026-05-08):** Icon Selection & Reward Visuals.
+  - *UI:* Overhauled icon selection grid for Shop and Rewards with 50+ thematic icons (Fruits, Food, Nature, Vehicles, Tech).
+  - *Feature:* Added custom icon support for Loot Pool rewards, visible in both Settings and Victory screen.
+  - *Architecture:* Extended `RewardCard` type with an optional `icon` field and synchronized its usage across management and presentation layers.
+- **v4.5.11 (2026-05-08):** About Page Refinement.
+  - *UI:* Updated Release History to include precise timestamps (HH:MM:SS) for the latest updates.
+  - *UI:* Implemented collapsible grouping for Release History, categorized by minor version series (e.g., v4.5.x, v4.4.x).
+  - *Architecture:* Created a dedicated `VersionGroup` component to handle collapsible logic while respecting React Hook rules.
+- **v4.5.10 (2026-05-08):** Settings UI Visual Cleanup.
+  - *UI:* Removed background colors from section headers in the Merchant and Loot Pool settings for a cleaner, flatter look.
+- **v4.5.9 (2026-05-08):** Merchant Section Reordering.
+  - *UI:* Reordered the Merchant settings tab to follow the sequence: Fixed Shop Items -> Standard Gacha -> Ichiban Kuji -> Draw Animation.
+- **v4.5.8 (2026-05-08):** Settings Header Refinement.
+  - *UI:* Removed italic styling and bottom borders from all settings section titles for a cleaner, more modern look.
+- **v4.5.7 (2026-05-08):** Settings Header Standardization.
+  - *UI:* Unified all section headers across Settings (General, Timer, Level, Merchant, Developer, About) to use a consistent design template.
+  - *UI:* Standardized icon sizes to 20px and updated typography to 'text-lg font-bold uppercase tracking-widest italic pr-1'.
+  - *UI:* Added a subtle bottom border and padding (pb-2 border-b border-slate-800/50) to all settings headers for improved document structure.
+- **v4.5.6 (2026-05-08):** Crit Setting UI Refinement.
+  - *UI:* Added a bordered container for Crit Chance and Multiplier settings for better visual grouping.
+  - *UI:* Moved the Critical Intuition talent notice to a dedicated full-width block below the inputs.
+  - *UI:* Increased font size and emphasis for the talent requirement notice to improve readability.
+- **v4.5.5 (2026-05-08):** Critical Intuition Talent Notice.
+  - *Architecture:* Extended onTabChange prop through Settings hierarchy to allow internal navigation.
+  - *UI:* Added a status badge and helper text to the Crit Chance setting to inform users of the required talent.
+  - *UX:* Enabled direct jump to the Talents page from the Crit Chance setting notice.
+  - *Bugfix:* Prevented confusion regarding why custom Crit settings might not apply.
+- **v4.5.4 (2026-05-08):** Reward Settings Consolidation.
+  - *Architecture:* Merged "Reward Settings" page into the "Timer" settings tab for improved UX flow.
+  - *UI:* Consolidated related session configurations by grouping timer settings and reward pools.
+  - *UI:* Removed the dedicated "Rewards" tab from the Settings navigation bar.
+- **v4.5.3 (2026-05-08):** Merchant Settings Reorganization.
+  - *UI:* Renamed "Shop Settings" to "Fixed Shop Items" and moved it after Gacha pools.
+  - *UI:* Relocated "Draw Animation" settings from General to the end of the Merchant tab.
+  - *Architecture:* Synchronized version markers across Settings and About pages to use centralized constants.
+- **v4.5.2 (2026-05-08):** Push Notification & Stability Fixes.
+  - *Bugfix:* Resolved `VapidPkHashMismatch` errors by synchronizing VAPID fallback keys and adding auto-detection for key mismatches in the client.
+  - *Feature:* Added "Reset Notifications" button in General Settings to manually clear invalid push subscriptions.
+  - *Optimization:* Fixed TypeScript lint errors related to `ImportMeta` in the notification registration logic.
+- **v4.5.1 (2026-05-08):** Merchant Settings Organization.
+  - *UI:* Separated Gacha and Ichiban Kuji pools into distinct sections within the Merchant settings for better management.
+- **v4.5.0 (2026-05-08):** Merchant & Level UI Refinement.
+  - *UI:* Merged "Shop" and "Gacha" tab into a single "Merchant" tab.
+  - *UI:* Renamed "Level Rewards" tab to "Level".
+  - *UI:* Snugged the Settings navigation tabs by reducing horizontal padding and container gap for a more compact design.
+- **v4.4.9 (2026-05-08):** Settings Tab UX Refinement.
+  - *UI:* Updated the Settings navigation tabs to a wrapping layout, ensuring all categories are visible without horizontal scrolling.
+- **v4.4.8 (2026-05-08):** Settings UI Cleanup.
+  - *UI:* Removed the redundant "Dungeon Settings" banner from the top of the Settings page for a cleaner interface.
+- **v4.4.7 (2026-05-08):** XP Drop Mode Customization.
+  - *Feature:* Allowed users to set the XP Drop Mode as either fixed or random in the Session Reward Settings, bringing it to parity with Gold Drop Mode.
+- **v4.4.6 (2026-05-08):** Timer Skip Count Fix.
+  - *Bugfix:* Fixed an issue where manually skipping a completed timer state could incorrectly increment the loop counter beyond its maximum limit (e.g. showing 3/2).
+- **v4.4.5 (2026-05-08):** Timer Loop Sync Polish.
+  - *Feature:* Refined the Timer Loop counting logic so that loop counters naturally increment only AFTER a full Focus + Rest cycle is fully completed or manually skipped.
+- **v4.4.4 (2026-05-08):** Service Worker Dev Mode Fix.
+  - *Bugfix:* Fixed an issue in Vite configuration and `GeneralSettings.tsx` where manual Service Worker registration failed in development environments due to missing `devOptions` in VitePWA and missing `{ type: 'module' }` attributes for `dev-sw.js`.
+- **v4.4.3 (2026-05-08):** Timer Loop State Fix.
+  - *Bugfix:* Fixed an issue in `Timer.tsx` where continuing or pausing the timer after completing the target loop would incorrectly force the loop count back to 0, preventing the "n/n loops" completion state from displaying properly during the final rest or finished state.
 - **v4.4.2 (2026-05-08):** Reward Chest & Deferred Rewards.
   - *Feature:* Added a "Defer to Chest" option in Timer Settings to store session rewards and skip the Victory screen.
   - *UI:* Added a custom Reward Chest modal to view pending sessions and "Auto-Pick Best" for all of them at once.

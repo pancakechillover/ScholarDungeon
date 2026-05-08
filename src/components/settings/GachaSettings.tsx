@@ -31,44 +31,86 @@ export const GachaSettings = ({ pools, onUpdate }: { pools: GachaPool[], onUpdat
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h3 className="text-xl font-bold text-white">Gacha & Ichiban Pools</h3>
-      </div>
-
-      <div className="grid grid-cols-1 gap-6">
-        {pools.map(pool => (
-          <div key={pool.id} className="p-6 bg-slate-900 border border-slate-800 rounded-2xl space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className={cn("p-2 rounded-lg", pool.type === 'gacha' ? "bg-purple-500/10 text-purple-400" : "bg-emerald-500/10 text-emerald-400")}>
-                  {pool.type === 'gacha' ? <Sparkles size={20} /> : <Ticket size={20} />}
-                </div>
-                <div>
-                  <h4 className="font-bold text-white">{pool.name}</h4>
-                  <p className="text-xs text-slate-500 uppercase tracking-widest">{pool.type} • {pool.cost.toLocaleString()} Gold</p>
-                </div>
-              </div>
-              <button onClick={() => {
-                const sortedPool = {
-                  ...pool,
-                  items: [...pool.items].sort((a, b) => {
-                    if (a.rarity === 'LastOne') return -1;
-                    if (b.rarity === 'LastOne') return 1;
-                    return 0;
-                  })
-                };
-                setEditing(sortedPool);
-              }} className="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg text-xs font-bold hover:bg-slate-700">Edit Items</button>
+      <div className="space-y-12">
+        {/* Gacha Pools Section */}
+        {pools.some(p => p.type === 'gacha') && (
+          <div className="space-y-6">
+            <div className="flex items-center gap-2.5 text-purple-400 mb-6 pb-2">
+              <Sparkles size={20} />
+              <h3 className="text-lg font-bold uppercase tracking-widest pr-1">Standard Gacha</h3>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {pool.items.map((item, idx) => (
-                <div key={idx} className="px-2 py-1 bg-slate-800 border border-slate-700 rounded text-[10px] text-slate-400">
-                  <span className="font-bold text-slate-200">{item.rarity}:</span> {item.name} {item.count !== undefined && `(${item.count})`}
+            <div className="grid grid-cols-1 gap-6">
+              {pools.filter(p => p.type === 'gacha').map(pool => (
+                <div key={pool.id} className="p-6 bg-slate-900 border border-slate-800 rounded-2xl space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-purple-500/10 text-purple-400">
+                        <Sparkles size={20} />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-white">{pool.name}</h4>
+                        <p className="text-xs text-slate-500 uppercase tracking-widest">Draw cost • {pool.cost.toLocaleString()} Gold</p>
+                      </div>
+                    </div>
+                    <button onClick={() => setEditing(pool)} className="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg text-xs font-bold hover:bg-slate-700">Edit Settings</button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {pool.items.map((item, idx) => (
+                      <div key={idx} className="px-2 py-1 bg-slate-800 border border-slate-700 rounded text-[10px] text-slate-400">
+                        <span className="font-bold text-slate-200">{item.rarity}:</span> {item.name}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>
           </div>
-        ))}
+        )}
+
+        {/* Ichiban Pools Section */}
+        {pools.some(p => p.type === 'ichiban') && (
+          <div className="space-y-6 pt-6 border-t border-slate-800">
+            <div className="flex items-center gap-2.5 text-emerald-400 mb-6 pb-2">
+              <Ticket size={20} />
+              <h3 className="text-lg font-bold uppercase tracking-widest pr-1">Ichiban Kuji</h3>
+            </div>
+            <div className="grid grid-cols-1 gap-6">
+              {pools.filter(p => p.type === 'ichiban').map(pool => (
+                <div key={pool.id} className="p-6 bg-slate-900 border border-slate-800 rounded-2xl space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400">
+                        <Ticket size={20} />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-white">{pool.name}</h4>
+                        <p className="text-xs text-slate-500 uppercase tracking-widest">Ticket cost • {pool.cost.toLocaleString()} Gold</p>
+                      </div>
+                    </div>
+                    <button onClick={() => {
+                      const sortedPool = {
+                        ...pool,
+                        items: [...pool.items].sort((a, b) => {
+                          if (a.rarity === 'LastOne') return -1;
+                          if (b.rarity === 'LastOne') return 1;
+                          return 0;
+                        })
+                      };
+                      setEditing(sortedPool);
+                    }} className="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg text-xs font-bold hover:bg-slate-700">Manage Tiers</button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {pool.items.map((item, idx) => (
+                      <div key={idx} className="px-2 py-1 bg-slate-800 border border-slate-700 rounded text-[10px] text-slate-400">
+                        <span className="font-bold text-slate-200">{item.rarity}:</span> {item.name} {item.count !== undefined && `(${item.count})`}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {createPortal(

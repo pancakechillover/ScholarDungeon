@@ -65,7 +65,9 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
       try {
       let registration = await navigator.serviceWorker.getRegistration();
       if (!registration) {
-        registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+        const swUrl = import.meta.env.DEV ? '/dev-sw.js?dev-sw' : '/sw.js';
+        const swType = import.meta.env.DEV ? 'module' : 'classic';
+        registration = await navigator.serviceWorker.register(swUrl, { scope: '/', type: swType });
       }
       registration = await navigator.serviceWorker.ready;
       const subscription = await registration.pushManager.getSubscription();
@@ -93,10 +95,13 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
       console.log('Checking for service worker registration...');
       let registration = await navigator.serviceWorker.getRegistration();
       if (!registration) {
-        console.log('No service worker found, registering /sw.js...');
-        registration = await navigator.serviceWorker.register('/sw.js', { 
+        console.log('No service worker found, registering...');
+        const swUrl = import.meta.env.DEV ? '/dev-sw.js?dev-sw' : '/sw.js';
+        const swType = import.meta.env.DEV ? 'module' : 'classic';
+        registration = await navigator.serviceWorker.register(swUrl, { 
           scope: '/',
-          updateViaCache: 'none'
+          updateViaCache: 'none',
+          type: swType
         });
       }
       
@@ -178,7 +183,9 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
       let registration = await navigator.serviceWorker.getRegistration();
       if (!registration) {
         console.log('Force Sync: Registering new service worker...');
-        registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+        const swUrl = import.meta.env.DEV ? '/dev-sw.js?dev-sw' : '/sw.js';
+        const swType = import.meta.env.DEV ? 'module' : 'classic';
+        registration = await navigator.serviceWorker.register(swUrl, { scope: '/', type: swType });
       }
       
       console.log('Force Sync: Waiting for ready...');
@@ -191,12 +198,23 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
       console.log('Force Sync: Checking subscription...');
       let subscription = await registration.pushManager.getSubscription();
       
+      const vapidResponse = await fetch('/api/push/vapid-public-key');
+      const { publicKey } = await vapidResponse.json();
+      const convertedVapidKey = urlBase64ToUint8Array(publicKey);
+
+      // Check for VAPID mismatch
+      if (subscription && subscription.options.applicationServerKey) {
+        const currentKey = new Uint8Array(subscription.options.applicationServerKey);
+        const isMatch = currentKey.every((val, i) => val === convertedVapidKey[i]);
+        if (!isMatch) {
+          console.warn('Force Sync: VAPID key mismatch detected. Re-subscribing...');
+          await subscription.unsubscribe();
+          subscription = null;
+        }
+      }
+      
       if (!subscription) {
-        console.log('Force Sync: No subscription found, attempting to re-subscribe...');
-        const vapidResponse = await fetch('/api/push/vapid-public-key');
-        const { publicKey } = await vapidResponse.json();
-        const convertedVapidKey = urlBase64ToUint8Array(publicKey);
-        
+        console.log('Force Sync: No subscription (or mismatch), attempting to re-subscribe...');
         subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: convertedVapidKey
@@ -286,12 +304,42 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
     reader.readAsText(file);
   };
 
+  const resetPushState = async () => {
+    if (!confirm('This will clear all push subscriptions for this secret code on the server and locally. Proceed?')) return;
+    setIsSubscribing(true);
+    try {
+      // 1. Unsubscribe locally
+      const registration = await navigator.serviceWorker.getRegistration();
+      if (registration) {
+        const subscription = await registration.pushManager.getSubscription();
+        if (subscription) await subscription.unsubscribe();
+      }
+      
+      // 2. Clear server
+      if (state.secretCode) {
+        await fetch('/api/push/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ secretCode: state.secretCode, subscription: null })
+        });
+      }
+      
+      setState(prev => ({ ...prev, pushEnabled: false, pushSubscription: null }));
+      alert('Push state reset successfully. You can now try re-enabling notifications.');
+    } catch (err) {
+      console.error('Reset failed:', err);
+      alert('Failed to reset: ' + (err as Error).message);
+    } finally {
+      setIsSubscribing(false);
+    }
+  };
+
   return (
     <div className="space-y-8">
       <div className="space-y-6">
-        <div className="flex items-center gap-2 text-indigo-400 mb-6">
-          <Palette size={18} />
-          <h4 className="font-bold uppercase text-sm tracking-widest">Global Effects & Theme</h4>
+        <div className="flex items-center gap-2.5 text-indigo-400 mb-6 pb-2">
+          <Palette size={20} />
+          <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Global Effects & Theme</h4>
         </div>
 
         <div className="space-y-4 pt-4">
@@ -327,9 +375,9 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
       </div>
 
       <div className="space-y-6 pt-6 border-t border-slate-800">
-        <div className="flex items-center gap-2 text-emerald-400 mb-6">
-          <Volume2 size={18} />
-          <h4 className="font-bold uppercase text-sm tracking-widest">Audio</h4>
+        <div className="flex items-center gap-2.5 text-emerald-400 mb-6 pb-2">
+          <Volume2 size={20} />
+          <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Audio</h4>
         </div>
 
         <div className="space-y-6">
@@ -380,115 +428,9 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
       </div>
 
       <div className="space-y-6 pt-6 border-t border-slate-800">
-        <div className="flex items-center gap-2 text-indigo-400 mb-6">
-          <Sparkles size={18} />
-          <h4 className="font-bold uppercase text-sm tracking-widest">Draw Animation</h4>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-4 p-5 bg-slate-900/50 rounded-3xl border border-indigo-500/10 shadow-inner">
-            <div className="flex items-center gap-2 mb-1">
-              <Package size={16} className="text-indigo-400" />
-              <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Gacha Draw</label>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                { id: 'card', name: 'Classic Flip', icon: Layers, desc: 'Vertical flip' },
-                { id: 'scratch', name: 'Scratch-off', icon: Scroll, desc: 'Reveal' }
-              ].map(effect => {
-                const isActive = (state.gachaAnimation || 'card') === effect.id;
-                return (
-                  <button
-                    key={effect.id}
-                    onClick={() => setState(prev => ({ ...prev, gachaAnimation: effect.id as 'card' | 'scratch' }))}
-                    className={cn(
-                      "flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all relative overflow-hidden group",
-                      isActive 
-                        ? "bg-indigo-500/10 border-indigo-500" 
-                        : "bg-slate-950 border-slate-800 text-slate-500 hover:border-slate-700"
-                    )}
-                  >
-                    <effect.icon size={20} className={cn("transition-transform group-hover:scale-110", isActive ? "text-indigo-400" : "text-slate-600")} />
-                    <div className="text-center">
-                      <div className={cn("text-[9px] font-black uppercase tracking-widest leading-none mb-0.5", isActive ? "text-white" : "text-slate-500")}>
-                        {effect.name}
-                      </div>
-                      <div className="text-[8px] opacity-60 font-medium whitespace-nowrap">{effect.desc}</div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="space-y-4 p-5 bg-slate-900/50 rounded-3xl border border-indigo-500/10 shadow-inner">
-            <div className="flex items-center gap-2 mb-1">
-              <Ticket size={16} className="text-indigo-400" />
-              <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Ichiban Draw</label>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                { id: 'card', name: 'Classic Flip', icon: Layers, desc: 'Vertical flip' },
-                { id: 'scratch', name: 'Scratch-off', icon: Scroll, desc: 'Reveal' }
-              ].map(effect => {
-                const isActive = (state.ichibanAnimation || 'scratch') === effect.id;
-                return (
-                  <button
-                    key={effect.id}
-                    onClick={() => setState(prev => ({ ...prev, ichibanAnimation: effect.id as 'card' | 'scratch' }))}
-                    className={cn(
-                      "flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all relative overflow-hidden group",
-                      isActive 
-                        ? "bg-indigo-500/10 border-indigo-500" 
-                        : "bg-slate-950 border-slate-800 text-slate-500 hover:border-slate-700"
-                    )}
-                  >
-                    <effect.icon size={20} className={cn("transition-transform group-hover:scale-110", isActive ? "text-indigo-400" : "text-slate-600")} />
-                    <div className="text-center">
-                      <div className={cn("text-[9px] font-black uppercase tracking-widest leading-none mb-0.5", isActive ? "text-white" : "text-slate-500")}>
-                        {effect.name}
-                      </div>
-                      <div className="text-[8px] opacity-60 font-medium whitespace-nowrap">{effect.desc}</div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-
-        {/* Allow Overlap Toggle */}
-        <div className="flex items-center justify-between p-4 bg-slate-900/50 rounded-2xl border border-slate-800 mt-6">
-          <div className="flex items-center gap-3">
-            <div className={cn("p-2 rounded-xl", state.gachaAllowOverlap ? "bg-indigo-500/10 text-indigo-400" : "bg-slate-800 text-slate-500")}>
-              <Layers size={20} />
-            </div>
-            <div>
-              <div className="font-bold text-white uppercase text-xs tracking-widest">Overlap Mode</div>
-              <div className="text-[10px] text-slate-500">Show cards one by one with navigation</div>
-            </div>
-          </div>
-          <button
-            onClick={() => setState(prev => ({ ...prev, gachaAllowOverlap: !prev.gachaAllowOverlap }))}
-            className={cn(
-              "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
-              state.gachaAllowOverlap ? "bg-indigo-500" : "bg-slate-700"
-            )}
-          >
-            <span
-              className={cn(
-                "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
-                state.gachaAllowOverlap ? "translate-x-6" : "translate-x-1"
-              )}
-            />
-          </button>
-        </div>
-      </div>
-
-      <div className="space-y-6 pt-6 border-t border-slate-800">
-        <div className="flex items-center gap-2 text-indigo-400 mb-6">
-          <Eye size={18} />
-          <h4 className="font-bold uppercase text-sm tracking-widest">Features</h4>
+        <div className="flex items-center gap-2.5 text-indigo-400 mb-6 pb-2">
+          <Eye size={20} />
+          <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Features</h4>
         </div>
 
         <div className="space-y-4">
@@ -525,9 +467,9 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
       </div>
 
       <div className="space-y-6 pt-6 border-t border-slate-800">
-        <div className="flex items-center gap-2 text-indigo-400 mb-6">
-          <Bell size={18} />
-          <h4 className="font-bold uppercase text-sm tracking-widest">System Notifications</h4>
+        <div className="flex items-center gap-2.5 text-indigo-400 mb-6 pb-2">
+          <Bell size={20} />
+          <h4 className="text-lg font-bold uppercase tracking-widest pr-1">System Notifications</h4>
         </div>
 
         <div className="space-y-4">
@@ -543,14 +485,24 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
             </div>
             <div className="flex items-center gap-2">
               {state.pushEnabled && (
-                <button
-                  onClick={forceSyncNotifications}
-                  disabled={isSubscribing}
-                  className="p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-indigo-400 transition-colors"
-                  title="Force Sync Notifications"
-                >
-                  <RefreshCw size={16} className={cn(isSubscribing && "animate-spin")} />
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={forceSyncNotifications}
+                    disabled={isSubscribing}
+                    className="p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-indigo-400 transition-colors"
+                    title="Force Sync Notifications"
+                  >
+                    <RefreshCw size={16} className={cn(isSubscribing && "animate-spin")} />
+                  </button>
+                  <button
+                    onClick={resetPushState}
+                    disabled={isSubscribing}
+                    className="p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-red-400 transition-colors"
+                    title="Reset Push State"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
               )}
               <button
                 onClick={handleNotificationToggle}
@@ -583,9 +535,9 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
       </div>
 
       <div className="space-y-6 pt-6 border-t border-slate-800">
-        <div className="flex items-center gap-2 text-amber-400 mb-6">
-          <Target size={18} />
-          <h4 className="font-bold uppercase text-sm tracking-widest">Quest UI Notifications</h4>
+        <div className="flex items-center gap-2.5 text-amber-400 mb-6 pb-2">
+          <Target size={20} />
+          <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Quest UI Notifications</h4>
         </div>
 
         <div className="space-y-4">
@@ -632,9 +584,9 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
       </div>
 
       <div className="space-y-6 pt-6 border-t border-slate-800">
-        <div className="flex items-center gap-2 text-blue-400 mb-6">
-          <Database size={18} />
-          <h4 className="font-bold uppercase text-sm tracking-widest">Data Management</h4>
+        <div className="flex items-center gap-2.5 text-blue-400 mb-6 pb-2">
+          <Database size={20} />
+          <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Data Management</h4>
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -680,9 +632,9 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
       </div>
 
       <div className="space-y-6 pt-6 border-t border-slate-800">
-        <div className="flex items-center gap-2 text-red-400 mb-6">
-          <AlertTriangle size={18} />
-          <h4 className="font-bold uppercase text-sm tracking-widest">Danger Zone</h4>
+        <div className="flex items-center gap-2.5 text-red-400 mb-6 pb-2">
+          <AlertTriangle size={20} />
+          <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Danger Zone</h4>
         </div>
         <div className="space-y-4">
           <p className="text-xs text-slate-400 leading-relaxed font-medium">

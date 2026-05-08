@@ -70,7 +70,7 @@ function App() {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'explore' | 'dungeons' | 'talents' | 'shop' | 'stats' | 'settings' | 'vault'>('explore');
   const [pipWindow, setPipWindow] = useState<Window | null>(null);
 
-  const [activeSettingsSection, setActiveSettingsSection] = useState<'general' | 'timer' | 'rewards' | 'shop' | 'gacha' | 'dev' | 'levelRewards' | 'about'>('general');
+  const [activeSettingsSection, setActiveSettingsSection] = useState<'general' | 'timer' | 'rewards' | 'shop' | 'gacha' | 'dev' | 'levelRewards' | 'about' | 'level' | 'merchant'>('general');
 
   const canPip = 'documentPictureInPicture' in window;
   const isPWA = window.matchMedia('(display-mode: standalone)').matches;
@@ -454,31 +454,40 @@ function App() {
   );
 
   const nextSessionStats = useMemo(() => {
-    let xp = state.devModeEnabled ? (state.devBaseXP ?? 100) : 100;
-    let minCoins = 0;
-    let maxCoins = 0;
+    let xp = 100;
+    let minXP = 100;
+    let maxXP = 100;
+    let minCoins = 5;
+    let maxCoins = 15;
 
     if (state.devModeEnabled) {
+      if (state.devXpMode === 'random') {
+        minXP = state.devMinXP ?? 50;
+        maxXP = state.devMaxXP ?? 150;
+      } else {
+        xp = state.devBaseXP ?? 100;
+        minXP = maxXP = xp;
+      }
+
       if (state.devCoinMode === 'fixed') {
         minCoins = maxCoins = state.devBaseCoins ?? 10;
       } else {
         minCoins = state.devMinCoins ?? 5;
         maxCoins = state.devMaxCoins ?? 15;
       }
-    } else {
-      minCoins = 5;
-      maxCoins = 15;
     }
 
     const breakdown: { source: string; xpEffect?: string; coinEffect?: string }[] = [];
     breakdown.push({ 
       source: 'Base Reward', 
-      xpEffect: `+${xp}`, 
+      xpEffect: minXP === maxXP ? `+${minXP}` : `+${minXP}-${maxXP}`, 
       coinEffect: minCoins === maxCoins ? `+${minCoins}` : `+${minCoins}-${maxCoins}` 
     });
 
     if (state.activeTalents.includes('a1')) {
-      xp *= 1.1;
+      xp *= 1.1; // only accurately shown if fixed, but display is abstract enough
+      minXP *= 1.1;
+      maxXP *= 1.1;
       breakdown.push({ source: 'Talent: Mind Lubrication', xpEffect: '+10%' });
     }
     if (state.activeTalents.includes('b1')) {
@@ -555,7 +564,7 @@ function App() {
     });
 
     return { xp: Math.floor(xp), minCoins: Math.floor(minCoins), maxCoins: Math.floor(maxCoins), breakdown };
-  }, [state.devModeEnabled, state.devBaseXP, state.devCoinMode, state.devBaseCoins, state.devMinCoins, state.devMaxCoins, state.activeTalents, state.dailySessions, state.streak, state.inventory, state.rewardPool]);
+  }, [state.devModeEnabled, state.devBaseXP, state.devXpMode, state.devMinXP, state.devMaxXP, state.devCoinMode, state.devBaseCoins, state.devMinCoins, state.devMaxCoins, state.activeTalents, state.dailySessions, state.streak, state.inventory, state.rewardPool]);
 
   const finalizeMajorDungeon = (id: string) => {
     finalizeMajorDungeonBase(id);
@@ -1051,6 +1060,7 @@ function App() {
                 addXP={addXP}
                 activeSection={activeSettingsSection}
                 setActiveSection={setActiveSettingsSection}
+                onTabChange={setActiveTab}
               />
             )}
           </AnimatePresence>

@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { RewardCard, ShopItem, GachaPool, Rarity } from '../../types';
 import { INITIAL_GACHA } from '../../constants';
-import { Plus, Trash2, Save, Edit2, X, ChevronRight, Coins, Zap, Sparkles, Trophy, Timer as TimerIcon, Package, Flame, AlertTriangle, Scroll, Volume2, VolumeX, Sun, Moon, Settings as SettingsIcon, ShoppingBag, Trees, Waves, Database, Download, Upload, Target, Gift, User, Sword, Eye, Palette, Check, Bell, BellOff, RefreshCw, Key, Layers, Sunrise, Cloud, CloudSun, Lollipop, Wrench, History, Ticket } from 'lucide-react';
+import { Plus, Trash2, Save, Edit2, X, ChevronRight, Coins, Zap, Sparkles, Trophy, Timer as TimerIcon, Package, Flame, AlertTriangle, Scroll, Volume2, VolumeX, Sun, Moon, Settings as SettingsIcon, ShoppingBag, Trees, Waves, Database, Download, Upload, Target, Gift, User, Sword, Eye, Palette, Check, Bell, RefreshCw, Key, Layers, Sunrise, Cloud, CloudSun, Lollipop, Wrench, History, Ticket, Apple, Citrus, Cookie, IceCream, Cake, Beer, Wine, GlassWater, Flower, Flower2, Sprout, Leaf, Car, Bike, Plane, Rocket, Ship, Gamepad2, Headphones, Monitor, Smartphone, Tv, Library, Dumbbell, Award, Medal, Compass, Map, Camera, Music, Book, BookOpen } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { APP_VERSION, LAST_UPDATE_DATE, RELEASE_HISTORY } from '../../version';
 import { cn, getXPForLevel, getDefaultRewardForLevel } from '../../lib/utils';
@@ -40,8 +40,11 @@ export const RewardSettings = ({ pool, onUpdate, onReset }: { pool: RewardCard[]
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h3 className="text-xl font-bold text-white">Loot Pool</h3>
+      <div className="flex justify-between items-center pb-4 mb-6">
+        <div className="flex items-center gap-2.5 text-indigo-400">
+          <Package size={20} />
+          <h3 className="text-lg font-bold uppercase tracking-widest pr-1">Loot Pool</h3>
+        </div>
         <div className="flex gap-2">
           {onReset && (
             <button 
@@ -92,8 +95,16 @@ export const RewardSettings = ({ pool, onUpdate, onReset }: { pool: RewardCard[]
                         {card.rarity}
                       </span>
                     </td>
-                    <td className="px-4 py-4">
-                      <div className="font-bold text-slate-200 whitespace-nowrap">{card.name}</div>
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-2.5 justify-center">
+                        <div className="w-7 h-7 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center shrink-0 border border-indigo-500/20">
+                          {(() => {
+                            const IconComp = (card.icon && (LucideIcons as any)[card.icon]) ? (LucideIcons as any)[card.icon] : LucideIcons.Gift;
+                            return <IconComp size={14} />;
+                          })()}
+                        </div>
+                        <div className="font-bold text-slate-200">{card.name}</div>
+                      </div>
                     </td>
                     <td className="px-4 py-4">
                       <div className="text-[10px] text-slate-500 italic mx-auto" title={card.description}>{card.description}</div>
@@ -187,16 +198,18 @@ export const RewardSettings = ({ pool, onUpdate, onReset }: { pool: RewardCard[]
                     <div className="p-2 bg-indigo-500/20 text-indigo-400 rounded-xl">
                       <Edit2 size={20} />
                     </div>
-                    <h4 className="text-xl font-bold text-white tracking-tight">Edit Reward</h4>
+                    <h4 className="text-xl font-bold text-white tracking-tight">
+                      {pool.some(r => r.id === editing.id) ? 'Edit Reward' : 'Add New Reward'}
+                    </h4>
                   </div>
                   <div className="px-3 py-1 bg-slate-800 rounded-full text-[10px] font-bold text-slate-500 uppercase tracking-widest border border-slate-700">Config</div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto pr-2 -mr-2 space-y-6 scrollbar-thin scrollbar-thumb-slate-800">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="flex-1 overflow-y-auto pr-2 -mr-2 pb-6 space-y-6 scrollbar-thin scrollbar-thumb-slate-800">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
                     {/* Left Column: Basic Info */}
-                    <div className="flex flex-col gap-6">
-                      <div className="space-y-4">
+                    <div className="flex flex-col gap-6 h-full">
+                      <div className="space-y-4 flex flex-col flex-1">
                         <div className="space-y-1.5">
                           <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Reward Name</label>
                           <input type="text" placeholder="Reward Name" value={editing.name} onChange={e => setEditing({...editing, name: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:border-indigo-500 transition-colors" />
@@ -233,17 +246,47 @@ export const RewardSettings = ({ pool, onUpdate, onReset }: { pool: RewardCard[]
                     </div>
 
                     {/* Right Column: Values & Limits */}
-                    <div className="flex flex-col gap-6">
-                      <div className="space-y-4">
-                        <div className="space-y-1.5">
-                          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Type</label>
-                          <select value={editing.type} onChange={e => setEditing({...editing, type: e.target.value as any})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:border-indigo-500 transition-colors">
-                            <option value="coins">Coins</option>
-                            <option value="xp">XP</option>
-                            <option value="item">Advanced Item</option>
-                            <option value="text">Bonus/Action</option>
-                          </select>
-                        </div>
+                    <div className="flex flex-col gap-6 h-full">
+                      <div className="space-y-4 flex flex-col flex-1">
+                          <div className="space-y-1.5 shrink-0">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Type</label>
+                            <select value={editing.type} onChange={e => setEditing({...editing, type: e.target.value as any})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:border-indigo-500 transition-colors">
+                              <option value="coins">Coins</option>
+                              <option value="xp">XP</option>
+                              <option value="item">Advanced Item</option>
+                              <option value="text">Bonus/Action</option>
+                            </select>
+                          </div>
+
+                          <div className="space-y-1.5 flex flex-col flex-1 min-h-[100px]">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1 flex items-center justify-between shrink-0">
+                              <span>Reward Icon</span>
+                              <span className="text-[10px] font-black text-indigo-400 bg-indigo-400/10 px-2 py-0.5 rounded-full border border-indigo-400/20">{editing.icon || 'Gift'}</span>
+                            </label>
+                            <div className="flex-1 grid grid-cols-6 gap-2 p-3 bg-slate-950/50 rounded-2xl border border-slate-800/50 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-800">
+                              {[
+                                'Gift', 'Package', 'Coins', 'Zap', 'Trophy', 'Medal', 'Award', 'Star', 'Heart', 'Apple', 'Citrus', 'Pizza', 'Cookie', 'IceCream', 'Cake', 'Coffee', 'Beer', 'Wine', 'Flower', 'Flower2', 'Sprout', 'Leaf', 'Trees', 'Car', 'Bike', 'Plane', 'Rocket', 'Gamepad2', 'Headphones', 'Camera', 'Music', 'Book', 'CheckCircle2'
+                              ].map(iconName => {
+                                const IconComponent = (LucideIcons as any)[iconName] || LucideIcons.Gift;
+                                const isSelected = (editing.icon || 'Gift') === iconName;
+                                return (
+                                  <button
+                                    key={iconName}
+                                    type="button"
+                                    onClick={() => setEditing({...editing, icon: iconName})}
+                                    className={cn(
+                                      "aspect-square flex items-center justify-center rounded-lg transition-all border",
+                                      isSelected 
+                                        ? "bg-indigo-500 border-indigo-400 text-white shadow-lg shadow-indigo-500/20 scale-105 z-10" 
+                                        : "bg-slate-900 border-slate-800 text-slate-500 hover:border-slate-700 hover:text-slate-300"
+                                    )}
+                                  >
+                                    <IconComponent size={14} />
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
 
                         {editing.type === 'coins' && (
                           <div className="space-y-1.5">

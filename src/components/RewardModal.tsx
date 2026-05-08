@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { RewardCard, Rarity } from '../types';
 import { cn } from '../lib/utils';
+import * as LucideIcons from 'lucide-react';
 import { Coins, Zap, Sparkles, Trophy, Gift } from 'lucide-react';
 
 interface RewardModalProps {
@@ -82,8 +83,15 @@ export const RewardModal: React.FC<RewardModalProps> = ({ coins, xp, choices, on
                 <span className="text-[10px] uppercase tracking-widest font-bold mb-2 opacity-80">
                   {card.rarity}
                 </span>
+
+                <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mb-4 border border-white/10 group-hover:scale-110 transition-transform">
+                  {(() => {
+                    const IconComp = (card.icon && (LucideIcons as any)[card.icon]) ? (LucideIcons as any)[card.icon] : (card.type === 'coins' ? Coins : card.type === 'xp' ? Zap : Gift);
+                    return <IconComp size={32} className="text-white" />;
+                  })()}
+                </div>
                 
-                <h4 className="text-lg font-bold text-white mb-2 leading-tight">
+                <h4 className="text-lg font-bold text-white mb-2 leading-tight text-center">
                   {card.name}
                 </h4>
                 

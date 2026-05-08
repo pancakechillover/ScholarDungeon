@@ -26,14 +26,32 @@ function urlBase64ToUint8Array(base64String: string) {
 }
 
 
-export const TimerSettingsSection = ({ state, setState }: { state: any, setState: (fn: (prev: any) => any) => void }) => {
+import { RewardSettings } from './RewardSettings';
+
+export const TimerSettingsSection = ({ 
+  state, 
+  setState,
+  rewardPool,
+  onUpdateRewards,
+  onResetRewards,
+  onTabChange
+}: { 
+  state: any, 
+  setState: (fn: (prev: any) => any) => void,
+  rewardPool: RewardCard[],
+  onUpdateRewards: (p: RewardCard[]) => void,
+  onResetRewards?: () => void,
+  onTabChange?: (tab: any) => void
+}) => {
+  const isCritTalentActive = state.activeTalents?.includes('c3');
+
   return (
     <div className="space-y-10">
       {/* Target Timer Settings */}
       <div className="space-y-6 border-slate-800">
-        <div className="flex items-center gap-2 text-indigo-400 mb-6">
-          <Eye size={18} />
-          <h4 className="font-bold uppercase text-sm tracking-widest">UI Features</h4>
+        <div className="flex items-center gap-2.5 text-indigo-400 mb-6 pb-2">
+          <Eye size={20} />
+          <h4 className="text-lg font-bold uppercase tracking-widest pr-1">UI Features</h4>
         </div>
 
         <div className="flex flex-col gap-4 p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
@@ -151,92 +169,189 @@ export const TimerSettingsSection = ({ state, setState }: { state: any, setState
       </div>
 
       <div className="space-y-6 pt-6 border-t border-slate-800">
-        <div className="flex items-center gap-2 text-amber-400">
-          <Gift size={18} />
-          <h4 className="font-bold uppercase text-sm tracking-widest">Session Reward Settings</h4>
+        <div className="flex items-center gap-2.5 text-amber-400 mb-6 pb-2">
+          <Gift size={20} />
+          <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Session Reward Settings</h4>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-slate-500 uppercase">Base XP</label>
-            <input 
-              type="number" 
-              value={state.devBaseXP} 
-              onChange={e => setState(prev => ({ ...prev, devBaseXP: parseInt(e.target.value) }))}
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white"
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-slate-500 uppercase">Gold Drop Mode</label>
-            <div className="flex p-1 bg-slate-800 rounded-xl">
-              <button 
-                onClick={() => setState(prev => ({ ...prev, devCoinMode: 'fixed' }))}
-                className={cn("flex-1 py-1.5 rounded-lg text-xs font-bold transition-all", state.devCoinMode === 'fixed' ? "bg-indigo-600 text-white" : "text-slate-500")}
-              >
-                Fixed
-              </button>
-              <button 
-                onClick={() => setState(prev => ({ ...prev, devCoinMode: 'random' }))}
-                className={cn("flex-1 py-1.5 rounded-lg text-xs font-bold transition-all", state.devCoinMode === 'random' ? "bg-indigo-600 text-white" : "text-slate-500")}
-              >
-                Random
-              </button>
-            </div>
-          </div>
-          {state.devCoinMode === 'fixed' ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-6">
+          {/* XP SETTINGS */}
+          <div className="space-y-4 p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
             <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-500 uppercase">Base Gold</label>
-              <input 
-                type="number" 
-                value={state.devBaseCoins} 
-                onChange={e => setState(prev => ({ ...prev, devBaseCoins: parseInt(e.target.value) }))}
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white"
-              />
-            </div>
-          ) : (
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-500 uppercase">Gold Range (Min - Max)</label>
-              <div className="flex gap-2">
-                <input 
-                  type="number" 
-                  value={state.devMinCoins} 
-                  onChange={e => setState(prev => ({ ...prev, devMinCoins: parseInt(e.target.value) }))}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-center"
-                  placeholder="Min"
-                />
-                <span className="text-slate-500 flex items-center">-</span>
-                <input 
-                  type="number" 
-                  value={state.devMaxCoins} 
-                  onChange={e => setState(prev => ({ ...prev, devMaxCoins: parseInt(e.target.value) }))}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-center"
-                  placeholder="Max"
-                />
+              <label className="text-xs font-bold text-slate-500 uppercase">XP Drop Mode</label>
+              <div className="flex p-1 bg-slate-800 rounded-xl">
+                <button 
+                  onClick={() => setState(prev => ({ ...prev, devXpMode: 'fixed' }))}
+                  className={cn("flex-1 py-1.5 rounded-lg text-xs font-bold transition-all", state.devXpMode !== 'random' ? "bg-indigo-600 text-white" : "text-slate-500")}
+                >
+                  Fixed
+                </button>
+                <button 
+                  onClick={() => setState(prev => ({ ...prev, devXpMode: 'random' }))}
+                  className={cn("flex-1 py-1.5 rounded-lg text-xs font-bold transition-all", state.devXpMode === 'random' ? "bg-indigo-600 text-white" : "text-slate-500")}
+                >
+                  Random
+                </button>
               </div>
             </div>
-          )}
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-slate-500 uppercase">Crit Chance (0.0 to 1.0)</label>
-            <input 
-              type="number" 
-              step="0.01"
-              value={state.devCritChance} 
-              onChange={e => setState(prev => ({ ...prev, devCritChance: parseFloat(e.target.value) }))}
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white"
-            />
-            <p className="text-xs text-slate-500">1.0 = 100% chance</p>
+            {state.devXpMode !== 'random' ? (
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-500 uppercase">Base XP</label>
+                <input 
+                  type="number" 
+                  value={state.devBaseXP ?? 100} 
+                  onChange={e => setState(prev => ({ ...prev, devBaseXP: parseInt(e.target.value) }))}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white"
+                />
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-500 uppercase">XP Range (Min - Max)</label>
+                <div className="flex gap-2">
+                  <input 
+                    type="number" 
+                    value={state.devMinXP ?? 50} 
+                    onChange={e => setState(prev => ({ ...prev, devMinXP: parseInt(e.target.value) }))}
+                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-center"
+                    placeholder="Min"
+                  />
+                  <span className="text-slate-500 flex items-center">-</span>
+                  <input 
+                    type="number" 
+                    value={state.devMaxXP ?? 150} 
+                    onChange={e => setState(prev => ({ ...prev, devMaxXP: parseInt(e.target.value) }))}
+                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-center"
+                    placeholder="Max"
+                  />
+                </div>
+              </div>
+            )}
           </div>
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-slate-500 uppercase">Crit Multiplier</label>
-            <input 
-              type="number" 
-              value={state.devCritMultiplier} 
-              onChange={e => setState(prev => ({ ...prev, devCritMultiplier: parseInt(e.target.value) }))}
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white"
-            />
+
+          {/* GOLD SETTINGS */}
+          <div className="space-y-4 p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-500 uppercase">Gold Drop Mode</label>
+              <div className="flex p-1 bg-slate-800 rounded-xl">
+                <button 
+                  onClick={() => setState(prev => ({ ...prev, devCoinMode: 'fixed' }))}
+                  className={cn("flex-1 py-1.5 rounded-lg text-xs font-bold transition-all", state.devCoinMode !== 'random' ? "bg-amber-600 text-white" : "text-slate-500")}
+                >
+                  Fixed
+                </button>
+                <button 
+                  onClick={() => setState(prev => ({ ...prev, devCoinMode: 'random' }))}
+                  className={cn("flex-1 py-1.5 rounded-lg text-xs font-bold transition-all", state.devCoinMode === 'random' ? "bg-amber-600 text-white" : "text-slate-500")}
+                >
+                  Random
+                </button>
+              </div>
+            </div>
+            {state.devCoinMode !== 'random' ? (
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-500 uppercase">Base Gold</label>
+                <input 
+                  type="number" 
+                  value={state.devBaseCoins ?? 10} 
+                  onChange={e => setState(prev => ({ ...prev, devBaseCoins: parseInt(e.target.value) }))}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white"
+                />
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-500 uppercase">Gold Range (Min - Max)</label>
+                <div className="flex gap-2">
+                  <input 
+                    type="number" 
+                    value={state.devMinCoins ?? 5} 
+                    onChange={e => setState(prev => ({ ...prev, devMinCoins: parseInt(e.target.value) }))}
+                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-center"
+                    placeholder="Min"
+                  />
+                  <span className="text-slate-500 flex items-center">-</span>
+                  <input 
+                    type="number" 
+                    value={state.devMaxCoins ?? 15} 
+                    onChange={e => setState(prev => ({ ...prev, devMaxCoins: parseInt(e.target.value) }))}
+                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-center"
+                    placeholder="Max"
+                  />
+                </div>
+              </div>
+            )}
           </div>
         </div>
+        <div className="p-5 bg-slate-900/40 rounded-3xl border border-slate-800 space-y-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Crit Chance (0.0 to 1.0)</label>
+                <button 
+                  onClick={() => onTabChange?.('talents')}
+                  className={cn(
+                    "flex items-center gap-1.2 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest transition-all",
+                    isCritTalentActive 
+                      ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" 
+                      : "bg-amber-500/10 text-amber-500 border border-amber-500/20 animate-pulse"
+                  )}
+                >
+                  {isCritTalentActive ? <Check size={10} /> : <AlertTriangle size={10} />}
+                  {isCritTalentActive ? 'Active' : 'Missing Talent'}
+                </button>
+              </div>
+              <input 
+                type="number" 
+                step="0.01"
+                min="0"
+                max="1"
+                value={state.devCritChance} 
+                onChange={e => setState(prev => ({ ...prev, devCritChance: parseFloat(e.target.value) }))}
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white font-mono"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Crit Multiplier</label>
+              <input 
+                type="number" 
+                min="1"
+                value={state.devCritMultiplier} 
+                onChange={e => setState(prev => ({ ...prev, devCritMultiplier: parseInt(e.target.value) }))}
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white font-mono"
+              />
+            </div>
+          </div>
+
+          <div 
+            className={cn(
+              "p-3 rounded-xl border transition-all cursor-pointer group",
+              isCritTalentActive 
+                ? "bg-slate-800/30 border-slate-700/50 hover:bg-slate-800/50" 
+                : "bg-amber-500/5 border-amber-500/10 hover:bg-amber-500/10"
+            )}
+            onClick={() => onTabChange?.('talents')}
+          >
+            <p 
+              className={cn(
+                "text-xs leading-relaxed text-center",
+                isCritTalentActive ? "text-slate-400" : "text-amber-500/90"
+              )}
+            >
+              <Sparkles size={12} className="inline mr-1.5 mb-0.5" />
+              Effect requires <strong className="text-indigo-400 underline decoration-indigo-400/30 underline-offset-2">Critical Intuition</strong> talent (Fate Dice tier 3) to be enabled. 
+              <span className="block sm:inline sm:ml-1 opacity-70 italic font-medium">
+                {isCritTalentActive ? " (Currently active - Configuration is effective)" : " (Currently disabled - Click here to unlock)"}
+              </span>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Rewards Management Section */}
+      <div className="space-y-6 pt-10 border-t border-slate-800">
+        <div className="flex items-center gap-2.5 text-indigo-400 mb-6 pb-2">
+          <Package size={20} />
+          <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Reward Pool Management</h4>
+        </div>
+        <RewardSettings pool={rewardPool} onUpdate={onUpdateRewards} onReset={onResetRewards} />
       </div>
     </div>
   );
