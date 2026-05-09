@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v4.7.2';
+export const APP_VERSION = 'v4.7.3';
 export const LAST_UPDATE_DATE = '2026-05-09';
-export const LAST_UPDATE_TIME = '07:59:00';
+export const LAST_UPDATE_TIME = '08:23:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,17 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v4.7.3',
+    date: '2026-05-09',
+    time: '08:23:00',
+    title: 'Closed Book Layout & Scrollbar Polish',
+    items: [
+      { category: 'UI', description: 'Added Front Cover and Back Cover states to the Guide Book, creating realistic closed states at the start and end of navigation.' },
+      { category: 'UI', description: 'Removed internal page scrolling, ensuring all chapter content comfortably fits within a single page spread without scrollbars.' },
+      { category: 'UX', description: 'Synchronized textbook font sizes to match the application\'s base text metrics for consistent readability.' }
+    ]
+  },
   {
     version: 'v4.7.2',
     date: '2026-05-09',

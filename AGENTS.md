@@ -21,7 +21,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors:** When designing UI elements that highlight based on themes, note that ONLY `indigo-400`, `indigo-500`, and `indigo-600` are overridden by the custom theme variables in `index.css`. DO NOT use `indigo-300` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v4.7.2
+- **Current Version:** v4.7.3
 - **Last Update Date:** 2026-05-09
 
 ## Dark Themes Definition
@@ -46,6 +46,10 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v4.7.3 (2026-05-09):** Closed Book Layout & Scrollbar Polish.
+  - *UI:* Added Front Cover and Back Cover states to the Guide Book, creating realistic closed states at the start and end of navigation.
+  - *UI:* Removed internal page scrolling, ensuring all chapter content comfortably fits within a single page spread without scrollbars.
+  - *UX:* Synchronized textbook font sizes to match the application's base text metrics for consistent readability.
 - **v4.7.2 (2026-05-09):** Guide Book Realistic Animation & B5 Aspect Ratio.
   - *UI:* Restructured Guide Book aspect ratio to precisely simulate realistic B5 dimensions for single (mobile) and double pages (desktop).
   - *UX:* Improved Framer Motion 3D page flip animation to accurately simulate a book page swinging from the spine rather than spinning the entire layout.
