@@ -19,6 +19,9 @@ export const GuideBookModal: React.FC<GuideBookModalProps> = ({
   const [isMobile, setIsMobile] = useState(false);
   const [pageIndex, setPageIndex] = useState(initialPage * 2);
   const [direction, setDirection] = useState(1);
+  const [isFlipping, setIsFlipping] = useState(false);
+  const [flipDir, setFlipDir] = useState(1);
+  const [oldPages, setOldPages] = useState<number[]>([]);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 640);
