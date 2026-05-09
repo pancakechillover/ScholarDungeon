@@ -21,7 +21,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors:** When designing UI elements that highlight based on themes, note that ONLY `indigo-400`, `indigo-500`, and `indigo-600` are overridden by the custom theme variables in `index.css`. DO NOT use `indigo-300` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v4.6.4
+- **Current Version:** v4.6.6
 - **Last Update Date:** 2026-05-11
 
 ## Dark Themes Definition
@@ -46,6 +46,15 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v4.6.6 (2026-05-11):** Modal Polish & Reward History Verification.
+  - *Architecture:* Fully migrated all viewport-level modals to `createPortal`, ensuring they render at the root of the document for perfect alignment regardless of local scroll states.
+  - *UX:* Implementation of `useScrollLock` across all modals to stabilize background content during focus.
+  - *Fix:* Verified and polished the shop purchase logic to ensure items from the Merchant are reliably logged to the `RewardVault`.
+  - *Architecture:* Standardized all modal overlays to use a uniform background blur and high z-index stacking (`z-[9999]`).
+- **v4.6.5 (2026-05-11):** Universal Modal Integration.
+  - *Architecture:* Replaced all native browser-native confirmation dialogs (`window.confirm` and `alert`) with a custom, theme-aware `ConfirmModal` component across the entire application.
+  - *UX:* Integrated `ConfirmModal` into Developer Settings for security-sensitive actions and Dungeon Manager for task management confirmations.
+  - *Refactor:* Centralized modal logic into a reusable component with `framer-motion` animations and standardized visual states (danger, warning, info).
 - **v4.6.4 (2026-05-11):** Pool Management & Security UX.
   - *Feature:* Pool Renaming. Added a "Pool Name" field to the Gacha and Ichiban Kuji edit modals, allowing users to customize pool names easily.
   - *UX:* Reset Confirmations. Implemented "Double Check" warnings when resetting Gacha or Ichiban pools in both settings and shop views.

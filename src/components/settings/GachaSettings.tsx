@@ -11,6 +11,7 @@ import { cn, getXPForLevel, getDefaultRewardForLevel } from '../../lib/utils';
 import { playSound } from '../../lib/sound';
 import { SpinnerInput } from '../SpinnerInput';
 import { RARITY_COLORS, getColorClass } from '../../lib/colors';
+import { ConfirmModal } from '../ConfirmModal';
 
 // Helper to convert VAPID key
 function urlBase64ToUint8Array(base64String: string) {
@@ -33,11 +34,27 @@ export const GachaSettings = ({ pools, onUpdate }: { pools: GachaPool[], onUpdat
   const [editing, setEditing] = useState<GachaPool | null>(null);
   const [isRenaming, setIsRenaming] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
+  const [modalConfig, setModalConfig] = useState<{ 
+    isOpen: boolean; 
+    title: string; 
+    message: string; 
+    onConfirm?: () => void; 
+    confirmText?: string;
+    type?: 'danger' | 'warning' | 'info';
+    isAlert?: boolean;
+  }>({ isOpen: false, title: '', message: '' });
 
   const handleExport = (pool: GachaPool) => {
     const data = JSON.stringify(pool, null, 2);
     navigator.clipboard.writeText(data);
-    alert("Pool configuration copied to clipboard!");
+    setModalConfig({
+      isOpen: true,
+      title: "Export Successful",
+      message: "Pool configuration copied to clipboard!",
+      confirmText: "Got it",
+      type: "info",
+      isAlert: true
+    });
   };
 
   const handleImport = async () => {
@@ -56,9 +73,23 @@ export const GachaSettings = ({ pools, onUpdate }: { pools: GachaPool[], onUpdat
       };
 
       onUpdate([...pools, newPool]);
-      alert("Pool imported successfully!");
+      setModalConfig({
+        isOpen: true,
+        title: "Import Successful",
+        message: "Pool imported successfully!",
+        confirmText: "Great",
+        type: "info",
+        isAlert: true
+      });
     } catch (e) {
-      alert("Failed to import pool. Make sure valid JSON is in your clipboard.");
+      setModalConfig({
+        isOpen: true,
+        title: "Import Failed",
+        message: "Failed to import pool. Make sure valid JSON is in your clipboard.",
+        confirmText: "Close",
+        type: "danger",
+        isAlert: true
+      });
     }
   };
 
@@ -96,9 +127,14 @@ export const GachaSettings = ({ pools, onUpdate }: { pools: GachaPool[], onUpdat
 
   const deletePool = (id: string) => {
     if (pools.length <= 1) return;
-    if (window.confirm("Are you sure you want to delete this pool?")) {
-      onUpdate(pools.filter(p => p.id !== id));
-    }
+    setModalConfig({
+      isOpen: true,
+      title: "Delete Pool?",
+      message: "Are you sure you want to delete this pool? This action cannot be undone.",
+      confirmText: "Delete",
+      type: "danger",
+      onConfirm: () => onUpdate(pools.filter(p => p.id !== id))
+    });
   };
 
   const renamePool = (id: string) => {
@@ -386,20 +422,27 @@ export const GachaSettings = ({ pools, onUpdate }: { pools: GachaPool[], onUpdat
                   <div className="flex items-center gap-2">
                     <button 
                       onClick={() => {
-                        if (window.confirm("Restore this pool to its default settings? This will overwrite your current configuration.")) {
-                          const defaultPool = INITIAL_GACHA.find(p => p.id === editing.id);
-                          if (defaultPool) {
-                            const sortedDefault = {
-                              ...defaultPool,
-                              items: [...defaultPool.items].sort((a, b) => {
-                                if (a.rarity === 'LastOne') return -1;
-                                if (b.rarity === 'LastOne') return 1;
-                                return 0;
-                              })
-                            };
-                            setEditing(JSON.parse(JSON.stringify(sortedDefault)));
+                        setModalConfig({
+                          isOpen: true,
+                          title: "Restore Defaults?",
+                          message: "Restore this pool to its default settings? This will overwrite your current configuration.",
+                          confirmText: "Restore Defaults",
+                          type: "warning",
+                          onConfirm: () => {
+                            const defaultPool = INITIAL_GACHA.find(p => p.id === editing.id);
+                            if (defaultPool) {
+                              const sortedDefault = {
+                                ...defaultPool,
+                                items: [...defaultPool.items].sort((a, b) => {
+                                  if (a.rarity === 'LastOne') return -1;
+                                  if (b.rarity === 'LastOne') return 1;
+                                  return 0;
+                                })
+                              };
+                              setEditing(JSON.parse(JSON.stringify(sortedDefault)));
+                            }
                           }
-                        }
+                        });
                       }}
                       className="px-3 py-1 bg-slate-800 text-slate-400 rounded-lg text-[10px] font-bold hover:text-white transition-colors"
                     >
@@ -752,22 +795,50 @@ export const GachaSettings = ({ pools, onUpdate }: { pools: GachaPool[], onUpdat
                   <button 
                     onClick={() => { 
                       if (!editing.name.trim()) {
-                        alert("Please enter a pool name.");
+                        setModalConfig({
+                          isOpen: true,
+                          title: "Incomplete Data",
+                          message: "Please enter a pool name.",
+                          confirmText: "Understood",
+                          type: "warning",
+                          isAlert: true
+                        });
                         return;
                       }
                       if (editing.cost === '' as any || isNaN(editing.cost as number) || (editing.cost as number) < 0) {
-                        alert("Please enter a valid cost per draw.");
+                        setModalConfig({
+                          isOpen: true,
+                          title: "Invalid Input",
+                          message: "Please enter a valid cost per draw.",
+                          confirmText: "Understood",
+                          type: "warning",
+                          isAlert: true
+                        });
                         return;
                       }
                       if (editing.type === 'gacha') {
                         const rarities = editing.rarities || [];
                         for (const rarity of rarities) {
                           if (rarity.weight === '' as any || isNaN(rarity.weight as number) || (rarity.weight as number) <= 0) {
-                            alert("Please enter a valid weight (greater than 0) for all rarity tiers.");
+                            setModalConfig({
+                              isOpen: true,
+                              title: "Invalid Input",
+                              message: "Please enter a valid weight (greater than 0) for all rarity tiers.",
+                              confirmText: "Understood",
+                              type: "warning",
+                              isAlert: true
+                            });
                             return;
                           }
                           if (!rarity.name.trim()) {
-                            alert("Please enter a name for all rarity tiers.");
+                            setModalConfig({
+                              isOpen: true,
+                              title: "Incomplete Data",
+                              message: "Please enter a name for all rarity tiers.",
+                              confirmText: "Understood",
+                              type: "warning",
+                              isAlert: true
+                            });
                             return;
                           }
                         }
@@ -775,7 +846,14 @@ export const GachaSettings = ({ pools, onUpdate }: { pools: GachaPool[], onUpdat
                       if (editing.type === 'ichiban') {
                         for (const item of editing.items) {
                           if (item.rarity !== 'LastOne' && (item.count === '' as any || isNaN(item.count as number) || (item.count as number) < 0)) {
-                            alert("Please enter a valid quantity for all items.");
+                            setModalConfig({
+                              isOpen: true,
+                              title: "Invalid Input",
+                              message: "Please enter a valid quantity for all items.",
+                              confirmText: "Understood",
+                              type: "warning",
+                              isAlert: true
+                            });
                             return;
                           }
                         }
@@ -802,6 +880,17 @@ export const GachaSettings = ({ pools, onUpdate }: { pools: GachaPool[], onUpdat
         </AnimatePresence>,
         document.body
       )}
+
+      <ConfirmModal 
+        isOpen={modalConfig.isOpen}
+        onClose={() => setModalConfig({ ...modalConfig, isOpen: false })}
+        onConfirm={modalConfig.onConfirm}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        confirmText={modalConfig.confirmText}
+        type={modalConfig.type}
+        isAlert={modalConfig.isAlert}
+      />
     </div>
   );
 };

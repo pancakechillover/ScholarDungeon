@@ -4,6 +4,8 @@ import { Trophy, Sparkles, Star, Gift, Crown, CheckCircle2, ChevronLeft, Chevron
 import { cn } from '../lib/utils';
 import { ScratchCard } from './ScratchCard';
 import { playSound } from '../lib/sound';
+import { createPortal } from 'react-dom';
+import { useScrollLock } from '../hooks/useScrollLock';
 
 interface GachaResult {
   item: string;
@@ -31,6 +33,7 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({
   soundEnabled = true,
   soundVolume = 0.5
 }) => {
+  useScrollLock(true);
   const isMulti = results.length > 1;
   const isTenPull = results.length >= 10;
   // Separate LastOne prizes
@@ -202,16 +205,16 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({
     };
   };
 
-  return (
+  const modalContent = (
     <div 
-      className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/95 backdrop-blur-2xl overflow-hidden"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/95 backdrop-blur-2xl overflow-hidden border-0 m-0"
       onClick={() => canClose && onClose()}
     >
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="w-full max-w-7xl h-full flex flex-col py-8"
+        className="w-full max-w-7xl h-full flex flex-col py-8 relative"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="text-center mb-4 sm:mb-8 relative shrink-0">
@@ -542,4 +545,6 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({
       </motion.div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 };

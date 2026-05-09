@@ -21,6 +21,7 @@ import {
   Archive
 } from 'lucide-react';
 import { createPortal } from 'react-dom';
+import { useScrollLock } from '../hooks/useScrollLock';
 import { PageHeader } from './PageHeader';
 import { Timer } from './Timer';
 import { TimerSettings } from './TimerSettings';
@@ -148,6 +149,9 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
 }) => {
   const [showChestModal, setShowChestModal] = React.useState(false);
   const [activeTooltipId, setActiveTooltipId] = React.useState<string | null>(null);
+
+  useScrollLock(showBuildDetails || showChestModal);
+
 
   // Close tooltip when clicking outside
   React.useEffect(() => {
@@ -647,12 +651,12 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
       {createPortal(
         <AnimatePresence>
           {showBuildDetails && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm border-0 m-0">
               <motion.div
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
-                className="bg-slate-900 w-full max-w-md rounded-3xl border border-slate-700 overflow-hidden shadow-2xl"
+                className="bg-slate-900 w-full max-w-md rounded-3xl border border-slate-700 overflow-hidden shadow-2xl relative z-10"
               >
                 <div className="p-6 border-b border-slate-800 flex justify-between items-center">
                   <h3 className="text-xl font-bold text-white flex items-center gap-2">

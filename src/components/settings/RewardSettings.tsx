@@ -9,6 +9,7 @@ import { APP_VERSION, LAST_UPDATE_DATE, RELEASE_HISTORY } from '../../version';
 import { cn, getXPForLevel, getDefaultRewardForLevel } from '../../lib/utils';
 import { playSound } from '../../lib/sound';
 import { SpinnerInput } from '../SpinnerInput';
+import { ConfirmModal } from '../ConfirmModal';
 
 // Helper to convert VAPID key
 function urlBase64ToUint8Array(base64String: string) {
@@ -29,7 +30,15 @@ function urlBase64ToUint8Array(base64String: string) {
 
 export const RewardSettings = ({ pool, onUpdate, onReset }: { pool: RewardCard[], onUpdate: (p: RewardCard[]) => void, onReset?: () => void }) => {
   const [editing, setEditing] = useState<RewardCard | null>(null);
-  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [modalConfig, setModalConfig] = useState<{ 
+    isOpen: boolean; 
+    title: string; 
+    message: string; 
+    onConfirm?: () => void; 
+    confirmText?: string;
+    type?: 'danger' | 'warning' | 'info';
+    isAlert?: boolean;
+  }>({ isOpen: false, title: '', message: '' });
 
   const handleSave = (card: RewardCard) => {
     if (
@@ -38,7 +47,14 @@ export const RewardSettings = ({ pool, onUpdate, onReset }: { pool: RewardCard[]
       (card.limitCount !== undefined && (card.limitCount === '' as any || isNaN(card.limitCount) || (card.limitCount as number) < 0)) ||
       (card.limitPeriodDays !== undefined && (card.limitPeriodDays === '' as any || isNaN(card.limitPeriodDays) || (card.limitPeriodDays as number) < 0))
     ) {
-      alert("Please ensure all number inputs (Amount, Weight, Limits) are valid non-negative numbers.");
+      setModalConfig({
+        isOpen: true,
+        title: "Invalid Input",
+        message: "Please ensure all number inputs (Amount, Weight, Limits) are valid non-negative numbers.",
+        confirmText: "Got it",
+        type: "warning",
+        isAlert: true
+      });
       return;
     }
 
@@ -59,7 +75,14 @@ export const RewardSettings = ({ pool, onUpdate, onReset }: { pool: RewardCard[]
         <div className="flex gap-2">
           {onReset && (
             <button 
-              onClick={() => setShowResetConfirm(true)}
+              onClick={() => setModalConfig({
+                isOpen: true,
+                title: "Reset Loot Pool?",
+                message: "Are you sure you want to reset the entire Loot Pool to its default state? Your custom reward modifications will be lost.",
+                confirmText: "Reset Pool",
+                type: "warning",
+                onConfirm: onReset
+              })}
               className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-sm font-bold transition-colors"
               title="Reset to Defaults"
             >
@@ -143,9 +166,14 @@ export const RewardSettings = ({ pool, onUpdate, onReset }: { pool: RewardCard[]
                         <button onClick={() => setEditing(card)} className="p-1.5 text-slate-400 hover:text-indigo-400 hover:bg-slate-800 rounded-lg transition-colors focus:ring-2 focus:ring-indigo-500/50"><Edit2 size={14} /></button>
                         <button 
                           onClick={() => {
-                            if (window.confirm(`Are you sure you want to delete reward "${card.name}"?`)) {
-                              onUpdate(pool.filter(c => c.id !== card.id));
-                            }
+                            setModalConfig({
+                              isOpen: true,
+                              title: "Delete Reward?",
+                              message: `Are you sure you want to delete reward "${card.name}"?`,
+                              confirmText: "Delete",
+                              type: "danger",
+                              onConfirm: () => onUpdate(pool.filter(c => c.id !== card.id))
+                            });
                           }} 
                           className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-slate-800 rounded-lg transition-colors focus:ring-2 focus:ring-rose-500/50"
                         >
@@ -164,46 +192,16 @@ export const RewardSettings = ({ pool, onUpdate, onReset }: { pool: RewardCard[]
         )}
       </div>
 
-      {/* Reset Confirmation Modal */}
-      <AnimatePresence>
-        {showResetConfirm && (
-          <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-slate-900 p-8 rounded-[2rem] border border-slate-700 w-full max-w-md shadow-2xl"
-            >
-              <div className="flex flex-col items-center text-center space-y-4">
-                <div className="p-4 bg-amber-500/10 text-amber-500 rounded-full">
-                  <AlertTriangle size={32} />
-                </div>
-                <h4 className="text-xl font-bold text-white">Reset Loot Pool?</h4>
-                <p className="text-slate-400 text-sm leading-relaxed">
-                  Are you sure you want to reset the entire Loot Pool to its default state? Your custom reward modifications will be lost.
-                </p>
-                <div className="flex gap-3 w-full pt-4">
-                  <button
-                    onClick={() => setShowResetConfirm(false)}
-                    className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-all"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={() => {
-                      onReset?.();
-                      setShowResetConfirm(false);
-                    }}
-                    className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold shadow-lg shadow-indigo-600/20 transition-all"
-                  >
-                    Confirm Reset
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      <ConfirmModal 
+        isOpen={modalConfig.isOpen}
+        onClose={() => setModalConfig({ ...modalConfig, isOpen: false })}
+        onConfirm={modalConfig.onConfirm}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        confirmText={modalConfig.confirmText}
+        type={modalConfig.type}
+        isAlert={modalConfig.isAlert}
+      />
 
       {createPortal(
         <AnimatePresence>

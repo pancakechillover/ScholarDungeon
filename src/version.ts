@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v4.6.4';
+export const APP_VERSION = 'v4.6.6';
 export const LAST_UPDATE_DATE = '2026-05-11';
-export const LAST_UPDATE_TIME = '16:45:00';
+export const LAST_UPDATE_TIME = '18:00:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,29 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v4.6.6',
+    date: '2026-05-11',
+    time: '18:00:00',
+    title: 'Modal Polish & Reward Persistence',
+    items: [
+      { category: 'UX', description: 'Portal Integration. Migrated all primary modals (Reward, Level Up, Gacha, Daily Summary) to React Portals for perfect centering and viewport isolation.' },
+      { category: 'UX', description: 'Scroll Management. Integrated useScrollLock across all modals to prevent background content jumping while ensuring modals remain interactive.' },
+      { category: 'Fix', description: 'Reward History. Verified that merchant shop item purchases are accurately logged in the Reward Vault even across session transitions.' },
+      { category: 'UI', description: 'Explore View Polish. Updated the Reward Breakdown modal to use Portals and standardized z-index layers for depth consistency.' }
+    ]
+  },
+  {
+    version: 'v4.6.5',
+    date: '2026-05-11',
+    time: '17:15:00',
+    title: 'Universal Modal Integration',
+    items: [
+      { category: 'Architecture', description: 'Replaced all native browser-native confirmation dialogs (window.confirm and alert) with a custom, theme-aware ConfirmModal component across the entire application.' },
+      { category: 'UX', description: 'Integrated ConfirmModal into Developer Settings for security-sensitive actions and Dungeon Manager for task management confirmations.' },
+      { category: 'Refactor', description: 'Centralized modal logic into a reusable component with framer-motion animations and standardized visual states (danger, warning, info).' }
+    ]
+  },
   {
     version: 'v4.6.4',
     date: '2026-05-11',

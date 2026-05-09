@@ -1316,20 +1316,24 @@ export function useGameState() {
         return i;
       });
 
-      addRewardToHistory({
+      const newItem: RewardHistoryItem = {
+        id: Math.random().toString(36).substring(2, 11),
         name: item.name,
         rarity: 'rare',
         source: 'Shop',
+        timestamp: new Date().toISOString(),
         type: 'item',
-      });
+        redeemed: false
+      };
 
       return {
         ...prev,
         coins: prev.coins - item.price,
-        shopItems: newShopItems
+        shopItems: newShopItems,
+        rewardHistory: [newItem, ...prev.rewardHistory]
       };
     });
-  }, [addRewardToHistory]);
+  }, []);
 
   const selectReward = useCallback((reward: RewardCard, sessionId: string) => {
     addRewardToHistory({

@@ -21,13 +21,25 @@ const rarityColors: Record<Rarity, string> = {
   mythic: 'from-rose-400 to-rose-600 border-rose-400',
 };
 
+import { createPortal } from 'react-dom';
+import { useScrollLock } from '../hooks/useScrollLock';
+
+interface RewardModalProps {
+  coins: number;
+  xp: number;
+  choices: RewardCard[];
+  onSelect: (card: RewardCard) => void;
+}
+
 export const RewardModal: React.FC<RewardModalProps> = ({ coins, xp, choices, onSelect }) => {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+  useScrollLock(true);
+
+  const modalContent = (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md border-0 m-0">
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="max-w-4xl w-full bg-slate-900 rounded-3xl border border-slate-700 overflow-hidden shadow-2xl"
+        className="max-w-4xl w-full bg-slate-900 rounded-3xl border border-slate-700 overflow-hidden shadow-2xl relative"
       >
         <div className="p-8 text-center border-b border-slate-800">
           <motion.h2 
@@ -120,4 +132,6 @@ export const RewardModal: React.FC<RewardModalProps> = ({ coins, xp, choices, on
       </motion.div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 };

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ShopItem, GachaPool, Rarity } from '../types';
 import { ShoppingBag, Sparkles, Trophy, Coins, RefreshCw, HelpCircle, Zap, Flame, Gem, Target, Star, Heart, Shield, Sword, Coffee, Pizza, Gift, Package, Camera, Music, Book, Gamepad2, Ghost, Moon, Sun, Cloud, Anchor, Compass, Map, Key, Lock, Unlock, Bell, BellOff, Eye, EyeOff, Search, Settings, Trash2, Edit2, Plus, X, Check, CheckCircle2, AlertCircle, Info, HelpCircle as HelpIcon, Ticket, Crown } from 'lucide-react';
 import { PageHeader } from './PageHeader';
+import { ConfirmModal } from './ConfirmModal';
 import { SlotMachine } from './icons/SlotMachine';
 import { cn } from '../lib/utils';
 import { getColorClass, RARITY_COLORS } from '../lib/colors';
@@ -38,6 +39,7 @@ export const Shop = React.memo<ShopProps>(({
 }) => {
   const [activeTab, setActiveTab] = useState<'shop' | 'gacha' | 'ichiban'>('shop');
   const [showProbabilities, setShowProbabilities] = useState(false);
+  const [confirmResetId, setConfirmResetId] = useState<string | null>(null);
   
   const gachaPoolsList = gachaPools.filter(p => p.type === 'gacha');
   const ichibanPoolsList = gachaPools.filter(p => p.type === 'ichiban');
@@ -334,11 +336,7 @@ export const Shop = React.memo<ShopProps>(({
                       </>
                     ) : (
                       <button
-                        onClick={() => {
-                          if (window.confirm("Are you sure you want to reset this pool? All remaining items will be restored to their initial quantities.")) {
-                            onResetIchiban(ichibanPool.id);
-                          }
-                        }}
+                        onClick={() => setConfirmResetId(ichibanPool.id)}
                         className="w-full py-4 rounded-2xl font-bold bg-indigo-600 hover:bg-indigo-500 text-white transition-all flex items-center justify-center space-x-2"
                       >
                         <RefreshCw size={18} />
@@ -434,6 +432,18 @@ export const Shop = React.memo<ShopProps>(({
           </motion.div>
         )}
       </AnimatePresence>
+
+      <ConfirmModal 
+        isOpen={!!confirmResetId}
+        onClose={() => setConfirmResetId(null)}
+        onConfirm={() => {
+          if (confirmResetId) onResetIchiban(confirmResetId);
+        }}
+        title="Reset Ichiban Pool?"
+        message="Are you sure you want to reset this pool? All remaining items will be restored to their initial quantities."
+        confirmText="Confirm Reset"
+        type="warning"
+      />
     </div>
   );
 });

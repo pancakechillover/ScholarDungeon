@@ -8,6 +8,7 @@ import * as LucideIcons from 'lucide-react';
 import { APP_VERSION, LAST_UPDATE_DATE, RELEASE_HISTORY } from '../../version';
 import { cn, getXPForLevel, getDefaultRewardForLevel } from '../../lib/utils';
 import { playSound } from '../../lib/sound';
+import { ConfirmModal } from '../ConfirmModal';
 
 // Helper to convert VAPID key
 function urlBase64ToUint8Array(base64String: string) {
@@ -28,6 +29,16 @@ function urlBase64ToUint8Array(base64String: string) {
 import { ActivityTimeSettings } from './ActivityTimeSettings';
 
 export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { state: any, setState: (fn: (prev: any) => any) => void, setShowClearConfirm: (show: boolean) => void }) => {
+  const [modalConfig, setModalConfig] = useState<{ 
+    isOpen: boolean; 
+    title: string; 
+    message: string; 
+    onConfirm?: () => void; 
+    confirmText?: string;
+    type?: 'danger' | 'warning' | 'info';
+    isAlert?: boolean;
+  }>({ isOpen: false, title: '', message: '' });
+
   const themes = [
     { id: 'night', name: 'Night', color: '#4F39F6', icon: Moon, iconColor: '#f1efff' },
     { id: 'daylight', name: 'Daylight', color: '#f8fafc', icon: CloudSun, iconColor: '#4F39F6' },
@@ -88,7 +99,14 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
       const permission = await Notification.requestPermission();
       if (permission !== 'granted') {
         console.warn('Notification permission denied:', permission);
-        alert(`Notification permission ${permission}. Please enable it in your browser settings to receive alerts.`);
+        setModalConfig({
+          isOpen: true,
+          title: "Permission Denied",
+          message: `Notification permission ${permission}. Please enable it in your browser settings to receive alerts.`,
+          confirmText: "Understood",
+          type: "warning",
+          isAlert: true
+        });
         return;
       }
 
@@ -162,9 +180,23 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
       console.error('Failed to subscribe:', error);
       const msg = error.message || 'Unknown error';
       if (msg.includes('push service error')) {
-        alert(`Push Service Error on Android detected.\n\nThis is a known Android limitation issue. We have applied a patch (gcm_sender_id) in version 1.7.2.\n\nTo fix:\n1. Delete/Uninstall this PWA from your phone.\n2. In your browser settings, clear cookies/cache for this site.\n3. Reload the site and install the PWA again.`);
+        setModalConfig({
+          isOpen: true,
+          title: "Android Limitation",
+          message: "Push Service Error on Android detected.\n\nThis is a known Android limitation issue. We have applied a patch (gcm_sender_id) in version 1.7.2.\n\nTo fix:\n1. Delete/Uninstall this PWA from your phone.\n2. In your browser settings, clear cookies/cache for this site.\n3. Reload the site and install the PWA again.",
+          confirmText: "Got it",
+          type: "warning",
+          isAlert: true
+        });
       } else {
-        alert(`Failed to enable notifications: ${msg}.\n\nCommon fixes:\n1. Open as New Tab\n2. Re-install PWA\n3. Reset SW in Dev Tools`);
+        setModalConfig({
+          isOpen: true,
+          title: "Enable Failed",
+          message: `Failed to enable notifications: ${msg}.\n\nCommon fixes:\n1. Open as New Tab\n2. Re-install PWA\n3. Reset SW in Dev Tools`,
+          confirmText: "Close",
+          type: "danger",
+          isAlert: true
+        });
       }
     } finally {
       setIsSubscribing(false);
@@ -173,7 +205,14 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
 
   const forceSyncNotifications = async () => {
     if (!state.secretCode) {
-      alert('Please link your account with a Secret Code first to sync notifications.');
+      setModalConfig({
+        isOpen: true,
+        title: "Sync Required",
+        message: "Please link your account with a Secret Code first to sync notifications.",
+        confirmText: "Got it",
+        type: "warning",
+        isAlert: true
+      });
       return;
     }
     
@@ -233,14 +272,28 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
       });
 
       if (res.ok) {
-        alert('Notifications synced successfully!');
+        setModalConfig({
+          isOpen: true,
+          title: "Sync Successful",
+          message: "Notifications synced successfully!",
+          confirmText: "Great",
+          type: "info",
+          isAlert: true
+        });
         setState(prev => ({ ...prev, pushEnabled: true, pushSubscription: subscription }));
       } else {
         throw new Error(`Server error: ${res.status}`);
       }
     } catch (error) {
       console.error('Force sync failed:', error);
-      alert('Failed to sync notifications. Please try toggling the switch off and on again.');
+      setModalConfig({
+        isOpen: true,
+        title: "Sync Failed",
+        message: "Failed to sync notifications. Please try toggling the switch off and on again.",
+        confirmText: "Close",
+        type: "danger",
+        isAlert: true
+      });
     } finally {
       setIsSubscribing(false);
     }
@@ -294,10 +347,24 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
           
           window.location.reload();
         } else {
-          alert('Invalid save file format.');
+          setModalConfig({
+            isOpen: true,
+            title: "Import Error",
+            message: "Invalid save file format.",
+            confirmText: "Close",
+            type: "danger",
+            isAlert: true
+          });
         }
       } catch (error) {
-        alert('Error parsing save file.');
+        setModalConfig({
+          isOpen: true,
+          title: "Import Failure",
+          message: "Error parsing save file or invalid JSON.",
+          confirmText: "Close",
+          type: "danger",
+          isAlert: true
+        });
         console.error(error);
       }
     };
@@ -305,33 +372,55 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
   };
 
   const resetPushState = async () => {
-    if (!confirm('This will clear all push subscriptions for this secret code on the server and locally. Proceed?')) return;
-    setIsSubscribing(true);
-    try {
-      // 1. Unsubscribe locally
-      const registration = await navigator.serviceWorker.getRegistration();
-      if (registration) {
-        const subscription = await registration.pushManager.getSubscription();
-        if (subscription) await subscription.unsubscribe();
+    setModalConfig({
+      isOpen: true,
+      title: "Reset Push State?",
+      message: "This will clear all push subscriptions for this secret code on the server and locally. Proceed?",
+      confirmText: "Clear Everything",
+      type: "danger",
+      onConfirm: async () => {
+        setIsSubscribing(true);
+        try {
+          // 1. Unsubscribe locally
+          const registration = await navigator.serviceWorker.getRegistration();
+          if (registration) {
+            const subscription = await registration.pushManager.getSubscription();
+            if (subscription) await subscription.unsubscribe();
+          }
+          
+          // 2. Clear server
+          if (state.secretCode) {
+            await fetch('/api/push/subscribe', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ secretCode: state.secretCode, subscription: null })
+            });
+          }
+          
+          setState(prev => ({ ...prev, pushEnabled: false, pushSubscription: null }));
+          setModalConfig({
+            isOpen: true,
+            title: "Reset Complete",
+            message: "Push state reset successfully. You can now try re-enabling notifications.",
+            confirmText: "Got it",
+            type: "info",
+            isAlert: true
+          });
+        } catch (err) {
+          console.error('Reset failed:', err);
+          setModalConfig({
+            isOpen: true,
+            title: "Reset Failed",
+            message: "Failed to reset: " + (err as Error).message,
+            confirmText: "Close",
+            type: "danger",
+            isAlert: true
+          });
+        } finally {
+          setIsSubscribing(false);
+        }
       }
-      
-      // 2. Clear server
-      if (state.secretCode) {
-        await fetch('/api/push/subscribe', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ secretCode: state.secretCode, subscription: null })
-        });
-      }
-      
-      setState(prev => ({ ...prev, pushEnabled: false, pushSubscription: null }));
-      alert('Push state reset successfully. You can now try re-enabling notifications.');
-    } catch (err) {
-      console.error('Reset failed:', err);
-      alert('Failed to reset: ' + (err as Error).message);
-    } finally {
-      setIsSubscribing(false);
-    }
+    });
   };
 
   return (
@@ -648,6 +737,16 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
           </button>
         </div>
       </div>
+      <ConfirmModal 
+        isOpen={modalConfig.isOpen}
+        onClose={() => setModalConfig({ ...modalConfig, isOpen: false })}
+        onConfirm={modalConfig.onConfirm}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        confirmText={modalConfig.confirmText}
+        type={modalConfig.type}
+        isAlert={modalConfig.isAlert}
+      />
     </div>
   );
 };

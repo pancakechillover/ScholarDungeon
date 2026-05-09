@@ -3,6 +3,9 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Trophy, HelpCircle, Zap, Coins, Scroll } from 'lucide-react';
 import { AppState } from '../types';
 
+import { createPortal } from 'react-dom';
+import { useScrollLock } from '../hooks/useScrollLock';
+
 interface LevelUpModalProps {
   levels: number[] | null;
   onClose: () => void;
@@ -20,19 +23,20 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
   isTalentLevel,
   getNextTalentLevel
 }) => {
+  useScrollLock(!!levels && levels.length > 0);
   const currentLevelUp = levels?.[0];
 
   if (!levels || !currentLevelUp) return null;
 
-  return (
-    <AnimatePresence>
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+  const modalContent = (
+    <AnimatePresence mode="wait">
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm border-0 m-0">
         <motion.div
           key={currentLevelUp}
           initial={{ scale: 0.9, opacity: 0, y: 20 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.9, opacity: 0, y: -20 }}
-          className="bg-slate-900 w-full max-w-md rounded-3xl border border-indigo-500/30 overflow-hidden text-center"
+          className="bg-slate-900 w-full max-w-md rounded-3xl border border-indigo-500/30 overflow-hidden text-center relative"
         >
           <div className="p-8 bg-gradient-to-b from-indigo-500/10 to-transparent">
             <div className="w-20 h-20 bg-indigo-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -117,4 +121,6 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
       </div>
     </AnimatePresence>
   );
+
+  return createPortal(modalContent, document.body);
 };

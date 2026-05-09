@@ -5,6 +5,7 @@ import { Plus, Target, Sword, CheckCircle2, ChevronRight, Trash2, FolderPlus, Fo
 import { PageHeader } from './PageHeader';
 import { cn } from '../lib/utils';
 import { SpinnerInput } from './SpinnerInput';
+import { ConfirmModal } from './ConfirmModal';
 
 interface DungeonManagerProps {
   dungeons: Dungeon[];
@@ -54,8 +55,15 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
   const [editingSub, setEditingSub] = useState<Dungeon | null>(null);
   const [expandedMajors, setExpandedMajors] = useState<string[]>([]);
   const [expandedSubDungeons, setExpandedSubDungeons] = useState<string[]>([]);
-  const [deletingDungeon, setDeletingDungeon] = useState<{ id: string, name: string, isMajor: boolean } | null>(null);
-  const [forceCompletePrompt, setForceCompletePrompt] = useState<{ id: string, name: string } | null>(null);
+  const [modalConfig, setModalConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm?: () => void;
+    confirmText?: string;
+    type?: 'danger' | 'warning' | 'info';
+    isAlert?: boolean;
+  }>({ isOpen: false, title: '', message: '' });
 
   const [archiveSearch, setArchiveSearch] = useState('');
   const [dateFilter, setDateFilter] = useState<'all' | 'week' | 'month'>('all');
@@ -278,7 +286,14 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                         <button 
                           onClick={(e) => { 
                             e.stopPropagation(); 
-                            setForceCompletePrompt({ id: sub.id, name: sub.name }); 
+                            setModalConfig({
+                              isOpen: true,
+                              title: "Force Complete Task",
+                              message: `Are you sure you want to magically force complete "${sub.name}"? This will grant the remaining rewards immediately without completing the required sessions.`,
+                              confirmText: "Force Complete",
+                              type: "warning",
+                              onConfirm: () => onForceCompleteSub?.(sub.id)
+                            });
                           }}
                           className="hover:text-amber-400 transition-colors flex items-center justify-center p-0.5 rounded cursor-pointer"
                           title="Force Complete Task"
@@ -330,7 +345,17 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                           <Edit2 size={12} />
                         </button>
                         <button 
-                          onClick={(e) => { e.stopPropagation(); setDeletingDungeon({ id: sub.id, name: sub.name, isMajor: false }); }}
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            setModalConfig({
+                              isOpen: true,
+                              title: `Delete ${getSubDungeonDepth(sub.id) > 1 ? 'Tier' : 'Sub-Dungeon'}`,
+                              message: `Are you sure you want to delete "${sub.name}"? This action cannot be undone.`,
+                              confirmText: "Delete",
+                              type: "danger",
+                              onConfirm: () => onDeleteSub(sub.id)
+                            });
+                          }}
                           className="p-1 bg-slate-800/50 text-slate-500 hover:text-red-400 rounded transition-all"
                         >
                           <Trash2 size={12} />
@@ -605,12 +630,26 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                     if (isAddingSub || editingSub) {
                       const totalSessions = isAddingSub ? newSub.totalSessions : editingSub?.totalSessions;
                       if (totalSessions === '' as any || isNaN(totalSessions as number) || (totalSessions as number) <= 0) {
-                        alert("Please enter a valid number for Total Rooms.");
+                        setModalConfig({
+                          isOpen: true,
+                          title: "Invalid Input",
+                          message: "Please enter a valid number for Total Rooms.",
+                          confirmText: "Got it",
+                          type: "warning",
+                          isAlert: true
+                        });
                         return;
                       }
                       const rewards = isAddingSub ? newSub.rewards : editingSub?.rewards;
                       if (rewards && !validateRewards(rewards)) {
-                        alert("Please enter a valid reward amount for all rewards.");
+                        setModalConfig({
+                          isOpen: true,
+                          title: "Invalid Rewards",
+                          message: "Please enter a valid reward amount for all rewards.",
+                          confirmText: "Got it",
+                          type: "warning",
+                          isAlert: true
+                        });
                         return;
                       }
                     }
@@ -618,7 +657,14 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                     if (isAddingMajor || editingMajor) {
                       const rewards = isAddingMajor ? newMajor.rewards : editingMajor?.rewards;
                       if (rewards && !validateRewards(rewards)) {
-                        alert("Please enter a valid reward amount for all rewards.");
+                        setModalConfig({
+                          isOpen: true,
+                          title: "Invalid Rewards",
+                          message: "Please enter a valid reward amount for all rewards.",
+                          confirmText: "Got it",
+                          type: "warning",
+                          isAlert: true
+                        });
                         return;
                       }
                     }
@@ -756,7 +802,14 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                         onClick={(e) => { 
                           e.stopPropagation(); 
                           if (major.isFinalized) return;
-                          setDeletingDungeon({ id: major.id, name: major.name, isMajor: true });
+                          setModalConfig({
+                            isOpen: true,
+                            title: "Delete Dungeon Goal",
+                            message: `Are you sure you want to delete "${major.name}"? This action cannot be undone.`,
+                            confirmText: "Delete",
+                            type: "danger",
+                            onConfirm: () => onDeleteMajor(major.id)
+                          });
                         }}
                         className={cn(
                           "p-1 rounded-md transition-all",
@@ -960,86 +1013,16 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
           </div>
         )}
       </div>
-      <AnimatePresence>
-        {deletingDungeon && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
-          >
-            <motion.div
-              initial={{ scale: 0.95, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.95, y: 20 }}
-              className="bg-slate-900 border border-red-500/30 rounded-3xl p-6 max-w-sm w-full shadow-2xl space-y-6"
-            >
-              <div className="flex items-center gap-3 text-red-400">
-                <Trash2 size={24} />
-                <h3 className="text-xl font-bold">Delete {deletingDungeon.isMajor ? 'Dungeon Goal' : 'Tier'}</h3>
-              </div>
-              <p className="text-slate-300">
-                Are you sure you want to delete <span className="font-bold text-white">{deletingDungeon.name}</span>? This action cannot be undone.
-              </p>
-              <div className="flex justify-end space-x-3">
-                <button onClick={() => setDeletingDungeon(null)} className="px-4 py-2 text-slate-400 hover:text-white transition-colors">Cancel</button>
-                <button 
-                  onClick={() => {
-                    if (deletingDungeon.isMajor) {
-                      onDeleteMajor(deletingDungeon.id);
-                    } else {
-                      onDeleteSub(deletingDungeon.id);
-                    }
-                    setDeletingDungeon(null);
-                  }}
-                  className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold transition-colors"
-                >
-                  Delete
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-      <AnimatePresence>
-        {forceCompletePrompt && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
-          >
-            <motion.div
-              initial={{ scale: 0.95, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.95, y: 20 }}
-              className="bg-slate-900 border border-amber-500/30 rounded-3xl p-6 max-w-sm w-full shadow-2xl space-y-6"
-            >
-              <div className="flex items-center gap-3 text-amber-500">
-                <CheckCircle2 size={24} />
-                <h3 className="text-xl font-bold">Force Complete Task</h3>
-              </div>
-              <p className="text-slate-300">
-                Are you sure you want to magically force complete <span className="font-bold text-white">{forceCompletePrompt.name}</span>? This will grant the remaining rewards immediately without completing the required sessions.
-              </p>
-              <div className="flex justify-end space-x-3">
-                <button onClick={() => setForceCompletePrompt(null)} className="px-4 py-2 text-slate-400 hover:text-white transition-colors">Cancel</button>
-                <button 
-                  onClick={() => {
-                    if (onForceCompleteSub) {
-                      onForceCompleteSub(forceCompletePrompt.id);
-                    }
-                    setForceCompletePrompt(null);
-                  }}
-                  className="px-6 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold transition-colors"
-                >
-                  Force Complete
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <ConfirmModal 
+        isOpen={modalConfig.isOpen}
+        onClose={() => setModalConfig({ ...modalConfig, isOpen: false })}
+        onConfirm={modalConfig.onConfirm}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        confirmText={modalConfig.confirmText}
+        type={modalConfig.type}
+        isAlert={modalConfig.isAlert}
+      />
     </div>
   );
 });

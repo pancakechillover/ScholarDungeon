@@ -5,6 +5,8 @@ import { cn } from '../lib/utils';
 import { triggerSimpleConfetti } from '../lib/effects';
 import { X, Sparkles, Trophy, Zap, Coins } from 'lucide-react';
 import { TreasureChestIcon } from './icons/TreasureChestIcon';
+import { createPortal } from 'react-dom';
+import { useScrollLock } from '../hooks/useScrollLock';
 
 interface RewardChestModalProps {
   chest: { session: StudySession; choices: RewardCard[] }[];
@@ -13,6 +15,8 @@ interface RewardChestModalProps {
 }
 
 export const RewardChestModal: React.FC<RewardChestModalProps> = ({ chest, onSelect, onClose }) => {
+  useScrollLock(true);
+  
   const getRarityValue = (r: Rarity) => {
     switch(r) {
       case 'mythic': return 6;
@@ -36,9 +40,9 @@ export const RewardChestModal: React.FC<RewardChestModalProps> = ({ chest, onSel
     triggerSimpleConfetti();
   };
 
-  return (
+  const modalContent = (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-slate-950/70 backdrop-blur-sm px-4 overflow-y-auto overflow-x-hidden">
+      <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-950/70 backdrop-blur-sm px-4 overflow-y-auto overflow-x-hidden border-0 m-0 p-0">
         <motion.div
            initial={{ scale: 0.95, opacity: 0 }}
            animate={{ scale: 1, opacity: 1 }}
@@ -138,4 +142,6 @@ export const RewardChestModal: React.FC<RewardChestModalProps> = ({ chest, onSel
       </div>
     </AnimatePresence>
   );
+
+  return createPortal(modalContent, document.body);
 };

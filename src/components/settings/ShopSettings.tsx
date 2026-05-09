@@ -9,6 +9,7 @@ import { APP_VERSION, LAST_UPDATE_DATE, RELEASE_HISTORY } from '../../version';
 import { cn, getXPForLevel, getDefaultRewardForLevel } from '../../lib/utils';
 import { playSound } from '../../lib/sound';
 import { SpinnerInput } from '../SpinnerInput';
+import { ConfirmModal } from '../ConfirmModal';
 
 // Helper to convert VAPID key
 function urlBase64ToUint8Array(base64String: string) {
@@ -29,6 +30,15 @@ function urlBase64ToUint8Array(base64String: string) {
 
 export const ShopSettings = ({ items, onUpdate }: { items: ShopItem[], onUpdate: (i: ShopItem[]) => void }) => {
   const [editing, setEditing] = useState<ShopItem | null>(null);
+  const [modalConfig, setModalConfig] = useState<{ 
+    isOpen: boolean; 
+    title: string; 
+    message: string; 
+    onConfirm?: () => void; 
+    confirmText?: string;
+    type?: 'danger' | 'warning' | 'info';
+    isAlert?: boolean;
+  }>({ isOpen: false, title: '', message: '' });
 
   return (
     <div className="space-y-6">
@@ -63,9 +73,14 @@ export const ShopSettings = ({ items, onUpdate }: { items: ShopItem[], onUpdate:
               <button onClick={() => setEditing(item)} className="p-1.5 text-slate-400 hover:text-indigo-400 hover:bg-slate-800 rounded transition-colors"><Edit2 size={16} /></button>
               <button 
                 onClick={() => {
-                  if (window.confirm(`Are you sure you want to delete item "${item.name}"?`)) {
-                    onUpdate(items.filter(i => i.id !== item.id));
-                  }
+                  setModalConfig({
+                    isOpen: true,
+                    title: "Delete Shop Item?",
+                    message: `Are you sure you want to delete item "${item.name}"?`,
+                    confirmText: "Delete",
+                    type: "danger",
+                    onConfirm: () => onUpdate(items.filter(i => i.id !== item.id))
+                  });
                 }} 
                 className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-slate-800 rounded transition-colors"
               >
@@ -189,7 +204,14 @@ export const ShopSettings = ({ items, onUpdate }: { items: ShopItem[], onUpdate:
                   <button onClick={() => setEditing(null)} className="px-5 py-2.5 text-slate-400 font-bold hover:text-white transition-colors">Cancel</button>
                   <button onClick={() => { 
                     if (editing.price === '' as any || isNaN(editing.price) || editing.price < 0) {
-                      alert("Please enter a valid price.");
+                      setModalConfig({
+                        isOpen: true,
+                        title: "Invalid Input",
+                        message: "Please enter a valid price.",
+                        confirmText: "Understood",
+                        type: "warning",
+                        isAlert: true
+                      });
                       return;
                     }
                     onUpdate(items.some(i => i.id === editing.id) ? items.map(i => i.id === editing.id ? editing : i) : [...items, editing]); 
@@ -202,6 +224,17 @@ export const ShopSettings = ({ items, onUpdate }: { items: ShopItem[], onUpdate:
         </AnimatePresence>,
         document.body
       )}
+
+      <ConfirmModal 
+        isOpen={modalConfig.isOpen}
+        onClose={() => setModalConfig({ ...modalConfig, isOpen: false })}
+        onConfirm={modalConfig.onConfirm}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        confirmText={modalConfig.confirmText}
+        type={modalConfig.type}
+        isAlert={modalConfig.isAlert}
+      />
     </div>
   );
 };

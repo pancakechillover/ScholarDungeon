@@ -9,6 +9,7 @@ import { APP_VERSION, LAST_UPDATE_DATE, RELEASE_HISTORY } from '../../version';
 import { cn, getXPForLevel, getDefaultRewardForLevel } from '../../lib/utils';
 import { playSound } from '../../lib/sound';
 import { SpinnerInput } from '../SpinnerInput';
+import { ConfirmModal } from '../ConfirmModal';
 
 // Helper to convert VAPID key
 function urlBase64ToUint8Array(base64String: string) {
@@ -32,6 +33,14 @@ export const LevelRewardsSettings = ({ state, setState }: { state: any, setState
   const [editing, setEditing] = useState<any>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [newLevel, setNewLevel] = useState(51);
+  const [modalConfig, setModalConfig] = useState<{ 
+    isOpen: boolean; 
+    title: string; 
+    message: string; 
+    confirmText?: string;
+    type?: 'danger' | 'warning' | 'info';
+    isAlert?: boolean;
+  }>({ isOpen: false, title: '', message: '' });
 
   const currentLevel = state.level;
 
@@ -195,7 +204,14 @@ export const LevelRewardsSettings = ({ state, setState }: { state: any, setState
                   <button 
                     onClick={() => {
                       if (newLevel === '' as any || isNaN(newLevel) || newLevel < 2) {
-                        alert("Please enter a valid target level (must be 2 or higher).");
+                        setModalConfig({
+                          isOpen: true,
+                          title: "Invalid Level",
+                          message: "Please enter a valid target level (must be 2 or higher).",
+                          confirmText: "Got it",
+                          type: "warning",
+                          isAlert: true
+                        });
                         return;
                       }
                       setEditing({ level: newLevel, type: 'talentPoint', amount: 1 });
@@ -274,7 +290,14 @@ export const LevelRewardsSettings = ({ state, setState }: { state: any, setState
                   <button
                     onClick={() => {
                       if (editing.type !== 'text' && (editing.amount === '' as any || isNaN(editing.amount as number) || (editing.amount as number) < 0)) {
-                        alert("Please enter a valid non-negative amount.");
+                        setModalConfig({
+                          isOpen: true,
+                          title: "Invalid Amount",
+                          message: "Please enter a valid non-negative amount.",
+                          confirmText: "Got it",
+                          type: "warning",
+                          isAlert: true
+                        });
                         return;
                       }
                       const newRewards = [...(state.levelRewards || [])].filter((r: any) => r.level !== editing.level);
@@ -292,6 +315,17 @@ export const LevelRewardsSettings = ({ state, setState }: { state: any, setState
         </AnimatePresence>,
         document.body
       )}
+
+      <ConfirmModal 
+        isOpen={modalConfig.isOpen}
+        onClose={() => setModalConfig({ ...modalConfig, isOpen: false })}
+        onConfirm={() => {}} // No confirm callback needed for alerts
+        title={modalConfig.title}
+        message={modalConfig.message}
+        confirmText={modalConfig.confirmText}
+        type={modalConfig.type}
+        isAlert={modalConfig.isAlert}
+      />
     </div>
   );
 };

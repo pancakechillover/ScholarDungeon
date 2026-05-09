@@ -3,6 +3,7 @@ import { AppState } from '../../types';
 import { Wrench, Package, Coins, Zap, Trophy, Flame, Sparkles, Bell, RefreshCw, Trash2, Key, Eye } from 'lucide-react';
 import { DevResourceControl } from './DevResourceControl';
 import { cn } from '../../lib/utils';
+import { ConfirmModal } from '../ConfirmModal';
 
 interface DeveloperSettingsProps {
   state: AppState;
@@ -20,10 +21,26 @@ export const DeveloperSettings: React.FC<DeveloperSettingsProps> = ({
   const [testNotificationTitle, setTestNotificationTitle] = useState('Dungeon Alert!');
   const [testNotificationBody, setTestNotificationBody] = useState('Your focus session has ended.');
   const [isTestingNotification, setIsTestingNotification] = useState(false);
+  const [modalConfig, setModalConfig] = useState<{ 
+    isOpen: boolean; 
+    title: string; 
+    message: string; 
+    onConfirm?: () => void; 
+    confirmText?: string;
+    type?: 'danger' | 'warning' | 'info';
+    isAlert?: boolean;
+  }>({ isOpen: false, title: '', message: '' });
 
   const handleTestNotification = async () => {
     if (!state.secretCode) {
-      alert('Please link your account with a Secret Code first.');
+      setModalConfig({
+        isOpen: true,
+        title: "Sync Required",
+        message: "Please link your account with a Secret Code first.",
+        confirmText: "Got it",
+        type: "warning",
+        isAlert: true
+      });
       return;
     }
     
@@ -59,28 +76,84 @@ export const DeveloperSettings: React.FC<DeveloperSettingsProps> = ({
         
         if (myResult) {
           if (myResult.status === 'sent') {
-            alert(`Success! Notification sent.\nQueue: ${debug.totalPendingInQueue} tasks remaining.`);
+            setModalConfig({
+              isOpen: true,
+              title: "Test Successful",
+              message: `Success! Notification sent.\nQueue: ${debug.totalPendingInQueue} tasks remaining.`,
+              confirmText: "Great",
+              type: "info",
+              isAlert: true
+            });
           } else if (myResult.status === 'no_subscription') {
-            alert('Error: No subscription found on server. Try "Force Sync" first.');
+            setModalConfig({
+              isOpen: true,
+              title: "No Subscription",
+              message: 'Error: No subscription found on server. Try "Force Sync" first.',
+              confirmText: "Close",
+              type: "warning",
+              isAlert: true
+            });
           } else if (myResult.status === 'failed') {
             const err = myResult.error || {};
-            alert(`Push Service Rejected: ${err.message} (Status: ${err.statusCode})\n\nThis usually means the VAPID keys or subscription are invalid.`);
+            setModalConfig({
+              isOpen: true,
+              title: "Push Rejected",
+              message: `Push Service Rejected: ${err.message} (Status: ${err.statusCode})\n\nThis usually means the VAPID keys or subscription are invalid.`,
+              confirmText: "Close",
+              type: "danger",
+              isAlert: true
+            });
           } else {
-            alert(`Notification failed: ${myResult.status} ${myResult.error || ''}`);
+            setModalConfig({
+              isOpen: true,
+              title: "Notification Status",
+              message: `Notification status: ${myResult.status} ${myResult.error || ''}`,
+              confirmText: "Close",
+              type: "warning",
+              isAlert: true
+            });
           }
         } else {
           if (checkData.processed > 0) {
-            alert(`Processed ${checkData.processed} tasks, but none matched your code. Check console.`);
+            setModalConfig({
+              isOpen: true,
+              title: "Process Result",
+              message: `Processed ${checkData.processed} tasks, but none matched your code. Check console.`,
+              confirmText: "Close",
+              type: "warning",
+              isAlert: true
+            });
           } else {
-            alert(`No tasks processed. Queue count: ${debug.totalPendingInQueue}. If > 0, the task might not be due yet (Server Time: ${debug.serverTime}).`);
+            setModalConfig({
+              isOpen: true,
+              title: "Queue Status",
+              message: `No tasks processed. Queue count: ${debug.totalPendingInQueue}. If > 0, the task might not be due yet (Server Time: ${debug.serverTime}).`,
+              confirmText: "Close",
+              type: "info",
+              isAlert: true
+            });
           }
         }
       } else {
-        alert('Check failed: ' + (checkData.error || 'Unknown error'));
+        setModalConfig({
+          isOpen: true,
+          title: "Check Failed",
+          message: 'Check failed: ' + (checkData.error || 'Unknown error'),
+          confirmText: "Close",
+          type: "danger",
+          isAlert: true
+        });
       }
     } catch (error: any) {
       console.error('Test notification failed:', error);
-      alert('Test failed: ' + error.message);
+      setModalConfig({
+        isOpen: true,
+        title: "Test Error",
+        message: 'Test failed: ' + error.message,
+        confirmText: "Close",
+        type: "danger",
+        isAlert: true
+      });
     } finally {
       setIsTestingNotification(false);
     }
@@ -91,7 +164,14 @@ export const DeveloperSettings: React.FC<DeveloperSettingsProps> = ({
       setIsDevUnlocked(true);
       setState(prev => ({ ...prev, devModeEnabled: true }));
     } else {
-      alert('Incorrect Password');
+      setModalConfig({
+        isOpen: true,
+        title: "Access Denied",
+        message: "Incorrect password for Developer Mode.",
+        confirmText: "Try Again",
+        type: "danger",
+        isAlert: true
+      });
     }
   };
 
@@ -219,9 +299,23 @@ export const DeveloperSettings: React.FC<DeveloperSettingsProps> = ({
                     const res = await fetch('/api/push/check');
                     const data = await res.json();
                     console.log('Manual Push Check Results:', data);
-                    alert(`Processed ${data.processed} tasks. Check console for details.`);
+                    setModalConfig({
+                      isOpen: true,
+                      title: "Manual Check",
+                      message: `Processed ${data.processed} tasks. Check console for details.`,
+                      confirmText: "Got it",
+                      type: "info",
+                      isAlert: true
+                    });
                   } catch (e) {
-                    alert('Check failed');
+                    setModalConfig({
+                      isOpen: true,
+                      title: "Check Failed",
+                      message: "Manual check failed.",
+                      confirmText: "Close",
+                      type: "danger",
+                      isAlert: true
+                    });
                   } finally {
                     setIsTestingNotification(false);
                   }
@@ -237,18 +331,32 @@ export const DeveloperSettings: React.FC<DeveloperSettingsProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <button
                 onClick={async () => {
-                  if (!confirm('This will unregister all service workers and clear local push state. Continue?')) return;
-                  try {
-                    const regs = await navigator.serviceWorker.getRegistrations();
-                    for (const reg of regs) {
-                      await reg.unregister();
+                  setModalConfig({
+                    isOpen: true,
+                    title: "Reset Service Worker?",
+                    message: "This will unregister all service workers and clear local push state. Continue?",
+                    confirmText: "Reset & Reload",
+                    type: "danger",
+                    onConfirm: async () => {
+                      try {
+                        const regs = await navigator.serviceWorker.getRegistrations();
+                        for (const reg of regs) {
+                          await reg.unregister();
+                        }
+                        setState(prev => ({ ...prev, pushEnabled: false, pushSubscription: null }));
+                        window.location.reload();
+                      } catch (e) {
+                        setModalConfig({
+                          isOpen: true,
+                          title: "Reset Failed",
+                          message: "Reset failed: " + e,
+                          confirmText: "Close",
+                          type: "danger",
+                          isAlert: true
+                        });
+                      }
                     }
-                    setState(prev => ({ ...prev, pushEnabled: false, pushSubscription: null }));
-                    alert('Service Workers unregistered. Please refresh the page and re-enable notifications.');
-                    window.location.reload();
-                  } catch (e) {
-                    alert('Reset failed: ' + e);
-                  }
+                  });
                 }}
                 className="flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 font-bold py-2 rounded-xl text-xs transition-all"
               >
@@ -257,26 +365,65 @@ export const DeveloperSettings: React.FC<DeveloperSettingsProps> = ({
               </button>
               <button
                 onClick={async () => {
-                  if (!state.secretCode) return alert('Secret Code required');
-                  if (!confirm('This will delete your push subscription from the server. You will need to re-enable notifications. Continue?')) return;
-                  try {
-                    const res = await fetch('/api/push/subscribe', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({
-                        secretCode: state.secretCode,
-                        subscription: null
-                      })
+                  if (!state.secretCode) {
+                    setModalConfig({
+                      isOpen: true,
+                      title: "Secret Code Required",
+                      message: "Please link your account with a Secret Code first.",
+                      confirmText: "Got it",
+                      type: "warning",
+                      isAlert: true
                     });
-                    if (res.ok) {
-                      setState(prev => ({ ...prev, pushEnabled: false, pushSubscription: null }));
-                      alert('Server subscription cleared.');
-                    } else {
-                      alert('Failed to clear server subscription.');
-                    }
-                  } catch (e) {
-                    alert('Error: ' + e);
+                    return;
                   }
+                  setModalConfig({
+                    isOpen: true,
+                    title: "Clear Server Subscription?",
+                    message: "This will delete your push subscription from the server. You will need to re-enable notifications. Continue?",
+                    confirmText: "Clear Server Sub",
+                    type: "warning",
+                    onConfirm: async () => {
+                      try {
+                        const res = await fetch('/api/push/subscribe', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            secretCode: state.secretCode,
+                            subscription: null
+                          })
+                        });
+                        if (res.ok) {
+                          setState(prev => ({ ...prev, pushEnabled: false, pushSubscription: null }));
+                          setModalConfig({
+                            isOpen: true,
+                            title: "Success",
+                            message: "Server subscription cleared.",
+                            confirmText: "Done",
+                            type: "info",
+                            isAlert: true
+                          });
+                        } else {
+                          setModalConfig({
+                            isOpen: true,
+                            title: "Error",
+                            message: "Failed to clear server subscription.",
+                            confirmText: "Close",
+                            type: "danger",
+                            isAlert: true
+                          });
+                        }
+                      } catch (e) {
+                        setModalConfig({
+                          isOpen: true,
+                          title: "Error",
+                          message: 'Error: ' + e,
+                          confirmText: "Close",
+                          type: "danger",
+                          isAlert: true
+                        });
+                      }
+                    }
+                  });
                 }}
                 className="flex items-center justify-center gap-2 bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 border border-orange-500/30 font-bold py-2 rounded-xl text-xs transition-all"
               >
@@ -288,10 +435,23 @@ export const DeveloperSettings: React.FC<DeveloperSettingsProps> = ({
                   try {
                     const res = await fetch('/api/push/vapid-public-key');
                     const data = await res.json();
-                    alert(`VAPID Public Key:\n${data.publicKey}\n\nCheck console for full string.`);
-                    console.log('Current VAPID Public Key:', data.publicKey);
+                    setModalConfig({
+                      isOpen: true,
+                      title: "VAPID Public Key",
+                      message: `Current Public Key:\n${data.publicKey}\n\nCheck console for full string.`,
+                      confirmText: "Copy to Console",
+                      type: "info",
+                      onConfirm: () => console.log('VAPID Public Key:', data.publicKey)
+                    });
                   } catch (e) {
-                    alert('Failed to fetch VAPID key');
+                    setModalConfig({
+                      isOpen: true,
+                      title: "Error",
+                      message: "Failed to fetch VAPID key",
+                      confirmText: "Close",
+                      type: "danger",
+                      isAlert: true
+                    });
                   }
                 }}
                 className="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-bold py-2 rounded-xl text-xs transition-all"
@@ -305,12 +465,33 @@ export const DeveloperSettings: React.FC<DeveloperSettingsProps> = ({
                     const reg = await navigator.serviceWorker.getRegistration();
                     if (reg) {
                       await reg.update();
-                      alert('Service Worker update triggered. Check console for logs.');
+                      setModalConfig({
+                        isOpen: true,
+                        title: "Update Triggered",
+                        message: "Service Worker update triggered. Check console for logs.",
+                        confirmText: "Got it",
+                        type: "info",
+                        isAlert: true
+                      });
                     } else {
-                      alert('No Service Worker registration found.');
+                      setModalConfig({
+                        isOpen: true,
+                        title: "No SW Found",
+                        message: "No Service Worker registration found.",
+                        confirmText: "Close",
+                        type: "warning",
+                        isAlert: true
+                      });
                     }
                   } catch (e) {
-                    alert('Update failed: ' + e);
+                    setModalConfig({
+                      isOpen: true,
+                      title: "Update Failed",
+                      message: "Update failed: " + e,
+                      confirmText: "Close",
+                      type: "danger",
+                      isAlert: true
+                    });
                   }
                 }}
                 className="flex items-center justify-center gap-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 font-bold py-2 rounded-xl text-xs transition-all"
@@ -324,12 +505,33 @@ export const DeveloperSettings: React.FC<DeveloperSettingsProps> = ({
                     const reg = await navigator.serviceWorker.getRegistration();
                     if (reg && reg.active) {
                       reg.active.postMessage({ type: 'TEST_NOTIFICATION_SW' });
-                      alert('Message sent to Service Worker thread. Check SW console.');
+                      setModalConfig({
+                        isOpen: true,
+                        title: "Message Sent",
+                        message: "Message sent to Service Worker thread. Check SW console.",
+                        confirmText: "Got it",
+                        type: "info",
+                        isAlert: true
+                      });
                     } else {
-                      alert('No active Service Worker found to message.');
+                      setModalConfig({
+                        isOpen: true,
+                        title: "No Active SW",
+                        message: "No active Service Worker found to message.",
+                        confirmText: "Close",
+                        type: "warning",
+                        isAlert: true
+                      });
                     }
                   } catch (e) {
-                    alert('Direct SW Test failed: ' + e);
+                    setModalConfig({
+                      isOpen: true,
+                      title: "Test Failed",
+                      message: "Direct SW Test failed: " + e,
+                      confirmText: "Close",
+                      type: "danger",
+                      isAlert: true
+                    });
                   }
                 }}
                 className="flex items-center justify-center gap-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/30 font-bold py-2 rounded-xl text-xs transition-all"
@@ -348,10 +550,24 @@ export const DeveloperSettings: React.FC<DeveloperSettingsProps> = ({
                         icon: '/pwa-icon.svg'
                       });
                     } else {
-                      alert('Permission not granted: ' + permission);
+                      setModalConfig({
+                        isOpen: true,
+                        title: "Permission Required",
+                        message: 'Permission not granted: ' + permission,
+                        confirmText: "Close",
+                        type: "warning",
+                        isAlert: true
+                      });
                     }
                   } catch (e) {
-                    alert('Direct Notification Test failed: ' + e);
+                    setModalConfig({
+                      isOpen: true,
+                      title: "Test Failed",
+                      message: 'Direct Notification Test failed: ' + e,
+                      confirmText: "Close",
+                      type: "danger",
+                      isAlert: true
+                    });
                   }
                 }}
                 className="flex items-center justify-center gap-2 bg-green-500/10 hover:bg-green-500/20 text-green-400 border border-green-500/30 font-bold py-2 rounded-xl text-xs transition-all"
@@ -361,27 +577,41 @@ export const DeveloperSettings: React.FC<DeveloperSettingsProps> = ({
               </button>
               <button
                 onClick={async () => {
-                  if (!confirm('ULTRA RESET: This will wipe all push-related data (SW + Server + Local) and try to register from scratch. Use this if "Test Direct UI" works but remote push is silent. Continue?')) return;
-                  setIsTestingNotification(true);
-                  try {
-                    if (state.secretCode) {
-                      await fetch('/api/push/subscribe', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ secretCode: state.secretCode, subscription: null })
-                      });
+                  setModalConfig({
+                    isOpen: true,
+                    title: "ULTRA RESET?",
+                    message: 'ULTRA RESET: This will wipe all push-related data (SW + Server + Local) and try to register from scratch. Use this if "Test Direct UI" works but remote push is silent. Continue?',
+                    confirmText: "Deep Clean & Sync",
+                    type: "danger",
+                    onConfirm: async () => {
+                      setIsTestingNotification(true);
+                      try {
+                        if (state.secretCode) {
+                          await fetch('/api/push/subscribe', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ secretCode: state.secretCode, subscription: null })
+                          });
+                        }
+                        const regs = await navigator.serviceWorker.getRegistrations();
+                        for (const reg of regs) { await reg.unregister(); }
+                        setState(prev => ({ ...prev, pushEnabled: false, pushSubscription: null }));
+                        
+                        window.location.reload();
+                      } catch (e) {
+                        setModalConfig({
+                          isOpen: true,
+                          title: "Clean Failed",
+                          message: 'Deep Clean failed: ' + e,
+                          confirmText: "Close",
+                          type: "danger",
+                          isAlert: true
+                        });
+                      } finally {
+                        setIsTestingNotification(false);
+                      }
                     }
-                    const regs = await navigator.serviceWorker.getRegistrations();
-                    for (const reg of regs) { await reg.unregister(); }
-                    setState(prev => ({ ...prev, pushEnabled: false, pushSubscription: null }));
-                    
-                    alert('Deep Clean Step 1 Complete: Data wiped. Now refreshing page to re-install. After refresh, manually turn on Push Notifications.');
-                    window.location.reload();
-                  } catch (e) {
-                    alert('Deep Clean failed: ' + e);
-                  } finally {
-                    setIsTestingNotification(false);
-                  }
+                  });
                 }}
                 disabled={isTestingNotification}
                 className="flex items-center justify-center gap-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 border border-amber-500/30 font-bold py-2 rounded-xl text-xs transition-all col-span-1 md:col-span-2"
@@ -414,6 +644,17 @@ export const DeveloperSettings: React.FC<DeveloperSettingsProps> = ({
           </div>
         </div>
       )}
+
+      <ConfirmModal 
+        isOpen={modalConfig.isOpen}
+        onClose={() => setModalConfig({ ...modalConfig, isOpen: false })}
+        onConfirm={modalConfig.onConfirm}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        confirmText={modalConfig.confirmText}
+        type={modalConfig.type}
+        isAlert={modalConfig.isAlert}
+      />
     </div>
   );
 };

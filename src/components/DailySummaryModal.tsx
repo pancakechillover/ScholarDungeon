@@ -25,6 +25,9 @@ import Markdown from 'react-markdown';
 import { cn } from '../lib/utils';
 import { AppState, StudySession, RewardHistoryItem, Dungeon, MajorDungeon } from '../types';
 
+import { createPortal } from 'react-dom';
+import { useScrollLock } from '../hooks/useScrollLock';
+
 interface DailySummaryModalProps {
   state: AppState;
   dungeons: Dungeon[];
@@ -35,6 +38,7 @@ interface DailySummaryModalProps {
 }
 
 export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dungeons, majorDungeons, onClose, onNavigateToStats, onSave }) => {
+  useScrollLock(true);
   const [rating, setRating] = useState(0);
   const [reflection, setReflection] = useState('');
   const [isStatsExpanded, setIsStatsExpanded] = useState(true);
@@ -106,18 +110,18 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
     return stars;
   };
 
-  return (
+  const modalContent = (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md overflow-y-auto"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md overflow-y-auto border-0 m-0"
     >
       <motion.div
         initial={{ scale: 0.9, y: 20 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.9, y: 20 }}
-        className="bg-slate-900 border border-indigo-500/30 rounded-[2.5rem] w-full max-w-2xl shadow-2xl overflow-hidden my-8"
+        className="bg-slate-900 border border-indigo-500/30 rounded-[2.5rem] w-full max-w-2xl shadow-2xl overflow-hidden my-8 relative"
       >
         {/* Header */}
         <div className="p-5 sm:p-8 border-b border-slate-800 flex justify-between items-center bg-gradient-to-r from-indigo-500/10 to-transparent">
@@ -309,6 +313,8 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
       </motion.div>
     </motion.div>
   );
+
+  return createPortal(modalContent, document.body);
 };
 
 const StatCard: React.FC<{ icon: any, label: string, value: string | number, color: string }> = ({ icon: Icon, label, value, color }) => (
