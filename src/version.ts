@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v4.5.21';
-export const LAST_UPDATE_DATE = '2026-05-08';
-export const LAST_UPDATE_TIME = '12:05:00';
+export const APP_VERSION = 'v4.6.4';
+export const LAST_UPDATE_DATE = '2026-05-11';
+export const LAST_UPDATE_TIME = '16:45:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,233 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v4.6.4',
+    date: '2026-05-11',
+    time: '16:45:00',
+    title: 'Pool Management & Security UX',
+    items: [
+      { category: 'Feature', description: 'Pool Renaming. Added a "Pool Name" field to the Gacha and Ichiban Kuji edit modals, allowing users to customize pool names easily.' },
+      { category: 'UX', description: 'Reset Confirmations. Implemented "Double Check" warnings when resetting Gacha or Ichiban pools to prevent accidental data loss.' },
+      { category: 'UX', description: 'Deletion Security. Standardized deletion confirmation dialogs across Merchant, Shop, and Reward settings for consistent safety.' }
+    ]
+  },
+  {
+    version: 'v4.6.3',
+    date: '2026-05-11',
+    time: '16:15:00',
+    title: 'Talent UX & State Persistence',
+    items: [
+      { category: 'Feature', description: 'Talent Tree State. The collapsed/expanded state of the talent branches is now persisted in localStorage.' },
+      { category: 'UX', description: 'Interactive Talent Icons. Talent icons in the Explore view now reveal tooltips on click, improving accessibility for mobile users.' }
+    ]
+  },
+  {
+    version: 'v4.6.2',
+    date: '2026-05-11',
+    time: '15:30:00',
+    title: 'Dynamic Talent Descriptions & Formatting',
+    items: [
+      { category: 'Feature', description: 'Dynamic Crit Description. Linked the "Critical Intuition" (C3) talent description to real-time developer settings (Crit Chance & Multiplier).' },
+      { category: 'UX', description: 'Improved numeric formatting in talent tooltips to handle floating-point values gracefully for better precision.' }
+    ]
+  },
+  {
+    version: 'v4.6.1',
+    date: '2026-05-11',
+    time: '12:00:00',
+    title: 'Talent Description Accuracy Refinement',
+    items: [
+      { category: 'Documentation', description: 'Updated talent descriptions for Branch A and B to accurately reflect their trigger conditions (Perfect Theory & Bounty Decree now specify 8th session completion).' },
+      { category: 'UX', description: 'Matched all talent descriptions in the Talent Tree with actual game logic implementation to prevent player confusion.' }
+    ]
+  },
+  {
+    version: 'v4.6.0',
+    date: '2026-05-10',
+    time: '09:00:00',
+    title: 'Gacha Pool Management Expansion',
+    items: [
+      { category: 'Feature', description: 'Implemented multi-pool management for both Gacha and Ichiban Kuji, allowing users to create, delete, and rename custom pools.' },
+      { category: 'Feature', description: 'Added pool rotation functionality in the Merchant Outpost, enabling seamless switching between different card pools.' },
+      { category: 'Feature', description: 'Introduced Import/Export functionality via clipboard, allowing users to share and backup pool configurations in JSON format.' },
+      { category: 'Architecture', description: 'Synchronized active pool state across the application to ensure persistence of the selected merchant offerings.' },
+    ]
+  },
+  {
+    version: 'v4.5.38',
+    date: '2026-05-09',
+    time: '11:15:00',
+    title: 'Activity Log Personalization',
+    items: [
+      { category: 'Feature', description: 'Added a toggle in Activity Time Peaks settings to allow users to show or hide the "Other" time segment in activity charts.' },
+      { category: 'UI', description: 'Updated the Record tab to dynamically adjust Daily and Weekly activity charts based on the "Other" peak visibility preference.' },
+    ]
+  },
+  {
+    version: 'v4.5.37',
+    date: '2026-05-09',
+    time: '10:55:00',
+    title: 'Ichiban Kuji Rarity Values',
+    items: [
+      { category: 'Feature', description: 'Adjusted the default Ichiban Kuji prize mapping: A Prize is now Rarity 5 (Amber), B is 4 (Purple), C is 3 (Blue), and D is 2 (Emerald).' },
+      { category: 'Fix', description: 'Replaced all hardcoded instances of fuchsia color references with the correct rose Mythic color across the codebase.' },
+      { category: 'Fix', description: 'Updated Reward History and Shop item color fallbacks to accurately intercept the newly remapped Ichiban / Gacha tiers.' },
+    ]
+  },
+  {
+    version: 'v4.5.36',
+    date: '2026-05-09',
+    time: '10:30:00',
+    title: 'Rarity Updates',
+    items: [
+      { category: 'Feature', description: 'Updated rarity and color mappings sequence to: Common (slate), Uncommon (emerald), Rare (blue), Epic (purple), Legendary (amber), Mythic (rose).' },
+    ]
+  },
+  {
+    version: 'v4.5.35',
+    date: '2026-05-08',
+    time: '18:00:00',
+    title: 'Ichiban Kuji Duplication Fix',
+    items: [
+      { category: 'Bugfix', description: 'Fixed an issue where "Standard Ichiban Kuji" displayed identical prize tiers multiple times instead of consolidating them.' },
+      { category: 'System', description: 'Automatically migrated existing corrupt saved data by intelligently grouping items of the same Ichiban Kuji rarity tiers together and recovering standard inventory structures.' }
+    ]
+  },
+  {
+    version: 'v4.5.34',
+    date: '2026-05-08',
+    time: '17:00:00',
+    title: 'Universal Rarity Mapping',
+    items: [
+      { category: 'System', description: 'Established a universal numerical mapping (1-6) for rarity states (Common -> Exotic).' },
+      { category: 'Feature', description: 'Ichiban Kuji pools and generic Gacha settings now store and interact with formal rarity values to ensure logic scaling across future updates.' },
+      { category: 'UI', description: 'Removed the reddish background from the Last One prize setting card entirely to provide full compatibilty with Light Themes.' }
+    ]
+  },
+  {
+    version: 'v4.5.33',
+    date: '2026-05-08',
+    time: '16:44:00',
+    title: 'Ichiban Kuji Theme Compatibility Polish',
+    items: [
+      { category: 'Feature', description: 'Added default colors to the initial Ichiban Kuji prize tiers.' },
+      { category: 'UI', description: 'Fixed an issue where the Last One prize setting block displayed a dark red background/shadow that was incompatible with light themes.' }
+    ]
+  },
+  {
+    version: 'v4.5.32',
+    date: '2026-05-08',
+    time: '16:35:00',
+    title: 'Ichiban Kuji Pool Layout & Colors',
+    items: [
+      { category: 'UI', description: 'Redesigned the Ichiban Kuji settings modal to mirror the new card-based layout introduced in normal Gacha settings.' },
+      { category: 'Feature', description: 'Allowed users to assign custom predefined aesthetic color themes to individual Ichiban Kuji prize tiers.' },
+      { category: 'System', description: 'Updated Shop and Vault renderings to seamlessly consume custom colors directly from Ichiban Kuji reward data.' }
+    ]
+  },
+  {
+    version: 'v4.5.31',
+    date: '2026-05-08',
+    time: '16:26:00',
+    title: 'Gacha Pool Layout Redesign',
+    items: [
+      { category: 'UI', description: 'Completely redesigned the Gacha pool settings modal with a clear, card-based layout.' },
+      { category: 'Feature', description: 'Restricted custom rarity themes strictly to the sequence: Common, Rare, Epic, Legendary, Mythic, Exotic.' },
+      { category: 'Feature', description: 'Added automatic Drop Rate (%) percentage calculation to the weight configurations.' }
+    ]
+  },
+  {
+    version: 'v4.5.30',
+    date: '2026-05-08',
+    time: '15:45:00',
+    title: 'Custom Gacha Rarities & Colors',
+    items: [
+      { category: 'Feature', description: 'Gacha pools now support fully customizable rarities, allowing users to add/delete custom rarities and adjust weights for each tier dynamically.' },
+      { category: 'UI', description: 'Introduced a curated color palette for rarity tiers, applicable seamlessly to custom Gacha sets.' },
+      { category: 'System', description: 'Gacha reward results and Vault inventory table are now fully synchronized to render the custom rarity colors attached to the obtained items.' },
+    ]
+  },
+  {
+    version: 'v4.5.29',
+    date: '2026-05-08',
+    time: '15:10:00',
+    title: 'Ichiban Kuji Row Layout Refinement',
+    items: [
+      { category: 'UI', description: 'Redesigned the Ichiban Kuji prize lists to display as a cohesive row-by-row layout instead of a grid, matching the standard Gacha UI for better readability.' }
+    ]
+  },
+  {
+    version: 'v4.5.28',
+    date: '2026-05-08',
+    time: '14:56:00',
+    title: 'Gacha Settings UI Polish',
+    items: [
+      { category: 'UI', description: 'Redesigned the visualization of standard Gacha prizes in the Merchant settings to use structured cards that clearly split item pools by rarity and drop rates.' },
+      { category: 'UI', description: 'Redesign the Ichiban Kuji prize lists into a dedicated grid displaying probability ratios, prize tiers, remaining quantities, and initial quantities cleanly.' }
+    ]
+  },
+  {
+    version: 'v4.5.27',
+    date: '2026-05-08',
+    time: '14:50:00',
+    title: 'Developer Mode Security UX Update',
+    items: [
+      { category: 'UX', description: 'Moved the "Lock & Disable" button to the very bottom of the Developer Settings page.' },
+      { category: 'UI', description: 'Redesigned the lock button into a minimalist, centered action with a dedicated icon to prevent accidental triggers and clean up the header.' }
+    ]
+  },
+  {
+    version: 'v4.5.26',
+    date: '2026-05-08',
+    time: '14:45:00',
+    title: 'Developer Settings Header Cleanup',
+    items: [
+      { category: 'UI', description: 'Removed the redundant "Developer Tools" section header from the Developer Settings page.' },
+      { category: 'UX', description: 'Relocated the "Lock & Disable" action to the "Resource Modification" header for a more streamlined layout.' }
+    ]
+  },
+  {
+    version: 'v4.5.25',
+    date: '2026-05-08',
+    time: '14:20:00',
+    title: 'Universal Numeric Input Refactor',
+    items: [
+      { category: 'UI/UX', description: 'Replaced all raw numerical input fields across the application with a unified SpinnerInput component.' },
+      { category: 'Feature', description: 'SpinnerInput standardizes numerical adjustment styles with increment/decrement arrow buttons and proper bounds validation.' },
+      { category: 'Feature', description: 'Added float tracking and step capability to SpinnerInput to robustly handle decimals like Crit Chance.' }
+    ]
+  },
+  {
+    version: 'v4.5.24',
+    date: '2026-05-08',
+    time: '13:50:00',
+    title: 'Developer Settings Responsive Layout',
+    items: [
+      { category: 'UI', description: 'Refined "Resource Modification" grid in Developer Settings to be responsive (1 column on mobile, 2 on tablet, 3 on desktop).' }
+    ]
+  },
+  {
+    version: 'v4.5.23',
+    date: '2026-05-08',
+    time: '13:45:00',
+    title: 'Developer Settings Refactor & Layout Update',
+    items: [
+      { category: 'Architecture', description: 'Extracted Developer Settings from Settings.tsx into a dedicated DeveloperSettings.tsx component for better maintainability.' },
+      { category: 'UI', description: 'Modified the "Resource Modification" layout in Developer Settings to statically display 3 columns per row for improved consistency and density.' }
+    ]
+  },
+  {
+    version: 'v4.5.22',
+    date: '2026-05-08',
+    time: '13:35:00',
+    title: 'Unconditional Reward Chest Storage',
+    items: [
+      { category: 'Feature', description: 'Rewrote reward generation to unconditionally push new rewards to the pending reward chest regardless of victory screen skipping settings.' },
+      { category: 'Bugfix', description: 'Selecting a reward gracefully removes it from the pending chest, ensuring that refreshing or dismissing the victory modal no longer permanently destroys unclaimed rewards.' },
+      { category: 'Theme UI', description: 'Added vertical line connecting trees for release history nodes.' }
+    ]
+  },
   {
     version: 'v4.5.21',
     date: '2026-05-08',

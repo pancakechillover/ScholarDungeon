@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Settings2, Plus, Trash2, Check, X } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { TimerLoopSettings } from './TimerLoopSettings';
+import { SpinnerInput } from './SpinnerInput';
 
 interface TimerSettingsProps {
   focusDuration: number;
@@ -133,23 +134,21 @@ export const TimerSettings: React.FC<TimerSettingsProps> = ({
       <div className="pt-4 border-t border-slate-800 flex items-center justify-center gap-6 text-center">
         <div className="flex flex-col items-center gap-2">
           <span className="text-xs font-bold text-slate-500 uppercase tracking-widest whitespace-nowrap">Focus (min)</span>
-          <input 
-            type="number" 
-            min="1"
+          <SpinnerInput 
+            min={1}
             value={focusDuration} 
-            onChange={(e) => handleCustomChange(parseInt(e.target.value) || 1, restDuration)}
-            className="w-20 bg-slate-950 border border-slate-700 rounded-xl py-2 text-center text-white font-mono focus:outline-none focus:border-indigo-500 transition-colors"
+            onChange={(val) => handleCustomChange(typeof val === 'number' ? val : 1, restDuration)}
+            className="w-24 text-center text-white font-mono focus:border-indigo-500"
           />
         </div>
         {enableRest && (
           <div className="flex flex-col items-center gap-2">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-widest whitespace-nowrap">Rest (min)</span>
-            <input 
-              type="number" 
-              min="1"
+            <SpinnerInput 
+              min={1}
               value={restDuration} 
-              onChange={(e) => handleCustomChange(focusDuration, parseInt(e.target.value) || 1)}
-              className="w-20 bg-slate-950 border border-slate-700 rounded-xl py-2 text-center text-emerald-400 font-mono focus:outline-none focus:border-emerald-500 transition-colors"
+              onChange={(val) => handleCustomChange(focusDuration, typeof val === 'number' ? val : 1)}
+              className="w-24 text-center text-emerald-400 font-mono focus:border-emerald-500"
             />
           </div>
         )}

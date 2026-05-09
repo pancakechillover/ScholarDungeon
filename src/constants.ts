@@ -122,13 +122,13 @@ export const INITIAL_REWARD_POOL: RewardCard[] = [
 export const TALENTS: Talent[] = [
   // Branch A: Truth Crown
   { id: 'a1', name: 'Mind Lubrication', description: 'Base XP +10% per session', branch: 'A', tier: 1, cost: 1, effect: 'xp_10', icon: 'BicepsFlexed', unlocked: false, active: false },
-  { id: 'a2', name: 'Flow Experience α', description: 'Gain 200 XP after 16 sessions in one day', branch: 'A', tier: 2, cost: 2, effect: 'daily_16_xp', icon: 'BrainCircuit', unlocked: false, active: false },
-  { id: 'a3', name: 'Perfect Theory', description: 'Streak bonus XP (20*n). 1000 XP at day 10.', branch: 'A', tier: 3, cost: 3, effect: 'streak_xp', icon: 'Rocket', unlocked: false, active: false },
+  { id: 'a2', name: 'Flow Experience α', description: 'The 16th session of the day gains +200 XP', branch: 'A', tier: 2, cost: 2, effect: 'daily_16_xp', icon: 'BrainCircuit', unlocked: false, active: false },
+  { id: 'a3', name: 'Perfect Theory', description: '8th session of the day gains bonus XP (20 * Streak). Extra +1000 XP at Day 10.', branch: 'A', tier: 3, cost: 3, effect: 'streak_xp', icon: 'Rocket', unlocked: false, active: false },
   
   // Branch B: Golden Law
   { id: 'b1', name: 'Alchemy', description: 'Base coins +2 per session', branch: 'B', tier: 1, cost: 1, effect: 'coin_2', icon: 'Pickaxe', unlocked: false, active: false },
-  { id: 'b2', name: 'Flow Experience β', description: 'Gain 50 coins after 16 sessions in one day', branch: 'B', tier: 2, cost: 2, effect: 'daily_16_coin', icon: 'BrainCog', unlocked: false, active: false },
-  { id: 'b3', name: 'Bounty Decree', description: 'Streak bonus coins (10*n). 100 coins at day 10.', branch: 'B', tier: 3, cost: 3, effect: 'streak_coin', icon: 'Goal', unlocked: false, active: false },
+  { id: 'b2', name: 'Flow Experience β', description: 'The 16th session of the day gains +50 Coins', branch: 'B', tier: 2, cost: 2, effect: 'daily_16_coin', icon: 'BrainCog', unlocked: false, active: false },
+  { id: 'b3', name: 'Bounty Decree', description: '8th session of the day gains bonus Coins (10 * Streak). Extra +100 Coins at Day 10.', branch: 'B', tier: 3, cost: 3, effect: 'streak_coin', icon: 'Goal', unlocked: false, active: false },
 
   // Branch C: Fate Dice
   { id: 'c1', name: 'Extra Chance', description: 'Loot choice becomes 4-of-1', branch: 'C', tier: 1, cost: 1, effect: 'loot_4', icon: 'HeartPlus', unlocked: false, active: false },
@@ -142,11 +142,15 @@ export const INITIAL_GACHA: GachaPool[] = [
     name: 'Standard Gacha',
     type: 'gacha',
     cost: 100,
-    weights: { SSR: 5, SR: 15, R: 80 },
+    rarities: [
+      { id: 'SSR', name: 'SSR', color: 'amber', weight: 5, rarityValue: 5 },
+      { id: 'SR', name: 'SR', color: 'purple', weight: 15, rarityValue: 4 },
+      { id: 'R', name: 'R', color: 'blue', weight: 80, rarityValue: 3 },
+    ],
     items: [
-      { rarity: 'SSR', name: 'Big Lego Set / New Gadget / Weekend Trip' },
-      { rarity: 'SR', name: 'Fancy Dinner / Movie Night / Dessert' },
-      { rarity: 'R', name: '1 Hour Gaming / 15m Nap / Favorite Snack' }
+      { rarity: 'SSR', name: 'Big Lego Set / New Gadget / Weekend Trip', rarityValue: 5 },
+      { rarity: 'SR', name: 'Fancy Dinner / Movie Night / Dessert', rarityValue: 4 },
+      { rarity: 'R', name: '1 Hour Gaming / 15m Nap / Favorite Snack', rarityValue: 3 }
     ]
   },
   {
@@ -155,15 +159,11 @@ export const INITIAL_GACHA: GachaPool[] = [
     type: 'ichiban',
     cost: 50,
     items: [
-      { rarity: 'A Prize', name: 'Premium Figure', count: 1, initialCount: 1 },
-      { rarity: 'A Prize', name: 'Limited Artbook', count: 1, initialCount: 1 },
-      { rarity: 'B Prize', name: 'Luxury Cushion', count: 1, initialCount: 1 },
-      { rarity: 'B Prize', name: 'Desk Mat', count: 1, initialCount: 1 },
-      { rarity: 'C Prize', name: 'Acrylic Stand', count: 2, initialCount: 2 },
-      { rarity: 'C Prize', name: 'Keychain Set', count: 3, initialCount: 3 },
-      { rarity: 'D Prize', name: 'Sticker Pack', count: 6, initialCount: 6 },
-      { rarity: 'D Prize', name: 'Badge', count: 6, initialCount: 6 },
-      { rarity: 'LastOne', name: 'Golden Trophy / Special Edition Figure', count: 1, initialCount: 1 }
+      { rarity: 'A Prize', name: 'Premium Figure / Limited Artbook', count: 1, initialCount: 1, color: 'amber', rarityValue: 5 },
+      { rarity: 'B Prize', name: 'Luxury Cushion / Desk Mat', count: 2, initialCount: 2, color: 'purple', rarityValue: 4 },
+      { rarity: 'C Prize', name: 'Acrylic Stand / Keychain Set', count: 5, initialCount: 5, color: 'blue', rarityValue: 3 },
+      { rarity: 'D Prize', name: 'Sticker Pack / Badge', count: 12, initialCount: 12, color: 'emerald', rarityValue: 2 },
+      { rarity: 'LastOne', name: 'Golden Trophy / Special Edition Figure', count: 1, initialCount: 1, color: 'rose', rarityValue: 6 }
     ]
   }
 ];

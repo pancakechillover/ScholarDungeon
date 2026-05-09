@@ -8,6 +8,7 @@ import * as LucideIcons from 'lucide-react';
 import { APP_VERSION, LAST_UPDATE_DATE, RELEASE_HISTORY } from '../../version';
 import { cn, getXPForLevel, getDefaultRewardForLevel } from '../../lib/utils';
 import { playSound } from '../../lib/sound';
+import { SpinnerInput } from '../SpinnerInput';
 
 // Helper to convert VAPID key
 function urlBase64ToUint8Array(base64String: string) {
@@ -60,7 +61,16 @@ export const ShopSettings = ({ items, onUpdate }: { items: ShopItem[], onUpdate:
             </div>
             <div className="flex flex-col items-center gap-2 shrink-0 ml-4">
               <button onClick={() => setEditing(item)} className="p-1.5 text-slate-400 hover:text-indigo-400 hover:bg-slate-800 rounded transition-colors"><Edit2 size={16} /></button>
-              <button onClick={() => onUpdate(items.filter(i => i.id !== item.id))} className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-slate-800 rounded transition-colors"><Trash2 size={16} /></button>
+              <button 
+                onClick={() => {
+                  if (window.confirm(`Are you sure you want to delete item "${item.name}"?`)) {
+                    onUpdate(items.filter(i => i.id !== item.id));
+                  }
+                }} 
+                className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-slate-800 rounded transition-colors"
+              >
+                <Trash2 size={16} />
+              </button>
             </div>
           </div>
         )})}
@@ -101,21 +111,11 @@ export const ShopSettings = ({ items, onUpdate }: { items: ShopItem[], onUpdate:
                           <div className="space-y-1.5">
                             <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Price</label>
                             <div className="relative">
-                              <input 
-                                type="text" 
-                                inputMode="numeric"
+                              <SpinnerInput 
                                 placeholder="Price" 
                                 value={editing.price === undefined || editing.price === null ? '' : editing.price} 
-                                onChange={e => {
-                                  const val = e.target.value;
-                                  if (val === '') {
-                                    setEditing({...editing, price: '' as any});
-                                  } else {
-                                    const parsed = parseInt(val);
-                                    if (!isNaN(parsed)) setEditing({...editing, price: parsed});
-                                  }
-                                }} 
-                                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 pl-10 text-white text-sm focus:border-amber-500 transition-colors" 
+                                onChange={(val) => setEditing({...editing, price: typeof val === 'number' ? val : ('' as any)})} 
+                                className="pl-10 focus:border-amber-500" 
                               />
                               <Coins className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-500" size={16} />
                             </div>
@@ -124,50 +124,13 @@ export const ShopSettings = ({ items, onUpdate }: { items: ShopItem[], onUpdate:
                             <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">
                               Stock
                             </label>
-                            <div className="relative group/stock">
-                              <input 
-                                type="text" 
-                                placeholder="Stock" 
-                                value={editing.stock === -1 || editing.stock === undefined ? '∞' : editing.stock} 
-                                onChange={e => {
-                                  const val = e.target.value;
-                                  if (val === '' || val === '∞') {
-                                    setEditing({...editing, stock: -1});
-                                  } else {
-                                    const parsed = parseInt(val);
-                                    if (!isNaN(parsed)) {
-                                      setEditing({...editing, stock: parsed});
-                                    }
-                                  }
-                                }} 
-                                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 pr-10 text-white text-sm focus:border-amber-500 transition-colors" 
-                              />
-                              <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex flex-col gap-0.5">
-                                <button 
-                                  type="button"
-                                  onClick={() => {
-                                    const current = editing.stock === undefined ? -1 : editing.stock;
-                                    if (current === -1) setEditing({...editing, stock: 1});
-                                    else setEditing({...editing, stock: current + 1});
-                                  }}
-                                  className="p-0.5 hover:bg-slate-700 rounded text-slate-500 hover:text-amber-500 transition-colors"
-                                >
-                                  <ChevronUp size={14} strokeWidth={3} />
-                                </button>
-                                <button 
-                                  type="button"
-                                  onClick={() => {
-                                    const current = editing.stock === undefined ? -1 : editing.stock;
-                                    if (current === -1) return;
-                                    if (current <= 1) setEditing({...editing, stock: -1});
-                                    else setEditing({...editing, stock: current - 1});
-                                  }}
-                                  className="p-0.5 hover:bg-slate-700 rounded text-slate-500 hover:text-amber-500 transition-colors"
-                                >
-                                  <ChevronDown size={14} strokeWidth={3} />
-                                </button>
-                              </div>
-                            </div>
+                            <SpinnerInput 
+                              allowInfinity
+                              placeholder="Stock" 
+                              value={editing.stock === undefined ? -1 : editing.stock} 
+                              onChange={(val) => setEditing({...editing, stock: typeof val === 'number' ? val : -1})} 
+                              className="focus:border-amber-500" 
+                            />
                           </div>
                         </div>
                         <div className="space-y-1.5 flex-1 flex flex-col">

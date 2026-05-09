@@ -1,6 +1,7 @@
 import React from 'react';
 import { cn } from '../lib/utils';
 import { Repeat } from 'lucide-react';
+import { SpinnerInput } from './SpinnerInput';
 
 interface TimerLoopSettingsProps {
   isLooping: boolean;
@@ -42,21 +43,19 @@ export const TimerLoopSettings: React.FC<TimerLoopSettingsProps> = ({
       </label>
       {isLooping && (
         <div className="relative ml-1 flex items-center gap-2">
-          <input
-            type="number"
-            min="0"
-            value={loopTarget < 2 ? '' : loopTarget}
-            placeholder="∞"
-            onChange={(e) => {
-              const val = parseInt(e.target.value, 10);
-              if (isNaN(val) || val < 2) {
-                setLoopTarget(0);
-              } else {
+          <SpinnerInput
+            allowInfinity
+            min={2}
+            value={loopTarget < 2 ? -1 : loopTarget}
+            onChange={(val) => {
+              if (typeof val === 'number' && val >= 2) {
                 setLoopTarget(val);
+              } else {
+                setLoopTarget(0); // 0 acts as infinity based on previous behavior
               }
               setLoopCount(0);
             }}
-            className="w-14 bg-slate-800 text-slate-300 text-center text-xs font-bold px-2 py-1.5 rounded-lg border border-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
+            className="w-20 px-2 py-1.5 text-xs text-center border bg-slate-800 text-slate-300 focus:border-indigo-500 transition-all font-bold"
           />
           <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Times</span>
         </div>

@@ -21,8 +21,8 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors:** When designing UI elements that highlight based on themes, note that ONLY `indigo-400`, `indigo-500`, and `indigo-600` are overridden by the custom theme variables in `index.css`. DO NOT use `indigo-300` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v4.5.21
-- **Last Update Date:** 2026-05-08
+- **Current Version:** v4.6.4
+- **Last Update Date:** 2026-05-11
 
 ## Dark Themes Definition
 The following themes are considered "Dark Themes" and form the baseline for vibrant visual effects and high-contrast glowing elements:
@@ -46,6 +46,79 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v4.6.4 (2026-05-11):** Pool Management & Security UX.
+  - *Feature:* Pool Renaming. Added a "Pool Name" field to the Gacha and Ichiban Kuji edit modals, allowing users to customize pool names easily.
+  - *UX:* Reset Confirmations. Implemented "Double Check" warnings when resetting Gacha or Ichiban pools in both settings and shop views.
+  - *UX:* Deletion Security. Standardized deletion confirmation dialogs across Merchant, Shop, and Reward settings to ensure a second confirmation before permanent removal.
+- **v4.6.3 (2026-05-11):** Talent UX & State Persistence.
+  - *Feature:* Talent Tree State Persistence. The collapsed/expanded state of the talent branches is now saved in `localStorage`, preserving the layout across sessions.
+  - *UX:* Interactive Talent Icons. Updated the Explore view to allow clicking on active talent icons to toggle tooltips, making information accessible for mobile users.
+- **v4.6.2 (2026-05-11):** Dynamic Talent Descriptions & Formatting.
+  - *Feature:* Dynamic Crit Description. Linked the "Critical Intuition" (C3) talent description to real-time developer settings (Crit Chance & Multiplier).
+  - *UX:* Improved numeric formatting in talent tooltips to handle floating-point values (e.g., 5.5%) gracefully for better precision.
+- **v4.6.1 (2026-05-11):** Talent Description Accuracy Refinement.
+  - *Documentation:* Updated talent descriptions for A3 (Perfect Theory) and B3 (Bounty Decree) to specify that their effects trigger on the 8th session of the day, matching the code logic.
+  - *UX:* Audited all talent descriptions against `useGameState.ts` and `Timer.tsx` to ensure absolute accuracy for player-facing tooltips.
+- **v4.6.0 (2026-05-10):** Gacha Pool Management & Rotation.
+  - *Feature:* Multi-Pool Support. Implemented the ability to add, delete, and rename multiple Gacha and Ichiban Kuji pools within the Merchant settings.
+  - *UX:* Merchant Rotation. Added a pool selector to the Merchant's Outpost, allowing users to rotate between active card pools in real-time.
+  - *Utility:* Config Serialization. Added Import and Export functionality via clipboard, enabling users to backup or share their custom pool configurations as JSON.
+  - *Persistence:* Integrated active pool selection into the global application state for persistent session-to-session merchant settings.
+- **v4.5.38 (2026-05-09):** Activity Log Personalization.
+  - *Feature:* Added a toggle in Activity Time Peaks settings to allow users to show or hide the "Other" time segment in activity charts.
+  - *UI:* Updated the Record tab to dynamically adjust Daily and Weekly activity charts based on the "Other" peak visibility preference.
+- **v4.5.37 (2026-05-09):** Ichiban Kuji Rarity Hierarchy.
+  - *Feature:* Adjusted the default Ichiban Kuji prize mapping: A Prize is now Rarity 5 (Legendary/Amber), B is 4 (Epic/Purple), C is 3 (Rare/Blue), and D is 2 (Uncommon/Emerald). Last One remains 6 (Mythic/Rose).
+  - *Fix:* Replaced all instances of `fuchsia` color references to the new `rose` Mythic color across `colors.ts`, `useGameState`, and `constants.ts`.
+  - *Fix:* Updated `RewardHistory`, `RewardChestModal` and `Shop` item color fallback methods to accurately support all the newly remapped Ichiban and standard Gacha tiers.
+- **v4.5.36 (2026-05-09):** Custom Rarity Remapping.
+  - *Feature:* Globally remapped rarities and their color associations (Common: slate, Uncommon: emerald, Rare: blue, Epic: purple, Legendary: amber, Mythic: rose).
+  - *Feature:* Aligned default Ichiban Kuji pool colors to match the new numerical rarity sequence.
+- **v4.5.35 (2026-05-08):** Ichiban Kuji Duplication Fix.
+  - *Bugfix:* Re-consolidated Standard Ichiban Kuji default prize definitions in `constants.ts` to prevent "A Prize", "B Prize", etc. from rendering as duplicated rows in the shop.
+  - *System:* Added a migration in `useGameState.ts` to intelligently detect and fix existing corrupted saved states by merging duplicated Ichiban Kuji items back into a single row while safely retaining the player's custom inventory counts.
+- **v4.5.34 (2026-05-08):** Universal Rarity Mapping.
+  - *System:* Established a universal numerical mapping (1-6) for rarity states (Common -> Exotic).
+  - *Feature:* Ichiban Kuji pools and generic Gacha settings now store and interact with formal rarity values.
+  - *UI:* Removed the reddish background from the Last One prize setting card entirely to provide full compatibilty with Light Themes.
+- **v4.5.33 (2026-05-08):** Ichiban Kuji Theme Compatibility Polish.
+  - *Feature:* Added default colors to the initial Ichiban Kuji prize tiers.
+  - *UI:* Fixed an issue where the Last One prize setting block displayed a dark red background/shadow that was incompatible with light themes.
+- **v4.5.32 (2026-05-08):** Ichiban Kuji Pool Layout & Colors.
+  - *UI:* Redesigned the Ichiban Kuji settings modal to mirror the new card-based layout introduced in normal Gacha settings.
+  - *Feature:* Allowed users to assign custom predefined aesthetic color themes to individual Ichiban Kuji prize tiers.
+  - *System:* Updated Shop and Vault renderings to seamlessly consume custom colors directly from Ichiban Kuji reward data.
+- **v4.5.31 (2026-05-08):** Gacha settings modal layout upgrade.
+  - *UI:* Completely redesigned the Gacha edit modal with a clear, card-based layout for configuring rarity tiers and drop weights.
+  - *Feature:* Restricted custom rarity options to "Common, Rare, Epic, Legendary, Mythic, Exotic" and automatically sorted them by rarity value.
+  - *Feature:* Added automatic Drop Rate (%) calculation displayed next to weights.
+- **v4.5.30 (2026-05-08):** Custom Gacha Rarities & Colors.
+  - *Feature:* Gacha pools now support fully customizable rarities, allowing users to add/delete custom rarities and adjust weights for each tier dynamically.
+  - *UI:* Introduced a curated color palette for rarity tiers, applicable seamlessly to custom Gacha sets.
+  - *System:* Gacha reward results and Vault inventory table are now fully synchronized to render the custom rarity colors attached to the obtained items.
+- **v4.5.29 (2026-05-08):** Ichiban Kuji Row Layout Refinement.
+  - *UI:* Redesigned the Ichiban Kuji prize lists to display as a cohesive row-by-row layout instead of a grid, matching the standard Gacha UI for better readability.
+- **v4.5.28 (2026-05-08):** Gacha Settings UI Polish.
+  - *UI:* Redesigned the visualization of standard Gacha prizes in the Merchant settings to use structured cards that clearly split item pools by rarity and drop rates.
+  - *UI:* Redesigned the Ichiban Kuji prize lists into a dedicated grid displaying probability ratios, prize tiers, remaining quantities, and initial quantities cleanly.
+- **v4.5.27 (2026-05-08):** Developer Mode Security UX Update.
+  - *UX:* Moved the "Lock & Disable" button to the very bottom of the Developer Settings page.
+  - *UI:* Redesigned the lock button into a minimalist, centered action with a dedicated icon to prevent accidental triggers and clean up the header.
+- **v4.5.26 (2026-05-08):** Developer Settings Header Cleanup.
+  - *UI:* Removed the redundant "Developer Tools" section header from the Developer Settings page.
+  - *UX:* Relocated the "Lock & Disable" action to the "Resource Modification" header for a more streamlined layout.
+- **v4.5.25 (2026-05-08):** Universal Numeric Input Refactor.
+  - *UI/UX:* Replaced all raw numerical input fields across the application (Shop, Rewards, Gacha, Levels, Timer, Quests, Dungeons, Recent Sessions, Dev Controls) with a unified `SpinnerInput` component.
+  - *Feature:* `SpinnerInput` standardizes numerical adjustment styles with increment/decrement arrow buttons and proper bounds validation.
+  - *Feature:* Added float tracking and `step` capability to `SpinnerInput` to robustly handle decimals like Crit Chance.
+- **v4.5.24 (2026-05-08):** Developer Settings Responsive Layout.
+  - *UI:* Refined "Resource Modification" grid in Developer Settings to be responsive (1 column on mobile, 2 on tablet, 3 on desktop).
+- **v4.5.23 (2026-05-08):** Developer Settings Refactor & Layout Update.
+  - *Architecture:* Extracted Developer Settings from `Settings.tsx` into a dedicated `DeveloperSettings.tsx` component.
+  - *UI:* Modified the "Resource Modification" layout in Developer Settings to dynamically display 3 columns per row for better density.
+- **v4.5.22 (2026-05-08):** Unconditional Reward Chest Storage.
+  - *Feature:* Rewrote reward generation to unconditionally push new rewards to the pending reward chest regardless of victory screen skipping settings.
+  - *Bugfix:* selecting a reward gracefully removes it from the pending chest, ensuring that refreshing or dismissing the victory modal no longer permanently destroys unclaimed rewards.
 - **v4.5.21 (2026-05-08):** Numeric Inputs Empty State & Validation Polish.
   - *UX:* Rewrote numeric input controls across `DungeonManager`, `ShopSettings`, `RewardSettings`, `GachaSettings`, and `LevelRewardsSettings` to support empty string (`''`) states during editing instead of aggressively snapping to `0` or `1`.
   - *Feature:* Added strict validation checks on save operations for all previously modified numeric inputs, triggering popup alerts (`window.alert`) when users attempt to save with invalid, missing, or empty numeric data.
@@ -693,24 +766,4 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 - **v1.0.0:** Initial release and subsequent security/UI enhancements (Cloud Sync confirmations, history tracking, etc.).
 
 ## Pending Tasks
-- **[Analysis] Web Push Notification Failures (v1.5.3):**
-  - *Current State:* Notifications are still failing despite VAPID keys and Vercel Cron endpoints being added.
-  - *Possible Root Causes:*
-    1. **Vercel Cron Limitations (Hobby Tier):** Vercel's free tier only allows 1 cron job execution per day. If we rely on cron to check Redis and send notifications, they will not arrive in real-time.
-    2. **iOS/Safari Restrictions:** Web Push on iOS requires the app to be installed to the Home Screen (PWA) and requires iOS 16.4+. It will silently fail in a standard Safari tab.
-    3. **Redis Connection Timeouts:** In a serverless environment, the Redis connection might be dropping or failing to connect in time, meaning scheduled pushes are never retrieved.
-    4. **Service Worker Scope/Lifecycle:** Vite's PWA plugin might be overriding our custom `sw.js`, or the service worker is going to sleep and failing to wake up for the push event.
-    5. **Missing/Invalid VAPID Env Vars:** The Vercel environment variables (`VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`) might be missing or incorrectly formatted in the Vercel dashboard.
-  - *Feasibility & Next Steps:*
-    - **Cron Fix:** Very difficult on Vercel Hobby. *Alternative:* Switch to client-side scheduling (using Service Worker `setTimeout`, though unreliable) or trigger the check endpoint (`/api/push/check`) on every app load/interaction instead of relying solely on Cron.
-    - **iOS Fix:** Cannot fix via code. Must add UI to detect iOS and prompt the user to "Add to Home Screen" before enabling notifications.
-    - **Redis Fix:** Add robust error logging to the `/api/push/check` endpoint to see if Redis is the bottleneck.
-- **[Bugfix & Feature] Fix Silent Sync & Add Data Comparison UI (v1.5.1):**
-  - *Analysis of Silent Sync Failure:*
-    1. **Root Cause:** The `JSON.stringify` comparison in `useCloudSync.ts` is too strict. While we ignored `lastUpdated`, we forgot to ignore other volatile fields. Specifically, `syncHistory` is different between local and cloud (every sync adds an event, and local might have a different history length), `deviceType` might differ, and `pushSubscription` might differ. If any of these differ, `JSON.stringify` returns false, triggering the modal.
-    2. **Fix Plan:** Create a robust `compareGameStates` utility function. This function will explicitly strip out volatile fields (`lastUpdated`, `syncHistory`, `deviceType`, `pushSubscription`, `secretCode`) from both local and cloud states before performing a deep comparison.
-  - *Feasibility of Data Comparison UI:*
-    1. **Feasibility:** Highly feasible. We already have `syncCheckResult.cloudData.state` and the local `state` available in `CloudSyncModal.tsx`.
-    2. **Action Plan:** Redesign the conflict view in `CloudSyncModal.tsx`. Instead of just showing the cloud level and time, we will create a side-by-side comparison table/grid showing: Level, Coins, Total Sessions (history length), Device Type, and Last Updated Time for BOTH Local and Cloud. We can highlight the higher values in green to make it obvious which save is more advanced.
-- Fix performance issues causing lag (state colocation for Timer - partially addressed with memoization).
 - Further optimize state management if lag persists.

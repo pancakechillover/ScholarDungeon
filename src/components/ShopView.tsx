@@ -10,6 +10,7 @@ interface ShopViewProps {
   resetIchibanPool: (poolId: string) => void;
   setDrawResult: (result: any) => void;
   setShowCoinGuide: (show: boolean) => void;
+  onSetActivePool?: (type: 'gacha' | 'ichiban', poolId: string) => void;
 }
 
 export const ShopView: React.FC<ShopViewProps> = ({ 
@@ -18,7 +19,8 @@ export const ShopView: React.FC<ShopViewProps> = ({
   handleDraw, 
   resetIchibanPool, 
   setDrawResult,
-  setShowCoinGuide
+  setShowCoinGuide,
+  onSetActivePool
 }) => {
   return (
     <motion.div
@@ -32,6 +34,8 @@ export const ShopView: React.FC<ShopViewProps> = ({
         coins={state.coins} 
         shopItems={state.shopItems || []}
         gachaPools={state.gachaPools || []}
+        activeGachaPoolId={state.activeGachaPoolId}
+        activeIchibanPoolId={state.activeIchibanPoolId}
         onPurchase={handlePurchase}
         onDrawGacha={handleDraw}
         onResetIchiban={(id) => {
@@ -39,6 +43,7 @@ export const ShopView: React.FC<ShopViewProps> = ({
           setTimeout(() => setDrawResult(null), 50);
         }}
         onShowCoinGuide={() => setShowCoinGuide(true)}
+        onSetActivePool={onSetActivePool}
       />
     </motion.div>
   );

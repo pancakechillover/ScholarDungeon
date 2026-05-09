@@ -9,6 +9,7 @@ interface GachaResult {
   item: string;
   rarity: string;
   poolType: 'gacha' | 'ichiban';
+  color?: string;
 }
 
 interface GachaResultModalProps {
@@ -110,8 +111,8 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({
     playSound('reward', soundVolume, soundEnabled);
   };
 
-  const getRarityStyles = (rarity: string, isTenPull: boolean) => {
-    const r = rarity.toUpperCase();
+  const getRarityStyles = (result: GachaResult, isTenPull: boolean) => {
+    const r = result.rarity.toUpperCase();
     const iconSize = isTenPull ? 20 : 32;
     const lastOneIconSize = isTenPull ? 24 : 40;
 
@@ -126,6 +127,19 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({
         gradient: 'from-rose-500/30 via-transparent to-rose-950/30',
         label: 'LAST ONE PRIZE'
       };
+    }
+    
+    if (result.color) {
+      switch(result.color) {
+        case 'blue': return { bg: 'bg-slate-950', border: 'border-blue-500', text: 'text-blue-400', accent: 'bg-blue-500', glow: 'shadow-[0_0_20px_rgba(59,130,246,0.2)]', icon: <Star className="text-blue-400" size={iconSize} />, gradient: 'from-blue-500/20 via-transparent to-blue-900/20' };
+        case 'purple': return { bg: 'bg-slate-950', border: 'border-purple-500', text: 'text-purple-400', accent: 'bg-purple-500', glow: 'shadow-[0_0_30px_rgba(168,85,247,0.3)]', icon: <Sparkles className="text-purple-400" size={iconSize} />, gradient: 'from-purple-500/20 via-transparent to-purple-900/20' };
+        case 'amber': return { bg: 'bg-slate-950', border: 'border-amber-500', text: 'text-amber-400', accent: 'bg-amber-500', glow: 'shadow-[0_0_40px_rgba(245,158,11,0.4)]', icon: <Trophy className="text-amber-400" size={iconSize} />, gradient: 'from-amber-500/30 via-transparent to-amber-900/30' };
+        case 'red': return { bg: 'bg-slate-950', border: 'border-red-500', text: 'text-red-400', accent: 'bg-red-500', glow: 'shadow-[0_0_40px_rgba(239,68,68,0.4)]', icon: <Gift className="text-red-400" size={iconSize} />, gradient: 'from-red-500/30 via-transparent to-red-900/30' };
+        case 'rose': return { bg: 'bg-slate-950', border: 'border-rose-500', text: 'text-rose-400', accent: 'bg-rose-500', glow: 'shadow-[0_0_40px_rgba(244,63,94,0.4)]', icon: <Trophy className="text-rose-400" size={iconSize} />, gradient: 'from-rose-500/30 via-transparent to-rose-900/30' };
+        case 'slate': 
+        default:
+          return { bg: 'bg-slate-950', border: 'border-slate-700', text: 'text-slate-400', accent: 'bg-slate-700', glow: 'shadow-none', icon: <CheckCircle2 className="text-slate-400" size={iconSize} />, gradient: 'from-slate-800/20 via-transparent to-slate-950/20' };
+      }
     }
     
     if (r.includes('EPIC') || r.includes('SR') || r.includes('B')) {
@@ -152,7 +166,19 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({
       };
     }
 
-    if (r.includes('COMMON') || r.includes('D')) {
+    if (r.includes('UNCOMMON') || r.includes('D')) {
+      return {
+        bg: 'bg-slate-950',
+        border: 'border-emerald-500',
+        text: 'text-emerald-400',
+        accent: 'bg-emerald-500',
+        glow: 'shadow-[0_0_20px_rgba(16,185,129,0.2)]',
+        icon: <Gift className="text-emerald-400" size={iconSize} />,
+        gradient: 'from-emerald-500/20 via-transparent to-emerald-900/20'
+      };
+    }
+
+    if (r.includes('COMMON')) {
       return {
         bg: 'bg-slate-950',
         border: 'border-slate-700',
@@ -226,7 +252,7 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({
               </div>
               <div className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar">
                 {results.map((res, i) => {
-                  const styles = getRarityStyles(res.rarity, true);
+                  const styles = getRarityStyles(res, true);
                   return (
                     <div key={i} className="flex items-center gap-4 p-3 bg-white/5 rounded-xl border border-white/5">
                       <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center shrink-0", styles.accent, "bg-opacity-20")}>
@@ -270,7 +296,7 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({
                   {(() => {
                     const res = normalResults[currentIndex];
                     const idx = currentIndex;
-                    const styles = getRarityStyles(res.rarity, false);
+                    const styles = getRarityStyles(res, false);
                     const isRevealed = revealedIndices.includes(idx);
                     const cardContent = (
                       <div className={cn(
@@ -374,7 +400,7 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({
                   <div className="flex gap-2">
                     {normalResults.map((res, i) => {
                       const isRevealed = revealedIndices.includes(i) || (viewedIndices.includes(i) && gachaEffect !== 'scratch');
-                      const styles = isRevealed ? getRarityStyles(res.rarity, false) : null;
+                      const styles = isRevealed ? getRarityStyles(res, false) : null;
                       
                       return (
                         <div 
@@ -400,7 +426,7 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({
                 : "flex flex-wrap gap-4 sm:gap-8 justify-center items-center",
             )}>
               {normalResults.map((res, idx) => {
-                const styles = getRarityStyles(res.rarity, normalResults.length >= 10);
+                const styles = getRarityStyles(res, normalResults.length >= 10);
                 const cardContent = (
                   <div className={cn(
                     "h-full w-full flex flex-col items-center relative overflow-hidden transition-all",

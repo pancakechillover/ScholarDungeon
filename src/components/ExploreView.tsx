@@ -147,6 +147,19 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
   openTimerSettings
 }) => {
   const [showChestModal, setShowChestModal] = React.useState(false);
+  const [activeTooltipId, setActiveTooltipId] = React.useState<string | null>(null);
+
+  // Close tooltip when clicking outside
+  React.useEffect(() => {
+    if (!activeTooltipId) return;
+    const handleGlobalClick = (e: MouseEvent) => {
+      if (!(e.target as HTMLElement).closest('.talent-icon-container')) {
+        setActiveTooltipId(null);
+      }
+    };
+    window.addEventListener('mousedown', handleGlobalClick);
+    return () => window.removeEventListener('mousedown', handleGlobalClick);
+  }, [activeTooltipId]);
   
   return (
     <motion.div
@@ -340,6 +353,10 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
                     onRewardSelect={(reward, sessionId) => {
                       selectReward(reward, sessionId);
                       playSound('reward', state.soundVolume, state.soundEnabled);
+                      setState(prev => ({
+                        ...prev,
+                        pendingRewardChest: prev.pendingRewardChest?.filter(item => item.session.id !== sessionId) || []
+                      }));
                     }}
                     onDeferReward={(session, choices) => {
                       setState(prev => ({
@@ -425,6 +442,10 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
                       onRewardSelect={(reward, sessionId) => {
                         selectReward(reward, sessionId);
                         playSound('reward', state.soundVolume, state.soundEnabled);
+                        setState(prev => ({
+                          ...prev,
+                          pendingRewardChest: prev.pendingRewardChest?.filter(item => item.session.id !== sessionId) || []
+                        }));
                       }}
                       onDeferReward={(session, choices) => {
                         setState(prev => ({
@@ -515,16 +536,29 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
                         const colorClass = branchColors[talent.branch] || 'text-slate-400 bg-slate-800 border-slate-700';
                         
                         return (
-                          <div key={talent.id} className="group relative hover:z-[100]">
+                          <div 
+                            key={talent.id} 
+                            className="group relative hover:z-[100] talent-icon-container"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveTooltipId(activeTooltipId === talent.id ? null : talent.id);
+                            }}
+                          >
                             <div className={cn(
-                              "w-12 h-12 flex items-center justify-center rounded-xl border transition-all hover:scale-110",
-                              colorClass
+                              "w-12 h-12 flex items-center justify-center rounded-xl border transition-all hover:scale-110 cursor-pointer",
+                              colorClass,
+                              activeTooltipId === talent.id && "ring-2 ring-indigo-500 scale-110 bg-indigo-500/20 border-indigo-500/40"
                             )}>
                               <TalentIcon iconName={talent.icon || 'Scroll'} size={24} />
                             </div>
 
                             {/* Tooltip */}
-                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 z-[100] invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none">
+                            <div className={cn(
+                              "absolute bottom-full left-1/2 -translate-x-1/2 mb-3 z-[100] transition-all duration-200 pointer-events-none",
+                              activeTooltipId === talent.id 
+                                ? "visible opacity-100 translate-y-0" 
+                                : "invisible opacity-0 translate-y-1 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0"
+                            )}>
                               <div className="bg-slate-900 border border-slate-700 p-4 rounded-2xl shadow-2xl min-w-[200px]">
                                 <div className={cn("text-sm font-black mb-1", branchColors[talent.branch].split(' ')[0])}>
                                   {talent.name}

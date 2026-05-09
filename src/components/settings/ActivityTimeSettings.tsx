@@ -126,6 +126,32 @@ export const ActivityTimeSettings = ({ state, setState }: { state: any, setState
           periodKey="night"
         />
       </div>
+
+      <div className="flex items-center justify-between p-4 bg-slate-900 border border-slate-800 rounded-3xl mt-2">
+        <div className="flex items-center gap-3">
+          <div className={cn("p-2 rounded-xl", state.showOtherInActivityLog !== false ? "bg-indigo-500/10 text-indigo-400" : "bg-slate-800 text-slate-500")}>
+            <Layers size={20} />
+          </div>
+          <div>
+            <div className="font-bold text-white text-sm">Show "Other" Periods</div>
+            <div className="text-[10px] text-slate-500">Include sessions outside peak hours in charts</div>
+          </div>
+        </div>
+        <button
+          onClick={() => setState(prev => ({ ...prev, showOtherInActivityLog: prev.showOtherInActivityLog === false ? true : false }))}
+          className={cn(
+            "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
+            state.showOtherInActivityLog !== false ? "bg-indigo-400" : "bg-slate-700"
+          )}
+        >
+          <span
+            className={cn(
+              "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+              state.showOtherInActivityLog !== false ? "translate-x-6" : "translate-x-1"
+            )}
+          />
+        </button>
+      </div>
     </div>
   );
 };

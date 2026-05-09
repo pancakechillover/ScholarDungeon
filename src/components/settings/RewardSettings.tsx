@@ -8,6 +8,7 @@ import * as LucideIcons from 'lucide-react';
 import { APP_VERSION, LAST_UPDATE_DATE, RELEASE_HISTORY } from '../../version';
 import { cn, getXPForLevel, getDefaultRewardForLevel } from '../../lib/utils';
 import { playSound } from '../../lib/sound';
+import { SpinnerInput } from '../SpinnerInput';
 
 // Helper to convert VAPID key
 function urlBase64ToUint8Array(base64String: string) {
@@ -98,9 +99,11 @@ export const RewardSettings = ({ pool, onUpdate, onReset }: { pool: RewardCard[]
                     <td className="px-4 py-4 whitespace-nowrap">
                       <span className={cn("px-2 py-0.5 rounded-full text-[9px] font-black tracking-tighter uppercase border", 
                         card.rarity === 'common' ? "bg-slate-800 text-slate-400 border-slate-700" :
+                        card.rarity === 'uncommon' ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" :
                         card.rarity === 'rare' ? "bg-blue-500/10 text-blue-400 border-blue-500/20" :
                         card.rarity === 'epic' ? "bg-purple-500/10 text-purple-400 border-purple-500/20" : 
-                        "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                        card.rarity === 'legendary' ? "bg-amber-500/10 text-amber-500 border-amber-500/20" :
+                        "bg-rose-500/10 text-rose-400 border-rose-500/20"
                       )}>
                         {card.rarity}
                       </span>
@@ -138,7 +141,16 @@ export const RewardSettings = ({ pool, onUpdate, onReset }: { pool: RewardCard[]
                     <td className="px-4 py-4">
                       <div className="flex justify-center gap-1">
                         <button onClick={() => setEditing(card)} className="p-1.5 text-slate-400 hover:text-indigo-400 hover:bg-slate-800 rounded-lg transition-colors focus:ring-2 focus:ring-indigo-500/50"><Edit2 size={14} /></button>
-                        <button onClick={() => onUpdate(pool.filter(c => c.id !== card.id))} className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-slate-800 rounded-lg transition-colors focus:ring-2 focus:ring-rose-500/50"><Trash2 size={14} /></button>
+                        <button 
+                          onClick={() => {
+                            if (window.confirm(`Are you sure you want to delete reward "${card.name}"?`)) {
+                              onUpdate(pool.filter(c => c.id !== card.id));
+                            }
+                          }} 
+                          className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-slate-800 rounded-lg transition-colors focus:ring-2 focus:ring-rose-500/50"
+                        >
+                          <Trash2 size={14} />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -236,9 +248,11 @@ export const RewardSettings = ({ pool, onUpdate, onReset }: { pool: RewardCard[]
                         <div className="grid grid-cols-2 gap-2">
                           {[
                             { id: 'common', label: 'Common', color: 'bg-slate-700 border-slate-600 text-slate-300' },
+                            { id: 'uncommon', label: 'Uncommon', color: 'bg-emerald-600 border-emerald-400 text-white' },
                             { id: 'rare', label: 'Rare', color: 'bg-blue-600 border-blue-400 text-white' },
                             { id: 'epic', label: 'Epic', color: 'bg-purple-600 border-purple-400 text-white' },
-                            { id: 'legendary', label: 'Legendary', color: 'bg-amber-500 border-amber-300 text-slate-900' }
+                            { id: 'legendary', label: 'Legendary', color: 'bg-amber-500 border-amber-300 text-slate-900' },
+                            { id: 'mythic', label: 'Mythic', color: 'bg-rose-600 border-rose-400 text-white' }
                           ].map(r => (
                             <button
                               key={r.id}
@@ -301,13 +315,13 @@ export const RewardSettings = ({ pool, onUpdate, onReset }: { pool: RewardCard[]
                         {editing.type === 'coins' && (
                           <div className="space-y-1.5">
                             <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Coin Amount</label>
-                            <input type="text" inputMode="numeric" placeholder="e.g. 10" value={editing.amount === undefined || editing.amount === null ? '' : editing.amount} onChange={e => { const val = e.target.value; if (val === '') setEditing({...editing, amount: '' as any}); else { const parsed = parseInt(val); if (!isNaN(parsed)) setEditing({...editing, amount: parsed}); } }} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:border-amber-500 transition-colors" />
+                            <SpinnerInput placeholder="e.g. 10" value={editing.amount === undefined || editing.amount === null ? '' : editing.amount} onChange={(val) => setEditing({...editing, amount: typeof val === 'number' ? val : ('' as any)})} />
                           </div>
                         )}
                         {editing.type === 'xp' && (
                           <div className="space-y-1.5">
                             <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">XP Amount</label>
-                            <input type="text" inputMode="numeric" placeholder="e.g. 50" value={editing.amount === undefined || editing.amount === null ? '' : editing.amount} onChange={e => { const val = e.target.value; if (val === '') setEditing({...editing, amount: '' as any}); else { const parsed = parseInt(val); if (!isNaN(parsed)) setEditing({...editing, amount: parsed}); } }} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:border-emerald-500 transition-colors" />
+                            <SpinnerInput placeholder="e.g. 50" value={editing.amount === undefined || editing.amount === null ? '' : editing.amount} onChange={(val) => setEditing({...editing, amount: typeof val === 'number' ? val : ('' as any)})} className="focus:border-emerald-500" />
                           </div>
                         )}
                         {editing.type === 'item' && (
@@ -328,7 +342,7 @@ export const RewardSettings = ({ pool, onUpdate, onReset }: { pool: RewardCard[]
                                 <label className="text-[10px] font-bold text-indigo-400/60 uppercase tracking-wider ml-1">
                                   {(editing.itemType === 'xp_bonus_percent' || editing.itemType === 'coin_bonus_percent') ? 'Bonus %' : 'Quantity'}
                                 </label>
-                                <input type="text" inputMode="numeric" placeholder="Value" value={editing.amount === undefined || editing.amount === null ? '' : editing.amount} onChange={e => { const val = e.target.value; if (val === '') setEditing({...editing, amount: '' as any}); else { const parsed = parseInt(val); if (!isNaN(parsed)) setEditing({...editing, amount: parsed}); } }} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-xs" />
+                                <SpinnerInput placeholder="Value" value={editing.amount === undefined || editing.amount === null ? '' : editing.amount} onChange={(val) => setEditing({...editing, amount: typeof val === 'number' ? val : ('' as any)})} />
                               </div>
                             )}
                           </div>
@@ -337,7 +351,7 @@ export const RewardSettings = ({ pool, onUpdate, onReset }: { pool: RewardCard[]
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-1.5">
                             <label className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider ml-1">Drop Weight</label>
-                            <input type="text" inputMode="numeric" placeholder="Weight" value={editing.weight === undefined || editing.weight === null ? '' : editing.weight} onChange={e => { const val = e.target.value; if (val === '') setEditing({...editing, weight: '' as any}); else { const parsed = parseInt(val); if (!isNaN(parsed)) setEditing({...editing, weight: parsed}); } }} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm font-mono focus:border-indigo-500 transition-colors" />
+                            <SpinnerInput placeholder="Weight" value={editing.weight === undefined || editing.weight === null ? '' : editing.weight} onChange={(val) => setEditing({...editing, weight: typeof val === 'number' ? val : ('' as any)})} className="font-mono" />
                           </div>
                           <div className="space-y-1.5 text-right flex flex-col justify-end">
                             <p className="text-[10px] text-slate-500 uppercase font-bold tracking-tighter">Current Probability</p>
@@ -360,11 +374,11 @@ export const RewardSettings = ({ pool, onUpdate, onReset }: { pool: RewardCard[]
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-1.5">
                             <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Max Occurrences</label>
-                            <input type="text" inputMode="numeric" placeholder="e.g. 1" value={editing.limitCount === undefined || editing.limitCount === null ? '' : editing.limitCount} onChange={e => { const val = e.target.value; if (val === '') setEditing({...editing, limitCount: '' as any}); else { const parsed = parseInt(val); if (!isNaN(parsed)) setEditing({...editing, limitCount: parsed}); } }} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm" />
+                            <SpinnerInput placeholder="e.g. 1" value={editing.limitCount === undefined || editing.limitCount === null ? '' : editing.limitCount} onChange={(val) => setEditing({...editing, limitCount: typeof val === 'number' ? val : ('' as any)})} />
                           </div>
                           <div className="space-y-1.5">
                             <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Period (Days)</label>
-                            <input type="text" inputMode="numeric" placeholder="e.g. 1" value={editing.limitPeriodDays === undefined || editing.limitPeriodDays === null ? '' : editing.limitPeriodDays} onChange={e => { const val = e.target.value; if (val === '') setEditing({...editing, limitPeriodDays: '' as any}); else { const parsed = parseInt(val); if (!isNaN(parsed)) setEditing({...editing, limitPeriodDays: parsed}); } }} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm" />
+                            <SpinnerInput placeholder="e.g. 1" value={editing.limitPeriodDays === undefined || editing.limitPeriodDays === null ? '' : editing.limitPeriodDays} onChange={(val) => setEditing({...editing, limitPeriodDays: typeof val === 'number' ? val : ('' as any)})} />
                           </div>
                         </div>
                       </div>

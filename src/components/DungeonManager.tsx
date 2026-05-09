@@ -4,6 +4,7 @@ import { Dungeon, MajorDungeon, DungeonReward } from '../types';
 import { Plus, Target, Sword, CheckCircle2, ChevronRight, Trash2, FolderPlus, Folder, ChevronDown, ChevronUp, Gift, X, Edit2, Coins, Zap, Trophy, HelpCircle, Square, CheckSquare, EyeOff, Eye, Archive, Search, Filter, Calendar } from 'lucide-react';
 import { PageHeader } from './PageHeader';
 import { cn } from '../lib/utils';
+import { SpinnerInput } from './SpinnerInput';
 
 interface DungeonManagerProps {
   dungeons: Dungeon[];
@@ -420,24 +421,14 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                   {(editingSub || isAddingSub) && (
                     <div className="space-y-1">
                       <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Total Rooms</label>
-                      <input
-                        type="text"
-                        inputMode="numeric"
+                      <SpinnerInput
+                        min={1}
                         value={isAddingSub ? (newSub.totalSessions === undefined ? '' : newSub.totalSessions) : (editingSub?.totalSessions === undefined ? '' : editingSub.totalSessions)}
-                        onChange={e => {
-                          const val = e.target.value;
-                          if (val === '') {
-                            if (isAddingSub) setNewSub({ ...newSub, totalSessions: '' as any });
-                            else if (editingSub) setEditingSub({ ...editingSub, totalSessions: '' as any });
-                          } else {
-                            const parsed = parseInt(val);
-                            if (!isNaN(parsed)) {
-                              if (isAddingSub) setNewSub({ ...newSub, totalSessions: parsed });
-                              else if (editingSub) setEditingSub({ ...editingSub, totalSessions: parsed });
-                            }
-                          }
+                        onChange={(val) => {
+                          if (isAddingSub) setNewSub({ ...newSub, totalSessions: typeof val === 'number' ? Math.max(1, val) : '' as any });
+                          else if (editingSub) setEditingSub({ ...editingSub, totalSessions: typeof val === 'number' ? Math.max(1, val) : '' as any });
                         }}
-                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
+                        className="w-full text-sm focus:border-indigo-500"
                       />
                     </div>
                   )}
@@ -527,21 +518,14 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                                   <option value="item">Item</option>
                                   <option value="text">Custom Text</option>
                                 </select>
-                                <input 
-                                  type="text"
-                                  inputMode="numeric"
+                                <SpinnerInput 
                                   disabled={isRewardLocked}
                                   value={reward.amount === undefined || reward.amount === null ? '' : reward.amount}
-                                  onChange={e => {
-                                    const val = e.target.value;
-                                    if (val === '') updateReward(idx, 'amount', '' as any, isAddingMajor || !!editingMajor || !!isAddingSub);
-                                    else {
-                                      const parsed = parseInt(val);
-                                      if (!isNaN(parsed)) updateReward(idx, 'amount', parsed, isAddingMajor || !!editingMajor || !!isAddingSub);
-                                    }
+                                  onChange={(val) => {
+                                    updateReward(idx, 'amount', typeof val === 'number' ? val : ('' as any), isAddingMajor || !!editingMajor || !!isAddingSub);
                                   }}
                                   className={cn(
-                                    "w-24 bg-slate-900 text-sm border-slate-700 rounded-lg px-2 py-1.5 focus:outline-none focus:border-indigo-500",
+                                    "w-24 text-sm px-2",
                                     isRewardLocked ? "text-slate-500 cursor-not-allowed opacity-70" : "text-white"
                                   )}
                                   placeholder="Amt"

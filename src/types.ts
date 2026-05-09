@@ -1,4 +1,4 @@
-export type Rarity = 'common' | 'rare' | 'epic' | 'legendary';
+export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary' | 'mythic';
 
 export interface RewardCard {
   id: string;
@@ -67,6 +67,7 @@ export interface RewardHistoryItem {
   id: string;
   name: string;
   rarity: string;
+  color?: string;
   source: 'Explore' | 'Gacha' | 'Shop' | 'LevelUp';
   timestamp: string;
   type: 'coins' | 'xp' | 'item' | 'text';
@@ -171,6 +172,8 @@ export interface AppState {
   rewardPool: RewardCard[];
   shopItems: ShopItem[];
   gachaPools: GachaPool[];
+  activeGachaPoolId?: string;
+  activeIchibanPoolId?: string;
   levelRewards?: LevelReward[];
   lastCompletionRewards?: {
     dungeonName: string;
@@ -195,6 +198,7 @@ export interface AppState {
   pushEnabled?: boolean;
   pushSubscription?: any;
   timeSettings?: TimeSettings;
+  showOtherInActivityLog?: boolean;
 }
 
 export interface StudySession {
@@ -229,15 +233,20 @@ export interface GachaPool {
   name: string;
   type: 'gacha' | 'ichiban';
   cost: number;
-  weights?: {
-    SSR: number;
-    SR: number;
-    R: number;
-  };
+  weights?: Record<string, number>;
+  rarities?: {
+    id: string;
+    name: string;
+    color: string;
+    weight: number;
+    rarityValue?: number;
+  }[];
   items: {
     rarity: string;
     name: string;
     count?: number; // For Ichiban
     initialCount?: number; // For Ichiban
+    color?: string; // For Ichiban custom colors
+    rarityValue?: number; // numeric value (1-6)
   }[];
 }

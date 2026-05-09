@@ -24,6 +24,7 @@ interface TalentTreeProps {
   activeIds: string[];
   onUnlock: (id: string, cost: number) => void;
   onToggle: (id: string) => void;
+  talents?: Talent[];
 }
 
 export const TalentTree = React.memo<TalentTreeProps>(({
@@ -32,10 +33,20 @@ export const TalentTree = React.memo<TalentTreeProps>(({
   unlockedIds,
   activeIds,
   onUnlock,
-  onToggle
+  onToggle,
+  talents = TALENTS
 }) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    return localStorage.getItem('scholar_dungeon_talents_collapsed') === 'true';
+  });
   const [showInfo, setShowInfo] = useState(false);
+
+  const toggleCollapse = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const nextValue = !isCollapsed;
+    setIsCollapsed(nextValue);
+    localStorage.setItem('scholar_dungeon_talents_collapsed', String(nextValue));
+  };
 
   const branches = [
     { id: 'A', name: 'Truth Crown', color: 'text-indigo-400', bg: 'bg-indigo-500/10', border: 'border-indigo-500/30', accent: 'bg-indigo-500' },
@@ -49,7 +60,7 @@ export const TalentTree = React.memo<TalentTreeProps>(({
     
     // Check previous tier in same branch
     if (talent.tier > 1) {
-      const prevTier = TALENTS.find(t => t.branch === talent.branch && t.tier === talent.tier - 1);
+      const prevTier = talents.find(t => t.branch === talent.branch && t.tier === talent.tier - 1);
       if (prevTier && !unlockedIds.includes(prevTier.id)) return false;
     }
     
@@ -69,10 +80,7 @@ export const TalentTree = React.memo<TalentTreeProps>(({
       >
         <div className="flex items-center gap-4 mt-4">
           <button 
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsCollapsed(!isCollapsed);
-            }}
+            onClick={toggleCollapse}
             className="p-2 hover:bg-slate-800 rounded-xl text-slate-400 transition-colors bg-slate-900/50 border border-slate-800"
             title={isCollapsed ? "Expand Tree" : "Collapse Tree"}
           >
@@ -206,7 +214,7 @@ export const TalentTree = React.memo<TalentTreeProps>(({
                 "flex",
                 isCollapsed ? "flex-row gap-3" : "flex-col space-y-8 w-full"
               )}>
-                {TALENTS.filter(t => t.branch === branch.id).sort((a, b) => a.tier - b.tier).map(talent => {
+                {talents.filter(t => t.branch === branch.id).sort((a, b) => a.tier - b.tier).map(talent => {
                   const isUnlocked = unlockedIds.includes(talent.id);
                   const isActive = activeIds.includes(talent.id);
                   const unlockable = canUnlock(talent);

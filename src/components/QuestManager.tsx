@@ -4,6 +4,7 @@ import { Quest, QuestType, QuestReward } from '../types';
 import { Target, Trophy, Plus, Trash2, Edit2, CheckCircle2, ChevronDown, ChevronUp, X, Gift, Coins, Zap, CheckSquare, Square } from 'lucide-react';
 import { PageHeader } from './PageHeader';
 import { cn } from '../lib/utils';
+import { SpinnerInput } from './SpinnerInput';
 
 interface QuestManagerProps {
   quests: Quest[];
@@ -208,12 +209,10 @@ export const QuestManager = React.memo<QuestManagerProps>(({ quests, activeTalen
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Target Amount</label>
-                    <input
-                      type="number"
-                      min="1"
+                    <SpinnerInput
+                      min={1}
                       value={newQuest.target}
-                      onChange={e => setNewQuest({ ...newQuest, target: parseInt(e.target.value) || 1 })}
-                      className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
+                      onChange={(val) => setNewQuest({ ...newQuest, target: typeof val === 'number' ? Math.max(1, val) : 1 })}
                     />
                   </div>
                 </div>
@@ -264,11 +263,10 @@ export const QuestManager = React.memo<QuestManagerProps>(({ quests, activeTalen
                             <option value="item">Item</option>
                             <option value="text">Custom Text</option>
                           </select>
-                          <input 
-                            type="number"
+                          <SpinnerInput 
                             value={reward.amount}
-                            onChange={e => updateReward(idx, 'amount', parseInt(e.target.value) || 0)}
-                            className="w-24 bg-slate-900 text-sm text-white border-slate-700 rounded-lg px-2 py-1.5"
+                            onChange={(val) => updateReward(idx, 'amount', typeof val === 'number' ? val : 0)}
+                            className="w-24 text-sm"
                             placeholder="Amt"
                           />
                           <button onClick={() => removeReward(idx)} className="p-1.5 text-slate-500 hover:text-red-400"><X size={16} /></button>

@@ -4,6 +4,7 @@ import { History, Clock, Trophy, Edit2, Trash2, Filter, Search, X, Check, Search
 import { StudySession, Dungeon, MajorDungeon, RewardCard } from '../types';
 import { cn } from '../lib/utils';
 import { format, parseISO, isAfter, isBefore, startOfDay, endOfDay } from 'date-fns';
+import { SpinnerInput } from './SpinnerInput';
 
 interface RecentSessionsProps {
   history: StudySession[];
@@ -222,22 +223,20 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Min Duration (m)</label>
-                  <input 
-                    type="number" 
+                  <SpinnerInput 
                     placeholder="Min"
                     value={durationRange.min}
-                    onChange={(e) => setDurationRange(prev => ({ ...prev, min: e.target.value }))}
-                    className="w-full bg-slate-800 border-none rounded-xl py-2 px-4 text-xs text-white outline-none focus:ring-2 focus:ring-indigo-500"
+                    onChange={(val) => setDurationRange(prev => ({ ...prev, min: val as string }))}
+                    className="w-full bg-slate-800"
                   />
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Max Duration (m)</label>
-                  <input 
-                    type="number" 
+                  <SpinnerInput 
                     placeholder="Max"
                     value={durationRange.max}
-                    onChange={(e) => setDurationRange(prev => ({ ...prev, max: e.target.value }))}
-                    className="w-full bg-slate-800 border-none rounded-xl py-2 px-4 text-xs text-white outline-none focus:ring-2 focus:ring-indigo-500"
+                    onChange={(val) => setDurationRange(prev => ({ ...prev, max: val as string }))}
+                    className="w-full bg-slate-800"
                   />
                 </div>
               </div>
@@ -555,31 +554,28 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block text-indigo-400">Focus (m)</label>
-                    <input
-                      type="number"
+                    <SpinnerInput
                       value={editingSession.focusDuration || 0}
-                      onChange={(e) => setEditingSession({ ...editingSession, focusDuration: parseInt(e.target.value) || 0 })}
-                      className="w-full bg-slate-800 border-none rounded-xl py-3 px-4 text-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                      onChange={(val) => setEditingSession({ ...editingSession, focusDuration: typeof val === 'number' ? val : 0 })}
+                      className="w-full"
                     />
                   </div>
                   <div>
                     <label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block text-emerald-400">Rest (m)</label>
-                    <input
-                      type="number"
+                    <SpinnerInput
                       value={editingSession.restDuration || 0}
-                      onChange={(e) => setEditingSession({ ...editingSession, restDuration: parseInt(e.target.value) || 0 })}
-                      className="w-full bg-slate-800 border-none rounded-xl py-3 px-4 text-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                      onChange={(val) => setEditingSession({ ...editingSession, restDuration: typeof val === 'number' ? val : 0 })}
+                      className="w-full"
                     />
                   </div>
                 </div>
 
                 <div>
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Total Duration (m)</label>
-                  <input
-                    type="number"
+                  <SpinnerInput
                     value={editingSession.duration}
-                    onChange={(e) => setEditingSession({ ...editingSession, duration: parseInt(e.target.value) || 0 })}
-                    className="w-full bg-slate-800 border-none rounded-xl py-3 px-4 text-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                    onChange={(val) => setEditingSession({ ...editingSession, duration: typeof val === 'number' ? val : 0 })}
+                    className="w-full"
                   />
                   <p className="text-[10px] text-slate-500 mt-2 italic pr-1">Note: Changing duration does NOT automatically adjust XP/Gold already earned.</p>
                 </div>

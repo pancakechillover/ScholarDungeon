@@ -20,6 +20,7 @@ import { RewardHistoryItem } from '../types';
 import { cn } from '../lib/utils';
 import { PageHeader } from './PageHeader';
 import { format, isWithinInterval, subDays, startOfDay, endOfDay } from 'date-fns';
+import { getColorClass } from '../lib/colors';
 
 interface RewardHistoryProps {
   history: RewardHistoryItem[];
@@ -271,12 +272,17 @@ export const RewardHistory: React.FC<RewardHistoryProps> = ({ history, onToggleR
                       <div className={cn(
                         "w-10 h-10 rounded-lg flex items-center justify-center border shrink-0",
                         (() => {
+                          if (item.color) {
+                            const { borderClass, bgClass, textClass } = getColorClass(item.color);
+                            return `${bgClass} ${borderClass} ${textClass}`;
+                          }
                           const r = item.rarity.toUpperCase();
-                          if (r.includes('LASTONE')) return "bg-rose-500/10 border-rose-500/20 text-rose-500";
-                          if (r.includes('EPIC') || r.includes('SR') || r.includes('B')) return "bg-purple-500/10 border-purple-500/20 text-purple-500";
-                          if (r.includes('COMMON') || r.includes('D')) return "bg-slate-500/10 border-slate-500/20 text-slate-500";
-                          if (r.includes('RARE') || r.includes('C') || r === 'R') return "bg-blue-500/10 border-blue-500/20 text-blue-500";
-                          return "bg-amber-500/10 border-amber-500/20 text-amber-500";
+                          if (r.includes('LASTONE') || r.includes('MYTHIC')) return "bg-rose-500/10 border-rose-500/20 text-rose-500";
+                          if (r.includes('LEGENDARY') || r.includes('SSR') || r.includes('A PRIZE') || r === 'A') return "bg-amber-500/10 border-amber-500/20 text-amber-500";
+                          if (r.includes('EPIC') || r.includes('SR') || r.includes('B PRIZE') || r === 'B') return "bg-purple-500/10 border-purple-500/20 text-purple-500";
+                          if (r.includes('RARE') || r === 'R' || r.includes('C PRIZE') || r === 'C') return "bg-blue-500/10 border-blue-500/20 text-blue-500";
+                          if (r.includes('UNCOMMON') || r.includes('D PRIZE') || r === 'D') return "bg-emerald-500/10 border-emerald-500/20 text-emerald-500";
+                          return "bg-slate-500/10 border-slate-500/20 text-slate-500";
                         })()
                       )}>
                         {item.type === 'coins' ? <Coins size={18} className="text-amber-400" /> :
@@ -318,12 +324,17 @@ export const RewardHistory: React.FC<RewardHistoryProps> = ({ history, onToggleR
                       <span className={cn(
                         "text-[9px] font-black uppercase px-2 py-0.5 rounded border border-current inline-block",
                         (() => {
+                          if (item.color) {
+                            const { textClass, bgClass } = getColorClass(item.color);
+                            return `${textClass} ${bgClass}`;
+                          }
                           const r = item.rarity.toUpperCase();
-                          if (r.includes('LASTONE')) return "text-rose-500 bg-rose-500/5";
-                          if (r.includes('EPIC') || r.includes('SR') || r.includes('B')) return "text-purple-500 bg-purple-500/5";
-                          if (r.includes('COMMON') || r.includes('D')) return "text-slate-500 bg-slate-800";
-                          if (r.includes('RARE') || r.includes('C') || r === 'R') return "text-blue-500 bg-blue-500/5";
-                          return "text-amber-500 bg-amber-500/5";
+                          if (r.includes('LASTONE') || r.includes('MYTHIC')) return "text-rose-500 bg-rose-500/5";
+                          if (r.includes('LEGENDARY') || r.includes('SSR') || r.includes('A PRIZE') || r === 'A') return "text-amber-500 bg-amber-500/5";
+                          if (r.includes('EPIC') || r.includes('SR') || r.includes('B PRIZE') || r === 'B') return "text-purple-500 bg-purple-500/5";
+                          if (r.includes('RARE') || r === 'R' || r.includes('C PRIZE') || r === 'C') return "text-blue-500 bg-blue-500/5";
+                          if (r.includes('UNCOMMON') || r.includes('D PRIZE') || r === 'D') return "text-emerald-500 bg-emerald-500/5";
+                          return "text-slate-500 bg-slate-800";
                         })()
                       )}>
                         {item.rarity}

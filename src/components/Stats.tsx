@@ -145,7 +145,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
     { name: `Morning (${ts.morning.start}-${ts.morning.end})`, sessions: dailyCounts.Morning, fill: '#fde047' },
     { name: `Afternoon (${ts.afternoon.start}-${ts.afternoon.end})`, sessions: dailyCounts.Afternoon, fill: '#f97316' },
     { name: `Night (${ts.night.start}-${ts.night.end})`, sessions: dailyCounts.Night, fill: '#6366f1' },
-    { name: 'Other', sessions: dailyCounts.Other, fill: '#64748b' }
+    ...(state.showOtherInActivityLog !== false ? [{ name: 'Other', sessions: dailyCounts.Other, fill: '#64748b' }] : [])
   ];
 
   let maxPeriod = 'Morning';
@@ -510,7 +510,9 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
                   <Bar dataKey="Morning" stackId="a" fill="#fde047" />
                   <Bar dataKey="Afternoon" stackId="a" fill="#f97316" />
                   <Bar dataKey="Night" stackId="a" fill="#6366f1" />
-                  <Bar dataKey="Other" stackId="a" fill="#64748b" radius={[4, 4, 0, 0]} />
+                  {state.showOtherInActivityLog !== false && (
+                    <Bar dataKey="Other" stackId="a" fill="#64748b" radius={[4, 4, 0, 0]} />
+                  )}
                 </BarChart>
               </ResponsiveContainer>
             </div>

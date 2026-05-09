@@ -15,9 +15,11 @@ interface RewardChestModalProps {
 export const RewardChestModal: React.FC<RewardChestModalProps> = ({ chest, onSelect, onClose }) => {
   const getRarityValue = (r: Rarity) => {
     switch(r) {
-      case 'legendary': return 4;
-      case 'epic': return 3;
-      case 'rare': return 2;
+      case 'mythic': return 6;
+      case 'legendary': return 5;
+      case 'epic': return 4;
+      case 'rare': return 3;
+      case 'uncommon': return 2;
       default: return 1;
     }
   };
@@ -103,17 +105,21 @@ export const RewardChestModal: React.FC<RewardChestModalProps> = ({ chest, onSel
                         onClick={() => { triggerSimpleConfetti(); onSelect(card, item.session.id); }}
                         className={cn(
                           "relative p-4 rounded-2xl border bg-slate-900/50 text-left transition-all hover:-translate-y-1 hover:shadow-lg overflow-hidden group cursor-pointer h-full flex flex-col justify-between min-h-[160px]",
+                          card.rarity === 'mythic' && "border-rose-500/50 hover:border-rose-400 shadow-[0_0_15px_rgba(244,63,94,0.15)]",
                           card.rarity === 'legendary' && "border-amber-400/50 hover:border-amber-400/80 shadow-[0_0_15px_rgba(251,191,36,0.15)]",
-                          card.rarity === 'epic' && "border-purple-500/50 hover:border-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.1)]",
+                          card.rarity === 'epic' && "border-purple-500/50 hover:border-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.15)]",
                           card.rarity === 'rare' && "border-blue-400/40 hover:border-blue-400/70",
+                          card.rarity === 'uncommon' && "border-emerald-500/40 hover:border-emerald-400/70",
                           card.rarity === 'common' && "border-slate-700 hover:border-slate-500"
                         )}
                       >
                          <div>
                           <div className={cn("text-[10px] font-black uppercase tracking-widest mb-2 inline-block px-2 py-0.5 rounded-sm",
+                               card.rarity === 'mythic' ? "bg-rose-500/20 text-rose-400" :
                                card.rarity === 'legendary' ? "bg-amber-400/20 text-amber-400" :
                                card.rarity === 'epic' ? "bg-purple-500/20 text-purple-400" :
                                card.rarity === 'rare' ? "bg-blue-400/20 text-blue-400" :
+                               card.rarity === 'uncommon' ? "bg-emerald-500/20 text-emerald-400" :
                                "bg-slate-800 text-slate-400"
                           )}>
                             {card.rarity}

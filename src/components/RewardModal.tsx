@@ -14,9 +14,11 @@ interface RewardModalProps {
 
 const rarityColors: Record<Rarity, string> = {
   common: 'from-slate-400 to-slate-600 border-slate-400',
+  uncommon: 'from-emerald-400 to-emerald-600 border-emerald-400',
   rare: 'from-blue-400 to-blue-600 border-blue-400',
   epic: 'from-purple-400 to-purple-600 border-purple-400',
   legendary: 'from-amber-400 to-amber-600 border-amber-400',
+  mythic: 'from-rose-400 to-rose-600 border-rose-400',
 };
 
 export const RewardModal: React.FC<RewardModalProps> = ({ coins, xp, choices, onSelect }) => {
@@ -75,9 +77,11 @@ export const RewardModal: React.FC<RewardModalProps> = ({ coins, xp, choices, on
                 )}
               >
                 <div className="absolute top-2 right-2 opacity-50">
+                  {card.rarity === 'mythic' && <LucideIcons.Crown size={16} />}
                   {card.rarity === 'legendary' && <Trophy size={16} />}
                   {card.rarity === 'epic' && <Sparkles size={16} />}
                   {card.rarity === 'rare' && <Gift size={16} />}
+                  {card.rarity === 'uncommon' && <LucideIcons.Star size={16} />}
                 </div>
                 
                 <span className="text-[10px] uppercase tracking-widest font-bold mb-2 opacity-80">

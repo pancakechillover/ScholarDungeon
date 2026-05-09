@@ -8,6 +8,7 @@ import * as LucideIcons from 'lucide-react';
 import { APP_VERSION, LAST_UPDATE_DATE, RELEASE_HISTORY } from '../../version';
 import { cn, getXPForLevel, getDefaultRewardForLevel } from '../../lib/utils';
 import { playSound } from '../../lib/sound';
+import { SpinnerInput } from '../SpinnerInput';
 
 // Helper to convert VAPID key
 function urlBase64ToUint8Array(base64String: string) {
@@ -196,30 +197,24 @@ export const TimerSettingsSection = ({
             {state.devXpMode !== 'random' ? (
               <div className="space-y-2">
                 <label className="text-xs font-bold text-slate-500 uppercase">Base XP</label>
-                <input 
-                  type="number" 
+                <SpinnerInput 
                   value={state.devBaseXP ?? 100} 
-                  onChange={e => setState(prev => ({ ...prev, devBaseXP: parseInt(e.target.value) }))}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white"
+                  onChange={(val) => setState(prev => ({ ...prev, devBaseXP: typeof val === 'number' ? val : 100 }))}
                 />
               </div>
             ) : (
               <div className="space-y-2">
                 <label className="text-xs font-bold text-slate-500 uppercase">XP Range (Min - Max)</label>
                 <div className="flex gap-2">
-                  <input 
-                    type="number" 
+                  <SpinnerInput 
                     value={state.devMinXP ?? 50} 
-                    onChange={e => setState(prev => ({ ...prev, devMinXP: parseInt(e.target.value) }))}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-center"
+                    onChange={(val) => setState(prev => ({ ...prev, devMinXP: typeof val === 'number' ? val : 50 }))}
                     placeholder="Min"
                   />
                   <span className="text-slate-500 flex items-center">-</span>
-                  <input 
-                    type="number" 
+                  <SpinnerInput 
                     value={state.devMaxXP ?? 150} 
-                    onChange={e => setState(prev => ({ ...prev, devMaxXP: parseInt(e.target.value) }))}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-center"
+                    onChange={(val) => setState(prev => ({ ...prev, devMaxXP: typeof val === 'number' ? val : 150 }))}
                     placeholder="Max"
                   />
                 </div>
@@ -249,30 +244,24 @@ export const TimerSettingsSection = ({
             {state.devCoinMode !== 'random' ? (
               <div className="space-y-2">
                 <label className="text-xs font-bold text-slate-500 uppercase">Base Gold</label>
-                <input 
-                  type="number" 
+                <SpinnerInput 
                   value={state.devBaseCoins ?? 10} 
-                  onChange={e => setState(prev => ({ ...prev, devBaseCoins: parseInt(e.target.value) }))}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white"
+                  onChange={(val) => setState(prev => ({ ...prev, devBaseCoins: typeof val === 'number' ? val : 10 }))}
                 />
               </div>
             ) : (
               <div className="space-y-2">
                 <label className="text-xs font-bold text-slate-500 uppercase">Gold Range (Min - Max)</label>
                 <div className="flex gap-2">
-                  <input 
-                    type="number" 
+                  <SpinnerInput 
                     value={state.devMinCoins ?? 5} 
-                    onChange={e => setState(prev => ({ ...prev, devMinCoins: parseInt(e.target.value) }))}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-center"
+                    onChange={(val) => setState(prev => ({ ...prev, devMinCoins: typeof val === 'number' ? val : 5 }))}
                     placeholder="Min"
                   />
                   <span className="text-slate-500 flex items-center">-</span>
-                  <input 
-                    type="number" 
+                  <SpinnerInput 
                     value={state.devMaxCoins ?? 15} 
-                    onChange={e => setState(prev => ({ ...prev, devMaxCoins: parseInt(e.target.value) }))}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-center"
+                    onChange={(val) => setState(prev => ({ ...prev, devMaxCoins: typeof val === 'number' ? val : 15 }))}
                     placeholder="Max"
                   />
                 </div>
@@ -298,24 +287,22 @@ export const TimerSettingsSection = ({
                   {isCritTalentActive ? 'Active' : 'Missing Talent'}
                 </button>
               </div>
-              <input 
-                type="number" 
-                step="0.01"
-                min="0"
-                max="1"
+              <SpinnerInput 
+                step={0.01}
+                min={0}
+                max={1}
                 value={state.devCritChance} 
-                onChange={e => setState(prev => ({ ...prev, devCritChance: parseFloat(e.target.value) }))}
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white font-mono"
+                onChange={(val) => setState(prev => ({ ...prev, devCritChance: typeof val === 'number' ? val : 0 }))}
+                className="font-mono text-xl"
               />
             </div>
             <div className="space-y-2">
               <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Crit Multiplier</label>
-              <input 
-                type="number" 
-                min="1"
+              <SpinnerInput 
+                min={1}
                 value={state.devCritMultiplier} 
-                onChange={e => setState(prev => ({ ...prev, devCritMultiplier: parseInt(e.target.value) }))}
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white font-mono"
+                onChange={(val) => setState(prev => ({ ...prev, devCritMultiplier: typeof val === 'number' ? val : 1 }))}
+                className="font-mono"
               />
             </div>
           </div>

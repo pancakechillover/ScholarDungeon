@@ -42,6 +42,7 @@ export function useGameState() {
         afternoon: { start: 14, end: 18 },
         night: { start: 20, end: 24 }
       },
+      showOtherInActivityLog: true,
       devBaseXP: 100,
       devBaseCoins: 10,
       devMinCoins: 5,
@@ -66,11 +67,15 @@ export function useGameState() {
           name: 'Gacha',
           type: 'gacha',
           cost: 100,
-          weights: { SSR: 5, SR: 15, R: 80 },
+          rarities: [
+            { id: 'SSR', name: 'SSR', color: 'amber', weight: 5, rarityValue: 5 },
+            { id: 'SR', name: 'SR', color: 'purple', weight: 15, rarityValue: 4 },
+            { id: 'R', name: 'R', color: 'blue', weight: 80, rarityValue: 3 },
+          ],
           items: [
-            { rarity: 'SSR', name: 'Big Lego Set / New Gadget / Weekend Trip' },
-            { rarity: 'SR', name: 'Fancy Dinner / Movie Night / Dessert' },
-            { rarity: 'R', name: '1 Hour Gaming / 15m Nap / Favorite Snack' }
+            { rarity: 'SSR', name: 'Big Lego Set / New Gadget / Weekend Trip', rarityValue: 5 },
+            { rarity: 'SR', name: 'Fancy Dinner / Movie Night / Dessert', rarityValue: 4 },
+            { rarity: 'R', name: '1 Hour Gaming / 15m Nap / Favorite Snack', rarityValue: 3 }
           ]
         },
         {
@@ -79,14 +84,16 @@ export function useGameState() {
           type: 'ichiban',
           cost: 50,
           items: [
-            { rarity: 'A Prize', name: 'Premium Figure / Limited Artbook', count: 1, initialCount: 1 },
-            { rarity: 'B Prize', name: 'Luxury Cushion / Desk Mat', count: 2, initialCount: 2 },
-            { rarity: 'C Prize', name: 'Acrylic Stand / Keychain Set', count: 5, initialCount: 5 },
-            { rarity: 'D Prize', name: 'Sticker Pack / Badge', count: 12, initialCount: 12 },
-            { rarity: 'LastOne', name: 'Golden Trophy / Special Edition Figure', count: 1, initialCount: 1 }
+            { rarity: 'A Prize', name: 'Premium Figure / Limited Artbook', count: 1, initialCount: 1, color: 'amber', rarityValue: 5 },
+            { rarity: 'B Prize', name: 'Luxury Cushion / Desk Mat', count: 2, initialCount: 2, color: 'purple', rarityValue: 4 },
+            { rarity: 'C Prize', name: 'Acrylic Stand / Keychain Set', count: 5, initialCount: 5, color: 'blue', rarityValue: 3 },
+            { rarity: 'D Prize', name: 'Sticker Pack / Badge', count: 12, initialCount: 12, color: 'emerald', rarityValue: 2 },
+            { rarity: 'LastOne', name: 'Golden Trophy / Special Edition Figure', count: 1, initialCount: 1, color: 'rose', rarityValue: 6 }
           ]
         }
-      ]
+      ],
+      activeGachaPoolId: 'standard_gacha',
+      activeIchibanPoolId: 'ichiban_1'
     };
 
     if (saved) {
@@ -175,6 +182,69 @@ export function useGameState() {
         // Migration: Default timeSettings if missing
         if (!parsed.timeSettings) {
           parsed.timeSettings = defaultState.timeSettings;
+        }
+
+        // Migration: Default active pool IDs
+        if (parsed.gachaPools && !parsed.activeGachaPoolId) {
+          const gacha = parsed.gachaPools.find((p: any) => p.type === 'gacha');
+          if (gacha) parsed.activeGachaPoolId = gacha.id;
+        }
+        if (parsed.gachaPools && !parsed.activeIchibanPoolId) {
+          const ichiban = parsed.gachaPools.find((p: any) => p.type === 'ichiban');
+          if (ichiban) parsed.activeIchibanPoolId = ichiban.id;
+        }
+
+        // Migration: Fix gacha pools (weights to rarities, and color/rarityValue sync)
+        if (parsed.gachaPools) {
+          parsed.gachaPools = parsed.gachaPools.map((pool: any) => {
+            // Convert weights to rarities for old pools
+            if (pool.type === 'gacha' && !pool.rarities && pool.weights) {
+              pool.rarities = [
+                { id: 'SSR', name: 'SSR', color: 'amber', weight: pool.weights.SSR || 5, rarityValue: 5 },
+                { id: 'SR', name: 'SR', color: 'purple', weight: pool.weights.SR || 15, rarityValue: 4 },
+                { id: 'R', name: 'R', color: 'blue', weight: pool.weights.R || 80, rarityValue: 3 },
+              ];
+              // Ensure items have rarityValue
+              pool.items = (pool.items || []).map((item: any) => {
+                const r = pool.rarities.find((rt: any) => rt.id === item.rarity);
+                return { ...item, rarityValue: r ? r.rarityValue : 3 };
+              });
+            }
+
+            // Fix Ichiban colors and rarity values if they are old/missing
+            if (pool.type === 'ichiban' && pool.items && Array.isArray(pool.items)) {
+              pool.items = pool.items.map((item: any) => {
+                const r = item.rarity.toUpperCase();
+                let color = item.color;
+                let val = item.rarityValue;
+
+                if (r === 'A PRIZE' || r === 'A') { color = 'amber'; val = 5; }
+                else if (r === 'B PRIZE' || r === 'B') { color = 'purple'; val = 4; }
+                else if (r === 'C PRIZE' || r === 'C') { color = 'blue'; val = 3; }
+                else if (r === 'D PRIZE' || r === 'D') { color = 'emerald'; val = 2; }
+                else if (r === 'LASTONE') { color = 'rose'; val = 6; }
+
+                return { ...item, color, rarityValue: val };
+              });
+              
+              const mergedItems = pool.items.reduce((acc: any[], curr: any) => {
+                const existing = acc.find(i => i.rarity === curr.rarity && curr.rarity !== 'LastOne');
+                if (existing) {
+                  // Merge names if they differ
+                  if (!existing.name.includes(curr.name)) {
+                    existing.name = `${existing.name} / ${curr.name}`;
+                  }
+                  existing.count += (curr.count || 0);
+                  existing.initialCount += (curr.initialCount || 0);
+                } else {
+                  acc.push({ ...curr });
+                }
+                return acc;
+              }, []);
+              return { ...pool, items: mergedItems };
+            }
+            return pool;
+          });
         }
 
         return { ...defaultState, ...parsed };
@@ -358,6 +428,13 @@ export function useGameState() {
 
   const addCoins = useCallback((amount: number) => {
     setState(prev => ({ ...prev, coins: prev.coins + amount }));
+  }, []);
+
+  const setActivePool = useCallback((type: 'gacha' | 'ichiban', poolId: string) => {
+    setState(prev => {
+      if (type === 'gacha') return { ...prev, activeGachaPoolId: poolId };
+      return { ...prev, activeIchibanPoolId: poolId };
+    });
   }, []);
 
   const addRewardToHistory = useCallback((reward: Omit<RewardHistoryItem, 'id' | 'timestamp' | 'redeemed'>, linkToSessionId?: string) => {
@@ -866,7 +943,7 @@ export function useGameState() {
   }, [addXP, addCoins, addRewardToHistory]);
 
   const drawGacha = useCallback((poolId: string, amount: number = 1) => {
-    let pullResults: { item: string; rarity: string; poolType: 'gacha' | 'ichiban' }[] = [];
+    let pullResults: { item: string; rarity: string; poolType: 'gacha' | 'ichiban', color?: string }[] = [];
     let success = false;
 
     setState(prev => {
@@ -877,20 +954,29 @@ export function useGameState() {
       let newCoins = prev.coins;
       let newPools = [...prev.gachaPools];
       let currentPool = { ...pool, items: pool.items.map(i => ({ ...i })) };
-      const results: { item: string; rarity: string; poolType: 'gacha' | 'ichiban' }[] = [];
+      const results: { item: string; rarity: string; poolType: 'gacha' | 'ichiban', color?: string }[] = [];
       
       for (let pull = 0; pull < amount; pull++) {
         if (currentPool.type === 'gacha') {
-          const weights = currentPool.weights || { SSR: 5, SR: 15, R: 80 };
-          const totalWeight = weights.SSR + weights.SR + weights.R;
+          const rarities = currentPool.rarities || [
+            { id: 'SSR', name: 'SSR', color: 'amber', weight: currentPool.weights?.SSR || 5 },
+            { id: 'SR', name: 'SR', color: 'purple', weight: currentPool.weights?.SR || 15 },
+            { id: 'R', name: 'R', color: 'blue', weight: currentPool.weights?.R || 80 },
+          ];
+          const totalWeight = rarities.reduce((sum, r) => sum + r.weight, 0);
           const rand = Math.random() * totalWeight;
 
-          let rarity: 'SSR' | 'SR' | 'R';
-          if (rand < weights.SSR) rarity = 'SSR';
-          else if (rand < weights.SSR + weights.SR) rarity = 'SR';
-          else rarity = 'R';
+          let current = 0;
+          let selectedRarity = rarities[0];
+          for (const r of rarities) {
+            current += r.weight;
+            if (rand < current) {
+              selectedRarity = r;
+              break;
+            }
+          }
 
-          const itemEntry = currentPool.items.find(i => i.rarity === rarity);
+          const itemEntry = currentPool.items.find(i => i.rarity === selectedRarity.id);
           if (!itemEntry) continue;
 
           const itemList = itemEntry.name.split('/').map(s => s.trim()).filter(s => s.length > 0);
@@ -898,7 +984,7 @@ export function useGameState() {
 
           const selectedItem = itemList[Math.floor(Math.random() * itemList.length)];
           newCoins -= currentPool.cost;
-          results.push({ item: selectedItem, rarity, poolType: pool.type });
+          results.push({ item: selectedItem, rarity: selectedRarity.name, poolType: pool.type, color: selectedRarity.color });
           
         } else if (currentPool.type === 'ichiban') {
           const availableItems = currentPool.items.filter(i => (i.count || 0) > 0 && i.rarity !== 'LastOne');
@@ -931,7 +1017,7 @@ export function useGameState() {
           const subItems = selectedEntry.name.split('/').map(s => s.trim()).filter(s => s.length > 0);
           const finalItemName = subItems.length > 0 ? subItems[Math.floor(Math.random() * subItems.length)] : selectedEntry.name;
 
-          results.push({ item: finalItemName, rarity: selectedEntry.rarity, poolType: pool.type });
+          results.push({ item: finalItemName, rarity: selectedEntry.rarity, poolType: pool.type, color: selectedEntry.color });
 
           // Check if LastOne should be awarded
           const remaining = currentPool.items.filter(i => i.rarity !== 'LastOne').reduce((acc, i) => acc + (i.count || 0), 0);
@@ -939,14 +1025,15 @@ export function useGameState() {
             const lastOne = currentPool.items.find(i => i.rarity === 'LastOne');
             if (lastOne && (lastOne.count || 0) > 0) {
               const lastOneSubItems = lastOne.name.split('/').map(s => s.trim()).filter(s => s.length > 0);
+              const lastOneColor = lastOne.color || 'rose';
               
               if (lastOneSubItems.length > 1) {
                 // Award all sub-items
                 lastOneSubItems.forEach(subItem => {
-                  results.push({ item: subItem, rarity: 'LastOne', poolType: pool.type });
+                  results.push({ item: subItem, rarity: 'LastOne', poolType: pool.type, color: lastOneColor });
                 });
               } else {
-                results.push({ item: lastOne.name, rarity: 'LastOne', poolType: pool.type });
+                results.push({ item: lastOne.name, rarity: 'LastOne', poolType: pool.type, color: lastOneColor });
               }
 
               // Mark LastOne as taken
@@ -977,7 +1064,8 @@ export function useGameState() {
       pullResults.forEach(res => {
         addRewardToHistory({
           name: res.item,
-          rarity: res.rarity as any,
+          rarity: res.rarity as any, // using as any since rarity text is arbitrary now
+          color: res.color,
           source: 'Gacha',
           type: 'text',
         });
@@ -1271,6 +1359,7 @@ export function useGameState() {
     setMajorDungeons,
     addXP,
     addCoins,
+    setActivePool,
     addRewardToHistory,
     toggleRewardRedeemed,
     resetLootPool,

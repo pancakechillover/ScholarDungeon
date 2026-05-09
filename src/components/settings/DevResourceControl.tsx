@@ -8,6 +8,7 @@ import * as LucideIcons from 'lucide-react';
 import { APP_VERSION, LAST_UPDATE_DATE, RELEASE_HISTORY } from '../../version';
 import { cn, getXPForLevel, getDefaultRewardForLevel } from '../../lib/utils';
 import { playSound } from '../../lib/sound';
+import { SpinnerInput } from '../SpinnerInput';
 
 // Helper to convert VAPID key
 function urlBase64ToUint8Array(base64String: string) {
@@ -41,11 +42,11 @@ export const DevResourceControl = ({ label, value, onAdd, onSub, icon, defaultAm
         {value.toLocaleString()}
       </div>
       <div className="flex items-center gap-2 pt-2">
-        <input 
-          type="number" 
+        <SpinnerInput 
+          min={1}
           value={amount}
-          onChange={e => setAmount(Math.max(1, parseInt(e.target.value) || 1))}
-          className="w-16 bg-slate-900 border border-slate-700 rounded-xl px-2 py-2 text-xs text-white text-center font-bold focus:border-indigo-500 outline-none transition-colors"
+          onChange={(val) => setAmount(typeof val === 'number' ? Math.max(1, val) : 1)}
+          className="w-20 px-2 py-2 text-xs text-center font-bold"
         />
         <div className="flex flex-1 gap-1">
           <button onClick={() => onSub(amount)} className="flex-1 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-white font-black transition-colors">-</button>

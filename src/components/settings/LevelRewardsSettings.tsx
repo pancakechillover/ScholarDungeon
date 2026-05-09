@@ -8,6 +8,7 @@ import * as LucideIcons from 'lucide-react';
 import { APP_VERSION, LAST_UPDATE_DATE, RELEASE_HISTORY } from '../../version';
 import { cn, getXPForLevel, getDefaultRewardForLevel } from '../../lib/utils';
 import { playSound } from '../../lib/sound';
+import { SpinnerInput } from '../SpinnerInput';
 
 // Helper to convert VAPID key
 function urlBase64ToUint8Array(base64String: string) {
@@ -181,20 +182,10 @@ export const LevelRewardsSettings = ({ state, setState }: { state: any, setState
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <label className="text-xs font-bold text-slate-500 uppercase">Target Level</label>
-                    <input
-                      type="text"
-                      inputMode="numeric"
+                    <SpinnerInput
                       value={newLevel === undefined || newLevel === null ? '' : newLevel}
-                      onChange={e => {
-                        const val = e.target.value;
-                        if (val === '') setNewLevel('' as any);
-                        else {
-                          const parsed = parseInt(val);
-                          if (!isNaN(parsed)) setNewLevel(parsed);
-                        }
-                      }}
-                      className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white"
-                      min="2"
+                      onChange={(val) => setNewLevel(typeof val === 'number' ? val : ('' as any))}
+                      min={2}
                     />
                     <p className="text-xs text-slate-500 italic">Reward given when reaching this level.</p>
                   </div>
@@ -253,19 +244,9 @@ export const LevelRewardsSettings = ({ state, setState }: { state: any, setState
                   {editing.type !== 'text' && (
                     <div className="space-y-2">
                       <label className="text-xs font-bold text-slate-500 uppercase">Amount</label>
-                      <input
-                        type="text"
-                        inputMode="numeric"
+                      <SpinnerInput
                         value={editing.amount === undefined || editing.amount === null ? '' : editing.amount}
-                        onChange={e => {
-                          const val = e.target.value;
-                          if (val === '') setEditing({ ...editing, amount: '' as any });
-                          else {
-                            const parsed = parseInt(val);
-                            if (!isNaN(parsed)) setEditing({ ...editing, amount: parsed });
-                          }
-                        }}
-                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white"
+                        onChange={(val) => setEditing({ ...editing, amount: typeof val === 'number' ? val : ('' as any) })}
                       />
                     </div>
                   )}

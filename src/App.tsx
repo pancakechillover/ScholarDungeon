@@ -229,7 +229,7 @@ function App() {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [editName, setEditName] = useState('');
   const [editBio, setEditBio] = useState('');
-  const [drawResult, setDrawResult] = useState<{item: string, rarity: string, poolType: 'gacha' | 'ichiban'}[] | null>(null);
+  const [drawResult, setDrawResult] = useState<{item: string, rarity: string, poolType: 'gacha' | 'ichiban', color?: string}[] | null>(null);
   const [showCoinRain, setShowCoinRain] = useState(false);
   const [showBuildDetails, setShowBuildDetails] = useState(false);
   const [showLevelUp, setShowLevelUp] = useState<number[] | null>(null);
@@ -268,7 +268,8 @@ function App() {
     purchaseShopItem,
     forceCompleteSubDungeon,
     selectReward,
-    resetLootPool
+    resetLootPool,
+    setActivePool
   } = useGameState();
 
   const {
@@ -1045,6 +1046,7 @@ function App() {
                 resetIchibanPool={resetIchibanPool}
                 setDrawResult={setDrawResult}
                 setShowCoinGuide={setShowCoinGuide}
+                onSetActivePool={setActivePool}
               />
             )}
 

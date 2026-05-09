@@ -255,9 +255,11 @@ export const Timer = React.memo<TimerProps>(({
           if (timerSkipVictoryMode === 'auto_pick_highest' && choices.length > 0) {
             const getRarityValue = (r: typeof choices[0]['rarity']) => {
               switch(r) {
-                case 'legendary': return 4;
-                case 'epic': return 3;
-                case 'rare': return 2;
+                case 'mythic': return 6;
+                case 'legendary': return 5;
+                case 'epic': return 4;
+                case 'rare': return 3;
+                case 'uncommon': return 2;
                 default: return 1;
               }
             };
@@ -270,6 +272,8 @@ export const Timer = React.memo<TimerProps>(({
             handleRewardSelection(null, session);
           }
         } else {
+          // Unconditionally defer to chest first so it's not lost if user refreshes
+          onDeferReward(session, choices);
           setShowRewards({ session, choices });
           triggerSimpleConfetti();
           if (session.isCrit) {
@@ -577,7 +581,6 @@ export const Timer = React.memo<TimerProps>(({
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => {
-                        onDeferReward(showRewards.session, showRewards.choices);
                         setShowRewards(null);
                         
                         let safeLoopCount = loopCount;
@@ -698,9 +701,11 @@ export const Timer = React.memo<TimerProps>(({
                         className={cn(
                           "group relative p-4 md:p-5 lg:p-6 rounded-2xl md:rounded-3xl border-2 text-left transition-all h-full flex flex-col min-h-[140px] md:min-h-[160px] overflow-hidden",
                           card.rarity === 'common' ? "bg-slate-900 border-slate-800 hover:border-slate-600" :
+                          card.rarity === 'uncommon' ? "bg-slate-900 border-emerald-500/50 hover:border-emerald-400" :
                           card.rarity === 'rare' ? "bg-slate-900 border-blue-500/50 hover:border-blue-400" :
                           card.rarity === 'epic' ? "bg-slate-900 border-purple-500/50 hover:border-purple-400" :
-                          "bg-slate-900 border-amber-500/50 hover:border-amber-400"
+                          card.rarity === 'legendary' ? "bg-slate-900 border-amber-500/50 hover:border-amber-400" :
+                          "bg-slate-900 border-rose-500/50 hover:border-rose-400"
                         )}
                       >
                         {/* Gorgeous Subdued Effects */}
@@ -764,8 +769,11 @@ export const Timer = React.memo<TimerProps>(({
                             <span className={cn(
                               "text-[10px] md:text-xs font-bold uppercase px-2 py-0.5 rounded",
                               card.rarity === 'common' ? "bg-slate-800 text-slate-400" :
+                              card.rarity === 'uncommon' ? "bg-emerald-600 text-white" :
                               card.rarity === 'rare' ? "bg-blue-600 text-white" :
-                              card.rarity === 'epic' ? "bg-purple-600 text-white" : "bg-amber-500 text-slate-900"
+                              card.rarity === 'epic' ? "bg-purple-600 text-white" : 
+                              card.rarity === 'legendary' ? "bg-amber-500 text-slate-900" :
+                              "bg-rose-600 text-white"
                             )}>
                               {card.rarity}
                             </span>
