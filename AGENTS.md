@@ -21,7 +21,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors:** When designing UI elements that highlight based on themes, note that ONLY `indigo-400`, `indigo-500`, and `indigo-600` are overridden by the custom theme variables in `index.css`. DO NOT use `indigo-300` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v4.6.6
+- **Current Version:** v4.6.12
 - **Last Update Date:** 2026-05-11
 
 ## Dark Themes Definition
@@ -46,6 +46,32 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v4.6.12 (2026-05-11):** Precise Theme Schedule & Timezone Logic.
+  - *Feature:* Full Time Selection. Updated theme transition settings to support full HH:mm precision instead of just hours.
+  - *UX:* Renamed "Transition Hour" to "Transition Time" for better clarity and alignment with the new time picker.
+  - *Logic:* Enhanced Timezone Comparison. Implemented robust string-based time comparison for reliable theme switching across all time zones.
+- **v4.6.11 (2026-05-11):** Mobile Layout Polish for Theme Scheduling.
+  - *UX:* Day/Night Theme Configuration Stack. Redesigned the theme configuration layout into a three-row vertical stack to ensure perfect visibility on narrow mobile devices.
+  - *UI:* Reorganized transition time and theme selection elements for better spatial clarity and touch accessibility.
+  - *Architecture:* Synchronized version markers for theme-related refinements.
+- **v4.6.10 (2026-05-11):** Mobile Theme UX & Breakpoint Refinement.
+  - *UX:* Mobile Theme Layout. Redesigned the theme configuration header to stack vertically on small phones, preventing element clashing.
+  - *Architecture:* Custom Breakpoints. Added a dedicated `xs` (400px) breakpoint to the Tailwind configuration for finer mobile UI control.
+  - *UI:* Timezone Selection Polish. Improved the timezone selector responsiveness to ensure proper rendering on narrow viewports.
+- **v4.6.9 (2026-05-11):** Scheduled Auto Theme & Timezone Support.
+  - *Feature:* Scheduled Theme Switching. Added the ability to set specific "Day Start" and "Night Start" hours for automatic theme transitions.
+  - *Feature:* Timezone Selection. Integrated a timezone selector to allow users to override system detection for theme scheduling.
+  - *UX:* Simplified Theme Config. Redesigned the auto-theme pairing UI with a more compact, color-bubble selector.
+- **v4.6.8 (2026-05-11):** Auto Theme Switching & Daylight Default.
+  - *Feature:* System Theme Sync. Added a toggle to automatically switch between customized Day and Night themes based on system color scheme preference.
+  - *Feature:* Custom Theme Pairing. Allowed users to independently set which themes are explicitly used for "Day" and "Night" modes.
+  - *UI:* Default Theme Update. Set "Daylight" as the new default theme for the application.
+  - *UX:* Theme Settings UI. Integrated auto-switch controls and theme preview selectors into the General Settings dashboard.
+- **v4.6.7 (2026-05-11):** Midnight Peak Logic & Aggregate Fixes.
+  - *Logic:* Midnight-Spanning Peak Times. Fully implemented logic for attributing sessions across midnight boundaries based on custom peak settings.
+  - *Fix:* Peak-Aware Statistics. Updated all aggregation helpers (daily, weekly, heatmap, daily summary) to use the new peak-aware date attribution.
+  - *UX:* Midnight Warning. Added visual indicators and color-coded labels in Time Settings for ranges that cross the midnight mark.
+  - *Fix:* Shop Reward Visibility. Adjusted reward categorizations in `RewardHistory.tsx` to ensure items purchased from the Merchant Shop appear in the Vault's Treasure tab.
 - **v4.6.6 (2026-05-11):** Modal Polish & Reward History Verification.
   - *Architecture:* Fully migrated all viewport-level modals to `createPortal`, ensuring they render at the root of the document for perfect alignment regardless of local scroll states.
   - *UX:* Implementation of `useScrollLock` across all modals to stabilize background content during focus.

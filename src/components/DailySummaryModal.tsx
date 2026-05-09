@@ -44,11 +44,49 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
   const [isStatsExpanded, setIsStatsExpanded] = useState(true);
   const [isMarkdownEnabled, setIsMarkdownEnabled] = useState(state.defaultMarkdownEnabled ?? true);
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = useMemo(() => {
+    const ts = state.timeSettings || {
+      morning: { start: 8, end: 12 },
+      afternoon: { start: 14, end: 18 },
+      night: { start: 20, end: 24 }
+    };
+    const now = new Date();
+    const hour = now.getHours();
+    
+    // If night peak spans midnight and we are currently in that post-midnight block
+    if (ts.night.start > ts.night.end && hour < ts.night.end) {
+      const yesterday = new Date(now);
+      yesterday.setDate(yesterday.getDate() - 1);
+      return yesterday.toISOString().split('T')[0];
+    }
+    return now.toISOString().split('T')[0];
+  }, [state.timeSettings]);
 
   const dailyStats = useMemo(() => {
-    const sessionsToday = state.history.filter(s => s.timestamp.startsWith(today));
-    const rewardsToday = state.rewardHistory.filter(r => r.timestamp.startsWith(today));
+    const ts = state.timeSettings || {
+      morning: { start: 8, end: 12 },
+      afternoon: { start: 14, end: 18 },
+      night: { start: 20, end: 24 }
+    };
+
+    const getAssignedDate = (date: Date) => {
+      const hour = date.getHours();
+      
+      const peaks = [ts.morning, ts.afternoon, ts.night];
+      for (const p of peaks) {
+        if (p.start > p.end) {
+          if (hour < p.end) {
+            const yesterday = new Date(date);
+            yesterday.setDate(yesterday.getDate() - 1);
+            return yesterday.toISOString().split('T')[0];
+          }
+        }
+      }
+      return date.toISOString().split('T')[0];
+    };
+
+    const sessionsToday = state.history.filter(s => getAssignedDate(new Date(s.timestamp)) === today);
+    const rewardsToday = state.rewardHistory.filter(r => getAssignedDate(new Date(r.timestamp)) === today);
     
     const goldEarned = sessionsToday.reduce((sum, s) => sum + s.coinsEarned, 0);
     const xpEarned = sessionsToday.reduce((sum, s) => sum + s.xpEarned, 0);
@@ -59,11 +97,11 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
       r.type === 'item' && (r.rarity === 'epic' || r.rarity === 'legendary')
     );
 
-    const completedDungeonsCount = dungeons.filter(d => d.status === 'completed' && d.completedAt?.startsWith(today)).length;
-    const completedMajorsCount = majorDungeons.filter(m => m.status === 'completed' && m.completedAt?.startsWith(today)).length;
+    const completedDungeonsCount = dungeons.filter(d => d.status === 'completed' && d.completedAt && getAssignedDate(new Date(d.completedAt)) === today).length;
+    const completedMajorsCount = majorDungeons.filter(m => m.status === 'completed' && m.completedAt && getAssignedDate(new Date(m.completedAt)) === today).length;
     
-    const questsCompletedToday = state.quests.filter(q => q.completed && !q.isAchievement && q.lastReset?.startsWith(today)).length;
-    const achievementsCompletedToday = state.quests.filter(q => q.completed && q.isAchievement && q.lastReset?.startsWith(today)).length;
+    const questsCompletedToday = state.quests.filter(q => q.completed && !q.isAchievement && q.lastReset && getAssignedDate(new Date(q.lastReset)) === today).length;
+    const achievementsCompletedToday = state.quests.filter(q => q.completed && q.isAchievement && q.lastReset && getAssignedDate(new Date(q.lastReset)) === today).length;
 
     const itemsBought = rewardsToday.filter(r => r.source === 'Shop');
     const itemsGacha = rewardsToday.filter(r => r.source === 'Gacha');

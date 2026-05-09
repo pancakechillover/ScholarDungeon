@@ -50,6 +50,13 @@ export function useGameState() {
       devCoinMode: 'random',
       devCritChance: 0.05,
       devCritMultiplier: 5,
+      theme: 'daylight',
+      autoTheme: true,
+      dayTheme: 'daylight',
+      nightTheme: 'night',
+      autoThemeDayStart: '08:00',
+      autoThemeNightStart: '20:00',
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       gachaAnimation: 'card',
       ichibanAnimation: 'scratch',
       gachaAllowOverlap: false,
@@ -194,6 +201,24 @@ export function useGameState() {
           if (ichiban) parsed.activeIchibanPoolId = ichiban.id;
         }
 
+        // Migration: Theme Sync
+        if (parsed.autoTheme === undefined) {
+          parsed.autoTheme = true;
+          parsed.dayTheme = 'daylight';
+          parsed.nightTheme = 'night';
+          parsed.autoThemeDayStart = '08:00';
+          parsed.autoThemeNightStart = '20:00';
+          parsed.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+          // If the user was on the old default 'night', switch them to 'daylight' as the new default
+          if (parsed.theme === 'night' || !parsed.theme) {
+            parsed.theme = 'daylight';
+          }
+        } else if (parsed.autoThemeDayStart === undefined || typeof parsed.autoThemeDayStart === 'number') {
+          parsed.autoThemeDayStart = '08:00';
+          parsed.autoThemeNightStart = '20:00';
+          parsed.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        }
+
         // Migration: Fix gacha pools (weights to rarities, and color/rarityValue sync)
         if (parsed.gachaPools) {
           parsed.gachaPools = parsed.gachaPools.map((pool: any) => {
@@ -298,6 +323,51 @@ export function useGameState() {
       setState(prev => ({ ...prev, deviceType: currentDeviceType }));
     }
   }, [state.deviceType]);
+
+  // Auto Theme Logic (Time-based with Timezone)
+  useEffect(() => {
+    if (!state.autoTheme) return;
+
+    const updateTheme = () => {
+      let now = new Date();
+      
+      // Apply timezone offset if custom timezone is set
+      if (state.timezone) {
+        try {
+          const tzDate = new Date(now.toLocaleString('en-US', { timeZone: state.timezone }));
+          now = tzDate;
+        } catch (e) {
+          console.error('Invalid timezone:', state.timezone);
+        }
+      }
+
+      const nowStr = now.toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit' });
+      const dayStart = state.autoThemeDayStart || '08:00';
+      const nightStart = state.autoThemeNightStart || '20:00';
+      
+      let isNight = false;
+      if (nightStart > dayStart) {
+        // Normal case (e.g., Day: 08:00-20:00, Night: 20:00-08:00)
+        isNight = nowStr >= nightStart || nowStr < dayStart;
+      } else {
+        // Reverse case (e.g., Night: 16:00-04:00, Day: 04:00-16:00)
+        isNight = nowStr >= nightStart && nowStr < dayStart;
+      }
+      
+      const targetTheme = isNight ? (state.nightTheme || 'night') : (state.dayTheme || 'daylight');
+      
+      if (state.theme !== targetTheme) {
+        setState(prev => ({ ...prev, theme: targetTheme }));
+      }
+    };
+
+    updateTheme();
+    const interval = setInterval(updateTheme, 60000); 
+    
+    return () => {
+      clearInterval(interval);
+    };
+  }, [state.autoTheme, state.dayTheme, state.nightTheme, state.autoThemeDayStart, state.autoThemeNightStart, state.timezone, state.theme]);
 
   // Daily Reset Logic
   useEffect(() => {

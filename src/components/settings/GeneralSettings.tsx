@@ -3,12 +3,13 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { RewardCard, ShopItem, GachaPool, Rarity } from '../../types';
 import { INITIAL_GACHA } from '../../constants';
-import { Plus, Trash2, Save, Edit2, X, ChevronRight, Coins, Zap, Sparkles, Trophy, Timer as TimerIcon, Package, Flame, AlertTriangle, Scroll, Volume2, VolumeX, Sun, Moon, Settings as SettingsIcon, ShoppingBag, Trees, Waves, Database, Download, Upload, Target, Gift, User, Sword, Eye, Palette, Check, Bell, BellOff, RefreshCw, Key, Layers, Sunrise, Cloud, CloudSun, Lollipop, Wrench, History, Ticket } from 'lucide-react';
+import { Plus, Trash2, Save, Edit2, X, ChevronRight, Coins, Zap, Sparkles, Trophy, Timer as TimerIcon, Package, Flame, AlertTriangle, Scroll, Volume2, VolumeX, Sun, Moon, Settings as SettingsIcon, ShoppingBag, Trees, Waves, Database, Download, Upload, Target, Gift, User, Sword, Eye, Palette, Check, Bell, BellOff, RefreshCw, Key, Layers, Sunrise, Cloud, CloudSun, Lollipop, Wrench, History, Ticket, Globe } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { APP_VERSION, LAST_UPDATE_DATE, RELEASE_HISTORY } from '../../version';
 import { cn, getXPForLevel, getDefaultRewardForLevel } from '../../lib/utils';
 import { playSound } from '../../lib/sound';
 import { ConfirmModal } from '../ConfirmModal';
+import { SpinnerInput } from '../SpinnerInput';
 
 // Helper to convert VAPID key
 function urlBase64ToUint8Array(base64String: string) {
@@ -48,6 +49,13 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
     { id: 'ocean', name: 'Ocean', color: '#38bdf8', icon: Waves, iconColor: '#0c4a6e' },
   ];
   
+  const autoTheme = state.autoTheme ?? true;
+  const dayTheme = state.dayTheme || 'daylight';
+  const nightTheme = state.nightTheme || 'night';
+  const dayStart = state.autoThemeDayStart ?? 8;
+  const nightStart = state.autoThemeNightStart ?? 20;
+  const timezone = state.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+
   const soundEnabled = state.soundEnabled ?? true;
   const soundVolume = state.soundVolume ?? 0.5;
   const defaultMarkdownEnabled = state.defaultMarkdownEnabled ?? true;
@@ -438,7 +446,7 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
               return (
                 <button
                   key={theme.id}
-                  onClick={() => setState(prev => ({ ...prev, theme: theme.id }))}
+                  onClick={() => setState(prev => ({ ...prev, theme: theme.id, autoTheme: false }))}
                   className={cn(
                     "flex flex-col items-center gap-3 p-4 rounded-2xl border-2 transition-all",
                     isActive 
@@ -459,6 +467,141 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
               );
             })}
           </div>
+
+          <div className="flex items-center justify-between p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
+            <div className="flex items-center gap-3">
+              <div className={cn("p-2 rounded-xl transition-colors", autoTheme ? "bg-indigo-500/10 text-indigo-400" : "bg-slate-800 text-slate-500")}>
+                <History size={20} />
+              </div>
+              <div>
+                <div className="font-bold text-white">Auto Sync System</div>
+                <div className="text-xs text-slate-500">Switch Day/Night themes automatically</div>
+              </div>
+            </div>
+            <button
+              onClick={() => setState(prev => ({ ...prev, autoTheme: !autoTheme }))}
+              className={cn(
+                "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
+                autoTheme ? "bg-indigo-500" : "bg-slate-700"
+              )}
+            >
+              <span
+                className={cn(
+                  "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+                  autoTheme ? "translate-x-6" : "translate-x-1"
+                )}
+              />
+            </button>
+          </div>
+
+          {autoTheme && (
+            <motion.div 
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              className="space-y-4"
+            >
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="p-3 bg-slate-900/50 rounded-2xl border border-slate-800 space-y-3">
+                  {/* Row 1: Header */}
+                  <div className="flex items-center gap-2 text-[10px] font-bold text-amber-400 uppercase tracking-widest border-b border-slate-800/50 pb-2">
+                    <Sunrise size={12} /> Day Configuration
+                  </div>
+                  
+                  {/* Row 2: Time Set */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Transition Time</span>
+                    <input 
+                      type="time"
+                      value={dayStart}
+                      onChange={(e) => setState(prev => ({ ...prev, autoThemeDayStart: e.target.value }))}
+                      className="bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-xs text-white focus:outline-none focus:ring-1 focus:ring-amber-500/50 w-24"
+                    />
+                  </div>
+
+                  {/* Row 3: Themes */}
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    {themes.map(t => (
+                      <button
+                        key={`day-${t.id}`}
+                        onClick={() => setState(prev => ({ ...prev, dayTheme: t.id }))}
+                        className={cn(
+                          "w-8 h-8 rounded-full border-2 transition-all flex items-center justify-center",
+                          dayTheme === t.id ? "border-amber-500 scale-110 shadow-lg shadow-amber-500/20" : "border-slate-800 hover:border-slate-600"
+                        )}
+                        title={t.name}
+                        style={{ backgroundColor: t.color }}
+                      >
+                        {dayTheme === t.id && <Check size={12} className="text-amber-500" />}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="p-3 bg-slate-900/50 rounded-2xl border border-slate-800 space-y-3">
+                  {/* Row 1: Header */}
+                  <div className="flex items-center gap-2 text-[10px] font-bold text-indigo-400 uppercase tracking-widest border-b border-slate-800/50 pb-2">
+                    <Moon size={12} /> Night Configuration
+                  </div>
+
+                  {/* Row 2: Time Set */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Transition Time</span>
+                    <input 
+                      type="time"
+                      value={nightStart}
+                      onChange={(e) => setState(prev => ({ ...prev, autoThemeNightStart: e.target.value }))}
+                      className="bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-xs text-white focus:outline-none focus:ring-1 focus:ring-indigo-500/50 w-24"
+                    />
+                  </div>
+
+                  {/* Row 3: Themes */}
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    {themes.map(t => (
+                      <button
+                        key={`night-${t.id}`}
+                        onClick={() => setState(prev => ({ ...prev, nightTheme: t.id }))}
+                        className={cn(
+                          "w-8 h-8 rounded-full border-2 transition-all flex items-center justify-center",
+                          nightTheme === t.id ? "border-indigo-500 scale-110 shadow-lg shadow-indigo-500/20" : "border-slate-800 hover:border-slate-600"
+                        )}
+                        title={t.name}
+                        style={{ backgroundColor: t.color }}
+                      >
+                        {nightTheme === t.id && <Check size={12} className="text-indigo-400" />}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
+                <div className="p-2 bg-indigo-500/10 text-indigo-400 rounded-xl shrink-0">
+                  <Globe size={18} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs font-bold text-white uppercase tracking-widest mb-1 flex flex-col xs:flex-row xs:items-center justify-between gap-1">
+                    <span>Timezone Selection</span>
+                    <span className="text-[9px] text-slate-500 normal-case font-normal truncate">Detected: {Intl.DateTimeFormat().resolvedOptions().timeZone}</span>
+                  </div>
+                  <select
+                    value={timezone}
+                    onChange={(e) => setState(prev => ({ ...prev, timezone: e.target.value }))}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                  >
+                    <option value={Intl.DateTimeFormat().resolvedOptions().timeZone}>Local System Time ({Intl.DateTimeFormat().resolvedOptions().timeZone})</option>
+                    <option value="UTC">UTC (Universal Time)</option>
+                    <option value="America/New_York">New York (EST/EDT)</option>
+                    <option value="America/Los_Angeles">Los Angeles (PST/PDT)</option>
+                    <option value="Europe/London">London (GMT/BST)</option>
+                    <option value="Europe/Paris">Paris (CET/CEST)</option>
+                    <option value="Asia/Tokyo">Tokyo (JST)</option>
+                    <option value="Asia/Shanghai">Shanghai (CST)</option>
+                    <option value="Australia/Sydney">Sydney (AEST/AEDT)</option>
+                  </select>
+                </div>
+              </div>
+            </motion.div>
+          )}
         </div>
       </div>
 

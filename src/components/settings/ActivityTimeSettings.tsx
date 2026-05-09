@@ -58,9 +58,16 @@ export const ActivityTimeSettings = ({ state, setState }: { state: any, setState
           </div>
           <span className="text-xs font-black uppercase tracking-widest text-slate-200">{label}</span>
         </div>
-        <span className="text-[10px] font-mono font-bold text-slate-500 bg-slate-950 px-2 py-1 rounded-md border border-slate-800">
-          {settings.start.toString().padStart(2, '0')}:00 - {settings.end.toString().padStart(2, '0')}:00
-        </span>
+        <div className="flex flex-col items-end gap-1">
+          <span className="text-[10px] font-mono font-bold text-slate-300 bg-slate-950 px-2 py-1 rounded-md border border-slate-800">
+            {settings.start.toString().padStart(2, '0')}:00 - {settings.end.toString().padStart(2, '0')}:00
+          </span>
+          {settings.start > settings.end && (
+            <span className="text-[8px] font-black uppercase tracking-widest text-rose-400 bg-rose-500/10 px-1.5 py-0.5 rounded flex items-center gap-1">
+              <RefreshCw size={8} /> Spans Across Midnight
+            </span>
+          )}
+        </div>
       </div>
       
       <div className="grid grid-cols-2 gap-3">

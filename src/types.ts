@@ -157,6 +157,12 @@ export interface AppState {
   devCritChance?: number;
   devCritMultiplier?: number;
   theme?: string;
+  autoTheme?: boolean;
+  dayTheme?: string;
+  nightTheme?: string;
+  autoThemeNightStart?: string; // HH:mm
+  autoThemeDayStart?: string;   // HH:mm
+  timezone?: string;
   gachaEffect?: 'card' | 'scratch'; // Deprecated but kept for migration
   gachaAnimation?: 'card' | 'scratch';
   ichibanAnimation?: 'card' | 'scratch';

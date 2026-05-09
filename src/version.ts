@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v4.6.6';
+export const APP_VERSION = 'v4.6.12';
 export const LAST_UPDATE_DATE = '2026-05-11';
-export const LAST_UPDATE_TIME = '18:00:00';
+export const LAST_UPDATE_TIME = '22:45:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,73 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v4.6.12',
+    date: '2026-05-11',
+    time: '22:45:00',
+    title: 'Precise Theme Schedule & Timezone Logic',
+    items: [
+      { category: 'Feature', description: 'Full Time Selection. Updated theme transition settings to support full HH:mm precision instead of just hours.' },
+      { category: 'UX', description: 'Renamed "Transition Hour" to "Transition Time" for better clarity and alignment with the new time picker.' },
+      { category: 'Logic', description: 'Enhanced Timezone Comparison. Implemented robust string-based time comparison for reliable theme switching across all time zones.' }
+    ]
+  },
+  {
+    version: 'v4.6.11',
+    date: '2026-05-11',
+    time: '22:15:00',
+    title: 'Mobile Layout Polish for Theme Scheduling',
+    items: [
+      { category: 'UX', description: 'Day/Night Theme Configuration Stack. Redesigned the theme configuration layout into a three-row vertical stack to ensure perfect visibility on narrow mobile devices.' },
+      { category: 'UI', description: 'Reorganized transition time and theme selection elements for better spatial clarity and touch accessibility.' }
+    ]
+  },
+  {
+    version: 'v4.6.10',
+    date: '2026-05-11',
+    time: '21:50:00',
+    title: 'Mobile Theme UX & Breakpoint Refinement',
+    items: [
+      { category: 'UX', description: 'Mobile Theme Layout. Redesigned the theme configuration header to stack vertically on small phones, preventing element clashing.' },
+      { category: 'Architecture', description: 'Custom Breakpoints. Added a dedicated xs (400px) breakpoint to the Tailwind configuration for finer mobile UI control.' },
+      { category: 'UI', description: 'Timezone Selection Polish. Improved the timezone selector responsiveness to ensure proper rendering on narrow viewports.' }
+    ]
+  },
+  {
+    version: 'v4.6.9',
+    date: '2026-05-11',
+    time: '21:30:00',
+    title: 'Scheduled Auto Theme & Timezone Support',
+    items: [
+      { category: 'Feature', description: 'Scheduled Theme Switching. Added the ability to set specific "Day Start" and "Night Start" hours for automatic theme transitions.' },
+      { category: 'Feature', description: 'Timezone Selection. Integrated a timezone selector to allow users to override system detection for theme scheduling.' },
+      { category: 'UX', description: 'Simplified Theme Config. Redesigned the auto-theme pairing UI with a more compact, color-bubble selector.' }
+    ]
+  },
+  {
+    version: 'v4.6.8',
+    date: '2026-05-11',
+    time: '21:00:00',
+    title: 'Auto Theme Switching & Daylight Default',
+    items: [
+      { category: 'Feature', description: 'System Theme Sync. Added a toggle to automatically switch between customized Day and Night themes based on system color scheme preference.' },
+      { category: 'Feature', description: 'Custom Theme Pairing. Allowed users to independently set which themes are explicitly used for "Day" and "Night" modes.' },
+      { category: 'UI', description: 'Default Theme Update. Set "Daylight" as the new default theme for the application.' },
+      { category: 'UX', description: 'Theme Settings UI. Integrated auto-switch controls and theme preview selectors into the General Settings dashboard.' }
+    ]
+  },
+  {
+    version: 'v4.6.7',
+    date: '2026-05-11',
+    time: '20:30:00',
+    title: 'Midnight Peak Logic & Aggregate Fixes',
+    items: [
+      { category: 'Logic', description: 'Midnight-Spanning Peak Times. Fully implemented logic for attributing sessions across midnight boundaries based on custom peak settings.' },
+      { category: 'Fix', description: 'Peak-Aware Statistics. Updated all aggregation helpers (daily, weekly, heatmap, daily summary) to use the new peak-aware date attribution.' },
+      { category: 'UX', description: 'Midnight Warning. Added visual indicators and color-coded labels in Time Settings for ranges that cross the midnight mark.' },
+      { category: 'Fix', description: 'Shop Reward Visibility. Adjusted reward categorizations to ensure items purchased from the Merchant Shop appear in the Vault\'s Treasure tab.' }
+    ]
+  },
   {
     version: 'v4.6.6',
     date: '2026-05-11',

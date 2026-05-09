@@ -21,12 +21,27 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
   const history = state.history;
   const dailyLogs = state.dailyLogs || {};
   
-  const [dailyDate, setDailyDate] = useState(new Date());
-  const [weeklyDate, setWeeklyDate] = useState(new Date());
+  const getInitialPeakDate = () => {
+    const ts = state.timeSettings || {
+      morning: { start: 8, end: 12 },
+      afternoon: { start: 14, end: 18 },
+      night: { start: 20, end: 24 }
+    };
+    const now = new Date();
+    const hour = now.getHours();
+    
+    if (ts.night.start > ts.night.end && hour < ts.night.end) {
+      return subDays(now, 1);
+    }
+    return now;
+  };
+
+  const [dailyDate, setDailyDate] = useState(getInitialPeakDate());
+  const [weeklyDate, setWeeklyDate] = useState(getInitialPeakDate());
   const [weeklyMode, setWeeklyMode] = useState<'calendar' | 'rolling'>('calendar');
   const [heatmapMode, setHeatmapMode] = useState<'30days' | 'month' | 'year'>('30days');
   const [heatmapMetric, setHeatmapMetric] = useState<'time' | 'efficiency'>('time');
-  const [heatmapDate, setHeatmapDate] = useState(new Date());
+  const [heatmapDate, setHeatmapDate] = useState(getInitialPeakDate());
 
   const [isEditingLog, setIsEditingLog] = useState(false);
   const [editRating, setEditRating] = useState(0);
@@ -59,10 +74,62 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
     ? endOfWeek(weeklyDate, { weekStartsOn: 1 })
     : weeklyDate;
 
+  const ts = state.timeSettings || {
+    morning: { start: 8, end: 12 },
+    afternoon: { start: 14, end: 18 },
+    night: { start: 20, end: 24 }
+  };
+
+  const getPeriodInfo = (date: Date) => {
+    const hour = date.getHours();
+    
+    // Morning
+    if (ts.morning.start < ts.morning.end) {
+      if (hour >= ts.morning.start && hour < ts.morning.end) return { period: 'Morning', assignedDate: date };
+    } else {
+      if (hour >= ts.morning.start) return { period: 'Morning', assignedDate: date };
+      if (hour < ts.morning.end) return { period: 'Morning', assignedDate: subDays(date, 1) };
+    }
+    
+    // Afternoon
+    if (ts.afternoon.start < ts.afternoon.end) {
+      if (hour >= ts.afternoon.start && hour < ts.afternoon.end) return { period: 'Afternoon', assignedDate: date };
+    } else {
+      if (hour >= ts.afternoon.start) return { period: 'Afternoon', assignedDate: date };
+      if (hour < ts.afternoon.end) return { period: 'Afternoon', assignedDate: subDays(date, 1) };
+    }
+
+    // Night
+    if (ts.night.start < ts.night.end) {
+      if (hour >= ts.night.start && hour < ts.night.end) return { period: 'Night', assignedDate: date };
+    } else {
+      if (hour >= ts.night.start) return { period: 'Night', assignedDate: date };
+      if (hour < ts.night.end) return { period: 'Night', assignedDate: subDays(date, 1) };
+    }
+
+    return { period: 'Other', assignedDate: date };
+  };
+
+  const isSamePeakDay = (sessionDate: Date, targetDate: Date) => {
+    const info = getPeriodInfo(sessionDate);
+    return isSameDay(info.assignedDate, targetDate);
+  };
+
   // --- Aggregate Helpers ---
   const getGainsForPeriod = (sessions: StudySession[], rewards: RewardHistoryItem[], dateRange?: { start: Date, end: Date }) => {
     const periodSessions = dateRange 
-      ? sessions.filter(s => isWithinInterval(new Date(s.timestamp), dateRange))
+      ? sessions.filter(s => {
+          const sessionDate = new Date(s.timestamp);
+          if (heatmapMode === 'year' || weeklyMode === 'calendar') {
+             // For long term views, we can stick to calendar days or use the peak logic
+             // But for consistency with the daily chart, let's use peak logic if it's a single day or small range
+             // Actually, for broad statistics, calendar days are usually preferred, 
+             // but if the user specifically asked for this peak logic, let's use it for all categorization.
+             const info = getPeriodInfo(sessionDate);
+             return isWithinInterval(info.assignedDate, dateRange);
+          }
+          return isWithinInterval(sessionDate, dateRange);
+        })
       : sessions;
     const periodRewards = dateRange
       ? rewards.filter(r => isWithinInterval(new Date(r.timestamp), dateRange))
@@ -88,8 +155,8 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
   };
 
   const dailyGains = useMemo(() => {
-    const sessions = history.filter(s => isSameDay(new Date(s.timestamp), dailyDate));
-    const rewards = (state.rewardHistory || []).filter(r => isSameDay(new Date(r.timestamp), dailyDate));
+    const sessions = history.filter(s => isSamePeakDay(new Date(s.timestamp), dailyDate));
+    const rewards = (state.rewardHistory || []).filter(r => isSamePeakDay(new Date(r.timestamp), dailyDate));
     
     const coins = sessions.reduce((acc, s) => acc + s.coinsEarned, 0) + 
                   rewards.filter(r => r.type === 'coins').reduce((acc, r) => acc + (r.amount || 0), 0);
@@ -107,39 +174,23 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
     const uniqueQuests = new Set(questRewards.map(r => r.timestamp)).size;
     
     return { coins, xp, tasks: sessions.length + uniqueQuests };
-  }, [history, state.rewardHistory, dailyDate]);
+  }, [history, state.rewardHistory, dailyDate, ts]);
 
   const weeklyGains = useMemo(() => {
     const interval = { start: weekStart, end: weekEnd };
     return getGainsForPeriod(history, state.rewardHistory || [], interval);
-  }, [history, state.rewardHistory, weekStart, weekEnd]);
+  }, [history, state.rewardHistory, weekStart, weekEnd, ts]);
 
   const getPeriod = (date: Date) => {
-    const hour = date.getHours();
-    const ts = state.timeSettings || {
-      morning: { start: 8, end: 12 },
-      afternoon: { start: 14, end: 18 },
-      night: { start: 20, end: 24 }
-    };
-    
-    if (hour >= ts.morning.start && hour < ts.morning.end) return 'Morning';
-    if (hour >= ts.afternoon.start && hour < ts.afternoon.end) return 'Afternoon';
-    if (hour >= ts.night.start && hour < ts.night.end) return 'Night';
-    return 'Other';
+    return getPeriodInfo(date).period;
   };
 
   // --- Daily Data ---
-  const dailySessions = history.filter(s => isSameDay(new Date(s.timestamp), dailyDate));
+  const dailySessions = history.filter(s => isSamePeakDay(new Date(s.timestamp), dailyDate));
   const dailyCounts = { Morning: 0, Afternoon: 0, Night: 0, Other: 0 };
   dailySessions.forEach(s => {
     dailyCounts[getPeriod(new Date(s.timestamp))]++;
   });
-
-  const ts = state.timeSettings || {
-    morning: { start: 8, end: 12 },
-    afternoon: { start: 14, end: 18 },
-    night: { start: 20, end: 24 }
-  };
 
   const dailyData = [
     { name: `Morning (${ts.morning.start}-${ts.morning.end})`, sessions: dailyCounts.Morning, fill: '#fde047' },
@@ -166,15 +217,15 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
 
   const weeklyActiveDaysCount = useMemo(() => {
     const count = weeklyDays.filter(date => {
-      const hasSessions = history.some(s => isSameDay(new Date(s.timestamp), date));
-      const hasRewards = (state.rewardHistory || []).some(r => isSameDay(new Date(r.timestamp), date));
+      const hasSessions = history.some(s => isSamePeakDay(new Date(s.timestamp), date));
+      const hasRewards = (state.rewardHistory || []).some(r => isSamePeakDay(new Date(r.timestamp), date));
       return hasSessions || hasRewards;
     }).length;
     return count > 0 ? count : 1;
-  }, [weeklyDays, history, state.rewardHistory]);
+  }, [weeklyDays, history, state.rewardHistory, ts]);
 
   const weeklyData = weeklyDays.map(date => {
-    const daySessions = history.filter(s => isSameDay(new Date(s.timestamp), date));
+    const daySessions = history.filter(s => isSamePeakDay(new Date(s.timestamp), date));
     const counts = { Morning: 0, Afternoon: 0, Night: 0, Other: 0 };
     daySessions.forEach(s => {
       counts[getPeriod(new Date(s.timestamp))]++;
@@ -200,7 +251,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
 
   const getIntensity = (date: Date) => {
     if (heatmapMetric === 'time') {
-      const count = history.filter(s => isSameDay(new Date(s.timestamp), date)).length;
+      const count = history.filter(s => isSamePeakDay(new Date(s.timestamp), date)).length;
       if (count === 0) return 'bg-slate-800/50';
       if (count < 2) return 'bg-indigo-500/20';
       if (count < 4) return 'bg-indigo-500/40';
@@ -640,7 +691,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
             {heatmapDays.map((date, i) => (
               <div
                 key={i}
-                title={`${format(date, 'MMM d, yyyy')}: ${history.filter(s => isSameDay(new Date(s.timestamp), date)).length} sessions`}
+                title={`${format(date, 'MMM d, yyyy')}: ${history.filter(s => isSamePeakDay(new Date(s.timestamp), date)).length} sessions`}
                 className={cn(
                   "rounded-sm transition-colors aspect-square w-full", 
                   getIntensity(date)
