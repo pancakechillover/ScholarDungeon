@@ -13,6 +13,7 @@ import {
   User,
   Coins,
   Zap,
+  Network,
   X,
   Trophy,
   Package,
@@ -26,14 +27,14 @@ import { DailySummaryModal } from './components/DailySummaryModal';
 import { CoinRain } from './components/CoinRain';
 import { DashboardView } from './components/DashboardView';
 import { ExploreView } from './components/ExploreView';
-import { DungeonsView } from './components/DungeonsView';
+import { DungeonsView } from './components/dungeons/DungeonsView';
 import { VaultView } from './components/VaultView';
 import { TalentsView } from './components/TalentsView';
 import { ShopView } from './components/ShopView';
 import { StatsView } from './components/StatsView';
 import { SettingsView } from './components/SettingsView';
 import { ProfileModal } from './components/ProfileModal';
-import { XPGuideModal, CoinGuideModal, TalentGuideModal } from './components/GuideModals';
+import { GuideBookModal } from './components/GuideModals';
 import { LevelUpModal } from './components/LevelUpModal';
 import { RewardCompletionModal } from './components/RewardCompletionModal';
 import { GachaResultModal } from './components/GachaResultModal';
@@ -233,9 +234,8 @@ function App() {
   const [showCoinRain, setShowCoinRain] = useState(false);
   const [showBuildDetails, setShowBuildDetails] = useState(false);
   const [showLevelUp, setShowLevelUp] = useState<number[] | null>(null);
-  const [showXPGuide, setShowXPGuide] = useState(false);
-  const [showCoinGuide, setShowCoinGuide] = useState(false);
-  const [showTalentGuide, setShowTalentGuide] = useState(false);
+  const [showGuideBook, setShowGuideBook] = useState(false);
+  const [guideInitialPage, setGuideInitialPage] = useState(0);
   const [showDailySummary, setShowDailySummary] = useState(false);
   const [showCloudSync, setShowCloudSync] = useState(false);
   const [isFullscreenExplore, setIsFullscreenExplore] = useState(false);
@@ -656,7 +656,7 @@ function App() {
     { id: 'dashboard', label: 'Sanctum', icon: LayoutDashboard },
     { id: 'dungeons', label: 'Dungeons', icon: Sword },
     { id: 'explore', label: 'Explore', icon: TimerIcon },
-    { id: 'talents', label: 'Talents', icon: Zap },
+    { id: 'talents', label: 'Talents', icon: Network },
     { id: 'shop', label: 'Merchant', icon: ShoppingBag },
     { id: 'vault', label: 'Vault', icon: Package },
     { id: 'stats', label: 'Record', icon: BarChart3 },
@@ -924,6 +924,10 @@ function App() {
                 currentDungeon={currentDungeon || null}
                 setActiveTab={setActiveTab}
                 setShowDailySummary={setShowDailySummary}
+                openGuideBook={(chapter) => {
+                  setGuideInitialPage(chapter);
+                  setShowGuideBook(true);
+                }}
                 saveDailyLog={saveDailyLog}
               />
             )}
@@ -1045,7 +1049,10 @@ function App() {
                 handleDraw={handleDraw}
                 resetIchibanPool={resetIchibanPool}
                 setDrawResult={setDrawResult}
-                setShowCoinGuide={setShowCoinGuide}
+                openGuideBook={(chapter) => {
+                  setGuideInitialPage(chapter);
+                  setShowGuideBook(true);
+                }}
                 onSetActivePool={setActivePool}
               />
             )}
@@ -1162,14 +1169,17 @@ function App() {
         document.body
       )}
 
-      {/* XP Guide Modal */}
-      <XPGuideModal isOpen={showXPGuide} onClose={() => setShowXPGuide(false)} />
-
-      {/* Coin Guide Modal */}
-      <CoinGuideModal isOpen={showCoinGuide} onClose={() => setShowCoinGuide(false)} />
-
-      {/* Talent Guide Modal */}
-      <TalentGuideModal isOpen={showTalentGuide} onClose={() => setShowTalentGuide(false)} />
+      {/* Book Guide Modal */}
+      <GuideBookModal 
+        isOpen={showGuideBook}
+        initialPage={guideInitialPage}
+        onClose={() => setShowGuideBook(false)}
+        navigateToSettings={(section) => {
+          setActiveTab('settings');
+          setActiveSettingsSection(section);
+          setShowGuideBook(false);
+        }}
+      />
 
       {/* Level Up Modal */}
       <LevelUpModal 
@@ -1181,7 +1191,10 @@ function App() {
           });
         }}
         state={state}
-        setShowXPGuide={setShowXPGuide}
+        openGuideBook={(chapter) => {
+          setGuideInitialPage(chapter);
+          setShowGuideBook(true);
+        }}
         isTalentLevel={isTalentLevel}
         getNextTalentLevel={getNextTalentLevel}
       />

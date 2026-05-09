@@ -253,6 +253,28 @@ export const DeveloperSettings: React.FC<DeveloperSettingsProps> = ({
                 icon={<Sparkles size={24} className="text-indigo-300" />}
               />
             </div>
+            
+            <div className="mt-6 pt-6 border-t border-slate-800">
+              <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Talent Management</h4>
+              <button
+                onClick={() => {
+                  setModalConfig({
+                    isOpen: true,
+                    title: "Reset Talent Tree?",
+                    message: "This will lock all talents and clear your active build. Your spent Talent Points will NOT be refunded automatically. Continue?",
+                    confirmText: "Reset Talents",
+                    type: "danger",
+                    onConfirm: () => {
+                      setState(prev => ({ ...prev, unlockedTalents: [], activeTalents: [] }));
+                    }
+                  });
+                }}
+                className="w-full flex items-center justify-center gap-2 bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 border border-orange-500/30 font-bold py-3 rounded-xl text-sm transition-all"
+              >
+                <RefreshCw size={16} />
+                Reset Talent Tree
+              </button>
+            </div>
           </div>
 
           {/* Section 3: Notification Testing */}

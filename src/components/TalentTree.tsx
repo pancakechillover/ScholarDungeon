@@ -14,7 +14,8 @@ import {
   HelpCircle,
   Zap,
   Star,
-  X
+  X,
+  Network
 } from 'lucide-react';
 
 interface TalentTreeProps {
@@ -40,6 +41,7 @@ export const TalentTree = React.memo<TalentTreeProps>(({
     return localStorage.getItem('scholar_dungeon_talents_collapsed') === 'true';
   });
   const [showInfo, setShowInfo] = useState(false);
+  const [shakingId, setShakingId] = useState<string | null>(null);
 
   const toggleCollapse = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -56,7 +58,6 @@ export const TalentTree = React.memo<TalentTreeProps>(({
 
   const canUnlock = (talent: Talent) => {
     if (unlockedIds.includes(talent.id)) return false;
-    if (points < talent.cost) return false;
     
     // Check previous tier in same branch
     if (talent.tier > 1) {
@@ -67,12 +68,29 @@ export const TalentTree = React.memo<TalentTreeProps>(({
     return true;
   };
 
+  const handleUnlockAttempt = (talent: Talent) => {
+    if (unlockedIds.includes(talent.id)) {
+      onToggle(talent.id);
+      return;
+    }
+
+    if (!canUnlock(talent)) return;
+
+    if (points < talent.cost) {
+      setShakingId(talent.id);
+      setTimeout(() => setShakingId(null), 500);
+      return;
+    }
+
+    onUnlock(talent.id, talent.cost);
+  };
+
   return (
     <div className="p-6 space-y-8 relative">
       <PageHeader 
         title="Talent Tree"
         description="Customize your learning build"
-        icon={Star}
+        icon={Network}
         stats={[
           { label: 'Talent Points', value: points, icon: Zap, color: 'text-emerald-400' },
           { label: 'Talent Shards', value: `${shards}/3`, icon: Star, color: 'text-amber-400' }
@@ -218,11 +236,16 @@ export const TalentTree = React.memo<TalentTreeProps>(({
                   const isUnlocked = unlockedIds.includes(talent.id);
                   const isActive = activeIds.includes(talent.id);
                   const unlockable = canUnlock(talent);
+                  const isShaking = shakingId === talent.id;
 
                   return (
                     <div key={talent.id} className="group relative">
                       <motion.div
-                        whileHover={unlockable || isUnlocked ? { scale: 1.05 } : {}}
+                        whileHover={(unlockable && points >= talent.cost) || isUnlocked ? { scale: 1.05 } : {}}
+                        animate={isShaking ? {
+                          x: [0, -10, 10, -10, 10, 0],
+                          transition: { duration: 0.4 }
+                        } : {}}
                         className={cn(
                           "relative z-10 transition-all cursor-pointer",
                           isCollapsed 
@@ -230,21 +253,23 @@ export const TalentTree = React.memo<TalentTreeProps>(({
                             : "p-4 rounded-2xl border-2",
                           isUnlocked 
                             ? isActive ? cn("bg-slate-800", branch.border.replace('border-', 'border-').replace('/30', '')) : "bg-slate-900 border-slate-600"
-                            : unlockable ? "bg-slate-900 border-slate-700 hover:border-slate-400" : "bg-slate-950 border-slate-800 opacity-60"
+                            : (unlockable && points >= talent.cost) ? "bg-slate-900 border-slate-700 hover:border-slate-400" : "bg-slate-950 border-slate-800 opacity-60"
                         )}
-                        onClick={() => {
-                          if (isUnlocked) onToggle(talent.id);
-                          else if (unlockable) onUnlock(talent.id, talent.cost);
-                        }}
+                        onClick={() => handleUnlockAttempt(talent)}
                       >
                         {isCollapsed ? (
                           <div className={cn(
-                            "transition-colors",
+                            "transition-colors relative",
                             isUnlocked ? branch.color : "text-slate-600"
                           )}>
                             <TalentIcon iconName={talent.icon} size={24} />
                             {isActive && (
                               <div className={cn("absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-slate-900", branch.accent)} />
+                            )}
+                            {!isUnlocked && (
+                              <div className="absolute -bottom-1.5 -right-1.5 bg-slate-950 rounded-full p-0.5 border border-slate-800">
+                                <Lock size={10} className="text-slate-500" />
+                              </div>
                             )}
                           </div>
                         ) : (

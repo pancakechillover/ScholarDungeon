@@ -205,6 +205,9 @@ export interface AppState {
   pushSubscription?: any;
   timeSettings?: TimeSettings;
   showOtherInActivityLog?: boolean;
+  dailyProgressGoalConfig?: Record<number, number>;
+  useSameDailyProgressGoalEveryDay?: boolean;
+  dailyProgressGoal?: number;
 }
 
 export interface StudySession {

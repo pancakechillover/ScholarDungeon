@@ -10,7 +10,7 @@ interface LevelUpModalProps {
   levels: number[] | null;
   onClose: () => void;
   state: AppState;
-  setShowXPGuide: (val: boolean) => void;
+  openGuideBook: (chapter: number) => void;
   isTalentLevel: (lvl: number) => boolean;
   getNextTalentLevel: (lvl: number, rewards?: any[]) => number;
 }
@@ -19,7 +19,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
   levels,
   onClose,
   state,
-  setShowXPGuide,
+  openGuideBook,
   isTalentLevel,
   getNextTalentLevel
 }) => {
@@ -49,7 +49,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest">Rewards</h3>
                 <button 
-                  onClick={() => setShowXPGuide(true)}
+                  onClick={() => { onClose(); openGuideBook(2); }}
                   className="text-[10px] font-bold text-slate-500 hover:text-indigo-400 flex items-center gap-1 uppercase tracking-widest transition-colors"
                 >
                   <HelpCircle size={12} />

@@ -8,11 +8,11 @@ import {
   Edit2, 
   Archive 
 } from 'lucide-react';
-import { PageHeader } from './PageHeader';
+import { PageHeader } from '../PageHeader';
 import { DungeonManager } from './DungeonManager';
-import { QuestManager } from './QuestManager';
-import { AppState, Dungeon, MajorDungeon, DungeonReward } from '../types';
-import { cn } from '../lib/utils';
+import { QuestManager } from '../QuestManager';
+import { AppState, Dungeon, MajorDungeon, DungeonReward } from '../../types';
+import { cn } from '../../lib/utils';
 
 interface DungeonsViewProps {
   state: AppState;

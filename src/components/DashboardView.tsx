@@ -3,7 +3,11 @@ import { motion } from 'motion/react';
 import { 
   Sword, 
   ChevronRight, 
-  Calendar 
+  Calendar,
+  BookOpen, 
+  HelpCircle,
+  Coins,
+  Zap
 } from 'lucide-react';
 import { AppState, Dungeon } from '../types';
 import { playSound } from '../lib/sound';
@@ -13,6 +17,7 @@ interface DashboardViewProps {
   currentDungeon: Dungeon | null;
   setActiveTab: (tab: any) => void;
   setShowDailySummary: (show: boolean) => void;
+  openGuideBook: (chapter: number) => void;
   saveDailyLog: (date: string, rating: number, reflection: string) => void;
 }
 
@@ -21,6 +26,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   currentDungeon,
   setActiveTab,
   setShowDailySummary,
+  openGuideBook,
   saveDailyLog
 }) => {
   return (
@@ -85,13 +91,35 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-4">Daily Progress</h3>
             <div className="flex items-center justify-between mb-2">
               <span className="text-2xl font-bold text-white">{state.dailySessions}</span>
-              <span className="text-slate-500 text-xs">/ 16 Sessions</span>
+              {(() => {
+                const timezone = state.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+                const dateString = new Date().toLocaleString("en-US", { weekday: 'long', timeZone: timezone });
+                const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                const day = days.indexOf(dateString);
+                
+                const dailyGoal = state.useSameDailyProgressGoalEveryDay ?? true 
+                  ? (state.dailyProgressGoal ?? 8) 
+                  : (state.dailyProgressGoalConfig?.[day] ?? 8);
+                return <span className="text-slate-500 text-xs">/ {dailyGoal} Sessions</span>;
+              })()}
             </div>
             <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden mb-6">
-              <div 
-                className="h-full bg-emerald-500" 
-                style={{ width: `${Math.min((state.dailySessions / 16) * 100, 100)}%` }}
-              />
+              {(() => {
+                const timezone = state.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+                const dateString = new Date().toLocaleString("en-US", { weekday: 'long', timeZone: timezone });
+                const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                const day = days.indexOf(dateString);
+                
+                const dailyGoal = state.useSameDailyProgressGoalEveryDay ?? true 
+                  ? (state.dailyProgressGoal ?? 8) 
+                  : (state.dailyProgressGoalConfig?.[day] ?? 8);
+                return (
+                  <div 
+                    className="h-full bg-emerald-500" 
+                    style={{ width: `${Math.min((state.dailySessions / dailyGoal) * 100, 100)}%` }}
+                  />
+                );
+              })()}
             </div>
             <button
               onClick={() => {
@@ -103,6 +131,23 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <Calendar size={14} className="text-indigo-400" />
               End the Day
             </button>
+          </div>
+
+          <div className="bg-slate-900 rounded-3xl border border-slate-800 p-6">
+            <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                <BookOpen size={16} /> Guides
+            </h3>
+            <div className="space-y-2">
+                <button onClick={() => openGuideBook(1)} className="w-full flex items-center gap-3 p-3 rounded-xl bg-slate-950/50 hover:bg-slate-800 transition-colors border border-slate-800/50 text-xs text-slate-300">
+                    <Coins size={16} className="text-amber-400" /> Gold Coins Guide
+                </button>
+                <button onClick={() => openGuideBook(2)} className="w-full flex items-center gap-3 p-3 rounded-xl bg-slate-950/50 hover:bg-slate-800 transition-colors border border-slate-800/50 text-xs text-slate-300">
+                    <BookOpen size={16} className="text-emerald-400" /> XP & Leveling Guide
+                </button>
+                <button onClick={() => openGuideBook(3)} className="w-full flex items-center gap-3 p-3 rounded-xl bg-slate-950/50 hover:bg-slate-800 transition-colors border border-slate-800/50 text-xs text-slate-300">
+                    <Zap size={16} className="text-indigo-400" /> Talent System Guide
+                </button>
+            </div>
           </div>
         </div>
       </div>

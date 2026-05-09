@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Dungeon, MajorDungeon, DungeonReward } from '../types';
+import { Dungeon, MajorDungeon, DungeonReward } from '../../types';
 import { Plus, Target, Sword, CheckCircle2, ChevronRight, Trash2, FolderPlus, Folder, ChevronDown, ChevronUp, Gift, X, Edit2, Coins, Zap, Trophy, HelpCircle, Square, CheckSquare, EyeOff, Eye, Archive, Search, Filter, Calendar } from 'lucide-react';
-import { PageHeader } from './PageHeader';
-import { cn } from '../lib/utils';
-import { SpinnerInput } from './SpinnerInput';
-import { ConfirmModal } from './ConfirmModal';
+import { PageHeader } from '../PageHeader';
+import { cn } from '../../lib/utils';
+import { SpinnerInput } from '../SpinnerInput';
+import { ConfirmModal } from '../ConfirmModal';
 
 interface DungeonManagerProps {
   dungeons: Dungeon[];

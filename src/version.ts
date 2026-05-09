@@ -1,16 +1,136 @@
-export const APP_VERSION = 'v4.6.12';
-export const LAST_UPDATE_DATE = '2026-05-11';
-export const LAST_UPDATE_TIME = '22:45:00';
+export const APP_VERSION = 'v4.7.2';
+export const LAST_UPDATE_DATE = '2026-05-09';
+export const LAST_UPDATE_TIME = '07:59:00';
 
 export interface ReleaseLog {
   version: string;
   date: string;
-  time?: string;
+  time: string;
   title: string;
   items: { category: string; description: string }[];
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v4.7.2',
+    date: '2026-05-09',
+    time: '07:59:00',
+    title: 'Guide Book Realistic Animation & B5 Aspect Ratio',
+    items: [
+      { category: 'UI', description: 'Restructured Guide Book aspect ratio to precisely simulate realistic B5 dimensions for single (mobile) and double pages (desktop).' },
+      { category: 'UX', description: 'Improved Framer Motion 3D page flip animation to accurately simulate a book page swinging from the spine rather than spinning the entire layout.' },
+      { category: 'UI', description: 'Snapped interactive bookmarks seamlessly to the right edge of the book base outline.' }
+    ]
+  },
+  {
+    version: 'v4.7.1',
+    date: '2026-05-09',
+    time: '07:40:00',
+    title: 'Guide Book Mechanics & Mobile UX Polish',
+    items: [
+      { category: 'UX', description: 'Perfected the Guide Book to display as a single page on mobile devices for improved readability, while retaining the dual-page spread on larger screens.' },
+      { category: 'UI', description: 'Implemented 3D page-flip animations (rotateY) across the book\'s layout for an authentic reading experience.' },
+      { category: 'UI', description: 'Bookmarks were added to the right-edge of the book linking directly to explicit chapters.' },
+      { category: 'UX', description: 'Navigation arrows relocated to the lower corners within the page boundary. Refined content to remove obsolete settings tips.' }
+    ]
+  },
+  {
+    version: 'v4.7.0',
+    date: '2026-05-09',
+    time: '07:18:00',
+    title: 'Interactive Sanctum Guide Book',
+    items: [
+      { category: 'Feature', description: 'Redesigned the Sanctum Guides into a comprehensive, interactive 3D-styled Guide Book.' },
+      { category: 'UX', description: 'Unified Coins, XP, and Talent guides into a single paginated modal with a Table of Contents.' },
+      { category: 'UI', description: 'Implemented a parchment-themed book aesthetic with left/right page turning and responsive scaling.' }
+    ]
+  },
+  {
+    version: 'v4.6.22',
+    date: '2026-05-09',
+    time: '07:15:00',
+    title: 'Sanctum Guides Update',
+    items: [
+      { category: 'Documentation', description: 'Updated Sanctum Guides to reflect that Coins and XP can be obtained from Quests and Achievements rather than Gacha.' },
+      { category: 'UI', description: 'Improved readability of Guide settings redirect buttons by adding background colors and boosting text contrast against the background.' }
+    ]
+  },
+  {
+    version: 'v4.6.21',
+    date: '2026-05-09',
+    time: '07:05:00',
+    title: 'Sanctum Guides: Interactive Settings Redirects',
+    items: [
+      { category: 'Documentation', description: 'Rewrote Sanctum Guide content (Gold, XP, Talents) to be more detailed and accurate.' },
+      { category: 'UX', description: 'Added interactive buttons within the Guides that redirect users to the relevant sections in the Settings page.' }
+    ]
+  },
+  {
+    version: 'v4.6.20',
+    date: '2026-05-09',
+    time: '06:50:50',
+    title: 'Daily Progress Goal: Synchronization',
+    items: [
+      { category: 'Feature', description: 'Synchronized Daily Progress Goal settings from General Settings to the Sanctum Dashboard display.' },
+      { category: 'Bugfix', description: 'Fixed timezone-aware daily goal synchronization in Sanctum Dashboard.' }
+    ]
+  },
+  {
+    version: 'v4.6.19',
+    date: '2026-05-09',
+    time: '06:30:00',
+    title: 'Settings: Daily Progress Goal UI Refinement',
+    items: [
+      { category: 'UX', description: 'Simplified Daily Progress Goal layout to a concise wrap-flex design for better clarity and space efficiency.' }
+    ]
+  },
+  {
+    version: 'v4.6.17',
+    date: '2026-05-09',
+    time: '06:22:00',
+    title: 'Settings: Daily Progress Goals',
+    items: [
+      { category: 'Feature', description: 'Added the ability to set custom daily session goals per day of the week in General Settings.' }
+    ]
+  },
+  {
+    version: 'v4.6.16',
+    date: '2026-05-09',
+    time: '06:15:00',
+    title: 'Dashboard: Guide Module Integration',
+    items: [
+      { category: 'Feature', description: 'Added a new Guide module to the Sanctum (Dashboard) for quick access to Coin, XP, and Talent system guides.' }
+    ]
+  },
+  {
+    version: 'v4.6.15',
+    date: '2026-05-11',
+    time: '00:15:00',
+    title: 'Developer Tools: Talent Tree Reset',
+    items: [
+      { category: 'Feature', description: 'Reset Talent Tree. Added a dedicated developer action to lock all talents and clear the active build, facilitating testing and progression resets.' },
+      { category: 'Security', description: 'Implemented a double-check confirmation modal for talent resets to prevent accidental progress loss.' }
+    ]
+  },
+  {
+    version: 'v4.6.14',
+    date: '2026-05-11',
+    time: '23:50:00',
+    title: 'Talent Tree UI & Feedback Polish',
+    items: [
+      { category: 'UI', description: 'Added lock icons to the collapsed talent tree view for at-a-glance status checks of locked talents.' },
+      { category: 'UX', description: 'Implemented a "shake" feedback animation when attempting to unlock a talent with insufficient points, providing immediate intuitive feedback.' }
+    ]
+  },
+  {
+    version: 'v4.6.13',
+    date: '2026-05-11',
+    time: '23:30:00',
+    title: 'Talent Network Icon Upgrade',
+    items: [
+      { category: 'UI', description: 'Updated Talent Tree representation. Exchanged the generic Zap icon with a specialized Network vector across Navigation and Page Headers for better thematic alignment.' }
+    ]
+  },
   {
     version: 'v4.6.12',
     date: '2026-05-11',

@@ -21,8 +21,8 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors:** When designing UI elements that highlight based on themes, note that ONLY `indigo-400`, `indigo-500`, and `indigo-600` are overridden by the custom theme variables in `index.css`. DO NOT use `indigo-300` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v4.6.12
-- **Last Update Date:** 2026-05-11
+- **Current Version:** v4.7.2
+- **Last Update Date:** 2026-05-09
 
 ## Dark Themes Definition
 The following themes are considered "Dark Themes" and form the baseline for vibrant visual effects and high-contrast glowing elements:
@@ -46,6 +46,46 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v4.7.2 (2026-05-09):** Guide Book Realistic Animation & B5 Aspect Ratio.
+  - *UI:* Restructured Guide Book aspect ratio to precisely simulate realistic B5 dimensions for single (mobile) and double pages (desktop).
+  - *UX:* Improved Framer Motion 3D page flip animation to accurately simulate a book page swinging from the spine rather than spinning the entire layout.
+  - *UI:* Snapped interactive bookmarks seamlessly to the right edge of the book base outline.
+- **v4.7.1 (2026-05-09):** Guide Book Mechanics & Mobile UX Polish.
+  - *UX:* Perfected the Guide Book to display as a single page on mobile devices for improved readability, while retaining the dual-page spread on larger screens.
+  - *UI:* Implemented 3D page-flip animations (`rotateY`) across the book's layout for an authentic reading experience.
+  - *UI:* Bookmarks were added to the right-edge of the book linking directly to explicit chapters.
+  - *UX:* Navigation arrows relocated to the lower corners within the page boundary. Refined content to remove obsolete settings tips.
+- **v4.7.0 (2026-05-09):** Interactive Sanctum Guide Book.
+  - *Feature:* Redesigned the Sanctum Guides into a comprehensive, interactive 3D-styled Guide Book.
+  - *UX:* Unified Coins, XP, and Talent guides into a single paginated modal with a Table of Contents.
+  - *UI:* Implemented a parchment-themed book aesthetic with left/right page turning and responsive scaling.
+- **v4.6.22 (2026-05-09):** Sanctum Guides Update.
+  - *Documentation:* Updated Sanctum Guides to reflect that Coins and XP can be obtained from Quests and Achievements rather than Gacha.
+  - *UI:* Improved readability of Guide settings redirect buttons by adding background colors and boosting text contrast against the background.
+- **v4.6.21 (2026-05-09):** Sanctum Guides: Interactive Settings Redirects.
+  - *Documentation:* Rewrote Sanctum Guide content (Gold, XP, Talents) to be more detailed and accurate.
+  - *UX:* Added interactive buttons within the Guides that redirect users to the relevant sections in the Settings page.
+- **v4.6.20 (2026-05-09):** Daily Progress Goal: Synchronization & Bugfix.
+  - *Feature:* Synchronized Daily Progress Goal settings from General Settings to the Sanctum Dashboard display.
+  - *Bugfix:* Fixed timezone-aware daily goal synchronization in Sanctum Dashboard.
+- **v4.6.20 (2026-05-09):** Daily Progress Goal: Label Refinement.
+  - *UX:* Updated weekday labels in Daily Progress Goal configuration to 3-letter abbreviations for improved readability.
+- **v4.6.19 (2026-05-09):** Settings: Daily Progress Goal Switch.
+  - *Feature:* Added a toggle to Daily Progress Goal settings, allowing users to choose between a uniform daily goal or a custom per-day schedule.
+- **v4.6.18 (2026-05-09):** Settings: Daily Progress Goal UI Refinement.
+  - *UX:* Simplified Daily Progress Goal layout to a concise wrap-flex design for better clarity and space efficiency.
+- **v4.6.17 (2026-05-09):** Settings: Daily Progress Goals.
+  - *Feature:* Added the ability to set custom daily session goals per day of the week in General Settings.
+- **v4.6.16 (2026-05-09):** Dashboard: Guide Module Integration.
+  - *Feature:* Added a new Guide module to the Sanctum (Dashboard) for quick access to Coin, XP, and Talent system guides.
+- **v4.6.15 (2026-05-11):** Developer Tools: Talent Tree Reset.
+  - *Feature:* Reset Talent Tree. Added a dedicated developer action to lock all talents and clear the active build, facilitating testing and progression resets.
+  - *Security:* Implemented a double-check confirmation modal for talent resets to prevent accidental progress loss.
+- **v4.6.14 (2026-05-11):** Talent Tree UI & Feedback Polish.
+  - *UI:* Visual Security Markers. Integrated lock icons into the collapsed view of the talent tree to clearly distinguish locked tiers without expanding.
+  - *UX:* Negative Feedback Animation. Implemented a responsive "shake" animation for talent nodes when players attempt to unlock them without sufficient talent points.
+- **v4.6.13 (2026-05-11):** Talent Network Icon Upgrade.
+  - *UI:* Updated Talent Tree representation. Exchanged the generic Zap icon with a specialized Network vector across Navigation and Page Headers for better thematic alignment.
 - **v4.6.12 (2026-05-11):** Precise Theme Schedule & Timezone Logic.
   - *Feature:* Full Time Selection. Updated theme transition settings to support full HH:mm precision instead of just hours.
   - *UX:* Renamed "Transition Hour" to "Transition Time" for better clarity and alignment with the new time picker.

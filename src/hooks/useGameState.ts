@@ -727,29 +727,43 @@ export function useGameState() {
         let questsUpdated = false;
         let newlyCompletedQuests = 0;
         const updatedQuests = newState.quests.map(q => {
-          if (q.completed) return q;
-
-          // Check if quest is locked by talent
-          if (q.talentRequired && !newState.activeTalents.includes(q.talentRequired)) {
-            return q;
+          let currentQuest = q;
+          if (q.type === 'daily_sessions' && newState.dailyProgressGoalConfig) {
+             const day = new Date().getDay();
+             const goal = newState.dailyProgressGoalConfig[day];
+             if (goal !== undefined && goal !== q.target) {
+                currentQuest = { ...q, target: goal };
+                if (currentQuest.progress >= currentQuest.target) {
+                  currentQuest.completed = true;
+                } else {
+                  currentQuest.completed = false;
+                }
+             }
           }
 
-          let newProgress = q.progress;
-          if (q.type === 'daily_sessions' || q.type === 'weekly_sessions' || q.type === 'monthly_sessions' || q.type === 'total_sessions') {
+          if (currentQuest.completed) return currentQuest;
+
+          // Check if quest is locked by talent
+          if (currentQuest.talentRequired && !newState.activeTalents.includes(currentQuest.talentRequired)) {
+            return currentQuest;
+          }
+
+          let newProgress = currentQuest.progress;
+          if (currentQuest.type === 'daily_sessions' || currentQuest.type === 'weekly_sessions' || currentQuest.type === 'monthly_sessions' || currentQuest.type === 'total_sessions') {
             newProgress += 1;
-          } else if (q.type === 'consecutive_days') {
+          } else if (currentQuest.type === 'consecutive_days') {
             newProgress = newStreak;
           }
 
-          if (newProgress !== q.progress) {
+          if (newProgress !== currentQuest.progress) {
             questsUpdated = true;
-            if (newProgress >= q.target) {
+            if (newProgress >= currentQuest.target) {
               newlyCompletedQuests += 1;
-              return { ...q, progress: newProgress, completed: true };
+              return { ...currentQuest, progress: newProgress, completed: true };
             }
-            return { ...q, progress: newProgress };
+            return { ...currentQuest, progress: newProgress };
           }
-          return q;
+          return currentQuest;
         });
 
         if (questsUpdated) {

@@ -766,6 +766,64 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
       </div>
 
       <div className="space-y-6 pt-6 border-t border-slate-800">
+        <div className="flex items-center justify-between mb-6 pb-2 border-b border-slate-800/50">
+          <div className="flex items-center gap-2.5 text-amber-400">
+            <Target size={20} />
+            <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Daily Progress Goal</h4>
+          </div>
+          <button
+            onClick={() => setState(prev => ({ ...prev, useSameDailyProgressGoalEveryDay: !prev.useSameDailyProgressGoalEveryDay }))}
+            className={cn(
+              "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
+              state.useSameDailyProgressGoalEveryDay ?? true ? "bg-slate-700" : "bg-amber-500"
+            )}
+          >
+            <span
+              className={cn(
+                "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+                state.useSameDailyProgressGoalEveryDay ?? true ? "translate-x-1" : "translate-x-6"
+              )}
+            />
+          </button>
+        </div>
+        
+        {state.useSameDailyProgressGoalEveryDay ?? true ? (
+          <div className="flex items-center justify-between bg-slate-900/50 p-4 rounded-xl border border-slate-800">
+             <span className="text-sm font-bold text-slate-300">Goal per day:</span>
+             <SpinnerInput
+                value={state.dailyProgressGoal ?? 8}
+                onChange={(val) => setState(prev => ({ ...prev, dailyProgressGoal: typeof val === 'number' ? val : 8 }))}
+                min={1}
+              />
+          </div>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {[0, 1, 2, 3, 4, 5, 6].map(day => (
+              <div key={day} className="flex flex-col items-center w-[calc(14.28%-0.5rem)] min-w-[4rem] bg-slate-900/50 p-2 rounded-xl border border-slate-800">
+                <label className="text-[9px] font-bold text-slate-500 uppercase mb-1">
+                  {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][day]}
+                </label>
+                <SpinnerInput
+                  value={state.dailyProgressGoalConfig?.[day] ?? 8}
+                  onChange={(val) => {
+                    const num = typeof val === 'number' ? val : 1;
+                    setState(prev => ({
+                      ...prev,
+                      dailyProgressGoalConfig: {
+                        ...(prev.dailyProgressGoalConfig || {}),
+                        [day]: num
+                      }
+                    }));
+                  }}
+                  min={1}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="space-y-6 pt-6 border-t border-slate-800">
         <div className="flex items-center gap-2.5 text-amber-400 mb-6 pb-2">
           <Target size={20} />
           <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Quest UI Notifications</h4>
