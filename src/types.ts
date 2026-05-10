@@ -210,6 +210,7 @@ export interface AppState {
   lastUpdated?: string;
   secretCode?: string;
   isRedisUnlocked?: boolean;
+  isGoogleDriveUnlocked?: boolean;
   syncProvider?: 'Redis' | 'Google Drive' | 'WebDAV';
   googleDriveTokens?: {
     access_token: string;

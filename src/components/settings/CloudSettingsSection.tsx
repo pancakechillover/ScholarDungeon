@@ -20,6 +20,7 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
   const intervalMinutes = state.autoSyncIntervalMinutes || 1;
 
   const [showUnlockModal, setShowUnlockModal] = useState(false);
+  const [unlockTarget, setUnlockTarget] = useState<'redis' | 'google' | null>(null);
   const [unlockPassword, setUnlockPassword] = useState('');
   const [unlockError, setUnlockError] = useState(false);
 
@@ -51,16 +52,12 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
     if (state.isRedisUnlocked) {
       onOpenAstralArchives();
     } else {
+      setUnlockTarget('redis');
       setShowUnlockModal(true);
     }
   };
 
-  const handleGoogleDriveClick = async () => {
-    if (state.googleDriveTokens) {
-      // Already connected. Provide management in future expansions
-      return;
-    }
-    
+  const startGoogleAuth = async () => {
     try {
       const origin = encodeURIComponent(window.location.origin);
       const response = await fetch(`/api/auth/google/url?origin=${origin}`);
@@ -82,14 +79,42 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
     }
   };
 
-  const handleUnlock = () => {
-    if (btoa(unlockPassword) === 'OTAwMTk5NjE5NTIw') {
-      setState(s => ({ ...s, isRedisUnlocked: true }));
-      setShowUnlockModal(false);
-      setUnlockError(false);
-      onOpenAstralArchives();
-    } else {
-      setUnlockError(true);
+  const handleGoogleDriveClick = async () => {
+    if (state.googleDriveTokens) {
+      // Already connected. Provide management in future expansions
+      return;
+    }
+    
+    if (!state.isGoogleDriveUnlocked) {
+      setUnlockTarget('google');
+      setShowUnlockModal(true);
+      return;
+    }
+    
+    await startGoogleAuth();
+  };
+
+  const handleUnlock = async () => {
+    if (unlockTarget === 'redis') {
+      if (btoa(unlockPassword) === 'OTAwMTk5NjE5NTIw') {
+        setState(s => ({ ...s, isRedisUnlocked: true }));
+        setShowUnlockModal(false);
+        setUnlockTarget(null);
+        setUnlockError(false);
+        onOpenAstralArchives();
+      } else {
+        setUnlockError(true);
+      }
+    } else if (unlockTarget === 'google') {
+      if (unlockPassword === 'GoogleTest') {
+        setState(s => ({ ...s, isGoogleDriveUnlocked: true }));
+        setShowUnlockModal(false);
+        setUnlockTarget(null);
+        setUnlockError(false);
+        await startGoogleAuth();
+      } else {
+        setUnlockError(true);
+      }
     }
   };
 
@@ -173,7 +198,11 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
               state.googleDriveTokens ? 'text-emerald-400' : 'text-indigo-400'
             }`}>
               <span>{state.googleDriveTokens ? 'Manage Connection' : 'Connect'}</span>
-              <ChevronRight size={16} />
+              {!state.isGoogleDriveUnlocked ? (
+                <Lock size={16} className="text-amber-400/80" />
+              ) : (
+                <ChevronRight size={16} />
+              )}
             </div>
           </div>
         </button>
@@ -372,6 +401,7 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
             <button
               onClick={() => {
                 setShowUnlockModal(false);
+                setUnlockTarget(null);
                 setUnlockError(false);
                 setUnlockPassword('');
               }}
@@ -385,7 +415,10 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
               </div>
               <h3 className="text-lg font-black text-white uppercase tracking-widest mb-2">Developer Access</h3>
               <p className="text-xs text-slate-400 leading-relaxed max-w-xs">
-                由于目前Redis数据储存量小，所以只有开发者或受邀请的人才能使用这个同步方案。请输入开发者预设的密码后启用。
+                {unlockTarget === 'redis' 
+                  ? '由于目前Redis数据储存量小，所以只有开发者或受邀请的人才能使用这个同步方案。请输入开发者预设的密码后启用。'
+                  : 'Google Drive Auth is currently restricted to approved internal testers only due to pending Google Verification. Please enter the test password to proceed.'
+                }
               </p>
             </div>
             <div className="space-y-4">

@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v5.2.1';
+export const APP_VERSION = 'v5.2.2';
 export const LAST_UPDATE_DATE = '2026-05-10';
-export const LAST_UPDATE_TIME = '21:45:00';
+export const LAST_UPDATE_TIME = '22:15:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,17 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v5.2.2',
+    date: '2026-05-10',
+    time: '22:15:00',
+    title: 'Google Drive Developer Access Lock',
+    items: [
+      { category: 'Architecture', description: 'Added a Developer Password Lock to the Google Drive synchronization feature to prevent unauthorized access while the OAuth App is pending Google Verification.' },
+      { category: 'UI', description: 'Updated the Cloud Sync settings interface to dynamically show the lock icon on Google Drive integrations.' },
+      { category: 'UX', description: 'Restructured the developer unlock modal to adapt its description text dynamically based on the syncing method being chosen.' }
+    ]
+  },
   {
     version: 'v5.2.1',
     date: '2026-05-10',
