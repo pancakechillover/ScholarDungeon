@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v4.10.3';
+export const APP_VERSION = 'v4.10.9';
 export const LAST_UPDATE_DATE = '2026-05-10';
-export const LAST_UPDATE_TIME = '10:30:00';
+export const LAST_UPDATE_TIME = '15:45:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,58 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v4.10.9',
+    date: '2026-05-10',
+    time: '15:45:00',
+    title: 'Expedition Undo Drag Operations',
+    items: [
+      { category: 'Feature', description: 'Implemented a dedicated Undo button to revert complex hierarchy drag-and-drop operations safely.' },
+      { category: 'Architecture', description: 'Deeply integrated drag caching mechanisms into the unified store by precisely capturing the start of dragging actions.' }
+    ]
+  },
+  {
+    version: 'v4.10.8',
+    date: '2026-05-10',
+    time: '15:15:00',
+    title: 'Quest Board Developer CSS Toolkit',
+    items: [
+      { category: 'Feature', description: 'Centralized Quest Board styling logic using CSS variables localized per theme.' },
+      { category: 'UI', description: 'Implemented Quest Board CSS Debugger tool within Developer Settings.' },
+      { category: 'Architecture', description: 'Fully decoupled standard `.qb-*` classes enabling rapid custom theme updates without cross-contamination.' }
+    ]
+  },
+  {
+    version: 'v4.10.7',
+    date: '2026-05-10',
+    time: '11:22:00',
+    title: 'Expedition Drag & Drop Hierarchy Fix',
+    items: [
+      { category: 'Bugfix', description: 'Resolved a critical race condition where dragging a sub-dungeon across tiers caused items to disappear due to outdated local Reorder state.' },
+      { category: 'Architecture', description: 'Refactored onReorder handling for MajorDungeons and Sub-Dungeons to exclusively filter and update based on verified state membership.' }
+    ]
+  },
+  {
+    version: 'v4.10.6',
+    date: '2026-05-10',
+    time: '11:15:00',
+    title: 'Dungeon Tier Creation Title Fix',
+    items: [
+      { category: 'Bugfix', description: 'Fixed a logical error where creating a Tier 1 dungeon goal under an Expedition incorrectly displayed "CREATE TIER 2" as the title.' },
+      { category: 'Architecture', description: 'Refined getSubDungeonDepth utility to correctly identify Major Dungeons as the root depth (Level 0).' }
+    ]
+  },
+  {
+    version: 'v4.10.5',
+    date: '2026-05-10',
+    time: '11:00:00',
+    title: 'Custom PWA Icon Set Integration',
+    items: [
+      { category: 'Architecture', description: 'Updated Vite PWA configuration to support multi-size RealFaviconGenerator icon set including maskable and any purpose icons.' },
+      { category: 'UI', description: 'Standardized favicon and apple-touch-icon links in index.html for cross-platform consistency (iOS/Android/Desktop).' },
+      { category: 'UX', description: 'Added cache-busting versioning to manifest icons to ensure immediate updates on existing installations.' }
+    ]
+  },
   {
     version: 'v4.10.3',
     date: '2026-05-10',

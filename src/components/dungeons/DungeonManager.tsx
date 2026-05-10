@@ -7,7 +7,7 @@ import { cn } from '../../lib/utils';
 import { SpinnerInput } from '../SpinnerInput';
 import { ConfirmModal } from '../ConfirmModal';
 
-const DraggableItem = ({ item, isEditMode, children, className, handleClassName, onMove }: any) => {
+const DraggableItem = ({ item, isEditMode, children, className, handleClassName, onMove, onDragStart }: any) => {
   const controls = useDragControls();
   return (
     <Reorder.Item 
@@ -61,6 +61,7 @@ const DraggableItem = ({ item, isEditMode, children, className, handleClassName,
               if (e.pointerType === 'touch') {
                 e.preventDefault(); 
               }
+              onDragStart?.();
               controls.start(e);
             }}
           >
@@ -91,6 +92,7 @@ interface DungeonManagerProps {
   onReorderMajor: (id: string, direction: 'up' | 'down') => void;
   onReorderSub: (id: string, direction: 'up' | 'down') => void;
   onMoveItem: (itemId: string, newParentId: string | null) => void;
+  onDragStart?: () => void;
   onFinalizeMajor: (id: string) => void;
   onArchiveMajor: (id: string) => void;
   onForceCompleteSub?: (id: string) => void;
@@ -116,6 +118,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
   onReorderMajor,
   onReorderSub,
   onMoveItem,
+  onDragStart,
   setMajorDungeons,
   setDungeons,
   onFinalizeMajor,
@@ -269,8 +272,10 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
   };
 
   const getSubDungeonDepth = (subId: string): number => {
-    let depth = 1;
     let current = dungeons.find(d => d.id === subId);
+    if (!current) return 0;
+
+    let depth = 1;
     while (current && current.parentId) {
       const parent = dungeons.find(d => d.id === current.parentId);
       if (parent) {
@@ -326,11 +331,10 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
               // just moved IN. If we have items in currentSubsInParent NOT in newSubs, they were 
               // just moved OUT or are being reordered.
               
-              // Trust the newSubs order for the items we have
+              // Trust the newSubs order ONLY for items that still belong to this parent in the latest state
               const finalReordered = newSubs
-                .map(ns => prev.find(p => p.id === ns.id))
-                .filter((d): d is Dungeon => !!d)
-                .map(d => ({ ...d, parentId }));
+                .map(ns => currentSubsInParent.find(p => p.id === ns.id))
+                .filter((d): d is Dungeon => !!d);
 
               // 3. Keep any items that are in THIS parent but WERE NOT in the reorder list 
               // (e.g. they were just moved in from another parent and Reorder.Group hasn't seen them yet)
@@ -360,6 +364,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
               item={sub}
               isEditMode={isEditMode}
               onMove={onMoveItem}
+              onDragStart={onDragStart}
               handleClassName="w-6 h-6 p-0 hover:bg-slate-800 rounded-sm mt-[6px]"
               className="space-y-0.5 relative z-10"
             >
@@ -841,9 +846,8 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                     const reorderedIds = newMajors.map(m => m.id);
                     
                     const finalReordered = newMajors.map(nm => {
-                      const existing = prev.find(p => p.id === nm.id);
-                      return existing ? existing : nm;
-                    }).filter(m => m.status !== 'archived');
+                      return currentMajorsInPrev.find(p => p.id === nm.id);
+                    }).filter((m): m is MajorDungeon => !!m);
 
                     const missingOurs = currentMajorsInPrev.filter(
                       curr => !reorderedIds.includes(curr.id)
@@ -864,6 +868,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
               item={major} 
               isEditMode={isEditMode}
               onMove={onMoveItem}
+              onDragStart={onDragStart}
               handleClassName="w-6 h-6 p-0 hover:bg-slate-800 rounded-sm mt-[14px]"
               className="group transition-colors relative"
             >

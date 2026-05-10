@@ -21,7 +21,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors:** When designing UI elements that highlight based on themes, note that ONLY `indigo-400`, `indigo-500`, and `indigo-600` are overridden by the custom theme variables in `index.css`. DO NOT use `indigo-300` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v4.10.3
+- **Current Version:** v4.10.9
 - **Last Update Date:** 2026-05-10
 
 ## Dark Themes Definition
@@ -46,6 +46,25 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v4.10.9 (2026-05-10):** Expedition Undo Drag Operations.
+  - *Feature:* Implemented a dedicated Undo button to safely revert complex hierarchy drag-and-drop operations within the Expedition menu.
+  - *Architecture:* Deeply integrated drag-and-drop caching into the `useGameState` unified store. Added deterministic `onDragStart` captures.
+  - *UX:* Only displays the Undo icon when dragging has occurred, preventing accidental clutter.
+- **v4.10.8 (2026-05-10):** Quest Board Developer CSS Toolkit.
+  - *Feature:* Centralized and refactored Quest Board CSS into configurable CSS variables per theme.
+  - *UI:* Created the "Quest Board CSS Debugger" accessible via Developer Settings to preview all 7 theme layouts simultaneously on a single interface.
+  - *Architecture:* Fully decoupled `.qb-*` class styles from hardcoded values, routing them entirely through `--qb-*` root definitions.
+- **v4.10.7 (2026-05-10):** Expedition Drag & Drop Hierarchy Fix.
+  - *Bugfix:* Resolved a critical race condition where dragging a sub-dungeon across tiers caused items to disappear due to outdated local Reorder state overriding global tree structure.
+  - *Architecture:* Refactored `onReorder` handling for MajorDungeons and Sub-Dungeons to exclusively filter and update based on verified state membership.
+- **v4.10.6 (2026-05-10):** Dungeon Tier Creation Title Fix.
+  - *Bugfix:* Fixed a logical error where creating a Tier 1 dungeon goal under an Expedition incorrectly displayed "CREATE TIER 2" as the title.
+  - *Architecture:* Refined `getSubDungeonDepth` utility to correctly identify Major Dungeons as the root depth (Level 0).
+- **v4.10.5 (2026-05-10):** Custom PWA Icon Set Integration.
+  - *Architecture:* Synchronized `vite.config.ts` manifest with customized icon filenames from RealFaviconGenerator.
+  - *UI:* Expanded `index.html` with explicit favicon sizes (16x16, 32x32) and high-res apple-touch-icon links.
+  - *UX:* Implemented cache-busting logic for manifest icons to bypass browser-level persistence issues.
+- **v4.10.4 (2026-05-10):** PWA Desktop Icon & Compatibility Fix.
 - **v4.10.3 (2026-05-10):** Notification API Stability Fix.
   - *Bugfix:* Fixed `ReferenceError: Can't find variable: Notification` by adding `typeof Notification !== 'undefined'` checks before all API calls.
   - *Architecture:* Enhanced production stability in environments with limited browser API access (Iframes, restricted browsers).

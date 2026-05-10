@@ -270,6 +270,9 @@ function App() {
     purchaseShopItem,
     forceCompleteSubDungeon,
     claimAllQuestRewards,
+    undoDungeonDrag,
+    saveDungeonHistory,
+    dungeonHistory,
     selectReward,
     resetLootPool,
     setActivePool
@@ -1031,6 +1034,9 @@ function App() {
                 reorderMajorDungeon={reorderMajorDungeon}
                 reorderSubDungeon={reorderSubDungeon}
                 onMoveDungeonItem={moveDungeonItem}
+                onDragStart={saveDungeonHistory}
+                undoDungeonDrag={undoDungeonDrag}
+                canUndoDrag={dungeonHistory.length > 0}
                 setMajorDungeons={setMajorDungeons}
                 setDungeons={setDungeons}
                 finalizeMajorDungeon={finalizeMajorDungeon}

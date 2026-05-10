@@ -22,7 +22,7 @@ export default defineConfig(({mode}) => {
           enabled: true,
           type: 'module',
         },
-        includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+        includeAssets: ['favicon.ico', 'favicon.svg', 'favicon-96x96.png', 'apple-touch-icon.png', 'web-app-manifest-192x192.png', 'web-app-manifest-512x512.png'],
         manifest: {
           name: "Scholar's Dungeon",
           short_name: "Scholar's Dungeon",
@@ -33,10 +33,28 @@ export default defineConfig(({mode}) => {
           gcm_sender_id: '103953800507',
           icons: [
             {
-              src: 'pwa-icon.svg',
-              sizes: '192x192 512x512',
-              type: 'image/svg+xml',
-              purpose: 'any maskable'
+              src: '/web-app-manifest-192x192.png?v=20260510',
+              sizes: '192x192',
+              type: 'image/png',
+              purpose: 'maskable'
+            },
+            {
+              src: '/web-app-manifest-512x512.png?v=20260510',
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'maskable'
+            },
+            {
+              src: '/web-app-manifest-192x192.png?v=20260510',
+              sizes: '192x192',
+              type: 'image/png',
+              purpose: 'any'
+            },
+            {
+              src: '/web-app-manifest-512x512.png?v=20260510',
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'any'
             }
           ]
         } as any

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { AppState } from '../../types';
-import { Wrench, Package, Coins, Zap, Trophy, Flame, Sparkles, Bell, RefreshCw, Trash2, Key, Eye } from 'lucide-react';
+import { Wrench, Package, Coins, Zap, Trophy, Flame, Sparkles, Bell, RefreshCw, Trash2, Key, Eye, Palette } from 'lucide-react';
 import { DevResourceControl } from './DevResourceControl';
 import { cn } from '../../lib/utils';
 import { ConfirmModal } from '../ConfirmModal';
+import { QuestBoardCssDebugger } from './QuestBoardCssDebugger';
 
 interface DeveloperSettingsProps {
   state: AppState;
@@ -21,7 +22,9 @@ export const DeveloperSettings: React.FC<DeveloperSettingsProps> = ({
   const [testNotificationTitle, setTestNotificationTitle] = useState('Dungeon Alert!');
   const [testNotificationBody, setTestNotificationBody] = useState('Your focus session has ended.');
   const [isTestingNotification, setIsTestingNotification] = useState(false);
+  const [showCssDebugger, setShowCssDebugger] = useState(false);
   const [modalConfig, setModalConfig] = useState<{ 
+
     isOpen: boolean; 
     title: string; 
     message: string; 
@@ -650,6 +653,22 @@ export const DeveloperSettings: React.FC<DeveloperSettingsProps> = ({
             </p>
           </div>
 
+          {/* Section 4: UI Debugging */}
+          <div className="space-y-6 pt-6 border-t border-slate-800">
+            <div className="flex items-center gap-2.5 text-pink-400 mb-6 pb-2 border-b border-slate-800/50">
+              <Palette size={20} />
+              <h4 className="text-lg font-bold uppercase tracking-widest pr-1">UI Debugging</h4>
+            </div>
+            
+            <button
+              onClick={() => setShowCssDebugger(true)}
+              className="w-full flex items-center justify-center gap-2 bg-pink-500/10 hover:bg-pink-500/20 text-pink-400 border border-pink-500/30 font-bold py-3 rounded-xl transition-all"
+            >
+              <Palette className="w-5 h-5" />
+              Open Quest Board CSS Debugger
+            </button>
+          </div>
+
           {/* Bottom Lock Button */}
           <div className="pt-10 flex justify-center">
             <button 
@@ -680,6 +699,10 @@ export const DeveloperSettings: React.FC<DeveloperSettingsProps> = ({
         type={modalConfig.type}
         isAlert={modalConfig.isAlert}
       />
+
+      {showCssDebugger && (
+        <QuestBoardCssDebugger onClose={() => setShowCssDebugger(false)} />
+      )}
     </div>
   );
 };

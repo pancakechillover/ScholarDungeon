@@ -80,51 +80,171 @@ html {
    * 您可以在这里集中修改任务板的所有颜色
    * ==========================================
    */
-   
-  /* 1. 任务版主背景 (Board Background) */
+
+  :root {
+    /* DEFAULT (Indigo) THEME */
+    --qb-board-bg: #eef2ff;
+    --qb-board-border: #e0e7ff;
+    --qb-card-bg: #f4ecd8;
+    --qb-card-border: #e2e8f0;
+    --qb-card-text: #0f172a;
+    --qb-desc-text: #1e293b;
+    --qb-tag-bg: #f1f5f9;
+    --qb-tag-border: #cbd5e1;
+    --qb-tag-text: #0f172a;
+    --qb-success-bg: #059669;
+    --qb-success-border: #047857;
+    --qb-success-text: #ffffff;
+    --qb-success-hover: #10b981;
+    --qb-dark-box-bg: #0f172a;
+    --qb-dark-box-border: #334155;
+    --qb-dark-box-text: #ffffff;
+  }
+
+  [data-theme="night"] {
+    --qb-board-bg: rgba(15, 23, 42, 0.5);
+    --qb-board-border: #1e293b;
+    --qb-card-bg: #1e293b;
+    --qb-card-border: #334155;
+    --qb-card-text: #f8fafc;
+    --qb-desc-text: #cbd5e1;
+    --qb-tag-bg: #0f172a;
+    --qb-tag-border: #1e293b;
+    --qb-tag-text: #f8fafc;
+    --qb-success-bg: #059669;
+    --qb-success-border: #047857;
+    --qb-success-text: #ffffff;
+    --qb-success-hover: #10b981;
+    --qb-dark-box-bg: #0f172a;
+    --qb-dark-box-border: #334155;
+    --qb-dark-box-text: #ffffff;
+  }
+
+  [data-theme="forest"] {
+    --qb-board-bg: rgba(15, 23, 42, 0.5);
+    --qb-board-border: #1e293b;
+    --qb-card-bg: #1e293b;
+    --qb-card-border: #334155;
+    --qb-card-text: #f8fafc;
+    --qb-desc-text: #cbd5e1;
+    --qb-tag-bg: #0f172a;
+    --qb-tag-border: #1e293b;
+    --qb-tag-text: #f8fafc;
+    --qb-success-bg: #059669;
+    --qb-success-border: #047857;
+    --qb-success-text: #ffffff;
+    --qb-success-hover: #10b981;
+    --qb-dark-box-bg: #0f172a;
+    --qb-dark-box-border: #334155;
+    --qb-dark-box-text: #ffffff;
+  }
+
+  [data-theme="ocean"] {
+    --qb-board-bg: rgba(15, 23, 42, 0.5);
+    --qb-board-border: #1e293b;
+    --qb-card-bg: #1e293b;
+    --qb-card-border: #334155;
+    --qb-card-text: #f8fafc;
+    --qb-desc-text: #cbd5e1;
+    --qb-tag-bg: #0f172a;
+    --qb-tag-border: #1e293b;
+    --qb-tag-text: #f8fafc;
+    --qb-success-bg: #059669;
+    --qb-success-border: #047857;
+    --qb-success-text: #ffffff;
+    --qb-success-hover: #10b981;
+    --qb-dark-box-bg: #0f172a;
+    --qb-dark-box-border: #334155;
+    --qb-dark-box-text: #ffffff;
+  }
+
+  [data-theme="daylight"] {
+    --qb-board-bg: #eef2ff;
+    --qb-board-border: #e0e7ff;
+    --qb-card-bg: #f4ecd8;
+    --qb-card-border: #e2e8f0;
+    --qb-card-text: #0f172a;
+    --qb-desc-text: #1e293b;
+    --qb-tag-bg: #f1f5f9;
+    --qb-tag-border: #cbd5e1;
+    --qb-tag-text: #0f172a;
+    --qb-success-bg: #059669;
+    --qb-success-border: #047857;
+    --qb-success-text: #ffffff;
+    --qb-success-hover: #10b981;
+    --qb-dark-box-bg: #0f172a;
+    --qb-dark-box-border: #334155;
+    --qb-dark-box-text: #ffffff;
+  }
+
+  [data-theme="warm"] {
+    --qb-board-bg: #eef2ff;
+    --qb-board-border: #e0e7ff;
+    --qb-card-bg: #f4ecd8;
+    --qb-card-border: #e2e8f0;
+    --qb-card-text: #0f172a;
+    --qb-desc-text: #1e293b;
+    --qb-tag-bg: #f1f5f9;
+    --qb-tag-border: #cbd5e1;
+    --qb-tag-text: #0f172a;
+    --qb-success-bg: #059669;
+    --qb-success-border: #047857;
+    --qb-success-text: #ffffff;
+    --qb-success-hover: #10b981;
+    --qb-dark-box-bg: #0f172a;
+    --qb-dark-box-border: #334155;
+    --qb-dark-box-text: #ffffff;
+  }
+
+  [data-theme="candy"] {
+    --qb-board-bg: #eef2ff;
+    --qb-board-border: #e0e7ff;
+    --qb-card-bg: #f4ecd8;
+    --qb-card-border: #e2e8f0;
+    --qb-card-text: #0f172a;
+    --qb-desc-text: #1e293b;
+    --qb-tag-bg: #f1f5f9;
+    --qb-tag-border: #cbd5e1;
+    --qb-tag-text: #0f172a;
+    --qb-success-bg: #059669;
+    --qb-success-border: #047857;
+    --qb-success-text: #ffffff;
+    --qb-success-hover: #10b981;
+    --qb-dark-box-bg: #0f172a;
+    --qb-dark-box-border: #334155;
+    --qb-dark-box-text: #ffffff;
+  }
+
+  /* Applied Classes */
   .qb-board {
-    background-color: #eef2ff; /* 浅色背景 */
-    border-color: #e0e7ff;
+    background-color: var(--qb-board-bg);
+    border-color: var(--qb-board-border);
   }
-  .dark .qb-board, [data-theme="night"] .qb-board, [data-theme="forest"] .qb-board, [data-theme="ocean"] .qb-board {
-    background-color: rgba(15, 23, 42, 0.5); /* 深色背景 */
-    border-color: #1e293b;
-  }
-
-  /* 2. 任务卡片/纸张质感底色 (Card Base Color) */
   .qb-card {
-    background-color: #f4ecd8; /* 羊皮纸底色 */
-    border-color: #e2e8f0;
-    color: #0f172a;            /* 标题文本颜色 */
+    background-color: var(--qb-card-bg);
+    border-color: var(--qb-card-border);
+    color: var(--qb-card-text);
   }
-
-  /* 3. 任务描述文本颜色 (Description Text) */
   .qb-card-desc {
-    color: #1e293b;
+    color: var(--qb-desc-text);
   }
-
-  /* 4. 奖励标签颜色 (Reward Tag) */
   .qb-tag {
-    background-color: #f1f5f9;
-    border-color: #cbd5e1;
-    color: #0f172a;
+    background-color: var(--qb-tag-bg);
+    border-color: var(--qb-tag-border);
+    color: var(--qb-tag-text);
   }
-
-  /* 5. 已完成/成功状态颜色 (Success/Completed) */
   .qb-success {
-    background-color: #059669; /* Emerald 600 */
-    border-color: #047857;
-    color: #ffffff;
+    background-color: var(--qb-success-bg);
+    border-color: var(--qb-success-border);
+    color: var(--qb-success-text);
   }
   .qb-success:hover {
-    background-color: #10b981;
+    background-color: var(--qb-success-hover);
   }
-
-  /* 6. 图标盒子/未完成选择框的深色背景 (Icon Box / Unchecked Box) */
   .qb-dark-box {
-    background-color: #0f172a;
-    border-color: #334155;
-    color: #ffffff;
+    background-color: var(--qb-dark-box-bg);
+    border-color: var(--qb-dark-box-border);
+    color: var(--qb-dark-box-text);
   }
   
 }

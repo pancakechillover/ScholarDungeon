@@ -7,7 +7,8 @@ import {
   Plus, 
   Edit2, 
   Archive,
-  CheckCheck 
+  CheckCheck,
+  Undo2
 } from 'lucide-react';
 import { PageHeader } from '../PageHeader';
 import { DungeonManager } from './DungeonManager';
@@ -41,6 +42,9 @@ interface DungeonsViewProps {
   reorderMajorDungeon: (id: string, direction: 'up' | 'down') => void;
   reorderSubDungeon: (id: string, direction: 'up' | 'down') => void;
   onMoveDungeonItem: (itemId: string, newParentId: string | null) => void;
+  onDragStart: () => void;
+  undoDungeonDrag: () => void;
+  canUndoDrag: boolean;
   setMajorDungeons: React.Dispatch<React.SetStateAction<MajorDungeon[]>>;
   setDungeons: React.Dispatch<React.SetStateAction<Dungeon[]>>;
   finalizeMajorDungeon: (id: string) => void;
@@ -77,6 +81,9 @@ export const DungeonsView: React.FC<DungeonsViewProps> = ({
   reorderMajorDungeon,
   reorderSubDungeon,
   onMoveDungeonItem,
+  onDragStart,
+  undoDungeonDrag,
+  canUndoDrag,
   setMajorDungeons,
   setDungeons,
   finalizeMajorDungeon,
@@ -140,6 +147,22 @@ export const DungeonsView: React.FC<DungeonsViewProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
+            {isDungeonEditMode && dungeonSubTab === 'list' && (
+              <button
+                onClick={undoDungeonDrag}
+                disabled={!canUndoDrag}
+                className={cn(
+                  "flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-xl transition-all shadow-lg shrink-0",
+                  canUndoDrag 
+                    ? "bg-amber-600 text-white hover:bg-amber-500 shadow-amber-500/20" 
+                    : "bg-slate-800 text-slate-600 cursor-not-allowed opacity-50"
+                )}
+                title="Undo Drag Operation"
+              >
+                <Undo2 size={16} className="sm:w-[18px] sm:h-[18px]" />
+              </button>
+            )}
+
             <button
               onClick={() => setIsDungeonEditMode(!isDungeonEditMode)}
               className={cn(
@@ -247,6 +270,7 @@ export const DungeonsView: React.FC<DungeonsViewProps> = ({
           onReorderMajor={reorderMajorDungeon}
           onReorderSub={reorderSubDungeon}
           onMoveItem={onMoveDungeonItem}
+          onDragStart={onDragStart}
           setMajorDungeons={setMajorDungeons}
           setDungeons={setDungeons}
           onFinalizeMajor={finalizeMajorDungeon}

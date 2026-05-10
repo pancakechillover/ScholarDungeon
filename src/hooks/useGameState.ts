@@ -1545,77 +1545,91 @@ export function useGameState() {
     }));
   }, [addRewardToHistory]);
 
-  const moveDungeonItem = useCallback((itemId: string, newParentId: string | null) => {
-    // Determine the type of the item and capture its latest data from BOTH possible lists
-    setDungeons(prevDungeons => {
-      // We need to access both lists. Since we can't easily do it in one atomic call to multiple setters,
-      // we'll use this pattern or just trust the functional update.
-      const isSub = prevDungeons.find(d => d.id === itemId);
-      
-      // If we move it to root
-      if (newParentId === null) {
-        if (isSub) {
-          const newMajor: MajorDungeon = {
-            id: isSub.id,
-            name: isSub.name,
-            description: isSub.description || '',
-            status: isSub.status,
-            rewards: isSub.rewards,
-            completedAt: isSub.completedAt
-          };
-          setMajorDungeons(prevM => [...prevM.filter(m => m.id !== itemId), newMajor]);
-          return prevDungeons.filter(d => d.id !== itemId);
-        }
-        return prevDungeons;
-      }
+  const [dungeonHistory, setDungeonHistory] = useState<{ dungeons: Dungeon[], majorDungeons: MajorDungeon[] }[]>([]);
 
-      // If moving to a parent
-      const checkCycleRecursive = (targetId: string | null, movingId: string, all: Dungeon[]): boolean => {
-        let curr = targetId;
-        const visited = new Set<string>();
-        while (curr) {
-          if (curr === movingId) return true;
-          if (visited.has(curr)) break;
-          visited.add(curr);
-          const parent = all.find(d => d.id === curr);
-          curr = parent?.parentId || null;
-        }
-        return false;
-      };
-
-      if (checkCycleRecursive(newParentId, itemId, prevDungeons)) return prevDungeons;
-
-      if (isSub) {
-        return prevDungeons.map(d => d.id === itemId ? { ...d, parentId: newParentId } : d);
-      } else {
-        // Might be a major dungeon
-        setMajorDungeons(prevM => {
-          const major = prevM.find(m => m.id === itemId);
-          if (major) {
-            const newSub: Dungeon = {
-              id: major.id,
-              name: major.name,
-              description: major.description,
-              status: major.status,
-              parentId: newParentId,
-              rewards: major.rewards,
-              completedAt: major.completedAt,
-              totalSessions: 1,
-              completedSessions: major.status === 'completed' ? 1 : 0,
-              rewardCoins: 0,
-              rewardXP: 0,
-              rewardText: '',
-              isLongTerm: false
-            };
-            setDungeons(dPrev => [...dPrev.filter(d => d.id !== itemId), newSub]);
-            return prevM.filter(m => m.id !== itemId);
-          }
-          return prevM;
-        });
-        return prevDungeons;
-      }
+  const saveDungeonHistory = useCallback(() => {
+    setDungeonHistory(prev => {
+      const newHistory = [...prev, { dungeons, majorDungeons }];
+      if (newHistory.length > 20) newHistory.shift();
+      return newHistory;
     });
-  }, [setDungeons, setMajorDungeons]);
+  }, [dungeons, majorDungeons]);
+
+  const undoDungeonDrag = useCallback(() => {
+    setDungeonHistory(prev => {
+      if (prev.length === 0) return prev;
+      const lastState = prev[prev.length - 1];
+      setDungeons(lastState.dungeons);
+      setMajorDungeons(lastState.majorDungeons);
+      return prev.slice(0, prev.length - 1);
+    });
+  }, []);
+
+  const moveDungeonItem = useCallback((itemId: string, newParentId: string | null) => {
+    let newD = [...dungeons];
+    let newM = [...majorDungeons];
+    const isSub = newD.find(d => d.id === itemId);
+    const isMajor = newM.find(m => m.id === itemId);
+
+    if (newParentId === null) {
+      if (isSub) {
+        const newMajor: MajorDungeon = {
+          id: isSub.id,
+          name: isSub.name,
+          description: isSub.description || '',
+          status: isSub.status,
+          rewards: isSub.rewards,
+          completedAt: isSub.completedAt,
+        };
+        newM = [...newM.filter(m => m.id !== itemId), newMajor];
+        newD = newD.filter(d => d.id !== itemId);
+        setMajorDungeons(newM);
+        setDungeons(newD);
+      }
+      return;
+    }
+
+    const checkCycleRecursive = (targetId: string | null, movingId: string): boolean => {
+      let curr = targetId;
+      const visited = new Set<string>();
+      while (curr) {
+        if (curr === movingId) return true;
+        if (visited.has(curr)) break;
+        visited.add(curr);
+        const parent = newD.find(d => d.id === curr);
+        curr = parent?.parentId || null;
+      }
+      return false;
+    };
+
+    if (checkCycleRecursive(newParentId, itemId)) return;
+
+    if (isSub) {
+      newD = newD.map(d => d.id === itemId ? { ...d, parentId: newParentId } : d);
+      setDungeons(newD);
+    } else if (isMajor) {
+      const newSub: Dungeon = {
+        id: isMajor.id,
+        name: isMajor.name,
+        description: isMajor.description,
+        status: isMajor.status,
+        parentId: newParentId,
+        rewards: isMajor.rewards,
+        completedAt: isMajor.completedAt,
+        totalSessions: 1,
+        completedSessions: isMajor.status === 'completed' ? 1 : 0,
+        rewardCoins: 0,
+        rewardXP: 0,
+        rewardText: '',
+        isLongTerm: false
+      };
+      newM = newM.filter(m => m.id !== itemId);
+      newD = [...newD, newSub];
+      setMajorDungeons(newM);
+      setDungeons(newD);
+    }
+  }, [dungeons, majorDungeons]);
+
 
   return {
     state,
@@ -1647,6 +1661,9 @@ export function useGameState() {
     deleteSession,
     claimQuestReward,
     claimAllQuestRewards,
-    saveDailyLog
+    saveDailyLog,
+    undoDungeonDrag,
+    saveDungeonHistory,
+    dungeonHistory
   };
 }
