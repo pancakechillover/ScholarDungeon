@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v5.2.3';
+export const APP_VERSION = 'v5.2.6';
 export const LAST_UPDATE_DATE = '2026-05-10';
-export const LAST_UPDATE_TIME = '22:30:00';
+export const LAST_UPDATE_TIME = '23:15:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,39 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v5.2.6',
+    date: '2026-05-10',
+    time: '23:45:00',
+    title: 'Cloud Sync Force Operations',
+    items: [
+      { category: 'Feature', description: 'Implemented explicit "Force Upload" and "Force Download" actions in cloud settings.' },
+      { category: 'UI', description: 'Created a detailed Side-by-Side comparison view for Cloud vs Local data before any destructive overwrites occur.' },
+      { category: 'UX', description: 'Added double-confirmation layers on force operations to protect user data integrity.' }
+    ]
+  },
+  {
+    version: 'v5.2.5',
+    date: '2026-05-10',
+    time: '23:15:00',
+    title: 'Sync Status Visualization',
+    items: [
+      { category: 'Feature', description: 'Added unified Sync Status panels to the Profile modal and Cloud Settings section to display active connection type and last update times.' },
+      { category: 'Architecture', description: 'Passed globally tracked unsynced change states to settings to inform users if their save game needs uploading.' }
+    ]
+  },
+  {
+    version: 'v5.2.4',
+    date: '2026-05-10',
+    time: '23:00:00',
+    title: 'Google Drive Sync Status & Reliability Fixes',
+    items: [
+      { category: 'Bugfix', description: 'Fixed Google Drive tokens loss during state merges and conflict resolution in `useCloudSync`.' },
+      { category: 'UI', description: 'Corrected the "Connected" status display for Google Drive, ensuring it persists and accurately reflects token presence.' },
+      { category: 'Architecture', description: 'Refactored `useCloudSync` hook to unify state stripping logic and clean up nested callback structures.' },
+      { category: 'Stability', description: 'Fixed a runtime crash in `checkCloudSync` by replacing non-existent `downloadFile` with `readSaveFile`.' }
+    ]
+  },
   {
     version: 'v5.2.3',
     date: '2026-05-10',

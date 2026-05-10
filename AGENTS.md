@@ -22,7 +22,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors:** When designing UI elements that highlight based on themes, note that `indigo-300`, `indigo-400`, `indigo-500`, and `indigo-600` are overridden by the custom theme variables in `index.css`. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v5.2.3
+- **Current Version:** v5.2.6
 - **Last Update Date:** 2026-05-10
 
 ## Dark Themes Definition
@@ -47,6 +47,17 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v5.2.6 (2026-05-10):** Cloud Sync Force Operations.
+  - *Feature:* Implemented "Force Upload" and "Force Download" operations in Cloud Settings.
+  - *UI:* Added a side-by-side comparison modal that visualizes differences between local and cloud save data (Level, Gold, Sessions, Device, Timestamp) before overwriting.
+  - *UX:* Enhanced conflict resolution flow with explicit confirmation steps and data diffing to prevent accidental data loss.
+- **v5.2.5 (2026-05-10):** Sync Status UI Modules.
+  - *Feature:* Added a unified "Sync Status" module to both the `Settings-Cloud` page and the `Profile` modal, displaying active status, sync provider, unsynced changes, and last update time.
+- **v5.2.4 (2026-05-10):** Google Drive Sync Status & Reliability.
+  - *Fix:* Resolved critical token persistence issues where Google Drive connection would drop during conflict resolution or state refreshes.
+  - *UI:* Fixed the "Connected" indicator in Cloud Settings to accurately reflect active credentials stored in the local state.
+  - *Architecture:* Unified state-scrubbing logic in `useCloudSync.ts` to prevent polluting cloud saves with local-only metadata.
+  - *Bugfix:* Fixed a runtime crash on startup when attempting to verify Google Drive saves using an invalid SDK method.
 - **v5.2.3 (2026-05-10):** WebDAV Full Implementation.
   - *Feature:* Fully integrated WebDAV support as a new primary Sync Provider with a local proxy in `api/webdav/proxy` addressing CORS restrictions gracefully.
   - *UI:* Unlocked the WebDAV options panel in Cloud Sync settings allowing custom server URL (e.g. Nextcloud, Jianguoyun), Usernames, and Application Passwords.

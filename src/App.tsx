@@ -1192,6 +1192,8 @@ function App() {
                 setActiveSection={setActiveSettingsSection}
                 onTabChange={setActiveTab}
                 onOpenAstralArchives={() => setShowCloudSync(true)}
+                isSyncing={isSyncing}
+                hasUnsyncedChanges={hasUnsyncedChanges}
               />
             )}
           </AnimatePresence>
@@ -1267,10 +1269,13 @@ function App() {
       {/* Cloud Sync Modal */}
       {createPortal(
         <AnimatePresence>
-          {showCloudSync && (
+          {(showCloudSync || syncCheckResult) && (
             <CloudSyncModal
-              isOpen={showCloudSync}
-              onClose={() => setShowCloudSync(false)}
+              isOpen={showCloudSync || !!syncCheckResult}
+              onClose={() => {
+                setShowCloudSync(false);
+                if (syncCheckResult) setSyncCheckResult(null);
+              }}
               secretCode={state.secretCode}
               isSyncing={isSyncing}
               syncError={syncError}
@@ -1285,6 +1290,7 @@ function App() {
               onUnbind={unbindFromCloud}
               onDeleteCloudData={deleteCloudData}
               syncHistory={state.syncHistory}
+              localState={state}
             />
           )}
         </AnimatePresence>,

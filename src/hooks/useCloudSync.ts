@@ -16,6 +16,28 @@ export function useCloudSync(
     code: string;
   } | null>(null);
 
+  const stripVolatile = useCallback((dataObj: any) => {
+    if (!dataObj || !dataObj.state) return dataObj;
+    const { 
+      lastUpdated, 
+      syncHistory, 
+      deviceType, 
+      pushSubscription, 
+      secretCode, 
+      googleDriveTokens, 
+      googleDriveFileId, 
+      webdavSettings, 
+      syncProvider,
+      isGoogleDriveUnlocked,
+      isRedisUnlocked,
+      ...restState 
+    } = dataObj.state;
+    return {
+      ...dataObj,
+      state: restState
+    };
+  }, []);
+
   const logSyncEvent = useCallback((
     type: 'login' | 'force_sync' | 'local_to_cloud' | 'cloud_to_local' | 'cancel_login' | 'unbind_local' | 'delete_cloud', 
     code: string,
@@ -30,7 +52,7 @@ export function useCloudSync(
         timestamp: new Date().toISOString(), 
         deviceType: prev.deviceType,
         syncMethod,
-        syncProvider: syncProvider || 'Redis'
+        syncProvider: syncProvider || (prev.syncProvider as any) || 'Redis'
       });
       if (newHistory.length > 50) newHistory.pop();
       return { ...prev, syncHistory: newHistory };
@@ -203,15 +225,51 @@ export function useCloudSync(
       if (useCloud && syncCheckResult.cloudData) {
         if (syncCheckResult.cloudData.fullLocalStorage) {
           Object.keys(syncCheckResult.cloudData.fullLocalStorage).forEach(key => {
-            localStorage.setItem(key, syncCheckResult.cloudData.fullLocalStorage[key]);
+            // Avoid overwriting specific local settings in localStorage if they already exist
+            if (key === 'scholars_dungeon_state') {
+                const cloudStateRaw = syncCheckResult.cloudData.fullLocalStorage[key];
+                const cloudState = JSON.parse(cloudStateRaw);
+                const localStateRaw = localStorage.getItem('scholars_dungeon_state');
+                const localState = localStateRaw ? JSON.parse(localStateRaw) : state;
+                
+                const mergedState = {
+                    ...cloudState,
+                    // Preserve local identity/sync settings
+                    secretCode: localState.secretCode || cloudState.secretCode,
+                    syncProvider: localState.syncProvider || cloudState.syncProvider,
+                    googleDriveTokens: localState.googleDriveTokens || cloudState.googleDriveTokens,
+                    googleDriveFileId: localState.googleDriveFileId || cloudState.googleDriveFileId,
+                    webdavSettings: localState.webdavSettings || cloudState.webdavSettings,
+                    isGoogleDriveUnlocked: localState.isGoogleDriveUnlocked || cloudState.isGoogleDriveUnlocked,
+                    isRedisUnlocked: localState.isRedisUnlocked || cloudState.isRedisUnlocked
+                };
+                localStorage.setItem(key, JSON.stringify(mergedState));
+            } else {
+                localStorage.setItem(key, syncCheckResult.cloudData.fullLocalStorage[key]);
+            }
           });
         } else {
-          localStorage.setItem('scholars_dungeon_state', JSON.stringify(syncCheckResult.cloudData.state));
+          localStorage.setItem('scholars_dungeon_state', JSON.stringify({
+              ...syncCheckResult.cloudData.state,
+              secretCode: state.secretCode || syncCheckResult.cloudData.state.secretCode,
+              syncProvider: state.syncProvider || syncCheckResult.cloudData.state.syncProvider,
+              googleDriveTokens: state.googleDriveTokens || syncCheckResult.cloudData.state.googleDriveTokens,
+              webdavSettings: state.webdavSettings || syncCheckResult.cloudData.state.webdavSettings
+          }));
           localStorage.setItem('scholars_dungeon_dungeons', JSON.stringify(syncCheckResult.cloudData.dungeons));
           localStorage.setItem('scholars_dungeon_major_dungeons', JSON.stringify(syncCheckResult.cloudData.majorDungeons));
         }
 
-        setState(syncCheckResult.cloudData.state);
+        setState((prev: any) => ({
+            ...syncCheckResult.cloudData.state,
+            secretCode: prev.secretCode || syncCheckResult.cloudData.state.secretCode,
+            syncProvider: prev.syncProvider || syncCheckResult.cloudData.state.syncProvider,
+            googleDriveTokens: prev.googleDriveTokens || syncCheckResult.cloudData.state.googleDriveTokens,
+            googleDriveFileId: prev.googleDriveFileId || syncCheckResult.cloudData.state.googleDriveFileId,
+            webdavSettings: prev.webdavSettings || syncCheckResult.cloudData.state.webdavSettings,
+            isGoogleDriveUnlocked: prev.isGoogleDriveUnlocked || syncCheckResult.cloudData.state.isGoogleDriveUnlocked,
+            isRedisUnlocked: prev.isRedisUnlocked || syncCheckResult.cloudData.state.isRedisUnlocked
+        }));
         setDungeons(syncCheckResult.cloudData.dungeons);
         setMajorDungeons(syncCheckResult.cloudData.majorDungeons);
         
@@ -224,45 +282,62 @@ export function useCloudSync(
     } finally {
       setIsSyncing(false);
     }
-  }, [syncCheckResult, setState, setDungeons, setMajorDungeons, syncToCloud, state]);
+  }, [syncCheckResult, setState, setDungeons, setMajorDungeons, syncToCloud, state, logSyncEvent]);
 
   const fetchFromCloud = useCallback(async (code: string) => {
     setIsSyncing(true);
     setSyncError(null);
 
     try {
-      const response = await fetch('/api/sync/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ secretCode: code })
-      });
+      let cloudDataToProcess: any = null;
 
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        const text = await response.text();
-        console.error('Non-JSON response received:', text);
-        throw new Error(`Server returned non-JSON response (${response.status}).`);
+      if (code === 'GoogleDrive' && state.googleDriveTokens) {
+        const drive = new GoogleDriveAPI(state.googleDriveTokens.access_token);
+        const fileId = state.googleDriveFileId || await drive.findSaveFile();
+        if (fileId) {
+           cloudDataToProcess = await drive.readSaveFile(fileId);
+        }
+      } else if (code === 'WebDAV' && state.webdavSettings) {
+        const { url, username, password } = state.webdavSettings;
+        const response = await fetch('/api/webdav/proxy', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url, username, password, method: 'GET' })
+        });
+        if (response.ok) {
+            const result = await response.json();
+            if (!result.is404 && result.data) {
+                cloudDataToProcess = result.data;
+            }
+        }
+      } else {
+        // Redis
+        const response = await fetch('/api/sync/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ secretCode: code })
+        });
+
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          const text = await response.text();
+          console.error('Non-JSON response received:', text);
+          throw new Error(`Server returned non-JSON response (${response.status}).`);
+        }
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to fetch from cloud');
+        }
+        cloudDataToProcess = data.cloudData;
       }
 
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch from cloud');
-      }
       logSyncEvent('login', code, 'Manual');
-      if (data.cloudData) {
-        const cloudTime = new Date(data.cloudData.lastUpdated || 0).getTime();
+      if (cloudDataToProcess) {
+        const cloudTime = new Date(cloudDataToProcess.lastUpdated || 0).getTime();
         const localTime = new Date(state.lastUpdated || 0).getTime();
-
-        const stripVolatile = (dataObj: any) => {
-          if (!dataObj || !dataObj.state) return dataObj;
-          const { lastUpdated, syncHistory, deviceType, pushSubscription, secretCode, ...restState } = dataObj.state;
-          return {
-            ...dataObj,
-            state: restState
-          };
-        };
 
         const localDataToCompare = stripVolatile({
           state: state,
@@ -271,21 +346,26 @@ export function useCloudSync(
         });
         
         const cloudDataToCompare = stripVolatile({
-          state: data.cloudData.state,
-          dungeons: data.cloudData.dungeons || [],
-          majorDungeons: data.cloudData.majorDungeons || []
+          state: cloudDataToProcess.state,
+          dungeons: cloudDataToProcess.dungeons || [],
+          majorDungeons: cloudDataToProcess.majorDungeons || []
         });
 
         if (JSON.stringify(localDataToCompare) === JSON.stringify(cloudDataToCompare)) {
-          setState(prev => ({ ...prev, lastUpdated: data.cloudData.lastUpdated, secretCode: code }));
+          setState(prev => ({ 
+            ...prev, 
+            lastUpdated: cloudDataToProcess.lastUpdated, 
+            secretCode: (code !== 'WebDAV' && code !== 'GoogleDrive') ? code : prev.secretCode,
+            syncProvider: (code === 'WebDAV') ? 'WebDAV' : (code === 'GoogleDrive' ? 'Google Drive' : prev.syncProvider)
+          }));
           setSyncCheckResult(null);
           return;
         }
 
         if (cloudTime > localTime) {
-          setSyncCheckResult({ status: 'cloud_newer', cloudData: data.cloudData, code });
+          setSyncCheckResult({ status: 'cloud_newer', cloudData: cloudDataToProcess, code });
         } else {
-          setSyncCheckResult({ status: 'local_newer', cloudData: data.cloudData, code });
+          setSyncCheckResult({ status: 'local_newer', cloudData: cloudDataToProcess, code });
         }
       } else {
         setSyncCheckResult({ status: 'no_save', code });
@@ -295,7 +375,7 @@ export function useCloudSync(
     } finally {
       setIsSyncing(false);
     }
-  }, [state, logSyncEvent]);
+  }, [state, logSyncEvent, stripVolatile, setState]);
 
   const checkCloudSync = useCallback(async () => {
     const isGoogleDrive = state.syncProvider === 'Google Drive';
@@ -317,15 +397,6 @@ export function useCloudSync(
         const cloudTime = new Date(data.lastUpdated || 0).getTime();
         const localTime = new Date(state.lastUpdated || 0).getTime();
 
-        const stripVolatile = (dataObj: any) => {
-          if (!dataObj || !dataObj.state) return dataObj;
-          const { lastUpdated, syncHistory, deviceType, pushSubscription, secretCode, ...restState } = dataObj.state;
-          return {
-            ...dataObj,
-            state: restState
-          };
-        };
-
         const localDataToCompare = stripVolatile({
           state: state,
           dungeons: JSON.parse(localStorage.getItem('scholars_dungeon_state_dungeons') || '[]'),
@@ -339,7 +410,11 @@ export function useCloudSync(
         });
 
         if (JSON.stringify(localDataToCompare) === JSON.stringify(cloudDataToCompare)) {
-          setState(prev => ({ ...prev, lastUpdated: data.lastUpdated, secretCode: code !== 'WebDAV' && code !== 'GoogleDrive' ? code : prev.secretCode }));
+          setState(prev => ({ 
+            ...prev, 
+            lastUpdated: data.lastUpdated, 
+            secretCode: (code !== 'WebDAV' && code !== 'GoogleDrive') ? code : prev.secretCode 
+          }));
           setSyncCheckResult(null);
           return;
         }
@@ -373,13 +448,13 @@ export function useCloudSync(
         const drive = new GoogleDriveAPI(state.googleDriveTokens.access_token);
         const fileId = state.googleDriveFileId || await drive.findSaveFile();
         if (fileId) {
-            const result = await drive.downloadFile(fileId);
+            const result = await drive.readSaveFile(fileId);
             checkNewer(result, 'GoogleDrive');
         } else {
             setSyncCheckResult({ status: 'no_save', code: 'GoogleDrive' });
         }
       } else if (state.secretCode) {
-        // Rediss
+        // Redis
         const response = await fetch('/api/sync/', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -405,14 +480,22 @@ export function useCloudSync(
     } finally {
       setIsSyncing(false);
     }
-  }, [state, logSyncEvent]);
+  }, [state, logSyncEvent, setState, stripVolatile]);
 
   const unbindFromCloud = useCallback(() => {
-    if (state.secretCode) {
-      logSyncEvent('unbind_local', state.secretCode, 'Manual');
-    }
-    setState(prev => ({ ...prev, secretCode: undefined }));
-  }, [setState, state.secretCode, logSyncEvent]);
+    const provider = state.syncProvider || 'Redis';
+    const code = state.secretCode || (provider === 'Google Drive' ? 'Google' : 'WebDAV');
+    logSyncEvent('unbind_local', code, 'Manual', provider);
+    
+    setState(prev => ({ 
+      ...prev, 
+      secretCode: undefined,
+      syncProvider: undefined,
+      googleDriveTokens: undefined,
+      googleDriveFileId: undefined,
+      webdavSettings: undefined
+    }));
+  }, [setState, state.secretCode, state.syncProvider, logSyncEvent]);
 
   const deleteCloudData = useCallback(async () => {
     if (!state.secretCode) return;

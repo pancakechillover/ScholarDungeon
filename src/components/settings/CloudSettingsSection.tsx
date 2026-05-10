@@ -1,20 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Cloud, Server, HardDrive, CheckCircle2, ChevronRight, Settings, Lock, X, History, ArrowDownUp, RefreshCw, LogIn, Trash2, ShieldBan, Eye } from 'lucide-react';
+import { Cloud, Server, HardDrive, CheckCircle2, ChevronRight, Settings, Lock, X, History, ArrowDownUp, RefreshCw, LogIn, Trash2, ShieldBan, Eye, Search, UploadCloud, DownloadCloud } from 'lucide-react';
 import { AppState } from '../../types';
+import { cn } from '../../lib/utils';
 
 interface CloudSettingsSectionProps {
   state: AppState;
   setState: React.Dispatch<React.SetStateAction<AppState>>;
   setActiveSection: (sec: any) => void;
   onOpenAstralArchives: () => void;
+  triggerSyncCheck?: () => void;
+  isSyncing?: boolean;
+  hasUnsyncedChanges?: boolean;
 }
 
 export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
   state,
   setState,
   setActiveSection,
-  onOpenAstralArchives
+  onOpenAstralArchives,
+  triggerSyncCheck,
+  isSyncing,
+  hasUnsyncedChanges
 }) => {
   const syncMode = state.autoSyncMode || 'manual';
   const debounceSeconds = state.autoSyncDebounceSeconds || 10;
@@ -185,9 +192,92 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
 
   return (
     <div className="space-y-6">
+      <div className="flex bg-slate-900 border border-slate-700/50 rounded-2xl p-4 sm:p-5 mb-6 flex-col sm:flex-row sm:items-center justify-between gap-4 relative overflow-hidden group">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-3xl -mr-10 -mt-10 transition-colors group-hover:bg-indigo-500/10" />
+        <div className="relative z-10 space-y-1">
+          <div className="flex items-center gap-2 mb-1">
+            <Cloud size={18} className={state.secretCode || state.syncProvider ? "text-indigo-400" : "text-slate-500"} />
+            <h4 className="text-[12px] sm:text-sm font-black text-white uppercase tracking-widest leading-none">Sync Status</h4>
+          </div>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-2">
+            <div className="flex flex-col">
+              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Connection</span>
+              <div className="mt-0.5">
+                {isSyncing ? (
+                  <span className="flex items-center gap-1.5 px-2 py-0.5 bg-amber-500/10 text-amber-500 text-[10px] font-black uppercase tracking-widest rounded-md border border-amber-500/20 w-max">
+                    <RefreshCw size={10} className="animate-spin" /> Syncing
+                  </span>
+                ) : (state.secretCode || state.syncProvider) ? (
+                  <span className="flex items-center gap-1.5 px-2 py-0.5 bg-emerald-500/10 text-emerald-400 text-[10px] font-black uppercase tracking-widest rounded-md border border-emerald-500/20 w-max">
+                    <CheckCircle2 size={10} /> Active
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1.5 px-2 py-0.5 bg-slate-800 text-slate-400 text-[10px] font-black uppercase tracking-widest rounded-md border border-slate-700 w-max">
+                    <X size={10} /> Inactive
+                  </span>
+                )}
+              </div>
+            </div>
+            
+            <div className="flex flex-col">
+              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Provider</span>
+              <span className="text-xs font-bold text-slate-300 mt-0.5">
+                {state.syncProvider || (state.secretCode ? 'Redis' : 'None')}
+              </span>
+            </div>
+            
+            <div className="flex flex-col">
+              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">State Data</span>
+              <span className={cn("text-xs font-bold mt-0.5", hasUnsyncedChanges ? "text-amber-400" : "text-emerald-400")}>
+                {hasUnsyncedChanges ? 'Pending Sync' : 'Up to Date'}
+              </span>
+            </div>
+            
+            <div className="flex flex-col">
+              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Last Updated</span>
+              <span className="text-xs font-semibold text-slate-400 mt-0.5 whitespace-nowrap">
+                {state.lastUpdated ? new Date(state.lastUpdated).toLocaleString() : 'Never'}
+              </span>
+            </div>
+          </div>
+        </div>
+        
+        {triggerSyncCheck && (state.secretCode || state.syncProvider) && (
+          <div className="flex flex-wrap gap-2 pt-2 sm:pt-0">
+            <button 
+              onClick={triggerSyncCheck}
+              disabled={isSyncing}
+              title="Compare local and cloud save data"
+              className="relative z-10 shrink-0 px-3 py-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-slate-300 rounded-xl font-black uppercase tracking-widest text-[9px] sm:text-[10px] transition-all flex items-center justify-center gap-1.5 border border-slate-700"
+            >
+              <Search size={14} /> 
+              Verify & Compare
+            </button>
+            <button 
+              onClick={triggerSyncCheck}
+              disabled={isSyncing}
+              title="Show comparison then force local to cloud"
+              className="relative z-10 shrink-0 px-3 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 disabled:opacity-50 text-indigo-400 rounded-xl font-black uppercase tracking-widest text-[9px] sm:text-[10px] transition-all flex items-center justify-center gap-1.5 border border-indigo-500/20"
+            >
+              <UploadCloud size={14} /> 
+              Force Upload
+            </button>
+            <button 
+              onClick={triggerSyncCheck}
+              disabled={isSyncing}
+              title="Show comparison then force cloud to local"
+              className="relative z-10 shrink-0 px-3 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 disabled:opacity-50 text-indigo-400 rounded-xl font-black uppercase tracking-widest text-[9px] sm:text-[10px] transition-all flex items-center justify-center gap-1.5 border border-indigo-500/20"
+            >
+              <DownloadCloud size={14} /> 
+              Force Download
+            </button>
+          </div>
+        )}
+      </div>
+
       <div className="flex items-center gap-2.5 text-indigo-400 mb-6 pb-2">
-        <Cloud size={20} />
-        <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Cloud Sync</h4>
+        <Server size={20} />
+        <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Storage Providers</h4>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">

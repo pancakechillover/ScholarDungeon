@@ -8,7 +8,9 @@ import {
   Zap, 
   Trophy, 
   Star, 
-  RefreshCw 
+  RefreshCw,
+  Cloud,
+  CheckCircle2
 } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { AppState } from '../types';
@@ -220,7 +222,51 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
 
             {/* Secondary Info */}
             <div className="grid grid-cols-1 gap-4 sm:gap-6 mt-6">
-              <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-4">
+              {/* Sync Status Module */}
+              <div className="p-4 sm:p-5 bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-800">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Cloud size={16} className={state.secretCode || state.syncProvider ? "text-indigo-400" : "text-slate-500"} />
+                    <h4 className="text-[10px] sm:text-xs font-black text-white uppercase tracking-widest">Cloud Sync Status</h4>
+                  </div>
+                  <div>
+                    {isSyncing ? (
+                      <span className="flex items-center gap-1.5 px-2 py-0.5 bg-amber-500/10 text-amber-500 text-[9px] font-black uppercase tracking-widest rounded-md border border-amber-500/20">
+                        <RefreshCw size={10} className="animate-spin" /> Syncing
+                      </span>
+                    ) : (state.secretCode || state.syncProvider) ? (
+                      <span className="flex items-center gap-1.5 px-2 py-0.5 bg-emerald-500/10 text-emerald-400 text-[9px] font-black uppercase tracking-widest rounded-md border border-emerald-500/20">
+                        <CheckCircle2 size={10} /> Active
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1.5 px-2 py-0.5 bg-slate-800 text-slate-400 text-[9px] font-black uppercase tracking-widest rounded-md border border-slate-700">
+                        <X size={10} /> Inactive
+                      </span>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="flex flex-col gap-2 mt-2">
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-slate-500 font-medium">Provider</span>
+                    <span className="text-slate-300 font-bold">{state.syncProvider || (state.secretCode ? 'Redis' : 'None')}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-slate-500 font-medium">Save State</span>
+                    <span className={cn("font-bold", hasUnsyncedChanges ? "text-amber-400" : "text-emerald-400")}>
+                      {hasUnsyncedChanges ? 'Pending Sync' : 'Up to Date'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-slate-500 font-medium">Last Updated</span>
+                    <span className="text-slate-300 font-medium">
+                        {state.lastUpdated ? new Date(state.lastUpdated).toLocaleString() : 'Never'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-4 mt-2">
                 <button 
                   onClick={() => { setActiveTab('settings'); onClose(); }}
                   className="flex-1 py-3 sm:py-4 bg-slate-900 hover:bg-slate-800 text-white rounded-xl sm:rounded-2xl font-black uppercase tracking-widest text-[10px] sm:text-xs transition-all flex items-center justify-center gap-2 border border-slate-800"

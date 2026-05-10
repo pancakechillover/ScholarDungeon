@@ -12,6 +12,9 @@ interface SettingsViewProps {
   setActiveSection: (section: 'general' | 'timer' | 'rewards' | 'shop' | 'gacha' | 'dev' | 'levelRewards' | 'about' | 'level' | 'merchant' | 'cloud') => void;
   onTabChange?: (tab: any) => void;
   onOpenAstralArchives?: () => void;
+  triggerSyncCheck?: () => void;
+  isSyncing?: boolean;
+  hasUnsyncedChanges?: boolean;
 }
 
 export const SettingsView: React.FC<SettingsViewProps> = ({
@@ -22,7 +25,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   activeSection,
   setActiveSection,
   onTabChange,
-  onOpenAstralArchives
+  onOpenAstralArchives,
+  triggerSyncCheck,
+  isSyncing,
+  hasUnsyncedChanges
 }) => {
   return (
     <motion.div
@@ -47,6 +53,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         setActiveSection={setActiveSection}
         onTabChange={onTabChange}
         onOpenAstralArchives={onOpenAstralArchives}
+        triggerSyncCheck={triggerSyncCheck}
+        isSyncing={isSyncing}
+        hasUnsyncedChanges={hasUnsyncedChanges}
       />
     </motion.div>
   );

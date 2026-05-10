@@ -143,6 +143,9 @@ export interface SettingsProps {
   setActiveSection: (sec: string) => void;
   onTabChange?: (tab: any) => void;
   onOpenAstralArchives?: () => void;
+  triggerSyncCheck?: () => void;
+  isSyncing?: boolean;
+  hasUnsyncedChanges?: boolean;
 }
 
 export const Settings = React.memo<SettingsProps & { onOpenAstralArchives?: () => void }>(({
@@ -159,7 +162,10 @@ export const Settings = React.memo<SettingsProps & { onOpenAstralArchives?: () =
   activeSection,
   setActiveSection,
   onTabChange,
-  onOpenAstralArchives
+  onOpenAstralArchives,
+  triggerSyncCheck,
+  isSyncing,
+  hasUnsyncedChanges
 }) => {
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
@@ -225,6 +231,9 @@ export const Settings = React.memo<SettingsProps & { onOpenAstralArchives?: () =
             setState={setState}
             setActiveSection={setActiveSection}
             onOpenAstralArchives={onOpenAstralArchives || (() => {})}
+            triggerSyncCheck={triggerSyncCheck}
+            isSyncing={isSyncing}
+            hasUnsyncedChanges={hasUnsyncedChanges}
           />
         )}
         {(activeSection === 'level' as any || activeSection === 'levelRewards' as any) && (
