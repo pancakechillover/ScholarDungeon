@@ -295,28 +295,10 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
                 onClick={() => triggerSyncCheck(true)}
                 disabled={isSyncing}
                 title="Compare local and cloud save data"
-                className="relative z-10 shrink-0 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-slate-300 rounded-xl font-black uppercase tracking-widest text-[10px] transition-all flex items-center justify-center gap-2 border border-slate-700 shadow-lg active:scale-95"
+                className="relative z-10 w-full sm:w-auto px-6 py-3 bg-indigo-500/10 hover:bg-indigo-500/20 disabled:opacity-50 text-indigo-400 rounded-xl font-black uppercase tracking-widest text-[11px] transition-all flex items-center justify-center gap-2.5 border border-indigo-500/30 shadow-lg shadow-indigo-500/5 active:scale-[0.98]"
               >
-                <Search size={16} className="text-slate-500" /> 
-                Verify & Compare
-              </button>
-              <button 
-                onClick={() => triggerSyncCheck(true)}
-                disabled={isSyncing}
-                title="Show comparison then force local to cloud"
-                className="relative z-10 shrink-0 px-4 py-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 disabled:opacity-50 text-emerald-400 rounded-xl font-black uppercase tracking-widest text-[10px] transition-all flex items-center justify-center gap-2 border border-emerald-500/20 shadow-lg shadow-emerald-500/5 active:scale-95"
-              >
-                <UploadCloud size={16} /> 
-                Force Upload
-              </button>
-              <button 
-                onClick={() => triggerSyncCheck(true)}
-                disabled={isSyncing}
-                title="Show comparison then force cloud to local"
-                className="relative z-10 shrink-0 px-4 py-2.5 bg-indigo-500/10 hover:bg-indigo-500/20 disabled:opacity-50 text-indigo-400 rounded-xl font-black uppercase tracking-widest text-[10px] transition-all flex items-center justify-center gap-2 border border-indigo-500/20 shadow-lg shadow-indigo-500/5 active:scale-95"
-              >
-                <DownloadCloud size={16} /> 
-                Force Download
+                <Search size={18} /> 
+                Verify & Compare Archives
               </button>
             </div>
           </div>

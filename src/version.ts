@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v5.3.1';
+export const APP_VERSION = 'v5.3.2';
 export const LAST_UPDATE_DATE = '2026-05-10';
-export const LAST_UPDATE_TIME = '24:50:00';
+export const LAST_UPDATE_TIME = '25:05:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,16 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v5.3.2',
+    date: '2026-05-10',
+    time: '25:05:00',
+    title: 'Cloud UI Consolidation',
+    items: [
+      { category: 'UX', description: 'Consolidated redundant manual sync buttons into a single primary "Verify & Compare Archives" action.' },
+      { category: 'UI', description: 'Enhanced the manual operation button styling for better visual hierarchy and clarity.' }
+    ]
+  },
   {
     version: 'v5.3.1',
     date: '2026-05-10',

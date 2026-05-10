@@ -22,7 +22,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors:** When designing UI elements that highlight based on themes, note that `indigo-300`, `indigo-400`, `indigo-500`, and `indigo-600` are overridden by the custom theme variables in `index.css`. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v5.3.1
+- **Current Version:** v5.3.2
 - **Last Update Date:** 2026-05-10
 
 ## Dark Themes Definition
@@ -47,6 +47,9 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v5.3.2 (2026-05-10):** Cloud UI Consolidation.
+  - *UX:* Consolidated redundant manual sync buttons into a single primary "Verify & Compare Archives" action.
+  - *UI:* Enhanced the manual operation button styling for better visual hierarchy and clarity.
 - **v5.3.1 (2026-05-10):** New Seeker Onboarding.
   - *Feature:* Implemented the "New Seeker" onboarding flow for first-time cloud users.
   - *UX:* Introduced a deliberate "Verification Phase" with artificial checking delays to ensure a thorough comparison of local and cloud documents.
