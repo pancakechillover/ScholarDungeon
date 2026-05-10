@@ -161,7 +161,7 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
             </div>
             <div className="mt-4 flex items-start gap-3 p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-xl">
               <Eye size={16} className="text-indigo-400 shrink-0 mt-0.5" />
-              <div className="text-xs text-indigo-200/80 leading-relaxed">
+              <div className="text-xs text-slate-400 leading-relaxed">
                 <span className="font-bold text-indigo-300">Visibility API Active: </span>
                 When you leave the app, lock your screen, or close the tab, any unsynced changes will reliably be pushed to the cloud automatically, regardless of your sync strategy.
               </div>
@@ -268,7 +268,17 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
                          {log.type.replace(/_/g, ' ')}
                        </span>
                     </div>
-                    <div className="flex items-center gap-3 text-[10px] text-slate-500">
+                    <div className="flex flex-wrap items-center gap-3 text-[10px] text-slate-500">
+                       {log.syncMethod && (
+                         <span className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700/50">
+                           {log.syncMethod}
+                         </span>
+                       )}
+                       {log.syncProvider && (
+                         <span className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700/50">
+                           {log.syncProvider}
+                         </span>
+                       )}
                        {log.deviceType && <span>Device: {log.deviceType}</span>}
                        <span>{new Date(log.timestamp).toLocaleString()}</span>
                     </div>

@@ -25,6 +25,8 @@ interface CloudSyncModalProps {
     code: string;
     timestamp: string;
     deviceType?: string;
+    syncMethod?: 'Manual' | 'Immediate' | 'Interval polling' | 'Visibility API Active';
+    syncProvider?: 'Redis' | 'Google Drive' | 'WebDAV';
   }[];
   localState?: any;
 }
@@ -314,9 +316,11 @@ export function CloudSyncModal({
                           </span>
                           <span className="text-[10px] text-slate-500">{new Date(record.timestamp).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                         </div>
-                        <div className="flex justify-between items-center mt-1">
-                          <span className="text-xs text-slate-400 font-mono">Code: {record.code}</span>
-                          {record.deviceType && <span className="text-[10px] text-slate-500 bg-slate-800 px-2 py-0.5 rounded-full">{record.deviceType}</span>}
+                        <div className="flex flex-wrap items-center gap-2 mt-1">
+                          <span className="text-[10px] text-slate-400 font-mono">Code: {record.code}</span>
+                          {record.syncMethod && <span className="text-[9px] text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700/50">{record.syncMethod}</span>}
+                          {record.syncProvider && <span className="text-[9px] text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700/50">{record.syncProvider}</span>}
+                          {record.deviceType && <span className="text-[9px] text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded-full">{record.deviceType}</span>}
                         </div>
                       </div>
                     ))

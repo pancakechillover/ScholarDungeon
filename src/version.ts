@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v5.1.2';
+export const APP_VERSION = 'v5.2.1';
 export const LAST_UPDATE_DATE = '2026-05-10';
-export const LAST_UPDATE_TIME = '20:00:00';
+export const LAST_UPDATE_TIME = '21:45:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,38 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v5.2.1',
+    date: '2026-05-10',
+    time: '21:45:00',
+    title: 'Quest Board UI Style Sync',
+    items: [
+      { category: 'UI', description: 'Synchronized all theme-specific `--qb-*` CSS variables with finalized debugger values.' },
+      { category: 'UX', description: 'Improved visual contrast for Quest cards and progress bars across all themes.' }
+    ]
+  },
+  {
+    version: 'v5.2.0',
+    date: '2026-05-10',
+    time: '21:30:00',
+    title: 'Sync History Metadata',
+    items: [
+      { category: 'Feature', description: 'Implemented detailed metadata tracking for synchronization history (Method and Provider).' },
+      { category: 'Architecture', description: 'Enhanced syncHistory interface and useCloudSync hook to capture and persist sync event metadata.' },
+      { category: 'UI', description: 'Updated Cloud Sync Modal and Cloud Settings Section to display detailed sync history logs.' },
+      { category: 'Bugfix', description: 'Fixed theme-awareness for secondary text elements in Cloud Settings.' }
+    ]
+  },
+  {
+    version: 'v5.1.3',
+    date: '2026-05-10',
+    time: '20:10:00',
+    title: 'Theme-Aware Color Expansion',
+    items: [
+      { category: 'Architecture', description: 'Added `indigo-300` to the theme-aware color system, allowing all `text-indigo-300` usages to adapt to the active theme.' },
+      { category: 'Documentation', description: 'Updated AGENTS.md guidelines for theme-aware colors.' }
+    ]
+  },
   {
     version: 'v5.1.2',
     date: '2026-05-10',

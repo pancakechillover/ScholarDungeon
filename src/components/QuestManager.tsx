@@ -383,7 +383,7 @@ export const QuestManager = React.memo<QuestManagerProps>(({ quests, questHistor
         )}
       </AnimatePresence>
 
-      <div className="relative p-6 sm:p-10 rounded-2xl qb-board border">
+      <div className="relative p-6 sm:p-10 rounded-2xl qb-board ">
         {activeTab === 'history' ? (
           <div className="space-y-4">
             <div className="flex items-center gap-2 mb-6">

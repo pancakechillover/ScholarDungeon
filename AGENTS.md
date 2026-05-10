@@ -18,10 +18,10 @@ Whenever you complete a task or make changes to the application:
 **CSS & UI STANDARDS:**
 - **Italic Clipping:** To prevent right-side clipping of italic text (especially in browsers with tight bounding boxes), always add a small right padding (e.g., `pr-1` or `px-0.5`) to the element or its immediate container.
 - **Red Dot / Notification Placement:** Unread message or notification badges (red dots) on icons and buttons MUST ALWAYS be placed in the bottom-right corner (e.g. `absolute -bottom-0.5 -right-0.5`), NEVER in the top-right corner.
-- **Theme-Aware Colors:** When designing UI elements that highlight based on themes, note that ONLY `indigo-400`, `indigo-500`, and `indigo-600` are overridden by the custom theme variables in `index.css`. DO NOT use `indigo-300` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
+- **Theme-Aware Colors:** When designing UI elements that highlight based on themes, note that `indigo-300`, `indigo-400`, `indigo-500`, and `indigo-600` are overridden by the custom theme variables in `index.css`. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v5.1.2
+- **Current Version:** v5.2.1
 - **Last Update Date:** 2026-05-10
 
 ## Dark Themes Definition
@@ -46,6 +46,17 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v5.2.1 (2026-05-10):** Quest Board UI Style Sync.
+  - *UI:* Synchronized all theme-specific CSS variables (`--qb-*`) with the finalized values from the CSS Debugger.
+  - *UX:* Fine-tuned contrast and colors for Quest Cards, Progress Bars, and Board containers across all 7 themes.
+- **v5.2.0 (2026-05-10):** Sync History Metadata.
+  - *Feature:* Implemented detailed metadata tracking for synchronization history, including `syncMethod` (Manual, Immediate, Interval polling, Visibility API Active) and `syncProvider` (Redis, Google Drive, WebDAV).
+  - *Architecture:* Enhanced `AppState.syncHistory` interface and `useCloudSync` hook to capture and persist metadata across all sync events.
+  - *UI:* Updated Cloud Sync Modal and Cloud Settings Section to display sync method and provider details in the history logs.
+  - *Bugfix:* Fixed UI theme-awareness for secondary text elements in Cloud Settings.
+- **v5.1.3 (2026-05-10):** Theme-Aware Color Expansion.
+  - *Architecture:* Synchronized `indigo-300` with the custom theme engine in `index.css`.
+  - *UI:* Verified all `text-indigo-300` usages across Settings, Cloud, and Dungeons now respond to theme changes.
 - **v5.1.2 (2026-05-10):** Quest Board UI Customization Expansion.
   - *UI:* Added outer white border (outline) to the Quest Board container, configurable via CSS variables.
   - *Feature:* Expanded Quest Board CSS Debugger with controls for checkbox colors and progress bar text color.

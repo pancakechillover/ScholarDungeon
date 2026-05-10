@@ -15,16 +15,32 @@ export function useCloudSync(
     code: string;
   } | null>(null);
 
-  const logSyncEvent = useCallback((type: 'login' | 'force_sync' | 'local_to_cloud' | 'cloud_to_local' | 'cancel_login' | 'unbind_local' | 'delete_cloud', code: string) => {
+  const logSyncEvent = useCallback((
+    type: 'login' | 'force_sync' | 'local_to_cloud' | 'cloud_to_local' | 'cancel_login' | 'unbind_local' | 'delete_cloud', 
+    code: string,
+    syncMethod?: 'Manual' | 'Immediate' | 'Interval polling' | 'Visibility API Active',
+    syncProvider?: 'Redis' | 'Google Drive' | 'WebDAV'
+  ) => {
     setState(prev => {
       const newHistory = [...(prev.syncHistory || [])];
-      newHistory.unshift({ type, code, timestamp: new Date().toISOString(), deviceType: prev.deviceType });
+      newHistory.unshift({ 
+        type, 
+        code, 
+        timestamp: new Date().toISOString(), 
+        deviceType: prev.deviceType,
+        syncMethod,
+        syncProvider: syncProvider || 'Redis'
+      });
       if (newHistory.length > 50) newHistory.pop();
       return { ...prev, syncHistory: newHistory };
     });
   }, [setState]);
 
-  const syncToCloud = useCallback(async (forceOverwrite = false, specificState?: AppState) => {
+  const syncToCloud = useCallback(async (
+    forceOverwrite = false, 
+    specificState?: AppState,
+    syncMethod: 'Manual' | 'Immediate' | 'Interval polling' | 'Visibility API Active' = 'Manual'
+  ) => {
     const currentState = specificState || state;
     if (!currentState.secretCode) return;
 
@@ -81,9 +97,9 @@ export function useCloudSync(
         setState(prev => ({ ...prev, lastUpdated: data.cloudData.lastUpdated }));
         setSyncCheckResult(null);
         if (forceOverwrite) {
-          logSyncEvent('force_sync', currentState.secretCode);
+          logSyncEvent('force_sync', currentState.secretCode, syncMethod);
         } else {
-          logSyncEvent('local_to_cloud', currentState.secretCode);
+          logSyncEvent('local_to_cloud', currentState.secretCode, syncMethod);
         }
       }
     } catch (err: any) {
@@ -116,14 +132,13 @@ export function useCloudSync(
         logSyncEvent('cloud_to_local', syncCheckResult.code);
       } else if (!useCloud) {
         setState(prev => ({ ...prev, secretCode: syncCheckResult.code }));
-        await syncToCloud(true, { ...state, secretCode: syncCheckResult.code });
-        logSyncEvent('local_to_cloud', syncCheckResult.code);
+        await syncToCloud(true, { ...state, secretCode: syncCheckResult.code }, 'Manual');
       }
       setSyncCheckResult(null);
     } finally {
       setIsSyncing(false);
     }
-  }, [syncCheckResult, setState, setDungeons, setMajorDungeons, syncToCloud, state, logSyncEvent]);
+  }, [syncCheckResult, setState, setDungeons, setMajorDungeons, syncToCloud, state]);
 
   const fetchFromCloud = useCallback(async (code: string) => {
     setIsSyncing(true);
@@ -146,13 +161,10 @@ export function useCloudSync(
       }
 
       const data = await response.json();
-
       if (!response.ok) {
         throw new Error(data.error || 'Failed to fetch from cloud');
       }
-
-      logSyncEvent('login', code);
-
+      logSyncEvent('login', code, 'Manual');
       if (data.cloudData) {
         const cloudTime = new Date(data.cloudData.lastUpdated || 0).getTime();
         const localTime = new Date(state.lastUpdated || 0).getTime();
@@ -203,7 +215,7 @@ export function useCloudSync(
 
   const unbindFromCloud = useCallback(() => {
     if (state.secretCode) {
-      logSyncEvent('unbind_local', state.secretCode);
+      logSyncEvent('unbind_local', state.secretCode, 'Manual');
     }
     setState(prev => ({ ...prev, secretCode: undefined }));
   }, [setState, state.secretCode, logSyncEvent]);
@@ -233,7 +245,7 @@ export function useCloudSync(
       if (!response.ok) {
         throw new Error(data.error || 'Failed to delete cloud data');
       }
-      logSyncEvent('delete_cloud', code);
+      logSyncEvent('delete_cloud', code, 'Manual');
       unbindFromCloud();
     } catch (err: any) {
       setSyncError(err.message);

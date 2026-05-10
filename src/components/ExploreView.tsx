@@ -79,7 +79,7 @@ interface ExploreViewProps {
   completeSession: (dungeonId: string | null, duration: number, fDur: number, rDur: number) => any;
   selectReward: (reward: any, sessionId: string) => void;
   setState: React.Dispatch<React.SetStateAction<AppState>>;
-  syncToCloud: (manual: boolean) => void;
+  syncToCloud: (forceOverwrite?: boolean, specificState?: AppState, syncMethod?: 'Manual' | 'Immediate' | 'Interval polling' | 'Visibility API Active') => void;
   updateSession: (id: string, updates: any) => void;
   deleteSession: (id: string) => void;
   togglePip: () => void;
@@ -345,7 +345,7 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
                       const result = completeSession(state.currentDungeonId || null, duration, fDur, rDur);
                       playSound('success', state.soundVolume, state.soundEnabled);
                       if (result && state.secretCode) {
-                        syncToCloud(true);
+                        syncToCloud(true, undefined, 'Manual');
                       }
                       return result;
                     }}
@@ -357,6 +357,9 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
                     onRewardSelect={(reward, sessionId) => {
                       selectReward(reward, sessionId);
                       playSound('reward', state.soundVolume, state.soundEnabled);
+                      if (state.secretCode) {
+                        syncToCloud(true, undefined, 'Manual');
+                      }
                       setState(prev => ({
                         ...prev,
                         pendingRewardChest: prev.pendingRewardChest?.filter(item => item.session.id !== sessionId) || []
@@ -434,7 +437,7 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
                         const result = completeSession(state.currentDungeonId || null, duration, fDur, rDur);
                         playSound('success', state.soundVolume, state.soundEnabled);
                         if (result && state.secretCode) {
-                          syncToCloud(true);
+                          syncToCloud(true, undefined, 'Manual');
                         }
                         return result;
                       }}
@@ -446,6 +449,9 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
                       onRewardSelect={(reward, sessionId) => {
                         selectReward(reward, sessionId);
                         playSound('reward', state.soundVolume, state.soundEnabled);
+                        if (state.secretCode) {
+                          syncToCloud(true, undefined, 'Manual');
+                        }
                         setState(prev => ({
                           ...prev,
                           pendingRewardChest: prev.pendingRewardChest?.filter(item => item.session.id !== sessionId) || []

@@ -219,6 +219,8 @@ export interface AppState {
     code: string;
     timestamp: string;
     deviceType?: string;
+    syncMethod?: 'Manual' | 'Immediate' | 'Interval polling' | 'Visibility API Active';
+    syncProvider?: 'Redis' | 'Google Drive' | 'WebDAV';
   }[];
   pushEnabled?: boolean;
   pushSubscription?: any;

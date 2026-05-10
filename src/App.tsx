@@ -369,7 +369,7 @@ function App() {
         if (state.autoSyncMode === 'debounce') {
           const delay = (state.autoSyncDebounceSeconds || 10) * 1000;
           syncTimeoutRef.current = setTimeout(() => {
-            syncToCloud(false);
+            syncToCloud(false, undefined, 'Immediate');
             lastSyncTimeRef.current = Date.now();
           }, delay);
         } else if (state.autoSyncMode === 'interval') {
@@ -378,7 +378,7 @@ function App() {
           const timeToNextSync = Math.max(0, interval - timeSinceLastSync);
           
           syncTimeoutRef.current = setTimeout(() => {
-            syncToCloud(false);
+            syncToCloud(false, undefined, 'Interval polling');
             lastSyncTimeRef.current = Date.now();
           }, timeToNextSync);
         }
@@ -398,13 +398,13 @@ function App() {
   React.useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden && hasUnsyncedChanges && state.secretCode) {
-        syncToCloud(false);
+        syncToCloud(false, undefined, 'Visibility API Active');
       }
     };
 
     const handleBeforeUnload = () => {
       if (hasUnsyncedChanges && state.secretCode) {
-        syncToCloud(false);
+        syncToCloud(false, undefined, 'Visibility API Active');
       }
     };
 
@@ -806,7 +806,7 @@ function App() {
           onConnect={fetchFromCloud}
           onResolveConflict={resolveConflict}
           onCancelConnect={() => setSyncCheckResult(null)}
-          onManualSync={() => syncToCloud(true)}
+          onManualSync={() => syncToCloud(true, undefined, 'Manual')}
           onUnbind={unbindFromCloud}
           onDeleteCloudData={deleteCloudData}
           syncHistory={state.syncHistory}
@@ -1278,7 +1278,7 @@ function App() {
                 setSyncCheckResult(null);
                 logSyncEvent('cancel_login', code);
               }}
-              onManualSync={() => syncToCloud(true)}
+              onManualSync={() => syncToCloud(true, undefined, 'Manual')}
               onUnbind={unbindFromCloud}
               onDeleteCloudData={deleteCloudData}
               syncHistory={state.syncHistory}
