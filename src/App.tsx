@@ -315,6 +315,7 @@ function App() {
 
   const {
     isSyncing,
+    isVerifying,
     syncError,
     syncCheckResult,
     syncToCloud,

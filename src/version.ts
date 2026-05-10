@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v5.3.2';
+export const APP_VERSION = 'v5.3.3';
 export const LAST_UPDATE_DATE = '2026-05-10';
-export const LAST_UPDATE_TIME = '25:05:00';
+export const LAST_UPDATE_TIME = '25:10:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,15 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v5.3.3',
+    date: '2026-05-10',
+    time: '25:10:00',
+    title: 'Stability Fix: Sync Verification',
+    items: [
+      { category: 'Bugfix', description: 'Fixed a ReferenceError where isVerifying was not properly destructured from the cloud sync hook in App.tsx.' }
+    ]
+  },
   {
     version: 'v5.3.2',
     date: '2026-05-10',
