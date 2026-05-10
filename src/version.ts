@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v5.2.6';
+export const APP_VERSION = 'v5.2.7';
 export const LAST_UPDATE_DATE = '2026-05-10';
-export const LAST_UPDATE_TIME = '23:15:00';
+export const LAST_UPDATE_TIME = '23:55:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,17 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v5.2.7',
+    date: '2026-05-10',
+    time: '23:55:00',
+    title: 'WebDAV Folder Isolation',
+    items: [
+      { category: 'Feature', description: 'WebDAV sync now automatically creates and uses a "SCHOLARS DUNGEON" subfolder to avoid root directory pollution.' },
+      { category: 'UX', description: 'Enforced subfolder logic in connection setup and continuous sync loops for Jianguoyun and other WebDAV providers.' },
+      { category: 'Bugfix', description: 'Fixed potential sync failures when target folders do not exist on the WebDAV server.' }
+    ]
+  },
   {
     version: 'v5.2.6',
     date: '2026-05-10',

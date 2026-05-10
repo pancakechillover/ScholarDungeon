@@ -22,7 +22,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors:** When designing UI elements that highlight based on themes, note that `indigo-300`, `indigo-400`, `indigo-500`, and `indigo-600` are overridden by the custom theme variables in `index.css`. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v5.2.6
+- **Current Version:** v5.2.7
 - **Last Update Date:** 2026-05-10
 
 ## Dark Themes Definition
@@ -47,6 +47,9 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v5.2.7 (2026-05-10):** WebDAV Folder Isolation.
+  - *Feature:* Implemented automatic folder creation and isolation for WebDAV sync. Saves are now stored in a "SCHOLARS DUNGEON" subfolder instead of the root directory.
+  - *Reliability:* Added `MKCOL` health checks during initial connection and sync operations to ensure folder structure integrity.
 - **v5.2.6 (2026-05-10):** Cloud Sync Force Operations.
   - *Feature:* Implemented "Force Upload" and "Force Download" operations in Cloud Settings.
   - *UI:* Added a side-by-side comparison modal that visualizes differences between local and cloud save data (Level, Gold, Sessions, Device, Timestamp) before overwriting.

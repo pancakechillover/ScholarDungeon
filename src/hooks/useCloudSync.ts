@@ -94,6 +94,22 @@ export function useCloudSync(
       if (isWebDav && currentState.webdavSettings) {
         const { url, username, password } = currentState.webdavSettings;
         
+        // Ensure parent directory exists for WebDAV (prevent root pollution)
+        try {
+          const lastSlashIndex = url.lastIndexOf('/');
+          if (lastSlashIndex !== -1) {
+            const folderUrl = url.substring(0, lastSlashIndex + 1);
+            await fetch('/api/webdav/proxy', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ url: folderUrl, username, password, method: 'MKCOL' })
+            });
+          }
+        } catch (e) {
+          // Ignore errors, could be folder already exists
+          console.warn("WebDAV folder creation check handled:", e);
+        }
+        
         if (!forceOverwrite) {
           // Check if cloud is newer
           const getResponse = await fetch('/api/webdav/proxy', {

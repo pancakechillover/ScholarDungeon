@@ -141,12 +141,35 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
     let targetUrl = webdavUrl;
     if (!targetUrl.endsWith('.json')) {
       if (!targetUrl.endsWith('/')) targetUrl += '/';
+      
+      // Ensure it goes into the SCHOLARS DUNGEON subfolder to avoid root directory pollution
+      const folderName = 'SCHOLARS DUNGEON';
+      if (!targetUrl.toUpperCase().includes(folderName.toUpperCase())) {
+          targetUrl += encodeURIComponent(folderName) + '/';
+      }
+      
       targetUrl += 'scholars_dungeon_save.json';
     }
 
     setWebdavChecking(true);
     setWebdavCheckError('');
     try {
+        // Ensure folder exists first
+        const lastSlashIndex = targetUrl.lastIndexOf('/');
+        if (lastSlashIndex !== -1) {
+            const folderUrl = targetUrl.substring(0, lastSlashIndex + 1);
+            await fetch('/api/webdav/proxy', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    url: folderUrl,
+                    username: webdavUser,
+                    password: webdavPass,
+                    method: 'MKCOL'
+                })
+            });
+        }
+
         const response = await fetch('/api/webdav/proxy', {
         method: 'POST',
         headers: {
