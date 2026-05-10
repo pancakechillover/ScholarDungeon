@@ -44,8 +44,10 @@ export function useCloudSync(
   ) => {
     const currentState = specificState || state;
     const isGoogleDrive = currentState.syncProvider === 'Google Drive';
-    if (!isGoogleDrive && !currentState.secretCode) return;
+    const isWebDav = currentState.syncProvider === 'WebDAV';
+    if (!isGoogleDrive && !isWebDav && !currentState.secretCode) return;
     if (isGoogleDrive && !currentState.googleDriveTokens) return;
+    if (isWebDav && (!currentState.webdavSettings || !currentState.webdavSettings.url)) return;
 
     setIsSyncing(true);
     setSyncError(null);
@@ -67,7 +69,54 @@ export function useCloudSync(
         lastUpdated: new Date().toISOString()
       };
 
-      if (isGoogleDrive && currentState.googleDriveTokens) {
+      if (isWebDav && currentState.webdavSettings) {
+        const { url, username, password } = currentState.webdavSettings;
+        
+        if (!forceOverwrite) {
+          // Check if cloud is newer
+          const getResponse = await fetch('/api/webdav/proxy', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url, username, password, method: 'GET' })
+          });
+          
+          if (getResponse.ok) {
+            const result = await getResponse.json();
+            if (result.data && result.data.lastUpdated) {
+              const cloudTime = new Date(result.data.lastUpdated).getTime();
+              const localTime = new Date(localData.lastUpdated).getTime();
+              if (cloudTime > localTime) {
+                setSyncCheckResult({
+                  status: 'cloud_newer',
+                  cloudData: result.data,
+                  code: 'WebDAV'
+                });
+                setIsSyncing(false);
+                return;
+              }
+            }
+          }
+        }
+        
+        // Write to WebDAV
+        const putResponse = await fetch('/api/webdav/proxy', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url, username, password, method: 'PUT', body: localData })
+        });
+        
+        if (!putResponse.ok) {
+           throw new Error(await putResponse.text() || 'Failed to sync to WebDAV');
+        }
+        
+        setState(prev => ({ 
+          ...prev, 
+          lastUpdated: localData.lastUpdated 
+        }));
+        setSyncCheckResult(null);
+        logSyncEvent(forceOverwrite ? 'force_sync' : 'local_to_cloud', 'WebDAV', syncMethod, 'WebDAV');
+
+      } else if (isGoogleDrive && currentState.googleDriveTokens) {
         const drive = new GoogleDriveAPI(currentState.googleDriveTokens.access_token);
         
         let fileId = currentState.googleDriveFileId || await drive.findSaveFile();
@@ -206,7 +255,6 @@ export function useCloudSync(
         const cloudTime = new Date(data.cloudData.lastUpdated || 0).getTime();
         const localTime = new Date(state.lastUpdated || 0).getTime();
 
-        // Helper to strip volatile fields for comparison
         const stripVolatile = (dataObj: any) => {
           if (!dataObj || !dataObj.state) return dataObj;
           const { lastUpdated, syncHistory, deviceType, pushSubscription, secretCode, ...restState } = dataObj.state;
@@ -229,7 +277,6 @@ export function useCloudSync(
         });
 
         if (JSON.stringify(localDataToCompare) === JSON.stringify(cloudDataToCompare)) {
-          // Data is identical, silently update lastUpdated and secretCode
           setState(prev => ({ ...prev, lastUpdated: data.cloudData.lastUpdated, secretCode: code }));
           setSyncCheckResult(null);
           return;
@@ -248,7 +295,117 @@ export function useCloudSync(
     } finally {
       setIsSyncing(false);
     }
-  }, [state.lastUpdated, logSyncEvent]);
+  }, [state, logSyncEvent]);
+
+  const checkCloudSync = useCallback(async () => {
+    const isGoogleDrive = state.syncProvider === 'Google Drive';
+    const isWebDav = state.syncProvider === 'WebDAV';
+
+    if (!isGoogleDrive && !isWebDav && !state.secretCode) return;
+    if (isGoogleDrive && !state.googleDriveTokens) return;
+    if (isWebDav && (!state.webdavSettings || !state.webdavSettings.url)) return;
+
+    setIsSyncing(true);
+    setSyncError(null);
+
+    const checkNewer = (data: any, code: string) => {
+        if (!data) {
+            setSyncCheckResult({ status: 'no_save', code });
+            return;
+        }
+        
+        const cloudTime = new Date(data.lastUpdated || 0).getTime();
+        const localTime = new Date(state.lastUpdated || 0).getTime();
+
+        const stripVolatile = (dataObj: any) => {
+          if (!dataObj || !dataObj.state) return dataObj;
+          const { lastUpdated, syncHistory, deviceType, pushSubscription, secretCode, ...restState } = dataObj.state;
+          return {
+            ...dataObj,
+            state: restState
+          };
+        };
+
+        const localDataToCompare = stripVolatile({
+          state: state,
+          dungeons: JSON.parse(localStorage.getItem('scholars_dungeon_state_dungeons') || '[]'),
+          majorDungeons: JSON.parse(localStorage.getItem('scholars_dungeon_state_major_dungeons') || '[]')
+        });
+        
+        const cloudDataToCompare = stripVolatile({
+          state: data.state,
+          dungeons: data.dungeons || [],
+          majorDungeons: data.majorDungeons || []
+        });
+
+        if (JSON.stringify(localDataToCompare) === JSON.stringify(cloudDataToCompare)) {
+          setState(prev => ({ ...prev, lastUpdated: data.lastUpdated, secretCode: code !== 'WebDAV' && code !== 'GoogleDrive' ? code : prev.secretCode }));
+          setSyncCheckResult(null);
+          return;
+        }
+
+        if (cloudTime > localTime) {
+          setSyncCheckResult({ status: 'cloud_newer', cloudData: data, code });
+        } else {
+          setSyncCheckResult({ status: 'local_newer', cloudData: data, code });
+        }
+    };
+
+    try {
+      if (isWebDav && state.webdavSettings) {
+        const { url, username, password } = state.webdavSettings;
+        const response = await fetch('/api/webdav/proxy', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url, username, password, method: 'GET' })
+        });
+        if (response.ok) {
+            const result = await response.json();
+            if (result.is404 || !result.data) {
+                setSyncCheckResult({ status: 'no_save', code: 'WebDAV' });
+            } else {
+                checkNewer(result.data, 'WebDAV');
+            }
+        } else {
+            throw new Error(await response.text() || 'Failed to fetch from WebDAV');
+        }
+      } else if (isGoogleDrive && state.googleDriveTokens) {
+        const drive = new GoogleDriveAPI(state.googleDriveTokens.access_token);
+        const fileId = state.googleDriveFileId || await drive.findSaveFile();
+        if (fileId) {
+            const result = await drive.downloadFile(fileId);
+            checkNewer(result, 'GoogleDrive');
+        } else {
+            setSyncCheckResult({ status: 'no_save', code: 'GoogleDrive' });
+        }
+      } else if (state.secretCode) {
+        // Rediss
+        const response = await fetch('/api/sync/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ secretCode: state.secretCode })
+        });
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            throw new Error(`Server returned non-JSON response (${response.status}).`);
+        }
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || 'Failed to fetch from cloud');
+        }
+        logSyncEvent('login', state.secretCode, 'Manual');
+        if (data.cloudData) {
+            checkNewer(data.cloudData, state.secretCode);
+        } else {
+            setSyncCheckResult({ status: 'no_save', code: state.secretCode });
+        }
+      }
+    } catch (err: any) {
+      setSyncError(err.message);
+    } finally {
+      setIsSyncing(false);
+    }
+  }, [state, logSyncEvent]);
 
   const unbindFromCloud = useCallback(() => {
     if (state.secretCode) {
@@ -301,6 +458,7 @@ export function useCloudSync(
     fetchFromCloud,
     unbindFromCloud,
     deleteCloudData,
-    logSyncEvent
+    logSyncEvent,
+    checkCloudSync
   };
 }

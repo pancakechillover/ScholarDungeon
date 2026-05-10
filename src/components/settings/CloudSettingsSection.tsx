@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Cloud, Server, HardDrive, CheckCircle2, ChevronRight, Settings, Lock, X, History, ArrowDownUp, RefreshCw, LogIn, Trash2, ShieldBan, Eye } from 'lucide-react';
 import { AppState } from '../../types';
 
@@ -118,6 +119,70 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
     }
   };
 
+  const [webdavUrl, setWebdavUrl] = useState(state.webdavSettings?.url || '');
+  const [webdavUser, setWebdavUser] = useState(state.webdavSettings?.username || '');
+  const [webdavPass, setWebdavPass] = useState(state.webdavSettings?.password || '');
+  const [webdavChecking, setWebdavChecking] = useState(false);
+  const [webdavCheckError, setWebdavCheckError] = useState('');
+
+  const handleWebdavConnection = async () => {
+    if (!webdavUrl || !webdavUser || !webdavPass) {
+      setWebdavCheckError('URL, Username and Password are required.');
+      return;
+    }
+
+    let targetUrl = webdavUrl;
+    if (!targetUrl.endsWith('.json')) {
+      if (!targetUrl.endsWith('/')) targetUrl += '/';
+      targetUrl += 'scholars_dungeon_save.json';
+    }
+
+    setWebdavChecking(true);
+    setWebdavCheckError('');
+    try {
+        const response = await fetch('/api/webdav/proxy', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            url: targetUrl,
+            username: webdavUser,
+            password: webdavPass,
+            method: 'GET'
+        })
+        });
+        
+        const responseText = await response.text();
+        
+        if (!response.ok) {
+           let errMsg = responseText;
+           try {
+             const json = JSON.parse(responseText);
+             if (json.error) errMsg = json.error;
+           } catch { }
+           throw new Error(errMsg);
+        }
+        
+        setState(s => ({
+            ...s,
+            webdavSettings: {
+                url: targetUrl,
+                username: webdavUser,
+                password: webdavPass
+            },
+            syncProvider: 'WebDAV'
+        }));
+        
+        setShowUnlockModal(false);
+        setUnlockTarget(null);
+    } catch (e: any) {
+        setWebdavCheckError(e.message || 'Connection failed.');
+    } finally {
+        setWebdavChecking(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2.5 text-indigo-400 mb-6 pb-2">
@@ -207,23 +272,46 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
           </div>
         </button>
 
-        {/* WebDAV (Coming Soon) */}
+        {/* WebDAV */}
         <button
-          disabled
-          className="relative text-left p-5 bg-slate-900/50 border border-slate-800/50 rounded-2xl cursor-not-allowed overflow-hidden opacity-60"
+          onClick={() => {
+            setUnlockTarget('webdav');
+            setShowUnlockModal(true);
+          }}
+          className={`relative text-left p-5 rounded-2xl overflow-hidden transition-all group ${
+            state.webdavSettings 
+              ? 'bg-slate-900 border border-emerald-500/50 hover:border-emerald-400'
+              : 'bg-slate-900 border border-slate-700 hover:border-indigo-500/50'
+          }`}
         >
+          {state.webdavSettings && <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl -mr-10 -mt-10 transition-colors group-hover:bg-emerald-500/10" />}
           <div className="relative z-10 space-y-4">
-            <div className="p-2.5 rounded-xl bg-slate-800/50 text-slate-500 w-fit">
-              <HardDrive size={24} />
+            <div className="flex items-start justify-between">
+              <div className={`p-2.5 rounded-xl transition-colors ${
+                state.webdavSettings 
+                  ? 'bg-slate-800 text-emerald-400 group-hover:bg-emerald-500/20' 
+                  : 'bg-slate-800 text-indigo-400 group-hover:bg-indigo-500/20'
+              }`}>
+                <HardDrive size={24} />
+              </div>
+              {state.webdavSettings && (
+                <div className="px-2 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-md text-[10px] font-black text-emerald-400 uppercase tracking-widest flex items-center gap-1">
+                  <CheckCircle2 size={12} />
+                  Connected
+                </div>
+              )}
             </div>
             <div>
               <h5 className="font-bold text-slate-300 mb-1">WebDAV</h5>
-              <p className="text-xs text-slate-500 leading-relaxed min-h-[3rem]">
-                Custom server sync (e.g., Jianguoyun). Full control over your save data location.
+              <p className="text-xs text-slate-400 leading-relaxed min-h-[3rem]">
+                Custom server sync (e.g., Jianguoyun, Nextcloud). Full control over your save data location.
               </p>
             </div>
-            <div className="text-xs font-bold text-slate-600 uppercase tracking-widest pt-2">
-              Coming Soon
+            <div className={`flex items-center justify-between text-xs font-bold opacity-80 group-hover:opacity-100 transition-opacity pt-2 ${
+              state.webdavSettings ? 'text-emerald-400' : 'text-indigo-400'
+            }`}>
+              <span>{state.webdavSettings ? 'Manage Connection' : 'Connect'}</span>
+              <ChevronRight size={16} />
             </div>
           </div>
         </button>
@@ -395,7 +483,7 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
         </div>
       </div>
 
-      {showUnlockModal && (
+      {showUnlockModal && createPortal(
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="relative w-full max-w-sm bg-slate-900 border border-slate-700 rounded-3xl p-6 shadow-2xl">
             <button
@@ -409,46 +497,114 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
             >
               <X size={20} />
             </button>
-            <div className="mb-6 mt-2 flex flex-col items-center text-center">
-              <div className="w-12 h-12 rounded-full bg-amber-500/10 text-amber-400 flex items-center justify-center mb-4">
-                <Lock size={24} />
-              </div>
-              <h3 className="text-lg font-black text-white uppercase tracking-widest mb-2">Developer Access</h3>
-              <p className="text-xs text-slate-400 leading-relaxed max-w-xs">
-                {unlockTarget === 'redis' 
-                  ? '由于目前Redis数据储存量小，所以只有开发者或受邀请的人才能使用这个同步方案。请输入开发者预设的密码后启用。'
-                  : 'Google Drive Auth is currently restricted to approved internal testers only due to pending Google Verification. Please enter the test password to proceed.'
-                }
-              </p>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <input
-                  type="password"
-                  placeholder="Enter access code..."
-                  value={unlockPassword}
-                  onChange={(e) => setUnlockPassword(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleUnlock();
-                  }}
-                  className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-center text-xl tracking-[0.3em] font-bold text-white placeholder:text-slate-700 placeholder:text-sm placeholder:tracking-normal focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-mono"
-                />
-                {unlockError && (
-                  <p className="text-red-400 text-[10px] text-center mt-2 font-bold uppercase tracking-widest">
-                    Invalid Credentials
+            {unlockTarget === 'webdav' ? (
+              <>
+                <div className="mb-6 mt-2 flex flex-col items-center text-center">
+                  <div className="w-12 h-12 rounded-full bg-indigo-500/10 text-indigo-400 flex items-center justify-center mb-4">
+                    <HardDrive size={24} />
+                  </div>
+                  <h3 className="text-lg font-black text-white uppercase tracking-widest mb-2">WebDAV Connection</h3>
+                  <p className="text-xs text-slate-400 leading-relaxed max-w-xs">
+                    Enter your WebDAV server details. Your password is ONLY stored locally in your browser. Example: <code>https://dav.jianguoyun.com/dav/</code>
                   </p>
-                )}
-              </div>
-              <button
-                onClick={handleUnlock}
-                className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-indigo-500/20"
-              >
-                Authenticate
-              </button>
-            </div>
+                </div>
+                <div className="space-y-3">
+                  <input
+                    type="text"
+                    placeholder="WebDAV URL (include /dav/)"
+                    value={webdavUrl}
+                    onChange={(e) => setWebdavUrl(e.target.value)}
+                    className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder:text-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-mono text-sm"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Username (Email for Jianguoyun)"
+                    value={webdavUser}
+                    onChange={(e) => setWebdavUser(e.target.value)}
+                    className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder:text-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-mono text-sm"
+                  />
+                  <input
+                    type="password"
+                    placeholder="App Password / Security Password"
+                    value={webdavPass}
+                    onChange={(e) => setWebdavPass(e.target.value)}
+                    className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder:text-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-mono text-sm"
+                  />
+                  {webdavCheckError && (
+                    <p className="text-red-400 text-xs text-center mt-2 break-words">
+                      {webdavCheckError}
+                    </p>
+                  )}
+                  <button
+                    onClick={handleWebdavConnection}
+                    disabled={webdavChecking}
+                    className="w-full py-3 mt-4 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 disabled:text-slate-500 text-white rounded-xl font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-indigo-500/20"
+                  >
+                    {webdavChecking ? 'Connecting...' : (state.webdavSettings ? 'Update WebDAV Settings' : 'Connect to WebDAV')}
+                  </button>
+                  {state.webdavSettings && (
+                     <button
+                       onClick={() => {
+                          setState(s => {
+                             const newState = { ...s };
+                             delete newState.webdavSettings;
+                             if (newState.syncProvider === 'WebDAV') delete newState.syncProvider;
+                             return newState;
+                          });
+                          setShowUnlockModal(false);
+                          setUnlockTarget(null);
+                       }}
+                       className="w-full py-3 mt-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl font-black uppercase tracking-widest text-xs transition-all"
+                     >
+                        Disconnect WebDAV
+                     </button>
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="mb-6 mt-2 flex flex-col items-center text-center">
+                  <div className="w-12 h-12 rounded-full bg-amber-500/10 text-amber-400 flex items-center justify-center mb-4">
+                    <Lock size={24} />
+                  </div>
+                  <h3 className="text-lg font-black text-white uppercase tracking-widest mb-2">Developer Access</h3>
+                  <p className="text-xs text-slate-400 leading-relaxed max-w-xs">
+                    {unlockTarget === 'redis' 
+                      ? '由于目前Redis数据储存量小，所以只有开发者或受邀请的人才能使用这个同步方案。请输入开发者预设的密码后启用。'
+                      : 'Google Drive Auth is currently restricted to approved internal testers only due to pending Google Verification. Please enter the test password to proceed.'
+                    }
+                  </p>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <input
+                      type="password"
+                      placeholder="Enter access code..."
+                      value={unlockPassword}
+                      onChange={(e) => setUnlockPassword(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleUnlock();
+                      }}
+                      className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-center text-xl tracking-[0.3em] font-bold text-white placeholder:text-slate-700 placeholder:text-sm placeholder:tracking-normal focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-mono"
+                    />
+                    {unlockError && (
+                      <p className="text-red-400 text-[10px] text-center mt-2 font-bold uppercase tracking-widest">
+                        Invalid Credentials
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    onClick={handleUnlock}
+                    className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-indigo-500/20"
+                  >
+                    Authenticate
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
-      )}
+      , document.body)}
     </div>
   );
 };

@@ -218,6 +218,11 @@ export interface AppState {
     expires_at: number;
   };
   googleDriveFileId?: string;
+  webdavSettings?: {
+    url: string;
+    username: string;
+    password?: string; // Stored securely if possible, or we just store an auth token
+  };
   autoSyncMode?: 'debounce' | 'interval' | 'manual';
   autoSyncDebounceSeconds?: number;
   autoSyncIntervalMinutes?: number;

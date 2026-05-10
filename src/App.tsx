@@ -323,7 +323,8 @@ function App() {
     unbindFromCloud,
     deleteCloudData,
     setSyncCheckResult,
-    logSyncEvent
+    logSyncEvent,
+    checkCloudSync
   } = useCloudSync(state, setState, setDungeons, setMajorDungeons);
 
   const [hasUnsyncedChanges, setHasUnsyncedChanges] = useState(() => {
@@ -770,9 +771,11 @@ function App() {
   ];
 
   useEffect(() => {
-    if (appReady && state.secretCode) {
-      // Auto check sync on load if logged in
-      fetchFromCloud(state.secretCode);
+    if (appReady) {
+      // Auto check sync on load if logged in via any provider
+      if (state.syncProvider === 'Google Drive' || state.syncProvider === 'WebDAV' || state.secretCode) {
+        checkCloudSync();
+      }
     }
   }, [appReady]); // Only run once when app becomes ready
 

@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v5.2.2';
+export const APP_VERSION = 'v5.2.3';
 export const LAST_UPDATE_DATE = '2026-05-10';
-export const LAST_UPDATE_TIME = '22:15:00';
+export const LAST_UPDATE_TIME = '22:30:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,17 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v5.2.3',
+    date: '2026-05-10',
+    time: '22:30:00',
+    title: 'WebDAV Full Implementation',
+    items: [
+      { category: 'Architecture', description: 'Standardized synchronization checks, redirecting App startup to use a new `checkCloudSync` routing which intelligently directs to Google Drive, WebDAV, or Redis logic interchangeably.' },
+      { category: 'Feature', description: 'Fully integrated WebDAV support as a new primary Sync Provider with a local API proxy addressing CORS restrictions gracefully.' },
+      { category: 'UI', description: 'Unlocked the WebDAV options panel in Cloud Sync settings allowing custom server URL (e.g. Nextcloud, Jianguoyun), Usernames, and Application Passwords.' }
+    ]
+  },
   {
     version: 'v5.2.2',
     date: '2026-05-10',

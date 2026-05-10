@@ -16,12 +16,13 @@ Whenever you complete a task or make changes to the application:
 - **z (Patch):** Bug fixes, micro-optimizations, documentation updates, and UI refinements.
 
 **CSS & UI STANDARDS:**
+- **Full-Screen Modals:** Whenever creating a "full-screen" centered modal (especially `fixed inset-0`), you MUST use `createPortal(..., document.body)` from `react-dom` to render the modal directly on the `body`. If you do not use `createPortal`, parent elements with CSS `transform`, `filter`, or `perspective` will establish unintended containing blocks that capture the `fixed` positioning, causing the modal to appear in the middle of a scrolling page container instead of the actual screen view. Never make this mistake again.
 - **Italic Clipping:** To prevent right-side clipping of italic text (especially in browsers with tight bounding boxes), always add a small right padding (e.g., `pr-1` or `px-0.5`) to the element or its immediate container.
 - **Red Dot / Notification Placement:** Unread message or notification badges (red dots) on icons and buttons MUST ALWAYS be placed in the bottom-right corner (e.g. `absolute -bottom-0.5 -right-0.5`), NEVER in the top-right corner.
 - **Theme-Aware Colors:** When designing UI elements that highlight based on themes, note that `indigo-300`, `indigo-400`, `indigo-500`, and `indigo-600` are overridden by the custom theme variables in `index.css`. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v5.2.2
+- **Current Version:** v5.2.3
 - **Last Update Date:** 2026-05-10
 
 ## Dark Themes Definition
@@ -46,6 +47,10 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v5.2.3 (2026-05-10):** WebDAV Full Implementation.
+  - *Feature:* Fully integrated WebDAV support as a new primary Sync Provider with a local proxy in `api/webdav/proxy` addressing CORS restrictions gracefully.
+  - *UI:* Unlocked the WebDAV options panel in Cloud Sync settings allowing custom server URL (e.g. Nextcloud, Jianguoyun), Usernames, and Application Passwords.
+  - *Architecture:* Standardized synchronization checks, redirecting App startup to use a new `checkCloudSync` routing which intelligently directs to Google Drive, WebDAV, or Redis logic interchangeably. 
 - **v5.2.2 (2026-05-10):** Google Drive Developer Access Lock.
   - *Feature:* Added a password lock specifically requiring the string 'GoogleTest' to access Google OAuth, protecting standard users from seeing the "App is not verified" generic error.
   - *UX:* Adapted the existing Modal from Redis Archives to support dynamic text depending on which cloud service needs to be unlocked.
