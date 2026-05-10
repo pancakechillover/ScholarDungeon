@@ -286,9 +286,15 @@ app.get("/api/health", (req, res) => res.json({ status: "ok" }));
 
 // Google OAuth Routes
 app.get('/api/auth/google/url', (req, res) => {
-  const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'http';
-  const host = req.headers['x-forwarded-host'] || req.headers.host;
-  const redirectUri = `${protocol}://${host}/auth/google/callback`;
+  let origin = req.query.origin as string;
+  if (!origin) {
+    const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'http';
+    const host = req.headers['x-forwarded-host'] || req.headers.host;
+    origin = `${protocol}://${host}`;
+  }
+
+  const redirectUri = `${origin}/api/auth/google/callback`;
+  const state = Buffer.from(JSON.stringify({ origin })).toString('base64');
 
   const params = new URLSearchParams({
     client_id: process.env.OAUTH_CLIENT_ID || '',
@@ -296,17 +302,33 @@ app.get('/api/auth/google/url', (req, res) => {
     response_type: 'code',
     scope: 'https://www.googleapis.com/auth/drive.appdata', // Google Drive appdata only
     access_type: 'offline', // For refresh token
-    prompt: 'consent'
+    prompt: 'consent',
+    state: state
   });
   
   res.json({ url: `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}` });
 });
 
-app.get(['/auth/google/callback', '/auth/google/callback/'], async (req, res) => {
-  const { code } = req.query;
-  const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'http';
-  const host = req.headers['x-forwarded-host'] || req.headers.host;
-  const redirectUri = `${protocol}://${host}/auth/google/callback`;
+app.get(['/api/auth/google/callback', '/api/auth/google/callback/'], async (req, res) => {
+  const { code, state: stateParam } = req.query;
+  
+  let origin = '';
+  try {
+    if (stateParam && typeof stateParam === 'string') {
+      const decoded = JSON.parse(Buffer.from(stateParam, 'base64').toString('utf-8'));
+      origin = decoded.origin;
+    }
+  } catch (e) {
+    console.error("Failed to decode state:", e);
+  }
+
+  if (!origin) {
+    const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'http';
+    const host = req.headers['x-forwarded-host'] || req.headers.host;
+    origin = `${protocol}://${host}`;
+  }
+
+  const redirectUri = `${origin}/api/auth/google/callback`;
 
   if (!code) {
     return res.send('<html><body><p>Authentication failed: No code provided.</p></body></html>');

@@ -62,7 +62,8 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
     }
     
     try {
-      const response = await fetch('/api/auth/google/url');
+      const origin = encodeURIComponent(window.location.origin);
+      const response = await fetch(`/api/auth/google/url?origin=${origin}`);
       if (!response.ok) throw new Error('Failed to get auth URL');
       const { url } = await response.json();
 
