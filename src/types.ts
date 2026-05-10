@@ -126,6 +126,7 @@ export interface QuestHistoryItem {
   timestamp: string;
   rewards: QuestReward[];
   isAchievement: boolean;
+  talentRequired?: string;
 }
 
 export interface AppState {

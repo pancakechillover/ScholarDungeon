@@ -373,8 +373,30 @@ export function useGameState() {
   // Daily Reset Logic
   useEffect(() => {
     const now = new Date();
-    const todayStr = format(now, 'yyyy-MM-dd');
-    const currentWeekStr = format(now, 'yyyy-' + Math.ceil(now.getDate() / 7)); // Simple weekly grouping, or use date-fns getISOWeek
+    const ts = state.timeSettings || {
+      morning: { start: 8, end: 12 },
+      afternoon: { start: 14, end: 18 },
+      night: { start: 20, end: 24 }
+    };
+
+    const getSettlementDay = (date: Date) => {
+      const hour = date.getHours();
+      let baseDate = new Date(date);
+      
+      // Boundary check:
+      // 1. If we are within a night peak that spans midnight (e.g. ends at 02:00 and we are at 01:00) -> Yesterday
+      if (ts.night.start > ts.night.end && hour < ts.night.end) {
+        baseDate.setDate(baseDate.getDate() - 1);
+      }
+      // 2. If we are before the morning start (e.g. starts at 08:00 and we are at 04:00) -> Yesterday
+      else if (hour < ts.morning.start) {
+        baseDate.setDate(baseDate.getDate() - 1);
+      }
+      return format(baseDate, 'yyyy-MM-dd');
+    };
+
+    const todayStr = getSettlementDay(now);
+    const currentWeekStr = format(now, 'yyyy-' + Math.ceil(now.getDate() / 7));
     const currentMonthStr = format(now, 'yyyy-MM');
 
     let needsUpdate = false;
@@ -801,7 +823,8 @@ export function useGameState() {
                     type: q.type,
                     timestamp: new Date().toISOString(),
                     rewards: q.rewards || [q.reward],
-                    isAchievement: q.isAchievement
+                    isAchievement: q.isAchievement,
+                    talentRequired: q.talentRequired
                   }, ...newState.questHistory];
 
                   if (r.type === 'coins') {
@@ -1350,7 +1373,8 @@ export function useGameState() {
         type: quest.type,
         timestamp: new Date().toISOString(),
         rewards: quest.rewards || [quest.reward],
-        isAchievement: quest.isAchievement
+        isAchievement: quest.isAchievement,
+        talentRequired: quest.talentRequired
       }, ...newState.questHistory];
 
       rewards.forEach(reward => {
@@ -1426,7 +1450,8 @@ export function useGameState() {
           type: quest.type,
           timestamp: new Date().toISOString(),
           rewards: quest.rewards || [quest.reward],
-          isAchievement: quest.isAchievement
+          isAchievement: quest.isAchievement,
+          talentRequired: quest.talentRequired
         }, ...newState.questHistory];
 
         rewards.forEach(reward => {

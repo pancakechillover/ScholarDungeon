@@ -279,6 +279,7 @@ export const DungeonsView: React.FC<DungeonsViewProps> = ({
         />
       ) : dungeonSubTab === 'quests' ? (
         <QuestManager 
+          key="quests-tab"
           quests={state.quests}
           questHistory={questHistory}
           activeTalents={state.activeTalents}
@@ -291,6 +292,7 @@ export const DungeonsView: React.FC<DungeonsViewProps> = ({
         />
       ) : dungeonSubTab === 'achievements' ? (
         <QuestManager 
+          key="achievements-tab"
           quests={state.quests}
           questHistory={questHistory}
           activeTalents={state.activeTalents}
@@ -303,6 +305,7 @@ export const DungeonsView: React.FC<DungeonsViewProps> = ({
         />
       ) : (
         <QuestManager 
+          key="history-tab"
           quests={state.quests}
           questHistory={questHistory}
           activeTalents={state.activeTalents}

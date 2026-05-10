@@ -59,6 +59,12 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
       yesterday.setDate(yesterday.getDate() - 1);
       return yesterday.toISOString().split('T')[0];
     }
+    // If we are before morning start, it's technically still yesterday's period
+    if (hour < ts.morning.start) {
+      const yesterday = new Date(now);
+      yesterday.setDate(yesterday.getDate() - 1);
+      return yesterday.toISOString().split('T')[0];
+    }
     return now.toISOString().split('T')[0];
   }, [state.timeSettings]);
 
@@ -73,15 +79,21 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
       const hour = date.getHours();
       
       const peaks = [ts.morning, ts.afternoon, ts.night];
-      for (const p of peaks) {
-        if (p.start > p.end) {
-          if (hour < p.end) {
-            const yesterday = new Date(date);
-            yesterday.setDate(yesterday.getDate() - 1);
-            return yesterday.toISOString().split('T')[0];
-          }
-        }
+      
+      // Night span midnight check
+      if (ts.night.start > ts.night.end && hour < ts.night.end) {
+        const yesterday = new Date(date);
+        yesterday.setDate(yesterday.getDate() - 1);
+        return yesterday.toISOString().split('T')[0];
       }
+      
+      // Before morning start check
+      if (hour < ts.morning.start) {
+        const yesterday = new Date(date);
+        yesterday.setDate(yesterday.getDate() - 1);
+        return yesterday.toISOString().split('T')[0];
+      }
+
       return date.toISOString().split('T')[0];
     };
 

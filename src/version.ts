@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v5.3.3';
+export const APP_VERSION = 'v5.3.8';
 export const LAST_UPDATE_DATE = '2026-05-10';
-export const LAST_UPDATE_TIME = '25:10:00';
+export const LAST_UPDATE_TIME = '26:40:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,61 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v5.3.8',
+    date: '2026-05-10',
+    time: '26:40:00',
+    title: 'Quest & Achievement Talent Indicators',
+    items: [
+      { category: 'Aesthetic', description: 'Added talent effect tags to Quests and Achievements, clearly identifying tasks unlocked via specific talents.' },
+      { category: 'Architecture', description: 'Enhanced Quest History metadata to persist talent requirements for documented deeds.' },
+      { category: 'UI', description: 'Integrated dynamic talent icons and names into the Quest Board cards and history logs.' }
+    ]
+  },
+  {
+    version: 'v5.3.7',
+    date: '2026-05-10',
+    time: '26:15:00',
+    title: 'Daily Progress: Settlement Period',
+    items: [
+      { category: 'Feature', description: 'Implemented adaptive "Settlement Period" display for Daily Progress, ranging from Morning Start to Night End peaks.' },
+      { category: 'Architecture', description: 'Synchronized daily reset logic across the app to align with the Morning Start hour, ensuring counter consistency with the settlement period.' },
+      { category: 'UI', description: 'Added high-contrast settlement period timestamps (MM/DD HH:MM) to the Sanctum Dashboard.' }
+    ]
+  },
+  {
+    version: 'v5.3.6',
+    date: '2026-05-10',
+    time: '25:55:00',
+    title: 'Identity-Safe Cloud Sync',
+    items: [
+      { category: 'Reliability', description: 'Implemented mandatory identity checks before all cloud sync operations. Silent sync only occurs if the local device identity matches the cloud record.' },
+      { category: 'Safety', description: 'Added automatic sync abortion for Visibility API triggers when an identity mismatch is detected, preventing silent accidental overwrites.' },
+      { category: 'UI/UX', description: 'Enhanced the Cloud Sync Modal to clearly identify which device created the remote archive during conflict resolution.' }
+    ]
+  },
+  {
+    version: 'v5.3.5',
+    date: '2026-05-10',
+    time: '25:35:00',
+    title: 'Device Identity Localization',
+    items: [
+      { category: 'Architecture', description: 'Modified Cloud Sync logic to ensure the Device Nickname is stored locally and never synced to the cloud, preventing naming conflicts between devices.' },
+      { category: 'Reliability', description: 'Enhanced data stripping in useCloudSync to exclude volatile device identity fields from all upload methods (Redis, Google Drive, WebDAV).' },
+      { category: 'UX', description: 'Updated state merging during conflict resolution to prioritize preserving the local device nickname over incoming cloud data.' }
+    ]
+  },
+  {
+    version: 'v5.3.4',
+    date: '2026-05-10',
+    time: '25:20:00',
+    title: 'Visual Polish: "Pinned Note" Randolph Rotation',
+    items: [
+      { category: 'Aesthetic', description: 'Implemented a truly random tilting effect for items on the Quest Board and Achievement lists, creating an organic "pinned note" look.' },
+      { category: 'UX', description: 'Simplified the rotation logic and ensured remounting triggers new random tilts every time the user enters the board or switches tabs.' },
+      { category: 'Visual', description: 'Added random rotations and subtle pins to Quest History entries for consistent aesthetic across all board sections.' }
+    ]
+  },
   {
     version: 'v5.3.3',
     date: '2026-05-10',

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'motion/react';
 import { 
   Sword, 
@@ -9,7 +9,8 @@ import {
   Coins,
   Zap,
   Compass,
-  Package
+  Package,
+  Clock
 } from 'lucide-react';
 import { AppState, Dungeon } from '../types';
 import { playSound } from '../lib/sound';
@@ -31,6 +32,62 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   openGuideBook,
   saveDailyLog
 }) => {
+  const settlementPeriod = useMemo(() => {
+    const ts = state.timeSettings || {
+      morning: { start: 8, end: 12 },
+      afternoon: { start: 14, end: 18 },
+      night: { start: 20, end: 24 }
+    };
+
+    const timezone = state.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+    let now = new Date();
+    if (state.timezone) {
+      try {
+        const tzDate = new Date(now.toLocaleString('en-US', { timeZone: timezone }));
+        now = tzDate;
+      } catch (e) {}
+    }
+
+    const hour = now.getHours();
+    let baseDate = new Date(now);
+
+    // If night peak spans midnight and we are currently in that post-midnight block, 
+    // or if we are simply before the morning peak starts, the current settlement "day" started yesterday
+    if (ts.night.start > ts.night.end && hour < ts.night.end) {
+      baseDate.setDate(baseDate.getDate() - 1);
+    } else if (hour < ts.morning.start) {
+      baseDate.setDate(baseDate.getDate() - 1);
+    }
+    
+    // Start Date: morning.start of baseDate
+    const startDate = new Date(baseDate);
+    startDate.setHours(ts.morning.start, 0, 0, 0);
+    
+    // End Date: night.end of baseDate (might be tomorrow)
+    const endDate = new Date(baseDate);
+    if (ts.night.end <= ts.night.start) {
+        endDate.setDate(endDate.getDate() + 1);
+        endDate.setHours(ts.night.end === 24 ? 0 : ts.night.end, 0, 0, 0);
+    } else {
+        if (ts.night.end === 24) {
+             endDate.setDate(endDate.getDate() + 1);
+             endDate.setHours(0, 0, 0, 0);
+        } else {
+             endDate.setHours(ts.night.end, 0, 0, 0);
+        }
+    }
+
+    const formatDate = (d: Date) => {
+      const mo = (d.getMonth() + 1).toString().padStart(2, '0');
+      const da = d.getDate().toString().padStart(2, '0');
+      const h = d.getHours().toString().padStart(2, '0');
+      const m = d.getMinutes().toString().padStart(2, '0');
+      return `${mo}/${da} ${h}:${m}`;
+    };
+
+    return `${formatDate(startDate)} - ${formatDate(endDate)}`;
+  }, [state.timeSettings, state.timezone]);
+
   return (
     <motion.div
       key="dashboard"
@@ -90,7 +147,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
         <div className="space-y-6">
           <div className="bg-slate-900 rounded-3xl border border-slate-800 p-6">
-            <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-4">Daily Progress</h3>
+            <div className="mb-4">
+              <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-1">Daily Progress</h3>
+              <div className="flex items-center gap-1.5 text-[10px] text-slate-500 font-medium">
+                <Clock size={10} className="text-indigo-400" />
+                <span>SETTLEMENT: {settlementPeriod}</span>
+              </div>
+            </div>
             <div className="flex items-center justify-between mb-2">
               <span className="text-2xl font-bold text-white">{state.dailySessions}</span>
               {(() => {

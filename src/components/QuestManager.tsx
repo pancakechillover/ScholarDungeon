@@ -1,19 +1,18 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence, Reorder, useDragControls } from 'motion/react';
-import { Quest, QuestType, QuestReward, QuestHistoryItem } from '../types';
-import { Target, Trophy, Plus, Trash2, Edit2, CheckCircle2, ChevronDown, ChevronUp, X, Gift, Coins, Zap, CheckSquare, Square, GripVertical, Pin, Clock, History } from 'lucide-react';
+import { Quest, QuestType, QuestReward, QuestHistoryItem, Talent } from '../types';
+import { Target, Trophy, Plus, Trash2, Edit2, CheckCircle2, ChevronDown, ChevronUp, X, Gift, Coins, Zap, CheckSquare, Square, GripVertical, Pin, Clock, History, BrainCircuit } from 'lucide-react';
 import { PageHeader } from './PageHeader';
 import { cn } from '../lib/utils';
 import { SpinnerInput } from './SpinnerInput';
+import { TALENTS } from '../constants';
+import * as LucideIcons from 'lucide-react';
 
 const DraggableQuestItem = ({ quest, isEditMode, children, className }: any) => {
   const controls = useDragControls();
   
-  // Deterministic "random" rotation based on ID
-  const rotation = React.useMemo(() => {
-    const hash = quest.id.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
-    return (hash % 4) - 2; // -2 to 1 degrees
-  }, [quest.id]);
+  // Truly random rotation on mount for the "pinned note" look
+  const rotation = React.useMemo(() => (Math.random() * 6) - 3, []); // -3 to 3 degrees range
 
   return (
     <Reorder.Item 
@@ -44,6 +43,61 @@ const DraggableQuestItem = ({ quest, isEditMode, children, className }: any) => 
       )}
       {children}
     </Reorder.Item>
+  );
+};
+
+const HistoryItem = ({ item }: { item: QuestHistoryItem }) => {
+  const rotation = React.useMemo(() => (Math.random() * 4) - 2, []);
+  
+  return (
+    <motion.div 
+      initial={{ opacity: 0, x: -10 }}
+      animate={{ opacity: 1, x: 0 }}
+      style={{ rotate: `${rotation}deg` }}
+      className="paper-texture border border-slate-200 rounded-sm p-4 flex items-center justify-between gap-4 shadow-sm relative group hover:shadow-md transition-shadow"
+    >
+      {/* Small subtle pin for history items too */}
+      <div className="absolute -top-1.5 left-2 z-10 text-slate-400 drop-shadow-sm opacity-40 group-hover:opacity-100 transition-opacity">
+        <Pin size={14} fill="currentColor" strokeWidth={1} />
+      </div>
+
+      <div className="flex items-center gap-4">
+        <div className={cn(
+          "w-10 h-10 rounded-lg flex items-center justify-center border shrink-0 qb-dark-box",
+          item.isAchievement ? "border-amber-500" : "border-slate-700"
+        )}>
+          {item.isAchievement ? <Trophy size={20} className="text-amber-400" /> : <History size={20} className="text-emerald-400" />}
+        </div>
+        <div>
+          <h4 className="font-serif font-black text-slate-900 text-base leading-tight">{item.title}</h4>
+          <div className="flex items-center gap-2 mt-1">
+            <div className="flex items-center gap-1 text-[10px] text-slate-500 font-bold">
+              <Clock size={10} />
+              {new Date(item.timestamp).toLocaleString()}
+            </div>
+            {item.talentRequired && (() => {
+              const talent = TALENTS.find(t => t.id === item.talentRequired);
+              if (!talent) return null;
+              const TalentIcon = (LucideIcons as any)[talent.icon] || BrainCircuit;
+              return (
+                <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-500 border border-indigo-500/20 text-[9px] font-bold uppercase tracking-tighter shrink-0">
+                  <TalentIcon size={10} />
+                  <span>{talent.name}</span>
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        {item.rewards.map((r, i) => (
+          <div key={i} className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-[10px] font-black text-slate-700">
+            {r.type === 'coins' ? <Coins size={10} className="text-amber-600" /> : <Zap size={10} className="text-indigo-600" />}
+            <span>{r.amount}</span>
+          </div>
+        ))}
+      </div>
+    </motion.div>
   );
 };
 
@@ -405,34 +459,7 @@ export const QuestManager = React.memo<QuestManagerProps>(({ quests, questHistor
             </div>
 
             {filteredHistory.map((item) => (
-              <div 
-                key={item.id}
-                className="paper-texture border border-slate-200 rounded-sm p-4 flex items-center justify-between gap-4 shadow-sm"
-              >
-                <div className="flex items-center gap-4">
-                  <div className={cn(
-                    "w-10 h-10 rounded-lg flex items-center justify-center border shrink-0 qb-dark-box",
-                    item.isAchievement ? "border-amber-500" : "border-slate-700"
-                  )}>
-                    {item.isAchievement ? <Trophy size={20} className="text-amber-400" /> : <History size={20} className="text-emerald-400" />}
-                  </div>
-                  <div>
-                    <h4 className="font-serif font-black text-slate-900 text-base leading-tight">{item.title}</h4>
-                    <div className="flex items-center gap-2 text-[10px] text-slate-500 font-bold mt-1">
-                      <Clock size={10} />
-                      {new Date(item.timestamp).toLocaleString()}
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  {item.rewards.map((r, i) => (
-                    <div key={i} className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-[10px] font-black text-slate-700">
-                      {r.type === 'coins' ? <Coins size={10} className="text-amber-600" /> : <Zap size={10} className="text-indigo-600" />}
-                      <span>{r.amount}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <HistoryItem key={item.id} item={item} />
             ))}
             {filteredHistory.length === 0 && (
               <div className="text-center py-20 bg-slate-200/50 dark:bg-slate-800/50 rounded-xl border border-slate-300 dark:border-slate-700 border-dashed">
@@ -478,9 +505,22 @@ export const QuestManager = React.memo<QuestManagerProps>(({ quests, questHistor
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 mb-0.5">
                       <h4 className="font-bold text-base leading-tight truncate">{quest.title}</h4>
-                      <div className="flex items-center gap-1 px-1.5 py-0.5 rounded qb-tag text-[9px] font-bold uppercase tracking-tighter shrink-0 border">
-                        <Clock size={10} />
-                        {getCycleLabel(quest.type)}
+                      <div className="flex items-center gap-2 shrink-0">
+                        <div className="flex items-center gap-1 px-1.5 py-0.5 rounded qb-tag text-[9px] font-bold uppercase tracking-tighter border">
+                          <Clock size={10} />
+                          {getCycleLabel(quest.type)}
+                        </div>
+                        {quest.talentRequired && (() => {
+                          const talent = TALENTS.find(t => t.id === quest.talentRequired);
+                          if (!talent) return null;
+                          const TalentIcon = (LucideIcons as any)[talent.icon] || BrainCircuit;
+                          return (
+                            <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 text-[9px] font-bold uppercase tracking-tighter shrink-0">
+                              <TalentIcon size={10} />
+                              <span>{talent.name}</span>
+                            </div>
+                          );
+                        })()}
                       </div>
                     </div>
                     <p className="qb-card-desc font-handwriting text-sm font-bold leading-tight line-clamp-2">{quest.description}</p>

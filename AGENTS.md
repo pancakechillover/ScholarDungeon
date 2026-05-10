@@ -22,7 +22,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors:** When designing UI elements that highlight based on themes, note that `indigo-300`, `indigo-400`, `indigo-500`, and `indigo-600` are overridden by the custom theme variables in `index.css`. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v5.3.3
+- **Current Version:** v5.3.8
 - **Last Update Date:** 2026-05-10
 
 ## Dark Themes Definition
@@ -47,6 +47,26 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v5.3.8 (2026-05-10):** Quest & Achievement Talent Indicators.
+  - *Aesthetic:* Added talent effect tags for Quests and Achievements that are unlocked via specific talents.
+  - *Architecture:* Enhanced Quest History to capture and store talent requirements globally.
+  - *UI:* Integrated talent icons and names into Quest items and history entries for better clarity.
+- **v5.3.7 (2026-05-10):** Daily Progress: Settlement Period.
+  - *Feature:* Implemented adaptive "Settlement Period" display for Daily Progress, ranging from Morning Start to Night End peaks.
+  - *Architecture:* Synchronized daily reset logic across the app to align with the Morning Start hour, ensuring counter consistency with the settlement period.
+  - *UI:* Added high-contrast settlement period timestamps (MM/DD HH:MM) to the Sanctum Dashboard.
+- **v5.3.6 (2026-05-10):** Identity-Safe Cloud Sync.
+  - *Reliability:* Implemented mandatory identity checks before all cloud sync operations. Silent sync now only occurs if the local device identity matches the cloud record.
+  - *Safety:* Added automatic sync abortion for Visibility API triggers (tab closing/backgrounding) when an identity mismatch is detected, preventing silent data loss.
+  - *UI/UX:* Enhanced the Cloud Sync Modal to prominently display the saving device name for both local and cloud archives during conflicts.
+- **v5.3.5 (2026-05-10):** Device Identity Localization.
+  - *Architecture:* Modified Cloud Sync logic to ensure the `deviceNickname` is stored locally and never synced to the cloud, preventing naming conflicts between multiple synced devices.
+  - *Reliability:* Enhanced data stripping in `useCloudSync` to exclude volatile device identity fields from all upload methods (Redis, Google Drive, WebDAV).
+  - *UX:* Updated state merging during conflict resolution to prioritize preserving the local device nickname over incoming cloud data.
+- **v5.3.4 (2026-05-10):** Visual Polish: "Pinned Note" Randolph Rotation.
+  - *Aesthetic:* Implemented truly random tilting for Quest Board and Achievement items to create an organic "pinned note" feel.
+  - *UX:* Remounts the board components on tab switch to re-randomize rotations every time the user enters the page.
+  - *Visual:* Extended the tilting effect and subtle pins to History items for aesthetic consistency.
 - **v5.3.3 (2026-05-10):** Stability Fix.
   - *Bugfix:* Fixed `ReferenceError: isVerifying` in `App.tsx` caused by missing variable destructuring.
 - **v5.3.2 (2026-05-10):** Cloud UI Consolidation.

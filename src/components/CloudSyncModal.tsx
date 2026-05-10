@@ -213,7 +213,7 @@ export function CloudSyncModal({
                             {localState?.deviceNickname || getDeviceType()}
                           </div>
                           <div className="text-center text-[10px] text-indigo-400/70 font-bold truncate bg-indigo-500/5 py-0.5 rounded">
-                            {syncCheckResult?.cloudData?.state?.deviceNickname || syncCheckResult?.cloudData?.state?.deviceType || '?'}
+                            {syncCheckResult?.cloudData?.savedBy || syncCheckResult?.cloudData?.state?.deviceNickname || syncCheckResult?.cloudData?.state?.deviceType || '?'}
                           </div>
 
                           <div className="text-[10px] text-slate-500 font-medium">Updated</div>
@@ -445,7 +445,7 @@ export function CloudSyncModal({
                             {localState?.deviceNickname || getDeviceType()}
                           </div>
                           <div className="text-center text-[10px] text-indigo-400/70 font-bold truncate bg-indigo-500/5 py-1 rounded-md">
-                            {syncCheckResult.cloudData?.state?.deviceNickname || syncCheckResult.cloudData?.state?.deviceType || 'Unknown'}
+                            {syncCheckResult.cloudData?.savedBy || syncCheckResult.cloudData?.state?.deviceNickname || syncCheckResult.cloudData?.state?.deviceType || 'Unknown'}
                           </div>
 
                           <div className="text-slate-500 font-medium">Timestamp</div>

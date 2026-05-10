@@ -25,6 +25,7 @@ export function useCloudSync(
       lastUpdated, 
       syncHistory, 
       deviceType, 
+      deviceNickname,
       pushSubscription, 
       secretCode, 
       googleDriveTokens, 
@@ -87,13 +88,30 @@ export function useCloudSync(
         }
       }
 
-      const localData = {
+      const localIdentity = currentState.deviceNickname || currentState.deviceType;
+
+      let localData: any = {
         state: currentState,
+        savedBy: localIdentity, // Metadata to identify the saving device
         dungeons: JSON.parse(localStorage.getItem('scholars_dungeon_state_dungeons') || '[]'),
         majorDungeons: JSON.parse(localStorage.getItem('scholars_dungeon_state_major_dungeons') || '[]'),
         fullLocalStorage,
         lastUpdated: new Date().toISOString()
       };
+
+      // Ensure volatile fields are stripped before sync
+      localData = stripVolatile(localData);
+      
+      // Also ensure the state inside fullLocalStorage is stripped
+      if (localData.fullLocalStorage && localData.fullLocalStorage['scholars_dungeon_state']) {
+        try {
+          const stateToStrip = JSON.parse(localData.fullLocalStorage['scholars_dungeon_state']);
+          const stripped = stripVolatile({ state: stateToStrip });
+          localData.fullLocalStorage['scholars_dungeon_state'] = JSON.stringify(stripped.state);
+        } catch (e) {
+          console.warn("Failed to strip volatile from fullLocalStorage state:", e);
+        }
+      }
 
       if (isWebDav && currentState.webdavSettings) {
         const { url, username, password } = currentState.webdavSettings;
@@ -124,17 +142,41 @@ export function useCloudSync(
           
           if (getResponse.ok) {
             const result = await getResponse.json();
-            if (result.data && result.data.lastUpdated) {
-              const cloudTime = new Date(result.data.lastUpdated).getTime();
-              const localTime = new Date(localData.lastUpdated).getTime();
-              if (cloudTime > localTime) {
+            if (result.data) {
+              const cloudIdentity = result.data.savedBy;
+              const identitiesMatch = !cloudIdentity || cloudIdentity === localIdentity;
+
+              // IF identities mismatch: 
+              // 1. If visibility trigger -> abort (can't show modal)
+              // 2. Otherwise -> show modal
+              if (!identitiesMatch) {
+                if (syncMethod === 'Visibility API Active') {
+                  console.warn("Cloud sync aborted: Device identity mismatch during visibility change.");
+                  setIsSyncing(false);
+                  return;
+                }
                 setSyncCheckResult({
-                  status: 'cloud_newer',
-                  cloudData: result.data,
-                  code: 'WebDAV'
+                    status: 'cloud_newer', // Treat as conflict to show modal
+                    cloudData: result.data,
+                    code: 'WebDAV'
                 });
                 setIsSyncing(false);
                 return;
+              }
+
+              // Normal timestamp check for silent sync
+              if (result.data.lastUpdated) {
+                const cloudTime = new Date(result.data.lastUpdated).getTime();
+                const localTime = new Date(localData.lastUpdated).getTime();
+                if (cloudTime > localTime) {
+                  setSyncCheckResult({
+                    status: 'cloud_newer',
+                    cloudData: result.data,
+                    code: 'WebDAV'
+                  });
+                  setIsSyncing(false);
+                  return;
+                }
               }
             }
           }
@@ -164,19 +206,39 @@ export function useCloudSync(
         let fileId = currentState.googleDriveFileId || await drive.findSaveFile();
         
         if (fileId && !forceOverwrite) {
-          // Check if cloud is newer
+          // Check if cloud is newer or identity mismatch
           const cloudData = await drive.readSaveFile(fileId);
-          if (cloudData && cloudData.lastUpdated) {
-            const cloudTime = new Date(cloudData.lastUpdated).getTime();
-            const localTime = new Date(localData.lastUpdated).getTime();
-            if (cloudTime > localTime) {
-               setSyncCheckResult({
-                 status: 'cloud_newer',
-                 cloudData,
-                 code: 'Google Drive Auth'
-               });
-               setIsSyncing(false);
-               return;
+          if (cloudData) {
+            const cloudIdentity = cloudData.savedBy;
+            const identitiesMatch = !cloudIdentity || cloudIdentity === localIdentity;
+
+            if (!identitiesMatch) {
+              if (syncMethod === 'Visibility API Active') {
+                console.warn("Cloud sync aborted: Device identity mismatch during visibility change.");
+                setIsSyncing(false);
+                return;
+              }
+              setSyncCheckResult({
+                  status: 'cloud_newer', 
+                  cloudData,
+                  code: 'Google Drive Auth'
+              });
+              setIsSyncing(false);
+              return;
+            }
+
+            if (cloudData.lastUpdated) {
+              const cloudTime = new Date(cloudData.lastUpdated).getTime();
+              const localTime = new Date(localData.lastUpdated).getTime();
+              if (cloudTime > localTime) {
+                setSyncCheckResult({
+                  status: 'cloud_newer',
+                  cloudData,
+                  code: 'Google Drive Auth'
+                });
+                setIsSyncing(false);
+                return;
+              }
             }
           }
         }
@@ -196,6 +258,39 @@ export function useCloudSync(
         logSyncEvent(forceOverwrite ? 'force_sync' : 'local_to_cloud', 'Google Drive', syncMethod, 'Google Drive');
 
       } else {
+        // Redis
+        if (!forceOverwrite) {
+          // Fetch first to check identity
+          const getResponse = await fetch('/api/sync/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ secretCode: currentState.secretCode })
+          });
+          
+          if (getResponse.ok) {
+            const data = await getResponse.json();
+            if (data.cloudData) {
+              const cloudIdentity = data.cloudData.savedBy;
+              const identitiesMatch = !cloudIdentity || cloudIdentity === localIdentity;
+
+              if (!identitiesMatch) {
+                if (syncMethod === 'Visibility API Active') {
+                   console.warn("Cloud sync aborted: Device identity mismatch during visibility change.");
+                   setIsSyncing(false);
+                   return;
+                }
+                setSyncCheckResult({
+                  status: 'cloud_newer', // Conflict
+                  cloudData: data.cloudData,
+                  code: currentState.secretCode!
+                });
+                setIsSyncing(false);
+                return;
+              }
+            }
+          }
+        }
+
         const payload = {
           secretCode: currentState.secretCode,
           localData,
@@ -255,6 +350,7 @@ export function useCloudSync(
                 const mergedState = {
                     ...cloudState,
                     // Preserve local identity/sync settings
+                    deviceNickname: localState.deviceNickname || cloudState.deviceNickname,
                     secretCode: localState.secretCode || cloudState.secretCode,
                     syncProvider: localState.syncProvider || cloudState.syncProvider,
                     googleDriveTokens: localState.googleDriveTokens || cloudState.googleDriveTokens,
@@ -271,6 +367,7 @@ export function useCloudSync(
         } else {
           localStorage.setItem('scholars_dungeon_state', JSON.stringify({
               ...syncCheckResult.cloudData.state,
+              deviceNickname: state.deviceNickname || syncCheckResult.cloudData.state.deviceNickname,
               secretCode: state.secretCode || syncCheckResult.cloudData.state.secretCode,
               syncProvider: state.syncProvider || syncCheckResult.cloudData.state.syncProvider,
               googleDriveTokens: state.googleDriveTokens || syncCheckResult.cloudData.state.googleDriveTokens,
@@ -282,6 +379,7 @@ export function useCloudSync(
 
         setState((prev: any) => ({
             ...syncCheckResult.cloudData.state,
+            deviceNickname: prev.deviceNickname || syncCheckResult.cloudData.state.deviceNickname,
             secretCode: prev.secretCode || syncCheckResult.cloudData.state.secretCode,
             syncProvider: prev.syncProvider || syncCheckResult.cloudData.state.syncProvider,
             googleDriveTokens: prev.googleDriveTokens || syncCheckResult.cloudData.state.googleDriveTokens,
@@ -376,7 +474,11 @@ export function useCloudSync(
           majorDungeons: cloudDataToProcess.majorDungeons || []
         });
 
-        if (JSON.stringify(localDataToCompare) === JSON.stringify(cloudDataToCompare)) {
+        const cloudIdentity = cloudDataToProcess.savedBy;
+        const localIdentity = state.deviceNickname || state.deviceType;
+        const identitiesMatch = !cloudIdentity || cloudIdentity === localIdentity;
+
+        if (JSON.stringify(localDataToCompare) === JSON.stringify(cloudDataToCompare) && identitiesMatch) {
           setState(prev => ({ 
             ...prev, 
             lastUpdated: cloudDataToProcess.lastUpdated, 
@@ -387,7 +489,7 @@ export function useCloudSync(
           return;
         }
 
-        if (cloudTime > localTime) {
+        if (cloudTime > localTime || !identitiesMatch) {
           setSyncCheckResult({ status: 'cloud_newer', cloudData: cloudDataToProcess, code });
         } else {
           setSyncCheckResult({ status: 'local_newer', cloudData: cloudDataToProcess, code });
@@ -439,7 +541,11 @@ export function useCloudSync(
           majorDungeons: data.majorDungeons || []
         });
 
-        if (JSON.stringify(localDataToCompare) === JSON.stringify(cloudDataToCompare) && !forceModal) {
+        const cloudIdentity = data.savedBy;
+        const localIdentity = state.deviceNickname || state.deviceType;
+        const identitiesMatch = !cloudIdentity || cloudIdentity === localIdentity;
+
+        if (JSON.stringify(localDataToCompare) === JSON.stringify(cloudDataToCompare) && !forceModal && identitiesMatch) {
           setState(prev => ({ 
             ...prev, 
             lastUpdated: data.lastUpdated, 
@@ -449,7 +555,7 @@ export function useCloudSync(
           return;
         }
 
-        if (cloudTime > localTime) {
+        if (cloudTime > localTime || !identitiesMatch) {
           setSyncCheckResult({ status: 'cloud_newer', cloudData: data, code });
         } else {
           setSyncCheckResult({ status: 'local_newer', cloudData: data, code });
