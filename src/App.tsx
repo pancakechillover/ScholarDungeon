@@ -254,6 +254,27 @@ function App() {
   const [showDailySummary, setShowDailySummary] = useState(false);
   const [showCloudSync, setShowCloudSync] = useState(false);
   const [isFullscreenExplore, setIsFullscreenExplore] = useState(false);
+
+  // Global timer check to pop to explore tab and fullscreen when timer completes
+  useEffect(() => {
+    let interval: any = null;
+    if (isTimerActive && timerEndTime) {
+      interval = setInterval(() => {
+        if (Date.now() >= timerEndTime) {
+          if (activeTab !== 'explore') {
+            setActiveTab('explore');
+          }
+          if (!isFullscreenExplore && !isResting) {
+            setIsFullscreenExplore(true);
+          }
+        }
+      }, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isTimerActive, timerEndTime, activeTab, isFullscreenExplore, isResting]);
+
   const [isArchiveView, setIsArchiveView] = useState(false);
   
   const { 

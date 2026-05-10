@@ -497,17 +497,14 @@ export const QuestManager = React.memo<QuestManagerProps>(({ quests, questHistor
                 </div>
                 
                 <div className="flex items-center justify-end gap-3 shrink-0">
-                  <div className="hidden sm:flex flex-col items-end gap-1 px-3 py-2 bg-white border border-slate-200 rounded-lg">
-                    <div className="flex items-center gap-2">
-                      <div className="h-1.5 w-20 qb-progress-bg rounded-full overflow-hidden">
-                        <div 
-                          className={cn("h-full transition-all duration-500", quest.completed ? "qb-progress-fill-done" : "qb-progress-fill")}
-                          style={{ width: `${Math.min(100, (quest.progress / quest.target) * 100)}%` }}
-                        />
-                      </div>
-                      <span className="text-[10px] font-black text-slate-900 tabular-nums">{quest.progress}/{quest.target}</span>
+                  <div className="hidden sm:flex items-center gap-2">
+                    <div className="h-1.5 w-20 qb-progress-bg rounded-full overflow-hidden">
+                      <div 
+                        className={cn("h-full transition-all duration-500", quest.completed ? "qb-progress-fill-done" : "qb-progress-fill")}
+                        style={{ width: `${Math.min(100, (quest.progress / quest.target) * 100)}%` }}
+                      />
                     </div>
-                    <span className="text-[8px] font-extrabold text-slate-500 uppercase tracking-widest leading-none">Task Progress</span>
+                    <span className="text-[10px] font-black text-slate-900 tabular-nums">{quest.progress}/{quest.target}</span>
                   </div>
                   
                   {isEditMode && (

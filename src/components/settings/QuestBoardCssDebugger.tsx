@@ -229,14 +229,11 @@ export const QuestBoardCssDebugger: React.FC<QuestBoardCssDebuggerProps> = ({ on
                     </div>
                   </div>
                   <div className="flex items-center justify-end gap-3 shrink-0">
-                    <div className="hidden sm:flex flex-col items-end gap-1 px-3 py-1.5 bg-white border border-slate-200 rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <div className="h-1 w-16 qb-progress-bg rounded-full overflow-hidden">
-                          <div className="h-full transition-all duration-500 qb-progress-fill w-1/2" />
-                        </div>
-                        <span className="text-[9px] font-black text-slate-900 tabular-nums">0/1</span>
+                    <div className="hidden sm:flex items-center gap-2">
+                      <div className="h-1 w-16 qb-progress-bg rounded-full overflow-hidden">
+                        <div className="h-full transition-all duration-500 qb-progress-fill w-1/2" />
                       </div>
-                      <span className="text-[7px] font-extrabold text-slate-500 uppercase tracking-widest leading-none">Task Progress</span>
+                      <span className="text-[9px] font-black text-slate-900 tabular-nums">0/1</span>
                     </div>
                     <div className="flex items-center pointer-events-auto ml-1">
                       <span className="flex items-center w-6 justify-end opacity-20">
@@ -277,14 +274,11 @@ export const QuestBoardCssDebugger: React.FC<QuestBoardCssDebuggerProps> = ({ on
                     </div>
                   </div>
                   <div className="flex items-center justify-end gap-3 shrink-0">
-                    <div className="hidden sm:flex flex-col items-end gap-1 px-3 py-1.5 bg-white border border-slate-200 rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <div className="h-1 w-16 qb-progress-bg rounded-full overflow-hidden">
-                          <div className="h-full transition-all duration-500 qb-progress-fill-done w-full" />
-                        </div>
-                        <span className="text-[9px] font-black text-slate-900 tabular-nums">10/10</span>
+                    <div className="hidden sm:flex items-center gap-2">
+                      <div className="h-1 w-16 qb-progress-bg rounded-full overflow-hidden">
+                        <div className="h-full transition-all duration-500 qb-progress-fill-done w-full" />
                       </div>
-                      <span className="text-[7px] font-extrabold text-slate-500 uppercase tracking-widest leading-none">Task Progress</span>
+                      <span className="text-[9px] font-black text-slate-900 tabular-nums">10/10</span>
                     </div>
                     <div className="flex items-center pointer-events-auto ml-1">
                       <button className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-black text-[9px] uppercase tracking-widest transition-all shadow-lg hover:-rotate-1 active:scale-95 flex items-center gap-1.5">
@@ -326,14 +320,11 @@ export const QuestBoardCssDebugger: React.FC<QuestBoardCssDebuggerProps> = ({ on
                     </div>
                   </div>
                   <div className="flex items-center justify-end gap-3 shrink-0">
-                    <div className="hidden sm:flex flex-col items-end gap-1 px-3 py-1.5 bg-white border border-slate-200 rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <div className="h-1 w-16 qb-progress-bg rounded-full overflow-hidden">
-                          <div className="h-full transition-all duration-500 qb-progress-fill-done w-full" />
-                        </div>
-                        <span className="text-[9px] font-black text-slate-900 tabular-nums">1/1</span>
+                    <div className="hidden sm:flex items-center gap-2">
+                      <div className="h-1 w-16 qb-progress-bg rounded-full overflow-hidden">
+                        <div className="h-full transition-all duration-500 qb-progress-fill-done w-full" />
                       </div>
-                      <span className="text-[7px] font-extrabold text-slate-500 uppercase tracking-widest leading-none">Task Progress</span>
+                      <span className="text-[9px] font-black text-slate-900 tabular-nums">1/1</span>
                     </div>
                     <div className="flex items-center pointer-events-auto ml-1 w-[68px] justify-end">
                       <span className="flex items-center justify-end">

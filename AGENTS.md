@@ -21,7 +21,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors:** When designing UI elements that highlight based on themes, note that ONLY `indigo-400`, `indigo-500`, and `indigo-600` are overridden by the custom theme variables in `index.css`. DO NOT use `indigo-300` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v4.10.17
+- **Current Version:** v4.10.20
 - **Last Update Date:** 2026-05-10
 
 ## Dark Themes Definition
@@ -46,6 +46,14 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v4.10.20 (2026-05-10):** Global Victory Screen.
+  - *UX:* Implemented global timer monitoring so the Victory! screen automatically forces full-screen and redirects to the Explore tab upon completion, regardless of where the user is browsing or if the tab is in the background.
+- **v4.10.19 (2026-05-10):** Quest Board UI Polish.
+  - *UI:* Removed the background styling and "TASK PROGRESS" text from the Quest Board progress bars for a cleaner look.
+  - *UX:* Synchronized the UI changes to the CSS Debugger preview layout as well.
+- **v4.10.18 (2026-05-10):** Touch & Scroll Engine Overhaul.
+  - *Architecture:* Rebuilt root layout engine using a rigid Flexbox structure to completely eliminate iOS Safari scrolling bugs and rubber-banding on the sidebar.
+  - *Bugfix:* Restored fluent mouse-wheel scrolling by properly enforcing overflow boundaries isolated entirely inside the main workspace.
 - **v4.10.17 (2026-05-10):** Guidebook Audio File Integration.
   - *Audio:* Replaced synthesized page turn logic with the native page-flip.mp3 audio file.
 - **v4.10.16 (2026-05-10):** iOS Scroll & Touch Stability.

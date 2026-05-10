@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v4.10.17';
+export const APP_VERSION = 'v4.10.20';
 export const LAST_UPDATE_DATE = '2026-05-10';
-export const LAST_UPDATE_TIME = '17:01:00';
+export const LAST_UPDATE_TIME = '17:30:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,35 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v4.10.20',
+    date: '2026-05-10',
+    time: '17:30:00',
+    title: 'Global Victory Screen',
+    items: [
+      { category: 'UX', description: 'Implemented global timer monitoring so the Victory! screen automatically forces full-screen and redirects to the Explore tab upon completion, regardless of where the user is browsing or if the tab is in the background.' }
+    ]
+  },
+  {
+    version: 'v4.10.19',
+    date: '2026-05-10',
+    time: '17:20:00',
+    title: 'Quest Board UI Polish',
+    items: [
+      { category: 'UI', description: 'Removed the background styling and "TASK PROGRESS" text from the Quest Board progress bars for a cleaner look.' },
+      { category: 'UX', description: 'Synchronized the UI changes to the CSS Debugger preview layout as well.' }
+    ]
+  },
+  {
+    version: 'v4.10.18',
+    date: '2026-05-10',
+    time: '17:15:00',
+    title: 'Touch & Scroll Engine Overhaul',
+    items: [
+      { category: 'Architecture', description: 'Rebuilt root layout engine using a rigid Flexbox structure to completely eliminate iOS Safari scrolling bugs and rubber-banding on the sidebar.' },
+      { category: 'Bugfix', description: 'Restored fluent mouse-wheel scrolling by properly enforcing overflow boundaries isolated entirely inside the main workspace.' }
+    ]
+  },
   {
     version: 'v4.10.17',
     date: '2026-05-10',
