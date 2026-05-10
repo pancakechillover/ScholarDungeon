@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Cloud, Server, HardDrive, CheckCircle2, ChevronRight, Settings, Lock, X, History, ArrowDownUp, RefreshCw, LogIn, Trash2, ShieldBan, Eye } from 'lucide-react';
 import { AppState } from '../../types';
 
@@ -23,11 +23,61 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
   const [unlockPassword, setUnlockPassword] = useState('');
   const [unlockError, setUnlockError] = useState(false);
 
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      // Validate origin is from standard development or deployment
+      const origin = event.origin;
+      if (!origin.endsWith('.run.app') && !origin.includes('localhost')) {
+        return;
+      }
+      if (event.data?.type === 'GOOGLE_OAUTH_SUCCESS') {
+        const tokens = event.data.tokens;
+        setState(s => ({
+          ...s,
+          syncProvider: 'Google Drive',
+          googleDriveTokens: {
+            access_token: tokens.access_token,
+            refresh_token: tokens.refresh_token,
+            expires_at: Date.now() + (tokens.expires_in * 1000)
+          }
+        }));
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [setState]);
+
   const handleRedisClick = () => {
     if (state.isRedisUnlocked) {
       onOpenAstralArchives();
     } else {
       setShowUnlockModal(true);
+    }
+  };
+
+  const handleGoogleDriveClick = async () => {
+    if (state.googleDriveTokens) {
+      // Already connected. Provide management in future expansions
+      return;
+    }
+    
+    try {
+      const response = await fetch('/api/auth/google/url');
+      if (!response.ok) throw new Error('Failed to get auth URL');
+      const { url } = await response.json();
+
+      const authWindow = window.open(
+        url,
+        'oauth_popup',
+        'width=600,height=700'
+      );
+
+      if (!authWindow) {
+        alert('Please allow popups for this site to connect your Google Drive account.');
+      }
+    } catch (error) {
+      console.error('OAuth error:', error);
+      alert('Failed to connect to Google Drive.');
     }
   };
 
@@ -85,23 +135,44 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
           </div>
         </button>
 
-        {/* Google OAuth (Coming Soon) */}
+        {/* Google OAuth */}
         <button
-          disabled
-          className="relative text-left p-5 bg-slate-900/50 border border-slate-800/50 rounded-2xl cursor-not-allowed overflow-hidden opacity-60"
+          onClick={handleGoogleDriveClick}
+          className={`relative text-left p-5 rounded-2xl overflow-hidden transition-all group ${
+            state.googleDriveTokens 
+              ? 'bg-slate-900 border border-emerald-500/50 hover:border-emerald-400'
+              : 'bg-slate-900 border border-slate-700 hover:border-indigo-500/50'
+          }`}
         >
+          {state.googleDriveTokens && <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl -mr-10 -mt-10 transition-colors group-hover:bg-emerald-500/10" />}
+          
           <div className="relative z-10 space-y-4">
-            <div className="p-2.5 rounded-xl bg-slate-800/50 text-slate-500 w-fit">
-              <Cloud size={24} />
+            <div className="flex items-start justify-between">
+              <div className={`p-2.5 rounded-xl transition-colors ${
+                state.googleDriveTokens 
+                  ? 'bg-slate-800 text-emerald-400 group-hover:bg-emerald-500/20' 
+                  : 'bg-slate-800 text-indigo-400 group-hover:bg-indigo-500/20'
+              }`}>
+                <Cloud size={24} />
+              </div>
+              {state.googleDriveTokens && (
+                <div className="px-2 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-md text-[10px] font-black text-emerald-400 uppercase tracking-widest flex items-center gap-1">
+                  <CheckCircle2 size={12} />
+                  Connected
+                </div>
+              )}
             </div>
             <div>
               <h5 className="font-bold text-slate-300 mb-1">Google Drive</h5>
-              <p className="text-xs text-slate-500 leading-relaxed min-h-[3rem]">
+              <p className="text-xs text-slate-400 leading-relaxed min-h-[3rem]">
                 OAuth 2.0 integration. Sync securely to your personal Google Drive app data folder.
               </p>
             </div>
-            <div className="text-xs font-bold text-slate-600 uppercase tracking-widest pt-2">
-              Coming Soon
+            <div className={`flex items-center justify-between text-xs font-bold opacity-80 group-hover:opacity-100 transition-opacity pt-2 ${
+              state.googleDriveTokens ? 'text-emerald-400' : 'text-indigo-400'
+            }`}>
+              <span>{state.googleDriveTokens ? 'Manage Connection' : 'Connect'}</span>
+              <ChevronRight size={16} />
             </div>
           </div>
         </button>

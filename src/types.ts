@@ -210,6 +210,13 @@ export interface AppState {
   lastUpdated?: string;
   secretCode?: string;
   isRedisUnlocked?: boolean;
+  syncProvider?: 'Redis' | 'Google Drive' | 'WebDAV';
+  googleDriveTokens?: {
+    access_token: string;
+    refresh_token?: string;
+    expires_at: number;
+  };
+  googleDriveFileId?: string;
   autoSyncMode?: 'debounce' | 'interval' | 'manual';
   autoSyncDebounceSeconds?: number;
   autoSyncIntervalMinutes?: number;

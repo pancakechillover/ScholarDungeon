@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { AppState } from '../types';
+import { GoogleDriveAPI } from '../lib/googleDriveApi';
 
 export function useCloudSync(
   state: AppState, 
@@ -42,7 +43,9 @@ export function useCloudSync(
     syncMethod: 'Manual' | 'Immediate' | 'Interval polling' | 'Visibility API Active' = 'Manual'
   ) => {
     const currentState = specificState || state;
-    if (!currentState.secretCode) return;
+    const isGoogleDrive = currentState.syncProvider === 'Google Drive';
+    if (!isGoogleDrive && !currentState.secretCode) return;
+    if (isGoogleDrive && !currentState.googleDriveTokens) return;
 
     setIsSyncing(true);
     setSyncError(null);
@@ -56,50 +59,84 @@ export function useCloudSync(
         }
       }
 
-      const payload = {
-        secretCode: currentState.secretCode,
-        localData: {
-          state: currentState,
-          dungeons: JSON.parse(localStorage.getItem('scholars_dungeon_state_dungeons') || '[]'),
-          majorDungeons: JSON.parse(localStorage.getItem('scholars_dungeon_state_major_dungeons') || '[]'),
-          fullLocalStorage,
-          lastUpdated: new Date().toISOString()
-        },
-        forceOverwrite
+      const localData = {
+        state: currentState,
+        dungeons: JSON.parse(localStorage.getItem('scholars_dungeon_state_dungeons') || '[]'),
+        majorDungeons: JSON.parse(localStorage.getItem('scholars_dungeon_state_major_dungeons') || '[]'),
+        fullLocalStorage,
+        lastUpdated: new Date().toISOString()
       };
 
-      const response = await fetch('/api/sync/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload)
-      });
+      if (isGoogleDrive && currentState.googleDriveTokens) {
+        const drive = new GoogleDriveAPI(currentState.googleDriveTokens.access_token);
+        
+        let fileId = currentState.googleDriveFileId || await drive.findSaveFile();
+        
+        if (fileId && !forceOverwrite) {
+          // Check if cloud is newer
+          const cloudData = await drive.readSaveFile(fileId);
+          if (cloudData && cloudData.lastUpdated) {
+            const cloudTime = new Date(cloudData.lastUpdated).getTime();
+            const localTime = new Date(localData.lastUpdated).getTime();
+            if (cloudTime > localTime) {
+               setSyncCheckResult({
+                 status: 'cloud_newer',
+                 cloudData,
+                 code: 'Google Drive Auth'
+               });
+               setIsSyncing(false);
+               return;
+            }
+          }
+        }
 
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        const text = await response.text();
-        console.error('Non-JSON response received:', text);
-        throw new Error(`Server returned non-JSON response (${response.status}). This usually means the API route was not found.`);
-      }
-
-      const data = await response.json();
-
-      if (response.status === 409) {
-        setSyncCheckResult({
-          status: 'cloud_newer',
-          cloudData: data.cloudData,
-          code: currentState.secretCode
-        });
-      } else if (!response.ok) {
-        throw new Error(data.error || 'Failed to sync');
-      } else {
-        setState(prev => ({ ...prev, lastUpdated: data.cloudData.lastUpdated }));
-        setSyncCheckResult(null);
-        if (forceOverwrite) {
-          logSyncEvent('force_sync', currentState.secretCode, syncMethod);
+        if (fileId) {
+          await drive.updateSaveFile(fileId, localData);
         } else {
-          logSyncEvent('local_to_cloud', currentState.secretCode, syncMethod);
+          fileId = await drive.createSaveFile(localData);
+        }
+        
+        setState(prev => ({ 
+          ...prev, 
+          lastUpdated: localData.lastUpdated,
+          googleDriveFileId: fileId 
+        }));
+        setSyncCheckResult(null);
+        logSyncEvent(forceOverwrite ? 'force_sync' : 'local_to_cloud', 'Google Drive', syncMethod, 'Google Drive');
+
+      } else {
+        const payload = {
+          secretCode: currentState.secretCode,
+          localData,
+          forceOverwrite
+        };
+
+        const response = await fetch('/api/sync/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          const text = await response.text();
+          throw new Error(`Server returned non-JSON response (${response.status}).`);
+        }
+
+        const data = await response.json();
+
+        if (response.status === 409) {
+          setSyncCheckResult({
+            status: 'cloud_newer',
+            cloudData: data.cloudData,
+            code: currentState.secretCode!
+          });
+        } else if (!response.ok) {
+          throw new Error(data.error || 'Failed to sync');
+        } else {
+          setState(prev => ({ ...prev, lastUpdated: data.cloudData.lastUpdated }));
+          setSyncCheckResult(null);
+          logSyncEvent(forceOverwrite ? 'force_sync' : 'local_to_cloud', currentState.secretCode!, syncMethod, 'Redis');
         }
       }
     } catch (err: any) {

@@ -284,6 +284,73 @@ const startScheduler = async () => {
 // Health check
 app.get("/api/health", (req, res) => res.json({ status: "ok" }));
 
+// Google OAuth Routes
+app.get('/api/auth/google/url', (req, res) => {
+  const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'http';
+  const host = req.headers['x-forwarded-host'] || req.headers.host;
+  const redirectUri = `${protocol}://${host}/auth/google/callback`;
+
+  const params = new URLSearchParams({
+    client_id: process.env.OAUTH_CLIENT_ID || '',
+    redirect_uri: redirectUri,
+    response_type: 'code',
+    scope: 'https://www.googleapis.com/auth/drive.appdata', // Google Drive appdata only
+    access_type: 'offline', // For refresh token
+    prompt: 'consent'
+  });
+  
+  res.json({ url: `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}` });
+});
+
+app.get(['/auth/google/callback', '/auth/google/callback/'], async (req, res) => {
+  const { code } = req.query;
+  const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'http';
+  const host = req.headers['x-forwarded-host'] || req.headers.host;
+  const redirectUri = `${protocol}://${host}/auth/google/callback`;
+
+  if (!code) {
+    return res.send('<html><body><p>Authentication failed: No code provided.</p></body></html>');
+  }
+
+  try {
+    const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        client_id: process.env.OAUTH_CLIENT_ID || '',
+        client_secret: process.env.OAUTH_CLIENT_SECRET || '',
+        code: code as string,
+        grant_type: 'authorization_code',
+        redirect_uri: redirectUri,
+      }).toString()
+    });
+
+    const tokens = await tokenResponse.json();
+    if (!tokenResponse.ok) {
+      throw new Error(tokens.error_description || tokens.error || 'Failed to exchange token');
+    }
+
+    res.send(`
+      <html>
+        <body>
+          <script>
+            if (window.opener) {
+              window.opener.postMessage({ type: 'GOOGLE_OAUTH_SUCCESS', tokens: JSON.parse('${JSON.stringify(tokens)}') }, '*');
+              window.close();
+            } else {
+              window.location.href = '/';
+            }
+          </script>
+          <p>Authentication successful. This window should close automatically.</p>
+        </body>
+      </html>
+    `);
+  } catch (error: any) {
+    console.error("OAuth error:", error);
+    res.send(`<html><body><p>Authentication failed: ${error.message}</p></body></html>`);
+  }
+});
+
 async function startServer() {
   // Vite middleware
   try {
