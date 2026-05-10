@@ -22,7 +22,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors:** When designing UI elements that highlight based on themes, note that `indigo-300`, `indigo-400`, `indigo-500`, and `indigo-600` are overridden by the custom theme variables in `index.css`. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v5.2.7
+- **Current Version:** v5.3.1
 - **Last Update Date:** 2026-05-10
 
 ## Dark Themes Definition
@@ -47,6 +47,24 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v5.3.1 (2026-05-10):** New Seeker Onboarding.
+  - *Feature:* Implemented the "New Seeker" onboarding flow for first-time cloud users.
+  - *UX:* Introduced a deliberate "Verification Phase" with artificial checking delays to ensure a thorough comparison of local and cloud documents.
+  - *UI:* Enhanced the `CloudSyncModal` with a dedicated verification animation and a thematic "Initialize Archive" prompt for empty archives.
+  - *Reliability:* Added synchronization triggers in the main app lifecycle to ensure verification occurs immediately after any cloud provider connection.
+- **v5.3.0 (2026-05-10):** Sync Status & Device Identity.
+  - *Feature:* Implemented "Device Nicknaming" to allow users to identify their devices in sync logs.
+  - *UI:* Upgraded the sync history view in Cloud Settings to a table format with CSV export support.
+  - *UI:* Refined layout by splitting Sync Status and Manual Operations into distinct stacked modules for better visibility.
+  - *Architecture:* Enhanced the cloud sync hook and state model to capture and relay device nicknames during all operations.
+- **v5.2.9 (2026-05-10):** Force Sync Data Comparison.
+  - *Feature:* Implemented manual "Force Upload" and "Force Download" buttons in settings, allowing users to forcefully synchronize their data in either direction.
+  - *UI:* Enhanced the side-by-side comparison modal with detailed statistics (Level, Gold, Sessions, Timestamp) to ensure full transparency before overwriting.
+  - *Architecture:* Modified the cloud sync hook to allow forcing the comparison modal even when local and cloud data appear identical.
+- **v5.2.8 (2026-05-10):** WebDAV Input Validation & UI Clarification.
+  - *Reliability:* Added strict validation to detect and prevent local Windows folder paths from being used as WebDAV URLs.
+  - *UX:* Redesigned the WebDAV connection modal with explicit labels, placeholders for Jianguoyun, and clearer instructions to differentiate server URLs from local sync folders.
+  - *Bugfix:* Improved error messaging for "Failed to fetch" scenarios by providing context-aware guidance for Jianguoyun users.
 - **v5.2.7 (2026-05-10):** WebDAV Folder Isolation.
   - *Feature:* Implemented automatic folder creation and isolation for WebDAV sync. Saves are now stored in a "SCHOLARS DUNGEON" subfolder instead of the root directory.
   - *Reliability:* Added `MKCOL` health checks during initial connection and sync operations to ensure folder structure integrity.

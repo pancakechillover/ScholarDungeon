@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v5.2.7';
+export const APP_VERSION = 'v5.3.1';
 export const LAST_UPDATE_DATE = '2026-05-10';
-export const LAST_UPDATE_TIME = '23:55:00';
+export const LAST_UPDATE_TIME = '24:50:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,52 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v5.3.1',
+    date: '2026-05-10',
+    time: '24:50:00',
+    title: 'New Seeker Onboarding',
+    items: [
+      { category: 'Feature', description: 'Implemented the "New Seeker" flow: detect empty cloud archives on first login and prompt for archive initialization.' },
+      { category: 'UX', description: 'Added a deliberate "Verification Phase" with artificial delays when connecting to Cloud storage to allow for thorough data comparison.' },
+      { category: 'UI', description: 'Enhanced CloudSyncModal with a dedicated verification animation and thematic "Initialize Archive" interface.' },
+      { category: 'Reliability', description: 'Added synchronization triggers in App.tsx to ensure immediate verification upon successful provider connection.' }
+    ]
+  },
+  {
+    version: 'v5.3.0',
+    date: '2026-05-10',
+    time: '24:30:00',
+    title: 'Sync Status & Device Identity',
+    items: [
+      { category: 'Feature', description: 'Implemented Device Nicknaming, allowing users to name their current device for easier tracking in sync history.' },
+      { category: 'UI', description: 'Redesigned the Sync History view into a robust table format with sorting and CSV export functionality.' },
+      { category: 'UI', description: 'Refined Cloud Settings layout with separate stacked modules for Sync Status and Manual Operations.' },
+      { category: 'Architecture', description: 'Updated cloud sync payloads to include device nicknames in both save data and operation logs.' }
+    ]
+  },
+  {
+    version: 'v5.2.9',
+    date: '2026-05-10',
+    time: '24:15:00',
+    title: 'Force Sync Data Comparison',
+    items: [
+      { category: 'Feature', description: 'Implemented one-click Force Upload and Force Download buttons in Cloud Settings.' },
+      { category: 'UI', description: 'Polished the Side-by-Side comparison modal with detailed stats (Level, Gold, Sessions, Device, Timestamp) to ensure users know exactly what is being overwritten.' },
+      { category: 'UX', description: 'Forces the comparison modal even if data is identical, allowing users to verify their cloud state manually.' }
+    ]
+  },
+  {
+    version: 'v5.2.8',
+    date: '2026-05-10',
+    time: '24:00:00',
+    title: 'WebDAV UI & Validation Refinement',
+    items: [
+      { category: 'Reliability', description: 'Added path validation to catch and warn when local Windows folders are incorrectly entered as WebDAV URLs.' },
+      { category: 'UX', description: 'Improved connection modal with explicit labels and placeholders to guide Jianguoyun users.' },
+      { category: 'Bugfix', description: 'Enhanced error handling for proxy connection failures.' }
+    ]
+  },
   {
     version: 'v5.2.7',
     date: '2026-05-10',

@@ -12,7 +12,7 @@ interface SettingsViewProps {
   setActiveSection: (section: 'general' | 'timer' | 'rewards' | 'shop' | 'gacha' | 'dev' | 'levelRewards' | 'about' | 'level' | 'merchant' | 'cloud') => void;
   onTabChange?: (tab: any) => void;
   onOpenAstralArchives?: () => void;
-  triggerSyncCheck?: () => void;
+  triggerSyncCheck?: (forceModal?: boolean) => void;
   isSyncing?: boolean;
   hasUnsyncedChanges?: boolean;
 }

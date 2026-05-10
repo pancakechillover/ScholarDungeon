@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Cloud, Server, HardDrive, CheckCircle2, ChevronRight, Settings, Lock, X, History, ArrowDownUp, RefreshCw, LogIn, Trash2, ShieldBan, Eye, Search, UploadCloud, DownloadCloud } from 'lucide-react';
+import { Cloud, Server, HardDrive, CheckCircle2, ChevronRight, Settings, Lock, X, History, ArrowDownUp, RefreshCw, LogIn, Trash2, ShieldBan, Eye, Search, UploadCloud, DownloadCloud, Download, Laptop, Monitor, Smartphone, Tablet } from 'lucide-react';
 import { AppState } from '../../types';
 import { cn } from '../../lib/utils';
 
@@ -9,7 +9,7 @@ interface CloudSettingsSectionProps {
   setState: React.Dispatch<React.SetStateAction<AppState>>;
   setActiveSection: (sec: any) => void;
   onOpenAstralArchives: () => void;
-  triggerSyncCheck?: () => void;
+  triggerSyncCheck?: (forceModal?: boolean) => void;
   isSyncing?: boolean;
   hasUnsyncedChanges?: boolean;
 }
@@ -28,7 +28,7 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
   const intervalMinutes = state.autoSyncIntervalMinutes || 1;
 
   const [showUnlockModal, setShowUnlockModal] = useState(false);
-  const [unlockTarget, setUnlockTarget] = useState<'redis' | 'google' | null>(null);
+  const [unlockTarget, setUnlockTarget] = useState<'redis' | 'google' | 'webdav' | null>(null);
   const [unlockPassword, setUnlockPassword] = useState('');
   const [unlockError, setUnlockError] = useState(false);
 
@@ -138,6 +138,17 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
       return;
     }
 
+    // Validation for local paths which users often mistakenly enter
+    if (webdavUrl.includes('\\') || webdavUrl.match(/^[a-zA-Z]:/)) {
+        setWebdavCheckError('Please enter a WebDAV URL (starting with https://), not a local file path (C:\\Users\\...). For Jianguoyun, it is usually https://dav.jianguoyun.com/dav/');
+        return;
+    }
+
+    if (!webdavUrl.startsWith('http')) {
+        setWebdavCheckError('URL must start with http:// or https://');
+        return;
+    }
+
     let targetUrl = webdavUrl;
     if (!targetUrl.endsWith('.json')) {
       if (!targetUrl.endsWith('/')) targetUrl += '/';
@@ -154,6 +165,9 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
     setWebdavChecking(true);
     setWebdavCheckError('');
     try {
+        // Verification delay to simulate thorough checking as requested
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
         // Ensure folder exists first
         const lastSlashIndex = targetUrl.lastIndexOf('/');
         if (lastSlashIndex !== -1) {
@@ -215,17 +229,17 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
 
   return (
     <div className="space-y-6">
-      <div className="flex bg-slate-900 border border-slate-700/50 rounded-2xl p-4 sm:p-5 mb-6 flex-col sm:flex-row sm:items-center justify-between gap-4 relative overflow-hidden group">
+      <div className="bg-slate-900 border border-slate-700/50 rounded-2xl p-4 sm:p-5 mb-4 relative overflow-hidden group">
         <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-3xl -mr-10 -mt-10 transition-colors group-hover:bg-indigo-500/10" />
         <div className="relative z-10 space-y-1">
           <div className="flex items-center gap-2 mb-1">
             <Cloud size={18} className={state.secretCode || state.syncProvider ? "text-indigo-400" : "text-slate-500"} />
             <h4 className="text-[12px] sm:text-sm font-black text-white uppercase tracking-widest leading-none">Sync Status</h4>
           </div>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-2">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-3 mt-4">
             <div className="flex flex-col">
               <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Connection</span>
-              <div className="mt-0.5">
+              <div className="mt-1">
                 {isSyncing ? (
                   <span className="flex items-center gap-1.5 px-2 py-0.5 bg-amber-500/10 text-amber-500 text-[10px] font-black uppercase tracking-widest rounded-md border border-amber-500/20 w-max">
                     <RefreshCw size={10} className="animate-spin" /> Syncing
@@ -244,63 +258,114 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
             
             <div className="flex flex-col">
               <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Provider</span>
-              <span className="text-xs font-bold text-slate-300 mt-0.5">
+              <span className="text-sm font-black text-indigo-300 mt-1 uppercase tracking-tight">
                 {state.syncProvider || (state.secretCode ? 'Redis' : 'None')}
               </span>
             </div>
             
             <div className="flex flex-col">
               <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">State Data</span>
-              <span className={cn("text-xs font-bold mt-0.5", hasUnsyncedChanges ? "text-amber-400" : "text-emerald-400")}>
-                {hasUnsyncedChanges ? 'Pending Sync' : 'Up to Date'}
+              <span className={cn("text-sm font-black mt-1 uppercase tracking-tight", hasUnsyncedChanges ? "text-amber-400" : "text-emerald-400")}>
+                {hasUnsyncedChanges ? 'Pending' : 'Up to Date'}
               </span>
             </div>
             
             <div className="flex flex-col">
               <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Last Updated</span>
-              <span className="text-xs font-semibold text-slate-400 mt-0.5 whitespace-nowrap">
+              <span className="text-[11px] font-mono text-slate-400 mt-1 whitespace-nowrap bg-slate-950/40 px-2 py-0.5 rounded border border-slate-800/50">
                 {state.lastUpdated ? new Date(state.lastUpdated).toLocaleString() : 'Never'}
               </span>
             </div>
           </div>
         </div>
-        
-        {triggerSyncCheck && (state.secretCode || state.syncProvider) && (
-          <div className="flex flex-wrap gap-2 pt-2 sm:pt-0">
-            <button 
-              onClick={triggerSyncCheck}
-              disabled={isSyncing}
-              title="Compare local and cloud save data"
-              className="relative z-10 shrink-0 px-3 py-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-slate-300 rounded-xl font-black uppercase tracking-widest text-[9px] sm:text-[10px] transition-all flex items-center justify-center gap-1.5 border border-slate-700"
-            >
-              <Search size={14} /> 
-              Verify & Compare
-            </button>
-            <button 
-              onClick={triggerSyncCheck}
-              disabled={isSyncing}
-              title="Show comparison then force local to cloud"
-              className="relative z-10 shrink-0 px-3 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 disabled:opacity-50 text-indigo-400 rounded-xl font-black uppercase tracking-widest text-[9px] sm:text-[10px] transition-all flex items-center justify-center gap-1.5 border border-indigo-500/20"
-            >
-              <UploadCloud size={14} /> 
-              Force Upload
-            </button>
-            <button 
-              onClick={triggerSyncCheck}
-              disabled={isSyncing}
-              title="Show comparison then force cloud to local"
-              className="relative z-10 shrink-0 px-3 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 disabled:opacity-50 text-indigo-400 rounded-xl font-black uppercase tracking-widest text-[9px] sm:text-[10px] transition-all flex items-center justify-center gap-1.5 border border-indigo-500/20"
-            >
-              <DownloadCloud size={14} /> 
-              Force Download
-            </button>
+      </div>
+      
+      {triggerSyncCheck && (state.secretCode || state.syncProvider) && (
+        <div className="bg-slate-900 border border-slate-700/50 rounded-2xl p-5 mb-6 relative overflow-hidden">
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Settings size={16} className="text-slate-500" />
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Manual Operations</span>
+              </div>
+              <div className="h-px flex-1 bg-slate-800/50 mx-4" />
+            </div>
+            <div className="flex flex-wrap gap-2.5">
+              <button 
+                onClick={() => triggerSyncCheck(true)}
+                disabled={isSyncing}
+                title="Compare local and cloud save data"
+                className="relative z-10 shrink-0 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-slate-300 rounded-xl font-black uppercase tracking-widest text-[10px] transition-all flex items-center justify-center gap-2 border border-slate-700 shadow-lg active:scale-95"
+              >
+                <Search size={16} className="text-slate-500" /> 
+                Verify & Compare
+              </button>
+              <button 
+                onClick={() => triggerSyncCheck(true)}
+                disabled={isSyncing}
+                title="Show comparison then force local to cloud"
+                className="relative z-10 shrink-0 px-4 py-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 disabled:opacity-50 text-emerald-400 rounded-xl font-black uppercase tracking-widest text-[10px] transition-all flex items-center justify-center gap-2 border border-emerald-500/20 shadow-lg shadow-emerald-500/5 active:scale-95"
+              >
+                <UploadCloud size={16} /> 
+                Force Upload
+              </button>
+              <button 
+                onClick={() => triggerSyncCheck(true)}
+                disabled={isSyncing}
+                title="Show comparison then force cloud to local"
+                className="relative z-10 shrink-0 px-4 py-2.5 bg-indigo-500/10 hover:bg-indigo-500/20 disabled:opacity-50 text-indigo-400 rounded-xl font-black uppercase tracking-widest text-[10px] transition-all flex items-center justify-center gap-2 border border-indigo-500/20 shadow-lg shadow-indigo-500/5 active:scale-95"
+              >
+                <DownloadCloud size={16} /> 
+                Force Download
+              </button>
+            </div>
           </div>
-        )}
+        </div>
+      )}
+
+      <div className="pt-6 border-t border-slate-800">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-2 text-slate-300">
+            <Laptop size={18} />
+            <h4 className="font-bold uppercase tracking-widest text-sm">Device Identity</h4>
+          </div>
+        </div>
+        
+        <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6">
+          <div className="flex flex-col sm:flex-row items-center gap-6">
+            <div className="w-16 h-16 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center text-indigo-400 shrink-0">
+               {state.deviceType === 'Mobile' ? <Smartphone size={32} /> : 
+                state.deviceType === 'Tablet' ? <Tablet size={32} /> : 
+                <Monitor size={32} />}
+            </div>
+            <div className="flex-1 space-y-3 w-full">
+              <div className="flex flex-col gap-1">
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Current Device Nickname</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    maxLength={20}
+                    placeholder="e.g. Work PC, Gaming Laptop"
+                    value={state.deviceNickname || ''}
+                    onChange={(e) => setState(s => ({ ...s, deviceNickname: e.target.value }))}
+                    className="flex-1 px-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder:text-slate-700 focus:outline-none focus:border-indigo-500 transition-all font-bold text-sm"
+                  />
+                  <div className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl flex items-center justify-center text-[10px] font-black text-slate-400 uppercase tracking-tighter">
+                    {state.deviceType || 'PC'}
+                  </div>
+                </div>
+              </div>
+              <p className="text-[10px] text-slate-500 italic ml-1">This name identifies this device in your cloud sync history.</p>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="flex items-center gap-2.5 text-indigo-400 mb-6 pb-2">
-        <Server size={20} />
-        <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Storage Providers</h4>
+      <div className="pt-6 border-t border-slate-800">
+        <div className="flex items-center gap-2.5 text-indigo-400 mb-6 pb-2">
+          <Server size={20} />
+          <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Storage Providers</h4>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
@@ -539,59 +604,121 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
       </div>
 
       <div className="pt-6 border-t border-slate-800">
-        <div className="flex items-center gap-2 mb-6 text-slate-300">
-          <History size={18} />
-          <h4 className="font-bold uppercase tracking-widest text-sm">Sync Status & History</h4>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-2 text-slate-300">
+            <History size={18} />
+            <h4 className="font-bold uppercase tracking-widest text-sm">Sync Status & History</h4>
+          </div>
+          {state.syncHistory && state.syncHistory.length > 0 && (
+            <button
+              onClick={() => {
+                const headers = ['Type', 'Provider', 'Method', 'Device', 'Nickname', 'Timestamp', 'Code'];
+                const rows = (state.syncHistory || []).map(log => [
+                  log.type,
+                  log.syncProvider || '',
+                  log.syncMethod || '',
+                  log.deviceType || '',
+                  log.deviceNickname || '',
+                  log.timestamp,
+                  log.code
+                ]);
+                const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.setAttribute("href", url);
+                link.setAttribute("download", `scholars_sync_history_${new Date().toISOString().split('T')[0]}.csv`);
+                document.body.appendChild(link);
+                link.click();
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all border border-slate-700"
+            >
+              <Download size={14} /> Export CSV
+            </button>
+          )}
         </div>
         
-        <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 space-y-4">
-          <div className="flex items-center justify-between pb-4 border-b border-slate-800/50">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Last Synced</span>
-            <span className="text-sm font-bold text-slate-200">
-              {state.lastUpdated ? new Date(state.lastUpdated).toLocaleString() : 'Never'}
-            </span>
+        <div className="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden">
+          <div className="p-4 border-b border-slate-800 bg-slate-950/30 flex items-center justify-between">
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Global Status</span>
+            <div className="flex items-center gap-3">
+              <span className="text-[10px] text-slate-500 font-medium">Last Synced:</span>
+              <span className="text-[11px] font-black text-indigo-400 tracking-tight">
+                {state.lastUpdated ? new Date(state.lastUpdated).toLocaleString() : 'Never'}
+              </span>
+            </div>
           </div>
 
-          <div>
-            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 block">Recent Operations</label>
-            {state.syncHistory && state.syncHistory.length > 0 ? (
-              <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
-                {[...state.syncHistory].reverse().map((log, index) => (
-                  <div key={index} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-slate-950/50 border border-slate-800/50 rounded-xl gap-2">
-                    <div className="flex items-center gap-2">
-                       {log.type === 'login' && <LogIn size={14} className="text-emerald-400" />}
-                       {log.type === 'force_sync' && <RefreshCw size={14} className="text-indigo-400" />}
-                       {log.type === 'local_to_cloud' && <ArrowDownUp size={14} className="text-emerald-400" />}
-                       {log.type === 'cloud_to_local' && <ArrowDownUp size={14} className="text-blue-400" />}
-                       {log.type === 'unbind_local' && <ShieldBan size={14} className="text-amber-400" />}
-                       {log.type === 'delete_cloud' && <Trash2 size={14} className="text-red-400" />}
-                       {log.type === 'cancel_login' && <X size={14} className="text-slate-400" />}
-                       <span className="text-xs font-bold text-slate-300 capitalize">
-                         {log.type.replace(/_/g, ' ')}
-                       </span>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-3 text-[10px] text-slate-500">
-                       {log.syncMethod && (
-                         <span className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700/50">
-                           {log.syncMethod}
-                         </span>
-                       )}
-                       {log.syncProvider && (
-                         <span className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700/50">
-                           {log.syncProvider}
-                         </span>
-                       )}
-                       {log.deviceType && <span>Device: {log.deviceType}</span>}
-                       <span>{new Date(log.timestamp).toLocaleString()}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-6 text-xs text-slate-500">
-                No sync history recorded yet.
-              </div>
-            )}
+          <div className="overflow-x-auto custom-scrollbar">
+            <table className="w-full text-left border-collapse min-w-[600px]">
+              <thead>
+                <tr className="bg-slate-950/20 border-b border-slate-800">
+                  <th className="px-4 py-3 text-[9px] font-black text-slate-500 uppercase tracking-widest">Time</th>
+                  <th className="px-4 py-3 text-[9px] font-black text-slate-500 uppercase tracking-widest">Operation</th>
+                  <th className="px-4 py-3 text-[9px] font-black text-slate-500 uppercase tracking-widest">Provider</th>
+                  <th className="px-4 py-3 text-[9px] font-black text-slate-500 uppercase tracking-widest">Device Name</th>
+                  <th className="px-4 py-3 text-[9px] font-black text-slate-500 uppercase tracking-widest">Method</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800/40">
+                {state.syncHistory && state.syncHistory.length > 0 ? (
+                  state.syncHistory.map((log, index) => (
+                    <tr key={index} className="hover:bg-slate-800/30 transition-colors">
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <div className="text-[10px] text-slate-400 font-mono">
+                          {new Date(log.timestamp).toLocaleDateString()}
+                        </div>
+                        <div className="text-[9px] text-slate-500 font-mono opacity-70">
+                          {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                           {log.type === 'login' && <LogIn size={12} className="text-emerald-400" />}
+                           {log.type === 'force_sync' && <RefreshCw size={12} className="text-indigo-400" />}
+                           {log.type === 'local_to_cloud' && <ArrowDownUp size={12} className="text-emerald-400 rotate-90" />}
+                           {log.type === 'cloud_to_local' && <ArrowDownUp size={12} className="text-blue-400 -rotate-90" />}
+                           {log.type === 'unbind_local' && <ShieldBan size={12} className="text-amber-400" />}
+                           {log.type === 'delete_cloud' && <Trash2 size={12} className="text-red-400" />}
+                           <span className="text-[10px] font-bold text-slate-200 capitalize">
+                             {log.type.replace(/_/g, ' ')}
+                           </span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="text-[10px] font-medium text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700/50">
+                          {log.syncProvider || 'Redis'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="text-[10px] font-bold text-slate-300">
+                          {log.deviceNickname || log.deviceType || 'Unknown Device'}
+                        </div>
+                        {log.deviceNickname && log.deviceType && (
+                          <div className="text-[8px] text-slate-500 uppercase tracking-tighter opacity-60">
+                            {log.deviceType}
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={cn(
+                          "text-[9px] font-bold px-1.5 py-0.5 rounded",
+                          log.syncMethod === 'Visibility API Active' ? 'text-amber-400 bg-amber-500/10' : 'text-slate-500 bg-slate-800'
+                        )}>
+                          {log.syncMethod || 'Manual'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={5} className="px-4 py-12 text-center text-xs text-slate-600 italic">
+                      Chronicles are empty. No sync history found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -617,32 +744,42 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
                     <HardDrive size={24} />
                   </div>
                   <h3 className="text-lg font-black text-white uppercase tracking-widest mb-2">WebDAV Connection</h3>
-                  <p className="text-xs text-slate-400 leading-relaxed max-w-xs">
-                    Enter your WebDAV server details. Your password is ONLY stored locally in your browser. Example: <code>https://dav.jianguoyun.com/dav/</code>
+                  <p className="text-[10px] text-slate-400 leading-relaxed max-w-xs">
+                    Enter your WebDAV server details. <strong className="text-indigo-300">Note:</strong> This is a <span className="underline">SERVER URL</span>, not a local folder path on your computer.
+                    <br />Example: <code>https://dav.jianguoyun.com/dav/</code>
                   </p>
                 </div>
                 <div className="space-y-3">
-                  <input
-                    type="text"
-                    placeholder="WebDAV URL (include /dav/)"
-                    value={webdavUrl}
-                    onChange={(e) => setWebdavUrl(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder:text-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-mono text-sm"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Username (Email for Jianguoyun)"
-                    value={webdavUser}
-                    onChange={(e) => setWebdavUser(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder:text-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-mono text-sm"
-                  />
-                  <input
-                    type="password"
-                    placeholder="App Password / Security Password"
-                    value={webdavPass}
-                    onChange={(e) => setWebdavPass(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder:text-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-mono text-sm"
-                  />
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Server URL</label>
+                    <input
+                      type="text"
+                      placeholder="https://dav.jianguoyun.com/dav/"
+                      value={webdavUrl}
+                      onChange={(e) => setWebdavUrl(e.target.value)}
+                      className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder:text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-mono text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Username / Email</label>
+                    <input
+                      type="text"
+                      placeholder="Your Jianguoyun Login Email"
+                      value={webdavUser}
+                      onChange={(e) => setWebdavUser(e.target.value)}
+                      className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder:text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-mono text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">App Password</label>
+                    <input
+                      type="password"
+                      placeholder="Jianguoyun Application Password"
+                      value={webdavPass}
+                      onChange={(e) => setWebdavPass(e.target.value)}
+                      className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder:text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-mono text-sm"
+                    />
+                  </div>
                   {webdavCheckError && (
                     <p className="text-red-400 text-xs text-center mt-2 break-words">
                       {webdavCheckError}

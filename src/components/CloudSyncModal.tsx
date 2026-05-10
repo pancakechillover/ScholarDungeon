@@ -25,10 +25,12 @@ interface CloudSyncModalProps {
     code: string;
     timestamp: string;
     deviceType?: string;
+    deviceNickname?: string;
     syncMethod?: 'Manual' | 'Immediate' | 'Interval polling' | 'Visibility API Active';
     syncProvider?: 'Redis' | 'Google Drive' | 'WebDAV';
   }[];
   localState?: any;
+  isVerifying?: boolean;
 }
 
 export function CloudSyncModal({
@@ -36,6 +38,7 @@ export function CloudSyncModal({
   onClose,
   secretCode,
   isSyncing,
+  isVerifying,
   syncError,
   syncCheckResult,
   onConnect,
@@ -174,33 +177,51 @@ export function CloudSyncModal({
                   
                   {confirmDialog.showComparison && (
                     <div className="space-y-2">
-                       <p className="text-[10px] text-indigo-400 font-bold uppercase tracking-widest">Comparison Preview</p>
-                       <div className="bg-slate-950/50 p-3 rounded-xl border border-slate-800 text-[10px]">
-                        <div className="grid grid-cols-[auto_1fr_1fr] gap-x-2 gap-y-1 items-center">
-                          <div className="text-slate-500"></div>
-                          <div className="text-center font-bold text-slate-300 bg-slate-800/50 py-1 rounded-md">Local</div>
-                          <div className="text-center font-bold text-indigo-400 bg-indigo-500/10 py-1 rounded-md">Cloud</div>
+                       <p className="text-[10px] text-indigo-400 font-bold uppercase tracking-widest px-1">Comparison Preview</p>
+                       <div className="bg-slate-950/50 p-3 rounded-xl border border-slate-800 shadow-inner">
+                        <div className="grid grid-cols-[auto_1fr_1fr] gap-x-3 gap-y-1.5 items-center">
+                          <div className="text-[9px] text-slate-500 font-bold uppercase tracking-tighter">Stat</div>
+                          <div className="text-center font-black text-slate-300 bg-slate-800/50 py-1 rounded-md text-[9px]">Local</div>
+                          <div className="text-center font-black text-indigo-400 bg-indigo-500/10 py-1 rounded-md text-[9px]">Cloud</div>
                           
-                          <div className="text-slate-500">Level</div>
-                          <div className={`text-center font-mono ${localState?.level > (syncCheckResult?.cloudData?.state?.level ?? syncCheckResult?.cloudData?.level ?? 0) ? 'text-emerald-400 font-bold' : 'text-slate-300'}`}>
+                          <div className="text-[10px] text-slate-500 font-medium">Level</div>
+                          <div className={`text-center font-mono text-xs ${localState?.level > (syncCheckResult?.cloudData?.state?.level ?? 0) ? 'text-emerald-400 font-bold' : 'text-slate-300'}`}>
                             {localState?.level || 1}
                           </div>
-                          <div className={`text-center font-mono ${(syncCheckResult?.cloudData?.state?.level ?? syncCheckResult?.cloudData?.level ?? 0) > (localState?.level ?? 0) ? 'text-emerald-400 font-bold' : 'text-indigo-300'}`}>
-                            {syncCheckResult?.cloudData?.state?.level ?? syncCheckResult?.cloudData?.level ?? '?'}
+                          <div className={`text-center font-mono text-xs ${(syncCheckResult?.cloudData?.state?.level ?? 0) > (localState?.level ?? 0) ? 'text-emerald-400 font-bold' : 'text-indigo-300'}`}>
+                            {syncCheckResult?.cloudData?.state?.level ?? '?'}
                           </div>
 
-                          <div className="text-slate-500">Coins</div>
-                          <div className={`text-center font-mono ${localState?.coins > (syncCheckResult?.cloudData?.state?.coins ?? syncCheckResult?.cloudData?.coins ?? 0) ? 'text-emerald-400 font-bold' : 'text-slate-300'}`}>
+                          <div className="text-[10px] text-slate-500 font-medium">Gold</div>
+                          <div className={`text-center font-mono text-xs ${localState?.coins > (syncCheckResult?.cloudData?.state?.coins ?? 0) ? 'text-emerald-400 font-bold' : 'text-slate-300'}`}>
                             {localState?.coins || 0}
                           </div>
-                          <div className={`text-center font-mono ${(syncCheckResult?.cloudData?.state?.coins ?? syncCheckResult?.cloudData?.coins ?? 0) > (localState?.coins ?? 0) ? 'text-emerald-400 font-bold' : 'text-indigo-300'}`}>
-                            {syncCheckResult?.cloudData?.state?.coins ?? syncCheckResult?.cloudData?.coins ?? '?'}
+                          <div className={`text-center font-mono text-xs ${(syncCheckResult?.cloudData?.state?.coins ?? 0) > (localState?.coins ?? 0) ? 'text-emerald-400 font-bold' : 'text-indigo-300'}`}>
+                            {syncCheckResult?.cloudData?.state?.coins ?? '?'}
                           </div>
                           
-                          <div className="text-slate-500">Update</div>
-                          <div className="text-center text-[8px] text-slate-500 font-mono truncate">{localState?.lastUpdated ? new Date(localState.lastUpdated).toLocaleDateString() : '-'}</div>
-                          <div className="text-center text-[8px] text-indigo-500/70 font-mono truncate">
-                            {syncCheckResult?.cloudData?.state?.lastUpdated ?? syncCheckResult?.cloudData?.lastUpdated ? new Date(syncCheckResult.cloudData.state?.lastUpdated ?? syncCheckResult.cloudData.lastUpdated).toLocaleDateString() : '-'}
+                          <div className="text-[10px] text-slate-500 font-medium">History</div>
+                          <div className={`text-center font-mono text-xs ${localState?.history?.length > (syncCheckResult?.cloudData?.state?.history?.length ?? 0) ? 'text-emerald-400 font-bold' : 'text-slate-300'}`}>
+                            {localState?.history?.length || 0}
+                          </div>
+                          <div className={`text-center font-mono text-xs ${(syncCheckResult?.cloudData?.state?.history?.length ?? 0) > (localState?.history?.length ?? 0) ? 'text-emerald-400 font-bold' : 'text-indigo-300'}`}>
+                            {syncCheckResult?.cloudData?.state?.history?.length ?? '?'}
+                          </div>
+
+                          <div className="text-[10px] text-slate-500 font-medium">Device</div>
+                          <div className="text-center text-[10px] text-slate-400 font-bold truncate bg-slate-800 py-0.5 rounded">
+                            {localState?.deviceNickname || getDeviceType()}
+                          </div>
+                          <div className="text-center text-[10px] text-indigo-400/70 font-bold truncate bg-indigo-500/5 py-0.5 rounded">
+                            {syncCheckResult?.cloudData?.state?.deviceNickname || syncCheckResult?.cloudData?.state?.deviceType || '?'}
+                          </div>
+
+                          <div className="text-[10px] text-slate-500 font-medium">Updated</div>
+                          <div className="text-center text-[8px] text-slate-500 font-mono leading-tight whitespace-nowrap">
+                            {localState?.lastUpdated ? new Date(localState.lastUpdated).toLocaleDateString() : '-'}
+                          </div>
+                          <div className="text-center text-[8px] text-indigo-500/70 font-mono leading-tight whitespace-nowrap">
+                            {syncCheckResult?.cloudData?.state?.lastUpdated ? new Date(syncCheckResult.cloudData.state.lastUpdated).toLocaleDateString() : '-'}
                           </div>
                         </div>
                       </div>
@@ -320,7 +341,7 @@ export function CloudSyncModal({
                           <span className="text-[10px] text-slate-400 font-mono">Code: {record.code}</span>
                           {record.syncMethod && <span className="text-[9px] text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700/50">{record.syncMethod}</span>}
                           {record.syncProvider && <span className="text-[9px] text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700/50">{record.syncProvider}</span>}
-                          {record.deviceType && <span className="text-[9px] text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded-full">{record.deviceType}</span>}
+                          {(record.deviceNickname || record.deviceType) && <span className="text-[9px] text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded-full">{record.deviceNickname || record.deviceType}</span>}
                         </div>
                       </div>
                     ))
@@ -335,30 +356,62 @@ export function CloudSyncModal({
                   Back
                 </button>
               </motion.div>
+            ) : isVerifying ? (
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="py-12 flex flex-col items-center justify-center text-center space-y-6"
+              >
+                <div className="relative">
+                  <div className="absolute inset-0 bg-indigo-500/20 blur-2xl rounded-full" />
+                  <Loader2 className="animate-spin text-indigo-400 relative z-10" size={48} />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-xl font-black text-indigo-300 uppercase tracking-widest">Verifying Archives</h3>
+                  <p className="text-slate-400 text-sm max-w-[250px] mx-auto leading-relaxed">
+                    Analyzing temporal data and local inscriptions for discrepancies...
+                  </p>
+                </div>
+                <div className="flex gap-1">
+                  {[0, 1, 2].map(i => (
+                    <motion.div 
+                      key={i}
+                      animate={{ opacity: [0.3, 1, 0.3], scale: [1, 1.2, 1] }}
+                      transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
+                      className="w-1.5 h-1.5 bg-indigo-500 rounded-full"
+                    />
+                  ))}
+                </div>
+              </motion.div>
             ) : syncCheckResult ? (
               <div className="space-y-4">
                 {syncCheckResult.status === 'no_save' ? (
                   <>
-                    <div className="p-4 bg-indigo-500/10 border border-indigo-500/30 rounded-2xl text-center">
-                      <Sparkles className="text-indigo-400 mx-auto mb-3" size={32} />
-                      <p className="text-sm text-slate-300 font-medium">
-                        This is an unheard-of code. Shall you begin your legend?
-                      </p>
+                    <div className="p-6 bg-indigo-500/10 border border-indigo-500/30 rounded-2xl text-center space-y-4">
+                      <div className="w-16 h-16 bg-indigo-600/20 rounded-full flex items-center justify-center mx-auto ring-4 ring-indigo-500/10 mb-2">
+                        <Sparkles className="text-indigo-400" size={32} />
+                      </div>
+                      <div>
+                        <h4 className="text-lg font-black text-white uppercase tracking-wider">Are you a new Seeker?</h4>
+                        <p className="text-sm text-slate-400 mt-2 leading-relaxed">
+                          The Archives contain no records of this code. Shall you initialize a new Save Document to begin your legend?
+                        </p>
+                      </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <button 
                         onClick={() => onCancelConnect(inputCode)}
-                        className="p-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-center transition-colors group"
+                        className="p-4 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-2xl text-center transition-all group active:scale-95 shadow-lg"
                       >
-                        <span className="font-bold text-slate-300 text-sm block mb-1">No, not mine</span>
-                        <span className="text-[10px] text-slate-500">Cancel Login</span>
+                        <span className="font-bold text-slate-300 text-sm block mb-1 uppercase tracking-widest">Retreat</span>
+                        <span className="text-[10px] text-slate-500 font-medium italic">"Not my code"</span>
                       </button>
                       <button 
                         onClick={() => onResolveConflict(false)}
-                        className="p-3 bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/30 rounded-xl text-center transition-colors group"
+                        className="p-4 bg-indigo-600/10 hover:bg-indigo-600/20 border border-indigo-500/30 rounded-2xl text-center transition-all group active:scale-95 shadow-lg shadow-indigo-500/5"
                       >
-                        <span className="font-bold text-indigo-300 text-sm block mb-1">Begin Legend</span>
-                        <span className="text-[10px] text-indigo-400/70">Create Save</span>
+                        <span className="font-black text-indigo-300 text-sm block mb-1 uppercase tracking-widest">Inscribe</span>
+                        <span className="text-[10px] text-indigo-400/70 font-medium uppercase tracking-tighter">Initialize Archive</span>
                       </button>
                     </div>
                   </>
@@ -369,76 +422,84 @@ export function CloudSyncModal({
                         <AlertTriangle className="text-indigo-500" size={20} />
                         <h4 className="font-bold text-indigo-500">Echoes of the Past Found</h4>
                       </div>
-                      <div className="bg-slate-950/50 p-3 rounded-xl border border-slate-800 mb-3">
-                        <div className="grid grid-cols-[auto_1fr_1fr] gap-y-3 gap-x-2 text-xs items-center">
-                          <div className="text-slate-500 font-medium"></div>
-                          <div className="text-center font-bold text-slate-300 bg-slate-800/50 py-1 rounded-md">Local</div>
-                          <div className="text-center font-bold text-indigo-400 bg-indigo-500/10 py-1 rounded-md">Cloud</div>
+                      <div className="bg-slate-950/50 p-4 rounded-2xl border border-slate-800 mb-4 shadow-inner">
+                        <div className="grid grid-cols-[auto_1fr_1fr] gap-y-3 gap-x-3 text-xs items-center">
+                          <div className="text-slate-500 font-bold uppercase tracking-tighter text-[10px]">Stat</div>
+                          <div className="text-center font-black text-slate-400 bg-slate-800/80 py-1.5 rounded-lg border border-slate-700/50 uppercase tracking-widest text-[9px]">Local</div>
+                          <div className="text-center font-black text-indigo-400 bg-indigo-500/10 py-1.5 rounded-lg border border-indigo-500/20 uppercase tracking-widest text-[9px]">Cloud</div>
 
-                          <div className="text-slate-500">Level</div>
-                          <div className={`text-center font-mono ${localState?.level > (syncCheckResult.cloudData?.state?.level || 1) ? 'text-emerald-400 font-bold' : 'text-slate-300'}`}>{localState?.level || 1}</div>
-                          <div className={`text-center font-mono ${(syncCheckResult.cloudData?.state?.level || 1) > (localState?.level || 1) ? 'text-emerald-400 font-bold' : 'text-indigo-300'}`}>{syncCheckResult.cloudData?.state?.level || 1}</div>
+                          <div className="text-slate-500 font-medium">Hero Level</div>
+                          <div className={`text-center font-mono text-sm ${localState?.level > (syncCheckResult.cloudData?.state?.level || 1) ? 'text-emerald-400 font-black' : 'text-slate-300 font-bold'}`}>{localState?.level || 1}</div>
+                          <div className={`text-center font-mono text-sm ${(syncCheckResult.cloudData?.state?.level || 1) > (localState?.level || 1) ? 'text-emerald-400 font-black' : 'text-indigo-300 font-bold'}`}>{syncCheckResult.cloudData?.state?.level || 1}</div>
 
-                          <div className="text-slate-500">Coins</div>
-                          <div className={`text-center font-mono ${localState?.coins > (syncCheckResult.cloudData?.state?.coins || 0) ? 'text-emerald-400 font-bold' : 'text-slate-300'}`}>{localState?.coins || 0}</div>
-                          <div className={`text-center font-mono ${(syncCheckResult.cloudData?.state?.coins || 0) > (localState?.coins || 0) ? 'text-emerald-400 font-bold' : 'text-indigo-300'}`}>{syncCheckResult.cloudData?.state?.coins || 0}</div>
+                          <div className="text-slate-500 font-medium">Treasure (Gold)</div>
+                          <div className={`text-center font-mono text-sm ${localState?.coins > (syncCheckResult.cloudData?.state?.coins || 0) ? 'text-emerald-400 font-black' : 'text-slate-300 font-bold'}`}>{localState?.coins || 0}</div>
+                          <div className={`text-center font-mono text-sm ${(syncCheckResult.cloudData?.state?.coins || 0) > (localState?.coins || 0) ? 'text-emerald-400 font-black' : 'text-indigo-300 font-bold'}`}>{syncCheckResult.cloudData?.state?.coins || 0}</div>
 
-                          <div className="text-slate-500">Sessions</div>
-                          <div className={`text-center font-mono ${(localState?.history?.length || 0) > (syncCheckResult.cloudData?.state?.history?.length || 0) ? 'text-emerald-400 font-bold' : 'text-slate-300'}`}>{localState?.history?.length || 0}</div>
-                          <div className={`text-center font-mono ${(syncCheckResult.cloudData?.state?.history?.length || 0) > (localState?.history?.length || 0) ? 'text-emerald-400 font-bold' : 'text-indigo-300'}`}>{syncCheckResult.cloudData?.state?.history?.length || 0}</div>
+                          <div className="text-slate-500 font-medium">Total Sessions</div>
+                          <div className={`text-center font-mono text-sm ${(localState?.history?.length || 0) > (syncCheckResult.cloudData?.state?.history?.length || 0) ? 'text-emerald-400 font-black' : 'text-slate-300 font-bold'}`}>{localState?.history?.length || 0}</div>
+                          <div className={`text-center font-mono text-sm ${(syncCheckResult.cloudData?.state?.history?.length || 0) > (localState?.history?.length || 0) ? 'text-emerald-400 font-black' : 'text-indigo-300 font-bold'}`}>{syncCheckResult.cloudData?.state?.history?.length || 0}</div>
 
-                          <div className="text-slate-500">Device</div>
-                          <div className="text-center text-[10px] text-slate-400 truncate px-1">{getDeviceType()}</div>
-                          <div className="text-center text-[10px] text-indigo-400/70 truncate px-1">{syncCheckResult.cloudData?.state?.deviceType || 'Unknown'}</div>
-
-                          <div className="text-slate-500">Time</div>
-                          <div className="text-center text-[10px] text-slate-400 px-1 leading-tight">
-                            {localState?.lastUpdated ? new Date(localState.lastUpdated).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Unknown'}
+                          <div className="text-slate-500 font-medium">Device Name</div>
+                          <div className="text-center text-[10px] text-slate-400 font-bold truncate bg-slate-900/50 py-1 rounded-md">
+                            {localState?.deviceNickname || getDeviceType()}
                           </div>
-                          <div className="text-center text-[10px] text-indigo-400/70 px-1 leading-tight">
-                            {syncCheckResult.cloudData?.state?.lastUpdated ? new Date(syncCheckResult.cloudData.state.lastUpdated).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Unknown'}
+                          <div className="text-center text-[10px] text-indigo-400/70 font-bold truncate bg-indigo-500/5 py-1 rounded-md">
+                            {syncCheckResult.cloudData?.state?.deviceNickname || syncCheckResult.cloudData?.state?.deviceType || 'Unknown'}
+                          </div>
+
+                          <div className="text-slate-500 font-medium">Timestamp</div>
+                          <div className="text-center text-[9px] text-slate-500 leading-tight font-mono">
+                            {localState?.lastUpdated ? new Date(localState.lastUpdated).toLocaleDateString() : 'Unknown'}
+                            <br />
+                            {localState?.lastUpdated ? new Date(localState.lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                          </div>
+                          <div className="text-center text-[9px] text-indigo-500/60 leading-tight font-mono">
+                            {syncCheckResult.cloudData?.state?.lastUpdated ? new Date(syncCheckResult.cloudData.state.lastUpdated).toLocaleDateString() : 'Unknown'}
+                            <br />
+                            {syncCheckResult.cloudData?.state?.lastUpdated ? new Date(syncCheckResult.cloudData.state.lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                           </div>
                         </div>
                       </div>
                       
                       {syncCheckResult.status === 'cloud_newer' ? (
-                        <p className="text-sm text-slate-300 text-center font-medium">
-                          Inherit the cloud's memory? (Overwrites Local)
+                        <p className="text-sm text-slate-300 text-center font-medium leading-relaxed">
+                          The <span className="text-indigo-400 font-bold italic">Astral Cloud</span> contains a more advanced journey. Inherit its memory?
                         </p>
                       ) : (
-                        <p className="text-sm text-slate-300 text-center font-medium">
-                          Inscribe current progress to the cloud? (Overwrites Cloud)
+                        <p className="text-sm text-slate-300 text-center font-medium leading-relaxed">
+                          Your <span className="text-emerald-400 font-bold italic">Local Legend</span> is further ahead. Inscribe it to the stars?
                         </p>
                       )}
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <button 
                         onClick={() => setConfirmDialog({
-                          title: 'Overwrite Cloud Data?',
-                          message: 'This will permanently replace your cloud save with your current local progress. This action cannot be undone.',
+                          title: 'Force Upload to Cloud?',
+                          message: 'Your current local progress will overwrite the cloud save. This is permanent.',
                           action: () => onResolveConflict(false),
                           isDestructive: false,
                           showComparison: true
                         })}
-                        className="p-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-center transition-colors group"
+                        className="p-4 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-2xl text-center transition-all group active:scale-95 shadow-lg"
                       >
-                        <span className="font-bold text-slate-200 text-sm block mb-1">Keep Local</span>
-                        <span className="text-[10px] text-slate-400">Overwrite Cloud</span>
+                        <span className="font-black text-slate-200 text-xs sm:text-sm block mb-1 uppercase tracking-widest">Force Upload</span>
+                        <span className="text-[10px] text-slate-500 font-medium">Keep Local Progress</span>
                       </button>
                       <button 
                         onClick={() => setConfirmDialog({
-                          title: 'Overwrite Local Data?',
-                          message: 'This will permanently replace your current local progress with the cloud save. This action cannot be undone.',
+                          title: 'Force Download from Cloud?',
+                          message: 'The cloud save will completely overwrite your current progress. This action is irreversible.',
                           action: () => onResolveConflict(true),
                           isDestructive: true,
-                          requiresTextConfirm: false, // User requested no "Delete" typing for this
+                          requiresTextConfirm: false,
                           showComparison: true
                         })}
-                        className="p-3 bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/30 rounded-xl text-center transition-colors group"
+                        className="p-4 bg-indigo-600/10 hover:bg-indigo-600/20 border border-indigo-500/30 rounded-2xl text-center transition-all group active:scale-95 shadow-lg shadow-indigo-500/5"
                       >
-                        <span className="font-bold text-indigo-300 text-sm block mb-1">Download Cloud</span>
-                        <span className="text-[10px] text-indigo-400/70">Overwrite Local</span>
+                        <span className="font-black text-indigo-400 text-xs sm:text-sm block mb-1 uppercase tracking-widest">Force Download</span>
+                        <span className="text-[10px] text-indigo-400/60 font-medium uppercase tracking-tighter">Use Cloud Save</span>
                       </button>
                     </div>
                   </>

@@ -143,7 +143,7 @@ export interface SettingsProps {
   setActiveSection: (sec: string) => void;
   onTabChange?: (tab: any) => void;
   onOpenAstralArchives?: () => void;
-  triggerSyncCheck?: () => void;
+  triggerSyncCheck?: (forceModal?: boolean) => void;
   isSyncing?: boolean;
   hasUnsyncedChanges?: boolean;
 }

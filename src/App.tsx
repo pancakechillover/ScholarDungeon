@@ -772,12 +772,12 @@ function App() {
 
   useEffect(() => {
     if (appReady) {
-      // Auto check sync on load if logged in via any provider
+      // Auto check sync on load or when a new provider is connected
       if (state.syncProvider === 'Google Drive' || state.syncProvider === 'WebDAV' || state.secretCode) {
         checkCloudSync();
       }
     }
-  }, [appReady]); // Only run once when app becomes ready
+  }, [appReady, state.syncProvider, !!state.secretCode]); // Run on load or when connection status changes
 
   const handleSplashComplete = useCallback(() => setAppReady(true), []);
 
@@ -1194,6 +1194,7 @@ function App() {
                 onOpenAstralArchives={() => setShowCloudSync(true)}
                 isSyncing={isSyncing}
                 hasUnsyncedChanges={hasUnsyncedChanges}
+                triggerSyncCheck={checkCloudSync}
               />
             )}
           </AnimatePresence>
@@ -1278,6 +1279,7 @@ function App() {
               }}
               secretCode={state.secretCode}
               isSyncing={isSyncing}
+              isVerifying={isVerifying}
               syncError={syncError}
               syncCheckResult={syncCheckResult}
               onConnect={fetchFromCloud}

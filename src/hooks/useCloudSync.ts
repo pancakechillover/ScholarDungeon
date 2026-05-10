@@ -9,12 +9,15 @@ export function useCloudSync(
   setMajorDungeons: React.Dispatch<React.SetStateAction<any[]>>
 ) {
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
   const [syncCheckResult, setSyncCheckResult] = useState<{
     status: 'no_save' | 'cloud_newer' | 'local_newer';
     cloudData?: any;
     code: string;
   } | null>(null);
+
+  const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 
   const stripVolatile = useCallback((dataObj: any) => {
     if (!dataObj || !dataObj.state) return dataObj;
@@ -51,6 +54,7 @@ export function useCloudSync(
         code, 
         timestamp: new Date().toISOString(), 
         deviceType: prev.deviceType,
+        deviceNickname: prev.deviceNickname,
         syncMethod,
         syncProvider: syncProvider || (prev.syncProvider as any) || 'Redis'
       });
@@ -303,6 +307,7 @@ export function useCloudSync(
   const fetchFromCloud = useCallback(async (code: string) => {
     setIsSyncing(true);
     setSyncError(null);
+    setIsVerifying(false);
 
     try {
       let cloudDataToProcess: any = null;
@@ -350,6 +355,10 @@ export function useCloudSync(
         cloudDataToProcess = data.cloudData;
       }
 
+      // ENTER VERIFICATION PHASE
+      setIsVerifying(true);
+      await delay(1500); // Artificial delay to simulate thorough checking
+
       logSyncEvent('login', code, 'Manual');
       if (cloudDataToProcess) {
         const cloudTime = new Date(cloudDataToProcess.lastUpdated || 0).getTime();
@@ -393,7 +402,7 @@ export function useCloudSync(
     }
   }, [state, logSyncEvent, stripVolatile, setState]);
 
-  const checkCloudSync = useCallback(async () => {
+  const checkCloudSync = useCallback(async (forceModal = false) => {
     const isGoogleDrive = state.syncProvider === 'Google Drive';
     const isWebDav = state.syncProvider === 'WebDAV';
 
@@ -402,9 +411,14 @@ export function useCloudSync(
     if (isWebDav && (!state.webdavSettings || !state.webdavSettings.url)) return;
 
     setIsSyncing(true);
+    setIsVerifying(false);
     setSyncError(null);
 
-    const checkNewer = (data: any, code: string) => {
+    const checkNewer = async (data: any, code: string) => {
+        // ENTER VERIFICATION PHASE
+        setIsVerifying(true);
+        await delay(1200); // Artificial delay to simulate thorough checking
+
         if (!data) {
             setSyncCheckResult({ status: 'no_save', code });
             return;
@@ -425,7 +439,7 @@ export function useCloudSync(
           majorDungeons: data.majorDungeons || []
         });
 
-        if (JSON.stringify(localDataToCompare) === JSON.stringify(cloudDataToCompare)) {
+        if (JSON.stringify(localDataToCompare) === JSON.stringify(cloudDataToCompare) && !forceModal) {
           setState(prev => ({ 
             ...prev, 
             lastUpdated: data.lastUpdated, 
@@ -495,6 +509,7 @@ export function useCloudSync(
       setSyncError(err.message);
     } finally {
       setIsSyncing(false);
+      setIsVerifying(false);
     }
   }, [state, logSyncEvent, setState, stripVolatile]);
 
@@ -549,6 +564,7 @@ export function useCloudSync(
 
   return {
     isSyncing,
+    isVerifying,
     syncError,
     syncCheckResult,
     setSyncCheckResult,
