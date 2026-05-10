@@ -1,30 +1,88 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Quest, QuestType, QuestReward } from '../types';
-import { Target, Trophy, Plus, Trash2, Edit2, CheckCircle2, ChevronDown, ChevronUp, X, Gift, Coins, Zap, CheckSquare, Square } from 'lucide-react';
+import { motion, AnimatePresence, Reorder, useDragControls } from 'motion/react';
+import { Quest, QuestType, QuestReward, QuestHistoryItem } from '../types';
+import { Target, Trophy, Plus, Trash2, Edit2, CheckCircle2, ChevronDown, ChevronUp, X, Gift, Coins, Zap, CheckSquare, Square, GripVertical, Pin, Clock, History } from 'lucide-react';
 import { PageHeader } from './PageHeader';
 import { cn } from '../lib/utils';
 import { SpinnerInput } from './SpinnerInput';
 
+const DraggableQuestItem = ({ quest, isEditMode, children, className }: any) => {
+  const controls = useDragControls();
+  
+  // Deterministic "random" rotation based on ID
+  const rotation = React.useMemo(() => {
+    const hash = quest.id.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
+    return (hash % 4) - 2; // -2 to 1 degrees
+  }, [quest.id]);
+
+  return (
+    <Reorder.Item 
+      value={quest} 
+      dragListener={false} 
+      dragControls={controls} 
+      className={cn(className, "relative")}
+      style={{ rotate: isEditMode ? 0 : `${rotation}deg` }}
+      whileDrag={{ 
+        scale: 1.05, 
+        rotate: 0,
+        zIndex: 50,
+        boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.3)"
+      }}
+    >
+      {/* Pin decoration */}
+      <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-10 text-rose-600 drop-shadow-md">
+        <Pin size={20} fill="currentColor" strokeWidth={1} className="-rotate-12" />
+      </div>
+
+      {isEditMode && (
+        <div 
+          className="absolute left-2 top-1/2 -translate-y-1/2 cursor-grab active:cursor-grabbing touch-none p-2 flex items-center justify-center shrink-0 text-slate-500 hover:text-slate-800 transition-colors z-20"
+          onPointerDown={(e) => controls.start(e)}
+        >
+          <GripVertical size={20} />
+        </div>
+      )}
+      {children}
+    </Reorder.Item>
+  );
+};
+
 interface QuestManagerProps {
   quests: Quest[];
+  questHistory: QuestHistoryItem[];
   activeTalents: string[];
   isAdding: boolean;
   setIsAdding: (val: boolean) => void;
   onUpdateQuests: (quests: Quest[]) => void;
   onClaimReward: (id: string) => void;
-  forceTab?: 'quests' | 'achievements';
+  forceTab?: 'quests' | 'achievements' | 'history';
   isEditMode?: boolean;
 }
 
-export const QuestManager = React.memo<QuestManagerProps>(({ quests, activeTalents, isAdding, setIsAdding, onUpdateQuests, onClaimReward, forceTab, isEditMode = false }) => {
-  const [activeTab, setActiveTab] = useState<'quests' | 'achievements'>(forceTab || 'quests');
+export const QuestManager = React.memo<QuestManagerProps>(({ quests, questHistory, activeTalents, isAdding, setIsAdding, onUpdateQuests, onClaimReward, forceTab, isEditMode = false }) => {
+  const [activeTab, setActiveTab] = useState<'quests' | 'achievements' | 'history'>(forceTab || 'quests');
+  const [historyFilter, setHistoryFilter] = useState<'today' | 'week' | 'all'>('all');
 
   React.useEffect(() => {
     if (forceTab) {
       setActiveTab(forceTab);
     }
   }, [forceTab]);
+
+  const filteredHistory = React.useMemo(() => {
+    if (activeTab !== 'history') return [];
+    
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const lastWeek = today - 7 * 24 * 60 * 60 * 1000;
+
+    return questHistory.filter(item => {
+      const itemTime = new Date(item.timestamp).getTime();
+      if (historyFilter === 'today') return itemTime >= today;
+      if (historyFilter === 'week') return itemTime >= lastWeek;
+      return true;
+    });
+  }, [questHistory, historyFilter, activeTab]);
   const [isEditing, setIsEditing] = useState<Quest | null>(null);
   const [newQuest, setNewQuest] = useState<Partial<Quest>>({
     title: '',
@@ -98,22 +156,21 @@ export const QuestManager = React.memo<QuestManagerProps>(({ quests, activeTalen
     onUpdateQuests(quests.filter(q => q.id !== id));
   };
 
-  const handleReorder = (index: number, direction: 'up' | 'down') => {
-    const newQuests = [...quests];
-    if (direction === 'up' && index > 0) {
-      [newQuests[index - 1], newQuests[index]] = [newQuests[index], newQuests[index - 1]];
-    } else if (direction === 'down' && index < newQuests.length - 1) {
-      [newQuests[index + 1], newQuests[index]] = [newQuests[index], newQuests[index + 1]];
-    }
-    // Update order property
-    newQuests.forEach((q, i) => q.order = i);
-    onUpdateQuests(newQuests);
-  };
-
   const filteredQuests = quests
     .filter(q => q.isAchievement === (activeTab === 'achievements'))
     .filter(q => !q.talentRequired || activeTalents.includes(q.talentRequired))
     .sort((a, b) => a.order - b.order);
+
+  const getCycleLabel = (type: QuestType) => {
+    switch (type) {
+      case 'daily_sessions': return 'Daily';
+      case 'weekly_sessions': return 'Weekly';
+      case 'monthly_sessions': return 'Monthly';
+      case 'consecutive_days': return 'Daily';
+      case 'total_sessions': return 'Achievement';
+      default: return 'Special';
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -143,7 +200,7 @@ export const QuestManager = React.memo<QuestManagerProps>(({ quests, activeTalen
       )}
 
       <AnimatePresence>
-        {(isAdding || isEditing) && (
+        {(isAdding || isEditing) && activeTab !== 'history' && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -326,92 +383,186 @@ export const QuestManager = React.memo<QuestManagerProps>(({ quests, activeTalen
         )}
       </AnimatePresence>
 
-      <div className="space-y-4">
-        {filteredQuests.map((quest, index) => (
-          <div key={quest.id} className="bg-slate-900/20 border border-slate-800/50 rounded-lg p-4 flex items-center justify-between gap-4 group hover:border-slate-700 transition-all">
-            <div className="flex items-center gap-4 flex-1 min-w-0">
-              <div className={cn(
-                "w-10 h-10 rounded-lg flex items-center justify-center border shrink-0",
-                quest.completed ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" : "bg-slate-800 border-slate-700 text-slate-500"
-              )}>
-                {quest.completed ? <CheckCircle2 size={20} /> : (quest.isAchievement ? <Trophy size={20} /> : <Target size={20} />)}
-              </div>
-              <div className="min-w-0 flex-1">
-                <h4 className="font-bold text-slate-200 text-sm truncate">{quest.title}</h4>
-                <p className="text-xs text-slate-400 truncate">{quest.description}</p>
-                <div className="flex flex-wrap items-center gap-4 mt-1">
-                  {quest.reward && (
-                    <div className="flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold text-slate-400">
-                      {quest.reward.type === 'coins' ? <Coins size={10} className="text-amber-500" /> : <Zap size={10} className="text-indigo-400" />}
-                      <span>{quest.reward.amount}</span>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-2">
-                    <div className="h-1.5 w-16 bg-slate-950 rounded-full overflow-hidden border border-slate-800">
-                      <div 
-                        className={cn("h-full", quest.completed ? "bg-emerald-500" : "bg-indigo-500")}
-                        style={{ width: `${Math.min(100, (quest.progress / quest.target) * 100)}%` }}
-                      />
-                    </div>
-                    <span className="text-[10px] font-bold text-slate-500">{quest.progress} / {quest.target}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="flex items-center justify-end sm:justify-start gap-3 shrink-0">
-              {quest.completed && !quest.claimed ? (
+      <div className="relative p-6 sm:p-10 rounded-2xl qb-board border border-indigo-100 dark:border-slate-800">
+        {activeTab === 'history' ? (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 mb-6">
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mr-2">Filter By:</span>
+              {(['today', 'week', 'all'] as const).map((f) => (
                 <button
-                  onClick={() => onClaimReward(quest.id)}
-                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-black text-[10px] uppercase tracking-widest transition-all shadow-lg shadow-emerald-900/20 flex items-center gap-2"
-                >
-                  <Gift size={16} />
-                  Claim Reward
-                </button>
-              ) : (quest.completed && quest.claimed) ? (
-                <span className="flex items-center">
-                  <CheckSquare size={24} className="text-emerald-500 drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                </span>
-              ) : (
-                <span className="flex items-center">
-                  <Square size={24} className="text-slate-600" />
-                </span>
-              )}
-              
-              {isEditMode && (
-                <div className="flex items-center gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all ml-2">
-                  <div className="flex items-center gap-1 bg-slate-950/50 p-1 rounded-xl border border-slate-800">
-                    <button onClick={() => handleReorder(index, 'up')} disabled={index === 0} className="p-1.5 text-slate-500 hover:text-indigo-400 disabled:opacity-30 transition-colors"><ChevronUp size={16} /></button>
-                    <button onClick={() => handleReorder(index, 'down')} disabled={index === filteredQuests.length - 1} className="p-1.5 text-slate-500 hover:text-indigo-400 disabled:opacity-30 transition-colors"><ChevronDown size={16} /></button>
-                  </div>
-                  <button 
-                    onClick={() => {
-                      setIsEditing(quest);
-                      setNewQuest(quest);
-                    }}
-                    className="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-xl transition-all border border-slate-700"
-                    title="Edit Task"
-                  >
-                    <Edit2 size={16} />
-                  </button>
-                  {!quest.talentRequired && (
-                    <button 
-                      onClick={() => handleDelete(quest.id)}
-                      className="p-2.5 bg-slate-800 text-slate-400 hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/30 rounded-xl transition-all border border-slate-700"
-                      title="Delete Task"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+                  key={f}
+                  onClick={() => setHistoryFilter(f)}
+                  className={cn(
+                    "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider transition-all",
+                    historyFilter === f 
+                      ? "bg-indigo-600 text-white shadow-md" 
+                      : "bg-slate-200 dark:bg-slate-800 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
                   )}
-                </div>
-              )}
+                >
+                  {f === 'today' ? 'Today' : f === 'week' ? 'Last 7 Days' : 'All Time'}
+                </button>
+              ))}
             </div>
+
+            {filteredHistory.map((item) => (
+              <div 
+                key={item.id}
+                className="paper-texture border border-slate-200 rounded-sm p-4 flex items-center justify-between gap-4 shadow-sm"
+              >
+                <div className="flex items-center gap-4">
+                  <div className={cn(
+                    "w-10 h-10 rounded-lg flex items-center justify-center border shrink-0 qb-dark-box",
+                    item.isAchievement ? "border-amber-500" : "border-slate-700"
+                  )}>
+                    {item.isAchievement ? <Trophy size={20} className="text-amber-400" /> : <History size={20} className="text-emerald-400" />}
+                  </div>
+                  <div>
+                    <h4 className="font-serif font-black text-slate-900 text-base leading-tight">{item.title}</h4>
+                    <div className="flex items-center gap-2 text-[10px] text-slate-500 font-bold mt-1">
+                      <Clock size={10} />
+                      {new Date(item.timestamp).toLocaleString()}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  {item.rewards.map((r, i) => (
+                    <div key={i} className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-[10px] font-black text-slate-700">
+                      {r.type === 'coins' ? <Coins size={10} className="text-amber-600" /> : <Zap size={10} className="text-indigo-600" />}
+                      <span>{r.amount}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+            {filteredHistory.length === 0 && (
+              <div className="text-center py-20 bg-slate-200/50 dark:bg-slate-800/50 rounded-xl border border-slate-300 dark:border-slate-700 border-dashed">
+                <p className="font-serif italic text-slate-500 text-lg">
+                  {historyFilter === 'all' 
+                    ? "No chronicles of past tasks yet..." 
+                    : historyFilter === 'today' 
+                      ? "No deeds recorded today." 
+                      : "No records found for the past week."}
+                </p>
+              </div>
+            )}
           </div>
-        ))}
-        {filteredQuests.length === 0 && (
-          <div className="text-center py-12 text-slate-500 font-medium">
-            No {activeTab} found. Create one to get started!
-          </div>
+        ) : (
+          <Reorder.Group 
+            axis="y" 
+            values={filteredQuests} 
+            onReorder={(newFiltered) => {
+              const otherQuests = quests.filter(q => q.isAchievement !== (activeTab === 'achievements') || (q.talentRequired && !activeTalents.includes(q.talentRequired)));
+              const merged = [...newFiltered, ...otherQuests];
+              merged.forEach((q, i) => q.order = i);
+              onUpdateQuests(merged);
+            }}
+            className="space-y-6 relative z-10"
+          >
+            {filteredQuests.map((quest, index) => (
+              <DraggableQuestItem 
+                key={quest.id} 
+                quest={quest} 
+                isEditMode={isEditMode}
+                className={cn(
+                  "paper-texture border border-slate-200 rounded-sm p-5 flex items-center justify-between gap-4 group transition-all shadow-md",
+                  quest.completed ? "grayscale-[0.4]" : "hover:shadow-xl hover:-translate-y-1"
+                )}
+              >
+                <div className="flex items-center gap-4 flex-1 min-w-0">
+                  <div className={cn(
+                    "w-12 h-12 rounded-lg flex items-center justify-center border-2 shrink-0 shadow-sm",
+                    quest.completed ? "bg-emerald-600 border-emerald-700 text-white" : "bg-slate-900 dark:bg-white border-slate-800 dark:border-slate-200 text-white dark:text-slate-900"
+                  )}>
+                    {quest.completed ? <CheckCircle2 size={24} /> : (quest.isAchievement ? <Trophy size={24} /> : <Target size={24} />)}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <h4 className="font-serif font-black text-slate-900 text-base leading-tight truncate">{quest.title}</h4>
+                      <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-indigo-600 text-[9px] font-bold text-white uppercase tracking-tighter shrink-0 border border-indigo-700">
+                        <Clock size={10} />
+                        {getCycleLabel(quest.type)}
+                      </div>
+                    </div>
+                    <p className="font-handwriting text-sm text-slate-800 font-bold leading-tight line-clamp-2">{quest.description}</p>
+                    
+                    <div className="flex flex-wrap items-center gap-3 mt-2">
+                      {(quest.rewards || [quest.reward]).map((reward, ridx) => (
+                        <div key={ridx} className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 border border-slate-300 text-[10px] font-black text-slate-900 shadow-sm">
+                          {reward.type === 'coins' ? <Coins size={10} className="text-amber-600" /> : <Zap size={10} className="text-indigo-600" />}
+                          <span>{reward.amount}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-end gap-3 shrink-0">
+                  <div className="hidden sm:flex flex-col items-end gap-1 px-3 py-2 bg-white border border-slate-200 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <div className="h-1.5 w-20 bg-slate-200 rounded-full overflow-hidden">
+                        <div 
+                          className={cn("h-full transition-all duration-500", quest.completed ? "bg-emerald-500" : "bg-indigo-600")}
+                          style={{ width: `${Math.min(100, (quest.progress / quest.target) * 100)}%` }}
+                        />
+                      </div>
+                      <span className="text-[10px] font-black text-slate-900 tabular-nums">{quest.progress}/{quest.target}</span>
+                    </div>
+                    <span className="text-[8px] font-extrabold text-slate-500 uppercase tracking-widest leading-none">Task Progress</span>
+                  </div>
+                  
+                  {isEditMode && (
+                    <div className="flex items-center gap-1.5 transition-colors pointer-events-auto">
+                      <button 
+                        onClick={() => {
+                          setIsEditing(quest);
+                          setNewQuest(quest);
+                        }}
+                        className="p-2 bg-white/60 hover:bg-white text-slate-700 rounded-lg transition-all shadow-sm border border-black/5"
+                        title="Edit Task"
+                      >
+                        <Edit2 size={14} />
+                      </button>
+                      {!quest.talentRequired && (
+                        <button 
+                          onClick={() => handleDelete(quest.id)}
+                          className="p-2 bg-white/60 text-slate-700 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all shadow-sm border border-black/5"
+                          title="Delete Task"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="flex items-center pointer-events-auto ml-1">
+                    {quest.completed && !quest.claimed ? (
+                      <button
+                        onClick={() => onClaimReward(quest.id)}
+                        className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-black text-[10px] uppercase tracking-widest transition-all shadow-lg hover:-rotate-1 active:scale-95 flex items-center gap-2"
+                      >
+                        <Gift size={14} />
+                        Claim
+                      </button>
+                    ) : (quest.completed && quest.claimed) ? (
+                      <span className="flex items-center w-6 justify-end">
+                        <CheckSquare size={24} className="text-emerald-600 opacity-80" />
+                      </span>
+                    ) : (
+                      <span className="flex items-center w-6 justify-end opacity-20">
+                        <Square size={24} className="text-[#3e2723]" />
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </DraggableQuestItem>
+            ))}
+            {filteredQuests.length === 0 && (
+              <div className="text-center py-20 bg-slate-200/50 dark:bg-slate-800/50 rounded-xl border border-slate-300 dark:border-slate-700 border-dashed">
+                <p className="font-serif italic text-slate-500 text-lg">The board is currently barren...</p>
+                <p className="text-xs text-slate-400 mt-2 uppercase tracking-widest font-bold">Post a new task to begin</p>
+              </div>
+            )}
+          </Reorder.Group>
         )}
       </div>
     </div>

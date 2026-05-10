@@ -38,6 +38,7 @@ import { GuideBookModal } from './components/GuideModals';
 import { LevelUpModal } from './components/LevelUpModal';
 import { RewardCompletionModal } from './components/RewardCompletionModal';
 import { GachaResultModal } from './components/GachaResultModal';
+import { BulkClaimModal } from './components/BulkClaimModal';
 import { useGameState } from './hooks/useGameState';
 import { useCloudSync } from './hooks/useCloudSync';
 import { triggerSimpleConfetti } from './lib/effects';
@@ -259,6 +260,7 @@ function App() {
     setState,
     reorderMajorDungeon,
     reorderSubDungeon,
+    moveDungeonItem,
     finalizeMajorDungeon: finalizeMajorDungeonBase,
     updateQuests,
     updateSession,
@@ -267,6 +269,7 @@ function App() {
     saveDailyLog,
     purchaseShopItem,
     forceCompleteSubDungeon,
+    claimAllQuestRewards,
     selectReward,
     resetLootPool,
     setActivePool
@@ -1027,10 +1030,15 @@ function App() {
                 handleDeleteSub={handleDeleteSub}
                 reorderMajorDungeon={reorderMajorDungeon}
                 reorderSubDungeon={reorderSubDungeon}
+                onMoveDungeonItem={moveDungeonItem}
+                setMajorDungeons={setMajorDungeons}
+                setDungeons={setDungeons}
                 finalizeMajorDungeon={finalizeMajorDungeon}
                 archiveMajorDungeon={archiveMajorDungeon}
                 forceCompleteSubDungeon={forceCompleteSubDungeon}
                 claimQuestReward={claimQuestReward}
+                claimAllQuestRewards={claimAllQuestRewards}
+                questHistory={state.questHistory}
               />
             )}
 
@@ -1039,6 +1047,10 @@ function App() {
                 state={state}
                 unlockTalent={unlockTalent}
                 toggleTalent={toggleTalent}
+                openGuideBook={(chapter) => {
+                  setGuideInitialPage(chapter || 0);
+                  setShowGuideBook(true);
+                }}
               />
             )}
 
@@ -1179,6 +1191,13 @@ function App() {
           setActiveSettingsSection(section);
           setShowGuideBook(false);
         }}
+        onTabChange={(tab, subTab) => {
+          setActiveTab(tab);
+          if (subTab && tab === 'dungeons') {
+            setDungeonSubTab(subTab as any);
+          }
+          setShowGuideBook(false);
+        }}
       />
 
       {/* Level Up Modal */}
@@ -1210,6 +1229,14 @@ function App() {
               soundEnabled={state.soundEnabled}
               soundVolume={state.soundVolume}
               onClose={() => setDrawResult(null)} 
+            />
+          )}
+
+          {state.bulkClaimResult && (
+            <BulkClaimModal 
+              isOpen={!!state.bulkClaimResult}
+              result={state.bulkClaimResult}
+              onClose={() => setState(prev => ({ ...prev, bulkClaimResult: null }))}
             />
           )}
         </AnimatePresence>,

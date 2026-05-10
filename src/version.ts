@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v4.7.3';
-export const LAST_UPDATE_DATE = '2026-05-09';
-export const LAST_UPDATE_TIME = '08:23:00';
+export const APP_VERSION = 'v4.10.3';
+export const LAST_UPDATE_DATE = '2026-05-10';
+export const LAST_UPDATE_TIME = '10:30:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,433 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v4.10.3',
+    date: '2026-05-10',
+    time: '10:30:00',
+    title: 'Notification API Stability Fix',
+    items: [
+      { category: 'Bugfix', description: 'Fixed ReferenceError: "Can\'t find variable: Notification" by adding environment safety checks to all Notification API calls.' },
+      { category: 'Architecture', description: 'Implemented non-blocking safeguards in Timer, General Settings, and Developer Settings for better cross-browser compatibility.' },
+      { category: 'Fix', description: 'Resolved a missing destructuring bug for claimAllQuestRewards in the main application entry point.' }
+    ]
+  },
+  {
+    version: 'v4.10.2',
+    date: '2026-05-10',
+    time: '10:20:00',
+    title: 'Bulk Reward Claiming & Unified Summary',
+    items: [
+      { category: 'Feature', description: 'Implemented a "Claim All" system for quests and achievements, allowing one-click collection of all pending rewards.' },
+      { category: 'UI', description: 'Added a dedicated Bulk Claim Modal that displays a comprehensive summary of all items completed and total treasure harvested.' },
+      { category: 'UX', description: 'Synchronized bulk claiming with reward history and real-time state updates for seamless progression.' }
+    ]
+  },
+  {
+    version: 'v4.10.1',
+    date: '2026-05-10',
+    time: '10:10:00',
+    title: 'Quest History Temporal Filtering',
+    items: [
+      { category: 'Feature', description: 'Added time-based filtering to Quest History (Today, Last 7 Days, All Time).' },
+      { category: 'UI', description: 'Implemented filter tabs in the History view for improved navigation of past deeds.' },
+      { category: 'UX', description: 'Optimized empty states to provide context based on active time filters.' }
+    ]
+  },
+  {
+    version: 'v4.10.0',
+    date: '2026-05-10',
+    time: '10:00:00',
+    title: 'Quest History & Chronicler Integration',
+    items: [
+      { category: 'Feature', description: 'Implemented a comprehensive Quest History system that archives all completed and claimed tasks/achievements.' },
+      { category: 'UI', description: 'Added a dedicated "History" tab to the Quest Board with high-contrast parchment items and timestamp tracking.' },
+      { category: 'UX', description: 'Integrated automatic history recording for both manual reward claims and auto-claimed session rewards.' },
+      { category: 'Aesthetic', description: 'Custom "Chronicler" icon and emerald theme accents for historical records.' }
+    ]
+  },
+  {
+    version: 'v4.9.5',
+    date: '2026-05-09',
+    time: '16:50:00',
+    title: 'Quest Board High-Contrast & Theme Alignment',
+    items: [
+      { category: 'UI', description: 'Removed experimental effects (noise, inner shadows, transparency) from Quest Board for a cleaner, high-contrast look.' },
+      { category: 'UX', description: 'Improved readability with solid black text on light parchment and theme-consistent dark backgrounds for icons.' },
+      { category: 'Aesthetic', description: 'Full architectural redesign of the board colors to better support Light and Dark theme transitions.' }
+    ]
+  },
+  {
+    version: 'v4.9.4',
+    date: '2026-05-09',
+    time: '16:45:00',
+    title: 'Quest Board Theme & Readability Optimization',
+    items: [
+      { category: 'UI', description: 'Simplified Quest Board background to a theme-responsive flat color, removing heavy shadows and noise.' },
+      { category: 'UX', description: 'Significantly improved quest item readability with high-contrast text colors and clean reward badges.' },
+      { category: 'Aesthetic', description: 'Harmonized overall board styling with the active application theme.' }
+    ]
+  },
+  {
+    version: 'v4.9.3',
+    date: '2026-05-09',
+    time: '16:35:00',
+    title: 'Quest Board Theme-Awareness & UI Refinement',
+    items: [
+      { category: 'Aesthetic', description: 'Synchronized Quest Board appearance with active themes by replacing hardcoded colors with variable-linked scales.' },
+      { category: 'Bugfix', description: 'Fixed reward badge visibility issues by removing intrusive dark backgrounds and shadows in favor of a clean, high-contrast design.' }
+    ]
+  },
+  {
+    version: 'v4.9.2',
+    date: '2026-05-09',
+    time: '16:30:00',
+    title: 'Quest Board Aesthetic & Updates Cycle',
+    items: [
+      { category: 'UI', description: 'Redesigned labels and cards in Quest Board to resemble a wooden board with pinned parchment notes.' },
+      { category: 'Feature', description: 'Added explicit update cycle indicators (Daily, Weekly, Monthly) to each quest item.' },
+      { category: 'Aesthetic', description: 'Implemented deterministic paper rotation and thumbtack decorations for a more authentic task board feel.' }
+    ]
+  },
+  {
+    version: 'v4.9.1',
+    date: '2026-05-09',
+    time: '16:20:00',
+    title: 'Drag & Drop Stability & Race Condition Fix',
+    items: [
+      { category: 'Bugfix', description: 'Fixed edge case where items disappeared during cross-group movement due to event conflicts.' },
+      { category: 'Architecture', description: 'Refactored moveDungeonItem to be functionally atomic.' },
+      { category: 'UX', description: 'Disabled drag momentum and added layout constraints for mobile stability.' }
+    ]
+  },
+  {
+    version: 'v4.9.0',
+    date: '2026-05-09',
+    time: '16:15:00',
+    title: 'Drag & Drop Stability & Mobile UX Fix',
+    items: [
+      { category: 'Bugfix', description: 'Fixed critical issue where dungeon items would disappear during rapid reordering or cross-level movement.' },
+      { category: 'UX', description: 'Fixed mobile/tablet scrolling bug where dragging an item would trigger page-wide scrolling to the bottom.' },
+      { category: 'Architecture', description: 'Hardened state synchronization in DungeonManager to handle reorder events and move events safely.' }
+    ]
+  },
+  {
+    version: 'v4.8.11',
+    date: '2026-05-09',
+    time: '16:05:00',
+    title: 'Critical TypeError Hotfix',
+    items: [
+      { category: 'Bugfix', description: 'Fixed a TypeError in moveDungeonItem where it was incorrectly referencing dungeons and majorDungeons via the state object.' }
+    ]
+  },
+  {
+    version: 'v4.8.10',
+    date: '2026-05-09',
+    time: '15:55:00',
+    title: 'Hierarchical Nesting & Race Conditions Fix',
+    items: [
+      { category: 'Bugfix', description: 'Solved a critical edge case where dragging a level 1 or 2 dungeon caused it to disappear due to race conditions during state flush in Reorder.Group.' },
+      { category: 'Architecture', description: 'Eliminated nested functional state updates from useGameState which created asynchronous duplication bugs when promoting/demoting hierarchies.' },
+      { category: 'UX', description: 'Automatically expands the container directory visually when hovering or dropping sub-dungeons to clearly indicate hierarchy.' }
+    ]
+  },
+  {
+    version: 'v4.8.9',
+    date: '2026-05-09',
+    time: '15:40:00',
+    title: 'Drag & Drop Stability & Cycle Prevention',
+    items: [
+      { category: 'Bugfix', description: 'Fixed a critical issue where items would disappear due to circular hierarchy loops (dragging a parent into its own child).' },
+      { category: 'Architecture', description: 'Enhanced state synchronization between MajorDungeons and Sub-Dungeons collectives to prevent duplicate IDs during cross-group movement.' },
+      { category: 'Logic', description: 'Implemented a recursive ancestor check in moveDungeonItem to strictly maintain a healthy tree structure.' }
+    ]
+  },
+  {
+    version: 'v4.8.8',
+    date: '2026-05-09',
+    time: '15:15:00',
+    title: 'Drag & Drop Stability Fix',
+    items: [
+      { category: 'Bugfix', description: 'Fixed a critical issue where items would disappear when dragged across different hierarchy levels or into other dungeons.' },
+      { category: 'UX', description: 'Improved drop target detection by ignoring the item currently being dragged, preventing self-blocking hit tests.' },
+      { category: 'Architecture', description: 'Migrated reorder state updates to non-destructive functional updates to preserve items during cross-group movement.' }
+    ]
+  },
+  {
+    version: 'v4.8.7',
+    date: '2026-05-09',
+    time: '15:10:00',
+    title: 'Hierarchical Drag & Drop',
+    items: [
+      { category: 'Feature', description: 'Implemented full hierarchical reordering and nesting. Drag any level-1 dungeon onto another to make it a child (L2), or move sub-dungeons between parents.' },
+      { category: 'UX', description: 'Added drop-target detection using viewport coordinates for intuitive "folder-style" nesting during edit mode.' },
+      { category: 'Architecture', description: 'Enhanced state management to automatically handle promoting sub-dungeons to root MajorDungeons when dropped onto the Expedition container.' }
+    ]
+  },
+  {
+    version: 'v4.8.6',
+    date: '2026-05-09',
+    time: '14:40:00',
+    title: 'Mobile Drag & Drop Polish',
+    items: [
+      { category: 'UX', description: 'Repositioned drag-and-drop handles for Expedition, Quests, and Achievements to perfectly align with mobile screens without overflowing the horizontal layout' },
+      { category: 'UI', description: 'Ensured edit buttons precisely exist between progress bars and completion checkboxes without requiring hover states' },
+      { category: 'UI', description: 'Widened progress numeric ratios across all Dungeons menus strictly preventing clipping when ratios like "100/100" are met' }
+    ]
+  },
+  {
+    version: 'v4.8.5',
+    date: '2026-05-09',
+    time: '14:26:00',
+    title: 'Edit Layout & Progress Width Update',
+    items: [
+      { category: 'UI', description: 'Widened progress bar numeric ratio elements to comfortably fit 3-digit denominators ("100/100")' },
+      { category: 'UX', description: 'Reordered Quest and Achievement panels in edit mode so action buttons appear between the progress bar and the completion box' }
+    ]
+  },
+  {
+    version: 'v4.8.4',
+    date: '2026-05-09',
+    time: '14:20:00',
+    title: 'Quest Board & Achievement Polish',
+    items: [
+      { category: 'UI', description: 'Removed rigid spatial gap limitations between progress bar statistics and completion checkboxes on the Quests and Achievement tabs' },
+      { category: 'UX', description: 'Fixed an issue where sequence reordering and edit action buttons required mouse hover to appear, maintaining consistent visibility for precise editing' }
+    ]
+  },
+  {
+    version: 'v4.8.3',
+    date: '2026-05-09',
+    time: '14:09:00',
+    title: 'Dungeon Checkbox Spacing',
+    items: [
+      { category: 'UI', description: 'Removed rigid sizing from the Dungeon action container block to allow the Checkbox and progress bar text to sit organically close to each other without absurd gap filling' }
+    ]
+  },
+  {
+    version: 'v4.8.2',
+    date: '2026-05-09',
+    time: '12:43:00',
+    title: 'Dungeon Tabs Layout Alignment',
+    items: [
+      { category: 'UI', description: 'Aligned progress bars, numerical counters, and rightmost action elements perfectly across the Dungeons, Quests, and Achievements tabs in the Dungeons menu' },
+      { category: 'UX', description: 'Standardized width sizing using strict container anchoring' }
+    ]
+  },
+  {
+    version: 'v4.8.1',
+    date: '2026-05-09',
+    time: '12:28:00',
+    title: 'Dungeon Progress Bar Visibility Fix',
+    items: [
+      { category: 'UI', description: 'Fixed an issue where the dungeon progress bar in the Dungeons menu was invisible (0px internal height) due to thin height allocations clashing with borders.' },
+      { category: 'UX', description: 'Increased the dungeon progress bar thickness to easily display current percentage clearly.' }
+    ]
+  },
+  {
+    version: 'v4.8.0',
+    date: '2026-05-09',
+    time: '12:15:00',
+    title: 'Dashboard Quest Navigation Fix',
+    items: [
+      { category: 'UX', description: 'Updated Guidebook links to correctly redirect Quests and Achievements directly to their respective tabs inside the Dungeons page.' }
+    ]
+  },
+  {
+    version: 'v4.7.22',
+    date: '2026-05-09',
+    time: '12:08:00',
+    title: 'Offline Guidebook Markdown & Mobile Compressing',
+    items: [
+      { category: 'Documentation', description: 'Exported the entire Sanctum Guidebook to a standalone `GUIDEBOOK.md` file in the root directory for offline reading.' },
+      { category: 'UI', description: 'Improved the Guidebook modal\'s responsiveness by compressing padding and font sizes on smaller screens to ensure content completely fits on a single mobile page without relying on scrolling.' }
+    ]
+  },
+  {
+    version: 'v4.7.21',
+    date: '2026-05-09',
+    time: '12:05:00',
+    title: 'Sanctum Items Deep Linking & Responsive Layout',
+    items: [
+      { category: 'Feature', description: 'Added interactive hyperlinked terms within the Sanctum Items chapters to instantly route users to matching sections (Dungeon, Quests, Merchant, Talent Tree).' },
+      { category: 'UX', description: 'Refined responsive layout for the entire guide book to ensure 100% visibility of all elements on tight mobile viewports without overflowing text.' }
+    ]
+  },
+  {
+    version: 'v4.7.20',
+    date: '2026-05-09',
+    time: '11:57:00',
+    title: 'Sanctum Items Refinement',
+    items: [
+      { category: 'Documentation', description: 'Merged Core Resources and Advanced Items into a single cohesive Sanctum Items chapter.' },
+      { category: 'UI', description: 'Added a dedicated bookmark tab for Sanctum Items to clearly identify its section on the right margin.' },
+      { category: 'Aesthetic', description: 'Redesign item descriptions using markdown-style bullet points for better legibility.' }
+    ]
+  },
+  {
+    version: 'v4.7.19',
+    date: '2026-05-09',
+    time: '11:51:00',
+    title: 'Sanctum Items Guide Expansion',
+    items: [
+      { category: 'Documentation', description: 'Expanded the "Sanctum Items" guide chapter into 4 dedicated pages, splitting Core Resources and Advanced Items for better readability.' },
+      { category: 'Localization', description: 'Renamed "Protection Amulet" to "Death Defying Medal" to better reflect its actual nomenclature.' },
+      { category: 'UI', description: 'Integrated the Sanctum Items chapter into the Guide Book\'s Table of Contents with correct page numbering mapping.' }
+    ]
+  },
+  {
+    version: 'v4.7.18',
+    date: '2026-05-09',
+    time: '11:20:00',
+    title: 'Sanctum Items Guide Chapter',
+    items: [
+      { category: 'Feature', description: 'Added a new "Sanctum Items" chapter to the Guide Book containing encyclopedic details of all Core Resources and Advanced Items (Protection Amulet, XP Card, Gold Card).' }
+    ]
+  },
+  {
+    version: 'v4.7.17',
+    date: '2026-05-09',
+    time: '11:13:00',
+    title: 'Talent Tree Guide Flow Optimization',
+    items: [
+      { category: 'UX', description: 'Replaced the standalone "How to get points" modal in the Talent Tree with a direct link to the interactive Guidebook (Talent System Chapter) to centralize all tutorials securely.' }
+    ]
+  },
+  {
+    version: 'v4.7.16',
+    date: '2026-05-09',
+    time: '11:06:00',
+    title: 'Dashboard Guide Polish',
+    items: [
+      { category: 'UI', description: 'Added the Sanctum Map to the Guides section on the Dashboard page.' },
+      { category: 'UX', description: 'Renamed the introductory welcome message in the Guidebook from Pathfinder to Seeker to ensure consistent narrative terminology.' }
+    ]
+  },
+  {
+    version: 'v4.7.15',
+    date: '2026-05-10',
+    time: '11:15:00',
+    title: 'Guidebook Thematic Polish',
+    items: [
+      { category: 'UI', description: 'Adjusted Guidebook cover title typography for better responsiveness, utilizing a smaller cascading scale on mobile.' },
+      { category: 'Aesthetic', description: 'Refined the Sanctum Map and Record icons in the Guidebook, shifting away from generic slate backgrounds to thematic Sky Blue.' },
+      { category: 'Aesthetic', description: 'Synchronized hyperlinked keywords (Quests, Talents, Dungeons) within Guidebook chapters to seamlessly match the dominant color of their respective pages.' },
+      { category: 'UX', description: 'Activated deep linking for Quests and Achievements keywords, effortlessly routing players to the Dashboard.' }
+    ]
+  },
+  {
+    version: 'v4.7.14',
+    date: '2026-05-10',
+    time: '11:00:00',
+    title: 'Guidebook Navigation Polish',
+    items: [
+      { category: 'Bugfix', description: 'Fixed broken code structure and syntax errors in the Guidebook\'s pages array.' },
+      { category: 'UX', description: 'Synchronized bookmark icons and colors with the new chapter sequence.' },
+      { category: 'Logic', description: 'Re-mapped TOC and Bookmark links to correctly point to the updated page indices.' }
+    ]
+  },
+  {
+    version: 'v4.7.13',
+    date: '2026-05-10',
+    time: '10:30:00',
+    title: 'Sanctum Navigation & Map Update',
+    items: [
+      { category: 'Feature', description: 'Added "Map to the Sanctum" chapter to the Guidebook, providing a visual overview of all application modules.' },
+      { category: 'UX', description: 'Implemented interactive deep-links within the Guidebook that navigate directly to corresponding application sections (Vault, Merchant, Talents, etc.).' },
+      { category: 'UI', description: 'Enhanced Guidebook navigation with updated page limits and bookmark synchronization for the new chapter.' }
+    ]
+  },
+  {
+    version: 'v4.7.12',
+    date: '2026-05-09',
+    time: '10:01:00',
+    title: 'Adventure Guide Polish',
+    items: [
+      { category: 'Aesthetic', description: 'Updated Guidebook cover title to Adventure Guide with dynamic sizing to prevent clipping.' },
+      { category: 'Aesthetic', description: 'Applied a luxurious gold gradient effect to the central compass logo.' },
+      { category: 'UI', description: 'Changed the ampersand symbol to a sans-serif variant in serif headers to fix an awkward font rendering artifact.' }
+    ]
+  },
+  {
+    version: 'v4.7.11',
+    date: '2026-05-09',
+    time: '09:47:00',
+    title: 'Pathfinders Guide Layout & Typography',
+    items: [
+      { category: 'Aesthetic', description: 'Renamed Guidebook to Pathfinders Guide and added a dedicated welcome/introduction chapter.' },
+      { category: 'UI', description: 'Switched primary body text to a highly readable standard font while preserving the serif styling for headings.' },
+      { category: 'UX', description: 'Realigned the Table of Contents dynamically and normalized the layout of page numerals with separating bars across all pages at the bottom edge.' }
+    ]
+  },
+  {
+    version: 'v4.7.10',
+    date: '2026-05-09',
+    time: '09:37:00',
+    title: 'Guidebook Font Size Balancing',
+    items: [
+      { category: 'Bugfix', description: 'Rebalanced Guidebook font sizes down to text-xl to prevent content from overflowing on the pages while keeping them readable.' }
+    ]
+  },
+  {
+    version: 'v4.7.9',
+    date: '2026-05-09',
+    time: '09:28:00',
+    title: 'Guidebook Aesthetic Polish',
+    items: [
+      { category: 'Aesthetic', description: 'Redesign Guidebook cover with Playfair Display gilded font and compass.' },
+      { category: 'Aesthetic', description: 'Revert Talent System icon to Lucide Network.' }
+    ]
+  },
+  {
+    version: 'v4.7.8',
+    date: '2026-05-09',
+    time: '09:21:00',
+    title: 'Guidebook Hand-drawn Icons & Readability Polish',
+    items: [
+      { category: 'UI', description: 'Replaced standard vector icons in the Sanctum Guidebook with custom procedural hand-drawn SVG icons to complement the vintage paper aesthetic.' },
+      { category: 'UX', description: 'Enlarged handwritten font sizes in the "How to Acquire" and "Pro Tip" informational blocks to maximize readability.' }
+    ]
+  },
+  {
+    version: 'v4.7.7',
+    date: '2026-05-09',
+    time: '09:12:00',
+    title: 'Retro Handwriting & Paper Texture Polish',
+    items: [
+      { category: 'Aesthetic', description: 'Explicitly injected Caveat cursive font into all inner-page text fields to bypass default cascading limits.' },
+      { category: 'UX', description: 'Enlarged handwritten body text to improve readability against the new paper texture.' }
+    ]
+  },
+  {
+    version: 'v4.7.6',
+    date: '2026-05-09',
+    time: '09:02:00',
+    title: 'Retro Handwriting & Paper Texture',
+    items: [
+      { category: 'Aesthetic', description: 'Replaced all book fonts with a handwritten cursive font (Caveat) and added procedural noise/paper texture to the pages for a retro feel.' },
+      { category: 'UI', description: 'Desaturated bookmark tab colors to harmonize with the vintage paper appearance.' }
+    ]
+  },
+  {
+    version: 'v4.7.5',
+    date: '2026-05-09',
+    time: '08:53:00',
+    title: 'Fluid 3D Book Layout Mechanics',
+    items: [
+      { category: 'Animation', description: 'Rewrote the Book Background Base Layer into a 3D split-folding mechanism. Front and back covers now swing synchronously with the pages, eliminating visual overlap and layout thrashing.' },
+      { category: 'UX', description: 'Prevented the page from opening to intermediate transparent states during the first render loop and on mobile page tracking bounds.' }
+    ]
+  },
+  {
+    version: 'v4.7.4',
+    date: '2026-05-09',
+    time: '08:41:00',
+    title: 'Guide Book Animation & Layout Centering',
+    items: [
+      { category: 'Bugfix', description: 'Fixed an animation glitch where the book base would transition visually on the first open by synchronously computing initial page states before rendering.' },
+      { category: 'UI', description: 'Adjusted closed book container translation to smoothly move the book to the center of the screen when closed (Front Cover and Back Cover states).' }
+    ]
+  },
   {
     version: 'v4.7.3',
     date: '2026-05-09',

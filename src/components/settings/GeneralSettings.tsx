@@ -103,6 +103,9 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
     // Subscribe
     setIsSubscribing(true);
     try {
+      if (typeof Notification === 'undefined') {
+        throw new Error('Notifications are not supported in this browser environment.');
+      }
       console.log('Requesting notification permission...');
       const permission = await Notification.requestPermission();
       if (permission !== 'granted') {

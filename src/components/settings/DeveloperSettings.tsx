@@ -564,6 +564,9 @@ export const DeveloperSettings: React.FC<DeveloperSettingsProps> = ({
               <button
                 onClick={async () => {
                   try {
+                    if (typeof Notification === 'undefined') {
+                      throw new Error('Notification API not supported');
+                    }
                     const permission = await Notification.requestPermission();
                     if (permission === 'granted') {
                       const reg = await navigator.serviceWorker.ready;

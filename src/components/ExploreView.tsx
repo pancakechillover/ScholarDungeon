@@ -409,11 +409,11 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
                         <span className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em]">{currentDungeon.name}</span>
                         <span className="text-[10px] font-bold text-slate-500">{currentDungeon.completedSessions}/{currentDungeon.totalSessions} Sessions</span>
                       </div>
-                      <div className="h-1.5 w-full bg-slate-900 rounded-full border border-slate-800 overflow-hidden">
+                      <div className="h-2 flex w-full bg-slate-900 rounded-full border border-slate-800 overflow-hidden">
                          <motion.div 
                             initial={{ width: 0 }}
                             animate={{ width: `${(currentDungeon.completedSessions / currentDungeon.totalSessions) * 100}%` }}
-                            className="h-full bg-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.6)]"
+                            className={cn("h-full shadow-[0_0_15px_rgba(99,102,241,0.6)]", currentDungeon.status === 'completed' ? "bg-emerald-500" : "bg-indigo-500")}
                          />
                       </div>
                    </motion.div>

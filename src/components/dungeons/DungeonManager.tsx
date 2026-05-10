@@ -1,11 +1,79 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, Reorder, useDragControls } from 'motion/react';
 import { Dungeon, MajorDungeon, DungeonReward } from '../../types';
-import { Plus, Target, Sword, CheckCircle2, ChevronRight, Trash2, FolderPlus, Folder, ChevronDown, ChevronUp, Gift, X, Edit2, Coins, Zap, Trophy, HelpCircle, Square, CheckSquare, EyeOff, Eye, Archive, Search, Filter, Calendar } from 'lucide-react';
+import { Plus, Target, Sword, CheckCircle2, ChevronRight, Trash2, FolderPlus, Folder, ChevronDown, ChevronUp, Gift, X, Edit2, Coins, Zap, Trophy, HelpCircle, Square, CheckSquare, EyeOff, Eye, Archive, Search, Filter, Calendar, GripVertical } from 'lucide-react';
 import { PageHeader } from '../PageHeader';
 import { cn } from '../../lib/utils';
 import { SpinnerInput } from '../SpinnerInput';
 import { ConfirmModal } from '../ConfirmModal';
+
+const DraggableItem = ({ item, isEditMode, children, className, handleClassName, onMove }: any) => {
+  const controls = useDragControls();
+  return (
+    <Reorder.Item 
+      value={item} 
+      dragListener={false} 
+      dragControls={controls} 
+      className={cn(className, isEditMode && "touch-none")}
+      style={{ touchAction: isEditMode ? 'none' : 'auto' }}
+      layout
+      whileDrag={{ 
+        scale: 1.02, 
+        backgroundColor: "rgba(30, 41, 59, 0.4)",
+        boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
+        zIndex: 100
+      }}
+      dragMomentum={false}
+      dragElastic={0}
+      onDragEnd={(e: any, info) => {
+        if (!isEditMode || !onMove) return;
+        
+        // Use client coordinates for more consistent element detection across devices
+        const x = info.point.x;
+        const y = info.point.y;
+        
+        const targets = document.elementsFromPoint(x, y);
+        const dropTargetElement = targets.find(t => {
+          const dt = t.closest('[data-drop-target="true"]');
+          // Skip the item itself and ensure we found a valid target
+          return dt && dt.getAttribute('data-id') !== item.id;
+        })?.closest('[data-drop-target="true"]');
+
+        if (dropTargetElement) {
+          const targetId = dropTargetElement.getAttribute('data-id');
+          if (targetId === 'root') {
+            onMove(item.id, null);
+          } else if (targetId) {
+            onMove(item.id, targetId);
+            
+            const evt = new CustomEvent('expandDungeon', { detail: targetId });
+            window.dispatchEvent(evt);
+          }
+        }
+      }}
+    >
+      <div className="flex items-start w-full gap-2">
+        {isEditMode && (
+          <div 
+            className={cn("cursor-grab active:cursor-grabbing touch-none p-1.5 flex items-center justify-center shrink-0 text-slate-500 hover:text-white transition-colors z-20 pointer-events-auto mt-1", handleClassName)}
+            onPointerDown={(e) => {
+              // Prevent default to help with mobile scrolling spikes
+              if (e.pointerType === 'touch') {
+                e.preventDefault(); 
+              }
+              controls.start(e);
+            }}
+          >
+            <GripVertical size={20} />
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          {children}
+        </div>
+      </div>
+    </Reorder.Item>
+  );
+};
 
 interface DungeonManagerProps {
   dungeons: Dungeon[];
@@ -22,9 +90,12 @@ interface DungeonManagerProps {
   onDeleteSub: (id: string) => void;
   onReorderMajor: (id: string, direction: 'up' | 'down') => void;
   onReorderSub: (id: string, direction: 'up' | 'down') => void;
+  onMoveItem: (itemId: string, newParentId: string | null) => void;
   onFinalizeMajor: (id: string) => void;
   onArchiveMajor: (id: string) => void;
   onForceCompleteSub?: (id: string) => void;
+  setMajorDungeons?: React.Dispatch<React.SetStateAction<MajorDungeon[]>>;
+  setDungeons?: React.Dispatch<React.SetStateAction<Dungeon[]>>;
   isEditMode?: boolean;
   activeTab: 'active' | 'archive';
 }
@@ -44,6 +115,9 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
   onDeleteSub,
   onReorderMajor,
   onReorderSub,
+  onMoveItem,
+  setMajorDungeons,
+  setDungeons,
   onFinalizeMajor,
   onArchiveMajor,
   onForceCompleteSub,
@@ -79,6 +153,19 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
     rewards: [] as DungeonReward[],
     isLongTerm: false
   });
+
+  React.useEffect(() => {
+    const handleExpandMode = (e: CustomEvent<string>) => {
+      const targetId = e.detail;
+      if (majorDungeons.some(m => m.id === targetId)) {
+        setExpandedMajors(prev => prev.includes(targetId) ? prev : [...prev, targetId]);
+      } else if (dungeons.some(d => d.id === targetId)) {
+        setExpandedSubDungeons(prev => prev.includes(targetId) ? prev : [...prev, targetId]);
+      }
+    };
+    window.addEventListener('expandDungeon', handleExpandMode as EventListener);
+    return () => window.removeEventListener('expandDungeon', handleExpandMode as EventListener);
+  }, [majorDungeons, dungeons]);
 
   React.useEffect(() => {
     if (activeTab === 'active') {
@@ -220,8 +307,46 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
     if (parentSubs.length === 0 && level > 1) return null;
 
     return (
-      <div className={cn(
-        "space-y-0.5",
+      <Reorder.Group 
+        axis="y" 
+        values={parentSubs} 
+        onReorder={(newSubs) => {
+          if (setDungeons) {
+            setDungeons(prev => {
+              // 1. Identify all items that belong to THIS parent in the latest state
+              const currentSubsInParent = prev.filter(d => d.parentId === parentId);
+              const otherDungeons = prev.filter(d => d.parentId !== parentId);
+              
+              // 2. Identify the intended order based on newSubs (which comes from the group)
+              // We only want to reorder items that ARE still in this parent
+              const reorderedIds = newSubs.map(s => s.id);
+              const itemsToReorder = currentSubsInParent.filter(d => reorderedIds.includes(d.id));
+              
+              // If we have items in newSubs that aren't in currentSubsInParent, it means they were 
+              // just moved IN. If we have items in currentSubsInParent NOT in newSubs, they were 
+              // just moved OUT or are being reordered.
+              
+              // Trust the newSubs order for the items we have
+              const finalReordered = newSubs
+                .map(ns => prev.find(p => p.id === ns.id))
+                .filter((d): d is Dungeon => !!d)
+                .map(d => ({ ...d, parentId }));
+
+              // 3. Keep any items that are in THIS parent but WERE NOT in the reorder list 
+              // (e.g. they were just moved in from another parent and Reorder.Group hasn't seen them yet)
+              const missingOurs = currentSubsInParent.filter(
+                curr => !reorderedIds.includes(curr.id)
+              );
+
+              return [...otherDungeons, ...finalReordered, ...missingOurs];
+            });
+          }
+        }}
+        data-id={parentId}
+        data-drop-target="true"
+        style={{ touchAction: 'none' }}
+        className={cn(
+        "space-y-0.5 min-h-[10px]",
         "ml-3 border-l border-slate-800 pl-3"
       )}>
         {parentSubs.map((sub, idx) => {
@@ -230,12 +355,21 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
           const currentDepth = getSubDungeonDepth(sub.id);
 
           return (
-            <div key={sub.id} className="space-y-0.5">
+            <DraggableItem 
+              key={sub.id} 
+              item={sub}
+              isEditMode={isEditMode}
+              onMove={onMoveItem}
+              handleClassName="w-6 h-6 p-0 hover:bg-slate-800 rounded-sm mt-[6px]"
+              className="space-y-0.5 relative z-10"
+            >
               <div
                 id={`dungeon-${sub.id}`}
+                data-id={sub.id}
+                data-drop-target="true"
                 className={cn(
-                  "p-2 flex items-center justify-between gap-4 transition-all group/sub rounded-lg relative",
-                  currentDungeonId === sub.id ? "bg-indigo-500/10" : "hover:bg-slate-800/10",
+                  "p-2 flex items-center justify-between gap-4 transition-colors group/sub rounded-lg relative bg-slate-900/40",
+                  currentDungeonId === sub.id ? "bg-indigo-500/10" : "hover:bg-slate-800/40",
                   "before:content-[''] before:absolute before:left-[-12px] before:top-1/2 before:w-[12px] before:h-[1px] before:bg-slate-800"
                 )}
                 onClick={() => onSelect(sub.id)}
@@ -267,18 +401,18 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
 
                 {renderRewards(sub)}
 
-                <div className="flex items-center gap-4 shrink-0">
+                <div className="flex items-center gap-2 shrink-0">
                   <div className="hidden sm:flex items-center gap-2 opacity-60">
-                    <div className="h-0.5 w-10 bg-slate-900 rounded-full overflow-hidden border border-slate-800/50">
+                    <div className="h-1.5 w-16 bg-slate-900 rounded-full overflow-hidden border border-slate-800/50">
                       <div 
                         className={cn("h-full transition-all", sub.status === 'completed' ? "bg-emerald-500" : "bg-indigo-500")}
                         style={{ width: `${(sub.completedSessions/sub.totalSessions)*100}%` }}
                       />
                     </div>
-                    <span className="text-[10px] font-bold text-slate-500 tabular-nums">{sub.completedSessions}/{sub.totalSessions}</span>
+                    <span className="text-[10px] font-bold text-slate-500 tabular-nums inline-block w-14 text-right">{sub.completedSessions}/{sub.totalSessions}</span>
                   </div>
 
-                  <div className="shrink-0 order-2">
+                  <div className="shrink-0 order-2 flex items-center ml-1">
                     <div className={currentDungeonId === sub.id ? "text-indigo-500" : "text-slate-800"}>
                       {sub.status === 'completed' ? (
                         <CheckSquare size={16} className="text-emerald-500" />
@@ -319,20 +453,6 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                             <Plus size={11} />
                           </button>
                         )}
-                        <div className="flex items-center gap-0.5 bg-slate-950/20 px-1 py-0 rounded">
-                          <button 
-                            onClick={(e) => { e.stopPropagation(); onReorderSub(sub.id, 'up'); }} 
-                            className="p-0.5 text-slate-500 hover:text-indigo-400 transition-all rounded hover:bg-slate-800"
-                          >
-                            <ChevronUp size={11} />
-                          </button>
-                          <button 
-                            onClick={(e) => { e.stopPropagation(); onReorderSub(sub.id, 'down'); }} 
-                            className="p-0.5 text-slate-500 hover:text-indigo-400 transition-all rounded hover:bg-slate-800"
-                          >
-                            <ChevronDown size={11} />
-                          </button>
-                        </div>
                         <button
                           onClick={(e) => { e.stopPropagation(); setEditingSub(sub); }}
                           className={cn(
@@ -366,10 +486,10 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                 </div>
               </div>
               {isExpanded && renderSubDungeons(sub.id, level + 1)}
-            </div>
+            </DraggableItem>
           );
         })}
-      </div>
+      </Reorder.Group>
     );
   };
 
@@ -709,12 +829,49 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
           </div>
         ) : (
           <>
-            <div className="space-y-1 bg-slate-900/10 rounded-2xl border border-slate-800/30 p-1">
+            <Reorder.Group 
+              axis="y" 
+              values={filteredMajors} 
+              onReorder={(newMajors) => {
+                if (setMajorDungeons) {
+                  setMajorDungeons(prev => {
+                    const currentMajorsInPrev = prev.filter(m => m.status !== 'archived');
+                    const archiveMajors = prev.filter(m => m.status === 'archived');
+                    
+                    const reorderedIds = newMajors.map(m => m.id);
+                    
+                    const finalReordered = newMajors.map(nm => {
+                      const existing = prev.find(p => p.id === nm.id);
+                      return existing ? existing : nm;
+                    }).filter(m => m.status !== 'archived');
+
+                    const missingOurs = currentMajorsInPrev.filter(
+                      curr => !reorderedIds.includes(curr.id)
+                    );
+
+                    return [...finalReordered, ...archiveMajors, ...missingOurs];
+                  });
+                }
+              }}
+              data-id="root"
+              data-drop-target="true"
+              style={{ touchAction: 'none' }}
+              className="space-y-1 bg-slate-900/10 rounded-2xl border border-slate-800/30 p-1 min-h-[100px]"
+            >
             {filteredMajors.map(major => (
-            <div key={major.id} className="group transition-all">
+            <DraggableItem 
+              key={major.id} 
+              item={major} 
+              isEditMode={isEditMode}
+              onMove={onMoveItem}
+              handleClassName="w-6 h-6 p-0 hover:bg-slate-800 rounded-sm mt-[14px]"
+              className="group transition-colors relative"
+            >
               <div 
+                data-id={major.id}
+                data-drop-target="true"
                 className={cn(
-                  "p-3.5 flex items-center justify-between gap-3 cursor-pointer rounded-xl transition-all",
+                  "p-3.5 flex items-center justify-between gap-3 cursor-pointer rounded-xl transition-colors",
                   expandedMajors.includes(major.id) ? "bg-slate-800/20 shadow-inner" : "hover:bg-slate-800/10"
                 )}
                 onClick={() => toggleMajor(major.id)}
@@ -766,22 +923,6 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                 </div>
                 
                 <div className="flex items-center gap-1.5 shrink-0">
-                  {isEditMode && (
-                    <div className="flex items-center gap-1 bg-slate-950/20 px-1 py-0 rounded-md">
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); onReorderMajor(major.id, 'up'); }} 
-                        className="p-0.5 text-slate-500 hover:text-indigo-400 transition-all"
-                      >
-                        <ChevronUp size={12} />
-                      </button>
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); onReorderMajor(major.id, 'down'); }} 
-                        className="p-0.5 text-slate-500 hover:text-indigo-400 transition-all"
-                      >
-                        <ChevronDown size={12} />
-                      </button>
-                    </div>
-                  )}
                   
                   {isEditMode && (
                     <div className="flex items-center gap-1">
@@ -861,9 +1002,9 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                   </motion.div>
                 )}
               </AnimatePresence>
-            </div>
+            </DraggableItem>
             ))}
-            </div>
+            </Reorder.Group>
             
             {/* Add Major Dungeon Button at Bottom */}
             <button 

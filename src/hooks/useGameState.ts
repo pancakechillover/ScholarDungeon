@@ -22,6 +22,7 @@ export function useGameState() {
       currentDungeonId: null,
       history: [],
       rewardHistory: [],
+      questHistory: [],
       lastStudyDate: null,
       streak: 0,
       dailySessions: 0,
@@ -791,6 +792,18 @@ export function useGameState() {
                 // Auto-claim and apply rewards
                 completedQuests.forEach(q => {
                   const r = q.reward;
+                  
+                  // Record in Quest History
+                  newState.questHistory = [{
+                    id: Math.random().toString(36).substr(2, 9),
+                    questId: q.id,
+                    title: q.title,
+                    type: q.type,
+                    timestamp: new Date().toISOString(),
+                    rewards: q.rewards || [q.reward],
+                    isAchievement: q.isAchievement
+                  }, ...newState.questHistory];
+
                   if (r.type === 'coins') {
                     newState.coins += r.amount;
                   } else if (r.type === 'xp') {
@@ -1329,6 +1342,17 @@ export function useGameState() {
         unclaimedQuests: Math.max(0, (prev.unclaimedQuests || 0) - 1)
       };
 
+      // Record in Quest History
+      newState.questHistory = [{
+        id: Math.random().toString(36).substr(2, 9),
+        questId: quest.id,
+        title: quest.title,
+        type: quest.type,
+        timestamp: new Date().toISOString(),
+        rewards: quest.rewards || [quest.reward],
+        isAchievement: quest.isAchievement
+      }, ...newState.questHistory];
+
       rewards.forEach(reward => {
         // Add to history
         const newItem: RewardHistoryItem = {
@@ -1365,6 +1389,88 @@ export function useGameState() {
           }
         }
       });
+
+      return newState;
+    });
+  }, []);
+
+  const claimAllQuestRewards = useCallback(() => {
+    setState(prev => {
+      const unclaimed = prev.quests.filter(q => q.completed && !q.claimed);
+      if (unclaimed.length === 0) return prev;
+
+      let newState = { ...prev };
+      const claimedItems: { title: string; rewards: import('../types').QuestReward[]; isAchievement: boolean }[] = [];
+
+      // Process all unclaimed quests
+      const updatedQuests = newState.quests.map(q => {
+        if (q.completed && !q.claimed) {
+          const rewards = q.rewards || [q.reward];
+          claimedItems.push({ title: q.title, rewards, isAchievement: q.isAchievement });
+          return { ...q, claimed: true };
+        }
+        return q;
+      });
+
+      newState.quests = updatedQuests;
+      newState.unclaimedQuests = 0;
+
+      unclaimed.forEach(quest => {
+        const rewards = quest.rewards || [quest.reward];
+        
+        // Record in Quest History
+        newState.questHistory = [{
+          id: Math.random().toString(36).substr(2, 9),
+          questId: quest.id,
+          title: quest.title,
+          type: quest.type,
+          timestamp: new Date().toISOString(),
+          rewards: quest.rewards || [quest.reward],
+          isAchievement: quest.isAchievement
+        }, ...newState.questHistory];
+
+        rewards.forEach(reward => {
+          // Add to history
+          const newItem: RewardHistoryItem = {
+            id: Math.random().toString(36).substr(2, 9),
+            name: reward.type === 'text' ? (reward.rewardText || 'Quest Reward') : 
+                  reward.type === 'talentPoint' ? `+${reward.amount} Talent Points` :
+                  reward.type === 'coins' ? `+${reward.amount} Gold Coins` :
+                  reward.type === 'xp' ? `+${reward.amount} Experience` :
+                  (reward.itemName || 'Item'),
+            rarity: quest.isAchievement ? 'epic' : 'rare',
+            source: 'Explore',
+            timestamp: new Date().toISOString(),
+            type: reward.type === 'text' ? 'text' : (reward.type === 'coins' ? 'coins' : (reward.type === 'xp' ? 'xp' : 'item')),
+            amount: reward.amount,
+            redeemed: reward.type !== 'item' && reward.type !== 'text'
+          };
+
+          newState.rewardHistory = [newItem, ...newState.rewardHistory];
+
+          // Apply rewards
+          if (reward.type === 'coins') {
+            newState.coins += reward.amount;
+          } else if (reward.type === 'xp') {
+            newState = processXP(newState, reward.amount);
+          } else if (reward.type === 'talentPoint') {
+            newState.talentPoints += reward.amount;
+          } else if (reward.type === 'item') {
+            if (reward.itemName === 'Talent Shard') {
+              newState = processShards(newState, reward.amount);
+              newItem.redeemed = true;
+            } else if (reward.itemName === 'Death Defying Gold Medal') {
+              newState.deathDefyingMedals += reward.amount;
+              newItem.redeemed = true;
+            }
+          }
+        });
+      });
+
+      newState.bulkClaimResult = {
+        items: claimedItems,
+        timestamp: new Date().toISOString()
+      };
 
       return newState;
     });
@@ -1439,6 +1545,78 @@ export function useGameState() {
     }));
   }, [addRewardToHistory]);
 
+  const moveDungeonItem = useCallback((itemId: string, newParentId: string | null) => {
+    // Determine the type of the item and capture its latest data from BOTH possible lists
+    setDungeons(prevDungeons => {
+      // We need to access both lists. Since we can't easily do it in one atomic call to multiple setters,
+      // we'll use this pattern or just trust the functional update.
+      const isSub = prevDungeons.find(d => d.id === itemId);
+      
+      // If we move it to root
+      if (newParentId === null) {
+        if (isSub) {
+          const newMajor: MajorDungeon = {
+            id: isSub.id,
+            name: isSub.name,
+            description: isSub.description || '',
+            status: isSub.status,
+            rewards: isSub.rewards,
+            completedAt: isSub.completedAt
+          };
+          setMajorDungeons(prevM => [...prevM.filter(m => m.id !== itemId), newMajor]);
+          return prevDungeons.filter(d => d.id !== itemId);
+        }
+        return prevDungeons;
+      }
+
+      // If moving to a parent
+      const checkCycleRecursive = (targetId: string | null, movingId: string, all: Dungeon[]): boolean => {
+        let curr = targetId;
+        const visited = new Set<string>();
+        while (curr) {
+          if (curr === movingId) return true;
+          if (visited.has(curr)) break;
+          visited.add(curr);
+          const parent = all.find(d => d.id === curr);
+          curr = parent?.parentId || null;
+        }
+        return false;
+      };
+
+      if (checkCycleRecursive(newParentId, itemId, prevDungeons)) return prevDungeons;
+
+      if (isSub) {
+        return prevDungeons.map(d => d.id === itemId ? { ...d, parentId: newParentId } : d);
+      } else {
+        // Might be a major dungeon
+        setMajorDungeons(prevM => {
+          const major = prevM.find(m => m.id === itemId);
+          if (major) {
+            const newSub: Dungeon = {
+              id: major.id,
+              name: major.name,
+              description: major.description,
+              status: major.status,
+              parentId: newParentId,
+              rewards: major.rewards,
+              completedAt: major.completedAt,
+              totalSessions: 1,
+              completedSessions: major.status === 'completed' ? 1 : 0,
+              rewardCoins: 0,
+              rewardXP: 0,
+              rewardText: '',
+              isLongTerm: false
+            };
+            setDungeons(dPrev => [...dPrev.filter(d => d.id !== itemId), newSub]);
+            return prevM.filter(m => m.id !== itemId);
+          }
+          return prevM;
+        });
+        return prevDungeons;
+      }
+    });
+  }, [setDungeons, setMajorDungeons]);
+
   return {
     state,
     dungeons,
@@ -1462,11 +1640,13 @@ export function useGameState() {
     setState,
     reorderMajorDungeon,
     reorderSubDungeon,
+    moveDungeonItem,
     finalizeMajorDungeon,
     updateQuests,
     updateSession,
     deleteSession,
     claimQuestReward,
+    claimAllQuestRewards,
     saveDailyLog
   };
 }

@@ -179,7 +179,7 @@ export const Timer = React.memo<TimerProps>(({
     setEndTime(null);
 
     // Show local notification if possible
-    if (!silent && pushEnabled && 'serviceWorker' in navigator && Notification.permission === 'granted') {
+    if (!silent && pushEnabled && 'serviceWorker' in navigator && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
       navigator.serviceWorker.ready.then(reg => {
         reg.showNotification(isResting ? "Rest Over!" : "Focus Over!", {
           body: isResting ? "Time to return to the dungeon." : "You have cleared the room. Take a rest?",

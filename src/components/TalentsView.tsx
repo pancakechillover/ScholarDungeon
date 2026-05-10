@@ -8,9 +8,10 @@ interface TalentsViewProps {
   state: AppState;
   unlockTalent: (id: string, cost: number) => void;
   toggleTalent: (id: string) => void;
+  openGuideBook?: (chapter: number) => void;
 }
 
-export const TalentsView: React.FC<TalentsViewProps> = ({ state, unlockTalent, toggleTalent }) => {
+export const TalentsView: React.FC<TalentsViewProps> = ({ state, unlockTalent, toggleTalent, openGuideBook }) => {
   const dynamicTalents = useMemo(() => {
     return TALENTS.map(t => {
       if (t.id === 'c3') {
@@ -49,6 +50,7 @@ export const TalentsView: React.FC<TalentsViewProps> = ({ state, unlockTalent, t
         onUnlock={unlockTalent}
         onToggle={toggleTalent}
         talents={dynamicTalents}
+        openGuideBook={openGuideBook}
       />
     </motion.div>
   );

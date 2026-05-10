@@ -118,6 +118,16 @@ export interface TimeSettings {
   night: { start: number; end: number };
 }
 
+export interface QuestHistoryItem {
+  id: string;
+  questId: string;
+  title: string;
+  type: QuestType;
+  timestamp: string;
+  rewards: QuestReward[];
+  isAchievement: boolean;
+}
+
 export interface AppState {
   level: number;
   xp: number;
@@ -130,6 +140,7 @@ export interface AppState {
   currentDungeonId: string | null;
   history: StudySession[];
   rewardHistory: RewardHistoryItem[];
+  questHistory: QuestHistoryItem[];
   lastStudyDate: string | null;
   streak: number;
   dailySessions: number;
@@ -185,6 +196,10 @@ export interface AppState {
     dungeonName: string;
     type: 'dungeon' | 'quest' | 'achievement';
     rewards: DungeonReward[];
+  } | null;
+  bulkClaimResult?: {
+    items: { title: string; rewards: QuestReward[]; isAchievement: boolean }[];
+    timestamp: string;
   } | null;
   dailyLogs?: {
     [date: string]: {

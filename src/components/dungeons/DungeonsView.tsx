@@ -6,7 +6,8 @@ import {
   Trophy, 
   Plus, 
   Edit2, 
-  Archive 
+  Archive,
+  CheckCheck 
 } from 'lucide-react';
 import { PageHeader } from '../PageHeader';
 import { DungeonManager } from './DungeonManager';
@@ -39,10 +40,15 @@ interface DungeonsViewProps {
   handleDeleteSub: (id: string) => void;
   reorderMajorDungeon: (id: string, direction: 'up' | 'down') => void;
   reorderSubDungeon: (id: string, direction: 'up' | 'down') => void;
+  onMoveDungeonItem: (itemId: string, newParentId: string | null) => void;
+  setMajorDungeons: React.Dispatch<React.SetStateAction<MajorDungeon[]>>;
+  setDungeons: React.Dispatch<React.SetStateAction<Dungeon[]>>;
   finalizeMajorDungeon: (id: string) => void;
   archiveMajorDungeon: (id: string) => void;
   forceCompleteSubDungeon: (id: string) => void;
   claimQuestReward: (id: string) => void;
+  claimAllQuestRewards: () => void;
+  questHistory: AppState['questHistory'];
 }
 
 export const DungeonsView: React.FC<DungeonsViewProps> = ({
@@ -70,10 +76,15 @@ export const DungeonsView: React.FC<DungeonsViewProps> = ({
   handleDeleteSub,
   reorderMajorDungeon,
   reorderSubDungeon,
+  onMoveDungeonItem,
+  setMajorDungeons,
+  setDungeons,
   finalizeMajorDungeon,
   archiveMajorDungeon,
   forceCompleteSubDungeon,
-  claimQuestReward
+  claimQuestReward,
+  claimAllQuestRewards,
+  questHistory
 }) => {
   return (
     <motion.div
@@ -84,9 +95,9 @@ export const DungeonsView: React.FC<DungeonsViewProps> = ({
       className="w-full p-6 lg:p-8 space-y-8"
     >
       <PageHeader 
-        title={dungeonSubTab === 'list' ? "Dungeon Explorer" : dungeonSubTab === 'quests' ? "Quest Board" : "Achievements"} 
-        description={dungeonSubTab === 'list' ? "Manage your study goals" : dungeonSubTab === 'quests' ? "Complete tasks for extra rewards" : "Your legendary milestones"} 
-        icon={dungeonSubTab === 'list' ? Sword : dungeonSubTab === 'quests' ? Target : Trophy} 
+        title={dungeonSubTab === 'list' ? "Expedition" : dungeonSubTab === 'quests' ? "Quest Board" : dungeonSubTab === 'achievements' ? "Achievements" : "Quest History"} 
+        description={dungeonSubTab === 'list' ? "Manage your study goals" : dungeonSubTab === 'quests' ? "Complete tasks for extra rewards" : dungeonSubTab === 'achievements' ? "Your legendary milestones" : "Chronicle of your completed deeds"} 
+        icon={dungeonSubTab === 'list' ? Sword : dungeonSubTab === 'quests' ? Target : dungeonSubTab === 'achievements' ? Trophy : Archive} 
       >
         <div className="flex flex-wrap items-center gap-3 mt-4">
           <div className="flex gap-1 bg-slate-900 p-1 rounded-xl border border-slate-800">
@@ -98,7 +109,7 @@ export const DungeonsView: React.FC<DungeonsViewProps> = ({
               )}
             >
               <Sword size={14} className="sm:w-4 sm:h-4" />
-              Dungeons
+              Expedition
             </button>
             <button
               onClick={() => setDungeonSubTab('quests')}
@@ -186,6 +197,33 @@ export const DungeonsView: React.FC<DungeonsViewProps> = ({
                 <Plus size={18} />
               </button>
             )}
+
+            {(dungeonSubTab === 'quests' || dungeonSubTab === 'achievements' || (dungeonSubTab as any) === 'history') && (
+              <>
+                <button
+                  onClick={() => setDungeonSubTab(dungeonSubTab === ('history' as any) ? 'quests' : 'history' as any)}
+                  className={cn(
+                    "flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-xl transition-all shadow-lg shrink-0",
+                    dungeonSubTab === ('history' as any) 
+                      ? "bg-emerald-600 text-white shadow-emerald-500/20" 
+                      : "bg-slate-800 text-slate-400 hover:text-white"
+                  )}
+                  title="Toggle Quest History"
+                >
+                  <Archive size={18} />
+                </button>
+
+                {(unclaimedQuestsCount > 0 || unclaimedAchievementsCount > 0) && (
+                  <button
+                    onClick={claimAllQuestRewards}
+                    className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl transition-all shadow-lg shadow-emerald-500/20 shrink-0"
+                    title="Claim All Rewards"
+                  >
+                    <CheckCheck size={20} />
+                  </button>
+                )}
+              </>
+            )}
           </div>
         </div>
       </PageHeader>
@@ -208,6 +246,9 @@ export const DungeonsView: React.FC<DungeonsViewProps> = ({
           onDeleteSub={handleDeleteSub}
           onReorderMajor={reorderMajorDungeon}
           onReorderSub={reorderSubDungeon}
+          onMoveItem={onMoveDungeonItem}
+          setMajorDungeons={setMajorDungeons}
+          setDungeons={setDungeons}
           onFinalizeMajor={finalizeMajorDungeon}
           onArchiveMajor={archiveMajorDungeon}
           onForceCompleteSub={forceCompleteSubDungeon}
@@ -215,6 +256,7 @@ export const DungeonsView: React.FC<DungeonsViewProps> = ({
       ) : dungeonSubTab === 'quests' ? (
         <QuestManager 
           quests={state.quests}
+          questHistory={questHistory}
           activeTalents={state.activeTalents}
           isAdding={isAddingQuest}
           setIsAdding={setIsAddingQuest}
@@ -223,9 +265,10 @@ export const DungeonsView: React.FC<DungeonsViewProps> = ({
           onClaimReward={claimQuestReward}
           forceTab="quests"
         />
-      ) : (
+      ) : dungeonSubTab === 'achievements' ? (
         <QuestManager 
           quests={state.quests}
+          questHistory={questHistory}
           activeTalents={state.activeTalents}
           isAdding={isAddingQuest}
           setIsAdding={setIsAddingQuest}
@@ -233,6 +276,18 @@ export const DungeonsView: React.FC<DungeonsViewProps> = ({
           onUpdateQuests={(quests) => setState(prev => ({ ...prev, quests }))}
           onClaimReward={claimQuestReward}
           forceTab="achievements"
+        />
+      ) : (
+        <QuestManager 
+          quests={state.quests}
+          questHistory={questHistory}
+          activeTalents={state.activeTalents}
+          isAdding={isAddingQuest}
+          setIsAdding={setIsAddingQuest}
+          isEditMode={isDungeonEditMode}
+          onUpdateQuests={(quests) => setState(prev => ({ ...prev, quests }))}
+          onClaimReward={claimQuestReward}
+          forceTab="history"
         />
       )}
     </motion.div>

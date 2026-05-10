@@ -21,8 +21,8 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors:** When designing UI elements that highlight based on themes, note that ONLY `indigo-400`, `indigo-500`, and `indigo-600` are overridden by the custom theme variables in `index.css`. DO NOT use `indigo-300` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v4.7.3
-- **Last Update Date:** 2026-05-09
+- **Current Version:** v4.10.3
+- **Last Update Date:** 2026-05-10
 
 ## Dark Themes Definition
 The following themes are considered "Dark Themes" and form the baseline for vibrant visual effects and high-contrast glowing elements:
@@ -33,8 +33,8 @@ The following themes are considered "Dark Themes" and form the baseline for vibr
 ## Light Themes Definition
 The following themes are considered "Light Themes" and require special CSS handling (e.g., avoiding white text on light backgrounds, using theme-aware colors for modals and charts):
 - **Daylight** (`data-theme="daylight"`)
-- **Warm Sun** (`data-theme="warm"`)
-- **Candy** (`data-theme="candy"`)
+- **Warm Sun** (`state.theme === "warm"`)
+- **Candy** (`state.theme === "candy"`)
 
 ## Push Notification Troubleshooting Protocols
 Due to inconsistencies in Web Push delivery in various environments (Iframes, PWAs), follow this hierarchy:
@@ -46,6 +46,145 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v4.10.3 (2026-05-10):** Notification API Stability Fix.
+  - *Bugfix:* Fixed `ReferenceError: Can't find variable: Notification` by adding `typeof Notification !== 'undefined'` checks before all API calls.
+  - *Architecture:* Enhanced production stability in environments with limited browser API access (Iframes, restricted browsers).
+  - *Bugfix:* Fixed a critical missing destructuring of `claimAllQuestRewards` in `App.tsx` that caused application crashes.
+- **v4.10.2 (2026-05-10):** Bulk Reward Claiming & Unified Summary.
+  - *Feature:* Implemented a "Claim All" system for quests and achievements, allowing one-click collection of all pending rewards.
+  - *UI:* Added a dedicated Bulk Claim Modal that displays a comprehensive summary of all items completed and total treasure harvested.
+  - *UX:* Synchronized bulk claiming with reward history and real-time state updates for seamless progression.
+- **v4.10.1 (2026-05-10):** Quest History Temporal Filtering.
+  - *Feature:* Added time-based filtering to Quest History (Today, Last 7 Days, All Time).
+  - *UI:* Implemented filter tabs in the History view for improved navigation of past deeds.
+  - *UX:* Optimized empty states to provide context based on active time filters.
+- **v4.10.0 (2026-05-10):** Quest History & Chronicler Integration.
+  - *Feature:* Implemented a full Quest History system that archives all completed and claimed tasks/achievements.
+  - *UI:* Added a dedicated "History" tab to the Quest Board with high-contrast parchment items and timestamp tracking.
+  - *UX:* Integrated automatic history recording for both manual reward claims and auto-claimed session rewards.
+  - *Aesthetic:* Created custom "Chronicler" icon and emerald theme accents for historical records.
+- **v4.9.5 (2026-05-09):** Quest Board High-Contrast & Theme Alignment.
+  - *UI:* Removed transparency, inner shadows, and grain from Quest Board backgrounds, opting for solid theme-aware colors (`bg-indigo-50` / `bg-slate-900`).
+  - *UX:* Improved text readability by using high-contrast slate-900 text on parchment items and bold font weights.
+  - *Aesthetic:* Redesigned icon containers to use theme dark colors in light mode for better visual weight.
+- **v4.9.4 (2026-05-09):** Quest Board Theme & Readability Optimization.
+  - *UI:* Simplified Quest Board background to a flat, theme-responsive indigo scale, removing heavy shadows and grain.
+  - *UX:* Significantly improved quest item readability by increasing text contrast (Titles: #1a1a1a, Descriptions: #333333) and refining reward badge styling.
+  - *Aesthetic:* Harmonized the board layout with consistent theme-aware borders and background opacity.
+- **v4.9.3 (2026-05-09):** Quest Board Theme-Awareness & UI Refinement.
+  - *Aesthetic:* Synchronized Quest Board appearance with active themes by replacing hardcoded wood colors with theme-responsive `indigo` variable scales.
+  - *Bugfix:* Fixed reward badge visibility issues by removing intrusive dark backgrounds and shadows in favor of a clean, high-contrast design on parchment notes.
+- **v4.9.2 (2026-05-09):** Quest Board Aesthetic & Updates Cycle.
+  - *UI:* Completely redesigned the Quest Board with a wooden textured background and pinned parchment note items for a thematic task board look.
+  - *Feature:* Added explicit update cycle badges (Daily, Weekly, Monthly) to all Quest cards to clarify reset periods.
+  - *Aesthetic:* Integrated deterministic item rotation and thumbtack decorations using Lucide icons.
+- **v4.9.1 (2026-05-09):** Drag & Drop Stability & Race Condition Fix.
+  - *Bugfix:* Fixed a critical edge case where items would be "swallowed" during cross-group movement due to conflicting `onReorder` and `onMove` events.
+  - *Architecture:* Refactored `moveDungeonItem` to be functionally atomic, ensuring state consistency during rapid drag operations.
+  - *UX:* Improved mobile drag stability by disabling momentum and adding strict layout constraints.
+- **v4.9.0 (2026-05-09):** Drag & Drop Stability & Mobile UX Fix.
+  - *Bugfix:* Fixed critical issue where dungeon items would disappear during rapid reordering or cross-level movement.
+  - *UX:* Fixed mobile/tablet scrolling bug where dragging an item would trigger page-wide scrolling to the bottom by implementing `touch-none` and `preventDefault`.
+  - *Architecture:* Hardened state synchronization in `DungeonManager` to handle reorder events and move events safely without race condition data loss.
+- **v4.8.11 (2026-05-09):** Critical TypeError Hotfix.
+  - *Bugfix:* Fixed a TypeError in `moveDungeonItem` where it was incorrectly referencing `dungeons` and `majorDungeons` via the `state` object.
+- **v4.8.10 (2026-05-09):** Hierarchical Nesting & Race Conditions Fix.
+  - *Architecture:* Eliminated nested functional state updates from useGameState which created asynchronous duplication bugs when promoting/demoting hierarchies.
+  - *UX:* Automatically expands the container directory visually when hovering or dropping sub-dungeons to clearly indicate hierarchy.
+- **v4.8.9 (2026-05-09):** Drag & Drop Stability & Cycle Prevention.
+  - *Bugfix:* Fixed a critical issue where items would disappear due to circular hierarchy loops (dragging a parent into its own child).
+  - *Architecture:* Enhanced state synchronization between MajorDungeons and Sub-Dungeons collectives to prevent duplicate IDs during cross-group movement.
+  - *Logic:* Implemented a recursive ancestor check in moveDungeonItem to strictly maintain a healthy tree structure.
+- **v4.8.8 (2026-05-09):** Drag & Drop Stability Fix.
+  - *Bugfix:* Fixed a critical issue where items would disappear when dragged across different hierarchy levels or into other dungeons.
+  - *UX:* Improved drop target detection by ignoring the item currently being dragged, preventing self-blocking hit tests.
+  - *Architecture:* Migrated reorder state updates to non-destructive functional updates to preserve items during cross-group movement.
+- **v4.8.7 (2026-05-09):** Hierarchical Drag & Drop.
+  - *Feature:* Implemented full hierarchical reordering and nesting. Drag any level-1 dungeon onto another to make it a child (L2), or move sub-dungeons between parents.
+  - *UX:* Added drop-target detection using viewport coordinates for intuitive "folder-style" nesting during edit mode.
+  - *Architecture:* Enhanced state management to automatically handle promoting sub-dungeons to root MajorDungeons when dropped onto the Expedition container.
+- **v4.8.6 (2026-05-09):** Mobile Drag & Drop Polish.
+  - *UX:* Repositioned drag-and-drop handles for Expedition, Quests, and Achievements to perfectly align with mobile screens without overflowing the horizontal layout.
+  - *UI:* Ensured edit buttons precisely exist between progress bars and completion checkboxes without requiring hover states.
+  - *UI:* Widened progress numeric ratios across all Dungeons menus strictly preventing clipping when ratios like "100/100" are met.
+- **v4.8.5 (2026-05-09):** Edit Layout & Progress Width Update.
+  - *UI:* Widened progress bar numeric ratio elements to comfortably fit 3-digit denominators ("100/100").
+  - *UX:* Reordered Quest and Achievement panels in edit mode so action buttons appear practically between the progress bar and the completion box.
+- **v4.8.4 (2026-05-09):** Quest Board & Achievement Polish.
+  - *UI:* Removed rigid spatial gap limitations between progress bar statistics and completion checkboxes on the Quests and Achievement tabs.
+  - *UX:* Fixed an issue in Quests and Achievements where reordering and edit action buttons frustratingly required explicit mouse hover to appear on desktop views, maintaining consistent visibility.
+- **v4.8.3 (2026-05-09):** Dungeon Checkbox Spacing.
+  - *UI:* Removed rigid sizing from the Dungeon action container block to allow the Checkbox and progress bar text to sit organically close to each other without absurd gap filling.
+- **v4.8.2 (2026-05-09):** Dungeon Tabs Layout Alignment.
+  - *UI:* Aligned progress bars, numerical counters, and rightmost action elements perfectly across the Dungeons, Quests, and Achievements tabs in the Dungeons menu to be identically sized and positioned.
+  - *UX:* Standardized width sizing using strict container anchoring so that flipping between any of the related tabs causes exactly zero horizontal UI shifting for identically purposed elements.
+- **v4.8.1 (2026-05-09):** Dungeon Progress Bar Visibility Fix.
+  - *UI:* Fixed an issue where the dungeon progress bar in the Dungeons menu was invisible (0px internal height) due to thin height allocations clashing with borders.
+  - *UX:* Increased the dungeon progress bar thickness to easily display current percentage clearly.
+- **v4.8.0 (2026-05-09):** Dashboard Quest Navigation Fix.
+  - *UX:* Updated Guidebook links to correctly redirect Quests and Achievements directly to their respective tabs inside the Dungeons page.
+- **v4.7.22 (2026-05-09):** Offline Guidebook Markdown & Mobile Compressing.
+  - *Documentation:* Exported the entire Sanctum Guidebook to a standalone `GUIDEBOOK.md` file in the root directory for offline reading.
+  - *UI:* Improved the Guidebook modal's responsiveness by compressing padding and font sizes on smaller screens to ensure content completely fits on a single mobile page without relying on scrolling.
+- **v4.7.21 (2026-05-09):** Sanctum Items Deep Linking & Responsive Layout.
+  - *Feature:* Added interactive hyperlinked terms within the Sanctum Items chapters to instantly route users to matching sections (Dungeon, Quests, Merchant, Talent Tree).
+  - *UX:* Refined responsive layout for the entire guide book to ensure 100% visibility of all elements on tight mobile viewports without overflowing text.
+- **v4.7.20 (2026-05-09):** Sanctum Items Refinement.
+  - *Documentation:* Merged Core Resources and Advanced Items cleanly into a single continuous Sanctum Items chapter spanning over the designated pages.
+  - *UI:* Bookmarks were modified to include a distinct package icon representing the Items section.
+  - *Aesthetic:* The information for each resource is now displayed using cleaner, Markdown-style `-` bullet points.
+- **v4.7.19 (2026-05-09):** Sanctum Items Guide Polish.
+  - *Documentation:* Expanded the Sanctum Items Guide chapter into 4 dedicated pages, properly separating Core Resources and Advanced Items.
+  - *Localization:* Renamed "Protection Amulet" to "Death Defying Medal" to match core naming.
+  - *UI:* Fully integrated Sanctum Items into the interactive Guidebook Table of Contents with robust page alignments.
+- **v4.7.18 (2026-05-09):** Sanctum Items Guide Chapter.
+  - *Feature:* Added a new "Sanctum Items" chapter to the Guide Book containing encyclopedic details of all Core Resources and Advanced Items (Protection Amulet, XP Card, Gold Card).
+- **v4.7.17 (2026-05-09):** Talent Tree Guide Flow Optimization.
+  - *UX:* Replaced the standalone "How to get points" modal in the Talent Tree with a direct link to the interactive Guidebook (Talent System Chapter) to centralize all tutorials securely.
+- **v4.7.16 (2026-05-09):** Dashboard Guide Polish.
+  - *UI:* Added the Sanctum Map to the Guides section on the Dashboard page.
+  - *UX:* Renamed the introductory welcome message in the Guidebook from Pathfinder to Seeker to ensure consistent narrative terminology.
+- **v4.7.15 (2026-05-10):** Guidebook Thematic Polish.
+  - *UI:* Adjusted Guidebook cover title typography for better responsiveness, utilizing a smaller cascading scale on mobile.
+  - *Aesthetic:* Refined the Sanctum Map and Record icons in the Guidebook, shifting away from generic slate backgrounds to thematic Sky Blue.
+  - *Aesthetic:* Synchronized hyperlinked keywords (Quests, Talents, Dungeons) within Guidebook chapters to seamlessly match the dominant color of their respective pages.
+  - *UX:* Activated deep linking for Quests and Achievements keywords, effortlessly routing players to the Dashboard.
+- **v4.7.14 (2026-05-10):** Guidebook Navigation Polish.
+  - *Bugfix:* Fixed broken code structure and syntax errors in the Guidebook's pages array.
+  - *UX:* Synchronized bookmark icons and colors with the new chapter sequence (Map first).
+  - *Logic:* Re-mapped TOC and Bookmark links to correctly point to the updated page indices.
+- **v4.7.13 (2026-05-10):** Sanctum Navigation & Map Update.
+  - *Feature:* Added "Map to the Sanctum" chapter to the Guidebook, providing a visual and textual overview of all application modules.
+  - *UX:* Implemented interactive deep-links within the Guidebook that navigate directly to corresponding application sections (Vault, Merchant, Talents, etc.).
+  - *UI:* Enhanced Guidebook navigation and bookmark synchronization to accommodate the new chapter.
+- **v4.7.12 (2026-05-09):** Adventure Guide Polish.
+  - *Aesthetic:* Updated Guidebook cover title to Adventure Guide with adaptive sizing to ensure it fits mobile screens.
+  - *Aesthetic:* Applied a luxurious gold gradient effect to the central compass logo to match the typography.
+  - *UI:* Changed the ampersand symbol used in headings to a sans-serif variant to avoid awkward font rendering in serif.
+- **v4.7.11 (2026-05-09):** Pathfinder's Guide & Typography Update.
+  - *Aesthetic:* Added an Introduction page and formally renamed the module to Pathfinder's Guide based on user feedback.
+  - *Typography:* Replaced handwriting body fonts with universally readable standard fonts to enhance legibility.
+  - *UI:* Restructured Table of Contents targets and aligned uniform page numbering across the bottom of the book pages.
+- **v4.7.10 (2026-05-09):** Guidebook Font Size Balancing.
+  - *Bugfix:* Adjusted the Guidebook paragraph and list fonts down to `text-xl` to prevent content overflows on standard pages while leaving the fonts highly readable.
+- **v4.7.9 (2026-05-09):** Guidebook Visual Polish.
+  - *Aesthetic:* Redesigned the Guidebook cover with a gorgeous print-style gilded font (`Playfair Display`) and matching Compass logo, replacing previous hand-drawn traits.
+  - *UI:* Updated the Talent System icons within the Guidebook to the standard `Network` interface icon for structural clarity.
+- **v4.7.8 (2026-05-09):** Guidebook Visual Polish.
+  - *UI:* Replaced default standard vector icons with custom SVG hand-drawn style icons (Book, Coins, Target, Zap) to match the parchment paper aesthetic.
+  - *UX:* Enlarged text significantly within the "How to Acquire" and "Pro Tip" informational blocks to vastly improve readability for users with the cursive font.
+- **v4.7.7 (2026-05-09):** Handwritten Font Injection.
+  - *Aesthetic:* Explicitly forced Caveat cursive font into all inner-page text fields to bypass default cascading limits overriding the paper texture parent font.
+  - *UX:* Enlarged handwritten body text significantly (`text-xl` and `text-2xl`) as cursive fonts natively render much smaller than standard sans-serif.
+- **v4.7.6 (2026-05-09):** Retro Handwriting & Paper Texture.
+  - *Aesthetic:* Replaced all book fonts with a handwritten cursive font (Caveat) and added procedural noise/paper texture to the pages for a retro feel.
+  - *UI:* Desaturated bookmark tab colors to harmonize with the vintage paper appearance.
+- **v4.7.5 (2026-05-09):** Fluid 3D Book Layout Mechanics.
+  - *Animation:* Rewrote the Book Background Base Layer into a 3D split-folding mechanism. Front and back covers now swing synchronously with the pages, eliminating visual overlap and layout thrashing.
+  - *UX:* Prevented the page from opening to intermediate transparent states during the first render loop and on mobile page tracking bounds.
+- **v4.7.4 (2026-05-09):** Guide Book Animation Polish & Layout Centering.
+  - *Bugfix:* Fixed an animation glitch where the book base would transition visually on the first open by synchronously computing initial page states before rendering.
+  - *UI:* Adjusted closed book container translation (`translate-x-1/4`) to smoothly move the book to the center of the screen when closed (Front Cover and Back Cover states) on desktop resolutions.
 - **v4.7.3 (2026-05-09):** Closed Book Layout & Scrollbar Polish.
   - *UI:* Added Front Cover and Back Cover states to the Guide Book, creating realistic closed states at the start and end of navigation.
   - *UI:* Removed internal page scrolling, ensuring all chapter content comfortably fits within a single page spread without scrollbars.
