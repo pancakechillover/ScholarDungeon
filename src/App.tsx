@@ -86,7 +86,7 @@ function App() {
     }
   }, []);
 
-  const [activeSettingsSection, setActiveSettingsSection] = useState<'general' | 'timer' | 'rewards' | 'shop' | 'gacha' | 'dev' | 'levelRewards' | 'about' | 'level' | 'merchant'>('general');
+  const [activeSettingsSection, setActiveSettingsSection] = useState<'general' | 'timer' | 'rewards' | 'shop' | 'gacha' | 'dev' | 'levelRewards' | 'about' | 'level' | 'merchant' | 'cloud'>('general');
 
   const canPip = 'documentPictureInPicture' in window;
   const isPWA = window.matchMedia('(display-mode: standalone)').matches;
@@ -335,13 +335,56 @@ function App() {
   }, [hasUnsyncedChanges]);
 
   const isInitialMount = React.useRef(true);
+  const syncTimeoutRef = React.useRef<any>(null);
+  const lastSyncTimeRef = React.useRef<number>(Date.now());
+  const prevSyncDataRef = React.useRef<string>("");
+
   React.useEffect(() => {
+    const stripVolatile = (s: typeof state) => {
+      const { lastUpdated, syncHistory, pushSubscription, ...rest } = s as any;
+      return rest;
+    };
+    
+    const currentData = JSON.stringify({
+      state: stripVolatile(state),
+      dungeons,
+      majorDungeons
+    });
+
     if (isInitialMount.current) {
       isInitialMount.current = false;
+      prevSyncDataRef.current = currentData;
       return;
     }
-    setHasUnsyncedChanges(true);
-  }, [state, dungeons, majorDungeons]);
+
+    if (prevSyncDataRef.current !== currentData) {
+      prevSyncDataRef.current = currentData;
+      setHasUnsyncedChanges(true);
+
+      if (state.secretCode && state.autoSyncMode && state.autoSyncMode !== 'manual') {
+        if (syncTimeoutRef.current) {
+          clearTimeout(syncTimeoutRef.current);
+        }
+
+        if (state.autoSyncMode === 'debounce') {
+          const delay = (state.autoSyncDebounceSeconds || 10) * 1000;
+          syncTimeoutRef.current = setTimeout(() => {
+            syncToCloud(false);
+            lastSyncTimeRef.current = Date.now();
+          }, delay);
+        } else if (state.autoSyncMode === 'interval') {
+          const interval = (state.autoSyncIntervalMinutes || 1) * 60 * 1000;
+          const timeSinceLastSync = Date.now() - lastSyncTimeRef.current;
+          const timeToNextSync = Math.max(0, interval - timeSinceLastSync);
+          
+          syncTimeoutRef.current = setTimeout(() => {
+            syncToCloud(false);
+            lastSyncTimeRef.current = Date.now();
+          }, timeToNextSync);
+        }
+      }
+    }
+  }, [state, dungeons, majorDungeons, syncToCloud]);
 
   const isInitialMountSync = React.useRef(true);
   React.useEffect(() => {
@@ -351,6 +394,28 @@ function App() {
     }
     setHasUnsyncedChanges(false);
   }, [state.lastUpdated]);
+
+  React.useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden && hasUnsyncedChanges && state.secretCode) {
+        syncToCloud(false);
+      }
+    };
+
+    const handleBeforeUnload = () => {
+      if (hasUnsyncedChanges && state.secretCode) {
+        syncToCloud(false);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [hasUnsyncedChanges, state.secretCode, syncToCloud]);
 
   React.useEffect(() => {
     if (state.theme) {
@@ -1123,6 +1188,7 @@ function App() {
                 activeSection={activeSettingsSection}
                 setActiveSection={setActiveSettingsSection}
                 onTabChange={setActiveTab}
+                onOpenAstralArchives={() => setShowCloudSync(true)}
               />
             )}
           </AnimatePresence>

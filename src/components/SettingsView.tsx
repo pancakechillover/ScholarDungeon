@@ -8,9 +8,10 @@ interface SettingsViewProps {
   setState: React.Dispatch<React.SetStateAction<AppState>>;
   resetLootPool: () => void;
   addXP: (amount: number) => void;
-  activeSection: 'general' | 'timer' | 'rewards' | 'shop' | 'gacha' | 'dev' | 'levelRewards' | 'about' | 'level' | 'merchant';
-  setActiveSection: (section: 'general' | 'timer' | 'rewards' | 'shop' | 'gacha' | 'dev' | 'levelRewards' | 'about' | 'level' | 'merchant') => void;
+  activeSection: 'general' | 'timer' | 'rewards' | 'shop' | 'gacha' | 'dev' | 'levelRewards' | 'about' | 'level' | 'merchant' | 'cloud';
+  setActiveSection: (section: 'general' | 'timer' | 'rewards' | 'shop' | 'gacha' | 'dev' | 'levelRewards' | 'about' | 'level' | 'merchant' | 'cloud') => void;
   onTabChange?: (tab: any) => void;
+  onOpenAstralArchives?: () => void;
 }
 
 export const SettingsView: React.FC<SettingsViewProps> = ({
@@ -20,7 +21,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   addXP,
   activeSection,
   setActiveSection,
-  onTabChange
+  onTabChange,
+  onOpenAstralArchives
 }) => {
   return (
     <motion.div
@@ -44,6 +46,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         activeSection={activeSection}
         setActiveSection={setActiveSection}
         onTabChange={onTabChange}
+        onOpenAstralArchives={onOpenAstralArchives}
       />
     </motion.div>
   );

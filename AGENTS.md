@@ -21,7 +21,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors:** When designing UI elements that highlight based on themes, note that ONLY `indigo-400`, `indigo-500`, and `indigo-600` are overridden by the custom theme variables in `index.css`. DO NOT use `indigo-300` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v4.10.20
+- **Current Version:** v5.1.2
 - **Last Update Date:** 2026-05-10
 
 ## Dark Themes Definition
@@ -46,6 +46,21 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v5.1.2 (2026-05-10):** Quest Board UI Customization Expansion.
+  - *UI:* Added outer white border (outline) to the Quest Board container, configurable via CSS variables.
+  - *Feature:* Expanded Quest Board CSS Debugger with controls for checkbox colors and progress bar text color.
+  - *Architecture:* Decoupled hardcoded checkbox and progress text colors in QuestManager to use themeable CSS variables.
+- **v5.1.1 (2026-05-10):** Data Reliability & App Visibility Hooks.
+  - *Architecture:* Implemented the Visibility API & beforeUnload listeners to forcefully push unsynced changes if the application is closed or loses focus.
+  - *UI:* Added sync operations history and state under the Cloud tab.
+- **v5.1.0 (2026-05-10):** Auto-Sync Configuration & Cloud Access
+  - *Feature:* Added auto-sync strategies (Immediate Debounce, Interval Polling, Manual) into the Cloud Sync settings.
+  - *Feature:* Implemented a Developer Code lock on the Astral Archives due to current Redis storage limitations.
+  - *UX:* Added sliders to let the user select their own sync debounce delay and polling intervals.
+- **v5.0.0 (2026-05-10):** Cloud Synchronization Overhaul.
+  - *Architecture:* Added a dedicated Cloud module in System Settings for managing saving and synchronization preferences.
+  - *UI:* Moved the Astral Archives from Account Status into the Cloud module to prepare for multi-provider support.
+  - *Feature:* Added placeholder interfaces for future Google Drive and WebDAV backup solutions.
 - **v4.10.20 (2026-05-10):** Global Victory Screen.
   - *UX:* Implemented global timer monitoring so the Victory! screen automatically forces full-screen and redirects to the Explore tab upon completion, regardless of where the user is browsing or if the tab is in the background.
 - **v4.10.19 (2026-05-10):** Quest Board UI Polish.

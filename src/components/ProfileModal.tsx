@@ -219,63 +219,18 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
             </div>
 
             {/* Secondary Info */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-              <div className="space-y-2 sm:space-y-4">
-                <h4 className="text-[10px] sm:text-xs font-black text-slate-500 uppercase tracking-[0.2em] px-2">Account Status</h4>
-                <div className="p-4 sm:p-6 bg-slate-900 rounded-2xl sm:rounded-[2rem] border border-slate-800 space-y-3 sm:space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs sm:text-sm text-slate-400">Cloud Sync</span>
-                    <button 
-                      onClick={() => setShowCloudSync(true)}
-                      className={cn(
-                        "px-3 py-1.5 text-[10px] sm:text-xs font-black uppercase rounded-lg border transition-colors",
-                        state.secretCode 
-                          ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20" 
-                          : "bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700 hover:text-white"
-                      )}
-                    >
-                      {state.secretCode ? 'Active' : 'Connect'}
-                    </button>
-                  </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-4">
-                    <span className="text-xs sm:text-sm text-slate-400 whitespace-nowrap">Sync Time</span>
-                    <span className="text-[10px] sm:text-xs font-bold text-slate-300 text-right">
-                      {state.lastUpdated ? new Date(state.lastUpdated).toLocaleString() : 'Never'}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs sm:text-sm text-slate-400">Sync Status</span>
-                    <span className="text-[10px] sm:text-xs font-bold text-right flex items-center gap-1">
-                      {!state.secretCode ? (
-                        <span className="text-slate-500">Not connected</span>
-                      ) : isSyncing ? (
-                        <>
-                          <RefreshCw size={12} className="animate-spin text-indigo-400" />
-                          <span className="text-indigo-400">Syncing...</span>
-                        </>
-                      ) : hasUnsyncedChanges ? (
-                        <span className="text-amber-400">Not sync yet</span>
-                      ) : state.lastUpdated ? (
-                        <span className="text-emerald-400">Up to date</span>
-                      ) : (
-                        <span className="text-slate-500">No cloud save</span>
-                      )}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="flex flex-col justify-end gap-2 sm:gap-3">
+            <div className="grid grid-cols-1 gap-4 sm:gap-6 mt-6">
+              <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-4">
                 <button 
                   onClick={() => { setActiveTab('settings'); onClose(); }}
-                  className="w-full py-3 sm:py-4 bg-slate-900 hover:bg-slate-800 text-white rounded-xl sm:rounded-2xl font-black uppercase tracking-widest text-[10px] sm:text-xs transition-all flex items-center justify-center gap-2 border border-slate-800"
+                  className="flex-1 py-3 sm:py-4 bg-slate-900 hover:bg-slate-800 text-white rounded-xl sm:rounded-2xl font-black uppercase tracking-widest text-[10px] sm:text-xs transition-all flex items-center justify-center gap-2 border border-slate-800"
                 >
                   <SettingsIcon size={16} />
                   System Settings
                 </button>
                 <button 
                   onClick={onClose}
-                  className="w-full py-3 sm:py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl sm:rounded-2xl font-black uppercase tracking-widest text-[10px] sm:text-xs transition-all shadow-xl shadow-indigo-500/20"
+                  className="flex-1 py-3 sm:py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl sm:rounded-2xl font-black uppercase tracking-widest text-[10px] sm:text-xs transition-all shadow-xl shadow-indigo-500/20"
                 >
                   Return to Dungeon
                 </button>

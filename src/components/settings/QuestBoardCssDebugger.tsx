@@ -27,6 +27,10 @@ const CSS_VARIABLES = [
   { name: '--qb-progress-bg', label: 'Progress Track BG' },
   { name: '--qb-progress-fill', label: 'Progress Fill Active' },
   { name: '--qb-progress-fill-done', label: 'Progress Fill Done' },
+  { name: '--qb-progress-text', label: 'Progress Text color' },
+  { name: '--qb-board-out-border', label: 'Board Outer Border' },
+  { name: '--qb-checkbox-empty', label: 'Checkbox Empty Color' },
+  { name: '--qb-checkbox-checked', label: 'Checkbox Checked Color' },
 ];
 
 const THEMES = [
@@ -196,7 +200,7 @@ export const QuestBoardCssDebugger: React.FC<QuestBoardCssDebuggerProps> = ({ on
               Preview Mode: <span className="text-indigo-400">{activeTheme.name}</span>
             </div>
 
-            <div className="w-full max-w-4xl qb-board p-4 rounded-xl relative shadow-xl mt-6">
+            <div className="w-full max-w-4xl qb-board p-4 rounded-xl relative border shadow-xl mt-6">
               <div className="flex flex-col gap-3">
                 {/* 1. Active Quest (Not Completed) */}
                 <div 
@@ -233,11 +237,11 @@ export const QuestBoardCssDebugger: React.FC<QuestBoardCssDebuggerProps> = ({ on
                       <div className="h-1 w-16 qb-progress-bg rounded-full overflow-hidden">
                         <div className="h-full transition-all duration-500 qb-progress-fill w-1/2" />
                       </div>
-                      <span className="text-[9px] font-black text-slate-900 tabular-nums">0/1</span>
+                      <span className="text-[9px] font-black qb-progress-text tabular-nums">0/1</span>
                     </div>
                     <div className="flex items-center pointer-events-auto ml-1">
                       <span className="flex items-center w-6 justify-end opacity-20">
-                        <Square size={20} className="text-[#3e2723]" />
+                        <Square size={20} className="qb-checkbox-empty" />
                       </span>
                     </div>
                   </div>
@@ -278,7 +282,7 @@ export const QuestBoardCssDebugger: React.FC<QuestBoardCssDebuggerProps> = ({ on
                       <div className="h-1 w-16 qb-progress-bg rounded-full overflow-hidden">
                         <div className="h-full transition-all duration-500 qb-progress-fill-done w-full" />
                       </div>
-                      <span className="text-[9px] font-black text-slate-900 tabular-nums">10/10</span>
+                      <span className="text-[9px] font-black qb-progress-text tabular-nums">10/10</span>
                     </div>
                     <div className="flex items-center pointer-events-auto ml-1">
                       <button className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-black text-[9px] uppercase tracking-widest transition-all shadow-lg hover:-rotate-1 active:scale-95 flex items-center gap-1.5">
@@ -324,11 +328,11 @@ export const QuestBoardCssDebugger: React.FC<QuestBoardCssDebuggerProps> = ({ on
                       <div className="h-1 w-16 qb-progress-bg rounded-full overflow-hidden">
                         <div className="h-full transition-all duration-500 qb-progress-fill-done w-full" />
                       </div>
-                      <span className="text-[9px] font-black text-slate-900 tabular-nums">1/1</span>
+                      <span className="text-[9px] font-black qb-progress-text tabular-nums">1/1</span>
                     </div>
                     <div className="flex items-center pointer-events-auto ml-1 w-[68px] justify-end">
                       <span className="flex items-center justify-end">
-                        <CheckSquare size={20} className="text-emerald-600 opacity-80" />
+                        <CheckSquare size={20} className="qb-checkbox-checked opacity-80" />
                       </span>
                     </div>
                   </div>

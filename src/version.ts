@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v4.10.20';
+export const APP_VERSION = 'v5.1.2';
 export const LAST_UPDATE_DATE = '2026-05-10';
-export const LAST_UPDATE_TIME = '17:30:00';
+export const LAST_UPDATE_TIME = '20:00:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,49 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v5.1.2',
+    date: '2026-05-10',
+    time: '20:00:00',
+    title: 'Quest Board UI Customization Expansion',
+    items: [
+      { category: 'UI', description: 'Added outer white border (outline) to the Quest Board container, configurable via CSS variables.' },
+      { category: 'Feature', description: 'Expanded Quest Board CSS Debugger with controls for checkbox colors and progress bar text color.' },
+      { category: 'Architecture', description: 'Decoupled hardcoded checkbox and progress text colors in QuestManager to use themeable CSS variables.' }
+    ]
+  },
+  {
+    version: 'v5.1.1',
+    date: '2026-05-10',
+    time: '19:20:00',
+    title: 'Data Reliability & App Visibility Hooks',
+    items: [
+      { category: 'Architecture', description: 'Implemented the Visibility API & beforeUnload listeners to forcefully push unsynced changes if the application is closed or loses focus.' },
+      { category: 'UI', description: 'Added sync operations history and state under the Cloud tab.' }
+    ]
+  },
+  {
+    version: 'v5.1.0',
+    date: '2026-05-10',
+    time: '18:45:00',
+    title: 'Auto-Sync Configuration & Cloud Access',
+    items: [
+      { category: 'Feature', description: 'Added the ability to choose how data automatically syncs to the backend (Debounce, Interval, or Manual).' },
+      { category: 'Feature', description: 'Implemented a Developer Code lock on the Astral Archives due to current Redis storage limitations.' },
+      { category: 'UX', description: 'Added fine-grained sliders to customize wait duration for Debounce or Polling limits.' }
+    ]
+  },
+  {
+    version: 'v5.0.0',
+    date: '2026-05-10',
+    time: '18:15:00',
+    title: 'Cloud Synchronization Overhaul',
+    items: [
+      { category: 'Architecture', description: 'Added a dedicated Cloud module in System Settings for managing saving and synchronization preferences.' },
+      { category: 'UI', description: 'Moved the Astral Archives from Account Status into the Cloud module to prepare for multi-provider support.' },
+      { category: 'Feature', description: 'Added placeholder interfaces for future Google Drive and WebDAV backup solutions.' }
+    ]
+  },
   {
     version: 'v4.10.20',
     date: '2026-05-10',

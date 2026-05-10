@@ -209,6 +209,10 @@ export interface AppState {
   };
   lastUpdated?: string;
   secretCode?: string;
+  isRedisUnlocked?: boolean;
+  autoSyncMode?: 'debounce' | 'interval' | 'manual';
+  autoSyncDebounceSeconds?: number;
+  autoSyncIntervalMinutes?: number;
   deviceType?: string;
   syncHistory?: {
     type: 'login' | 'force_sync' | 'local_to_cloud' | 'cloud_to_local' | 'cancel_login' | 'unbind_local' | 'delete_cloud';

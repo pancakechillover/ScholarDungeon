@@ -36,6 +36,8 @@ import { ShopSettings } from './ShopSettings';
 import { GachaSettings } from './GachaSettings';
 import { DeveloperSettings } from './DeveloperSettings';
 
+import { CloudSettingsSection } from './CloudSettingsSection';
+
 interface VersionGroupProps {
   group: string;
   logs: typeof RELEASE_HISTORY;
@@ -140,9 +142,10 @@ export interface SettingsProps {
   activeSection: string;
   setActiveSection: (sec: string) => void;
   onTabChange?: (tab: any) => void;
+  onOpenAstralArchives?: () => void;
 }
 
-export const Settings = React.memo<SettingsProps>(({
+export const Settings = React.memo<SettingsProps & { onOpenAstralArchives?: () => void }>(({
   state,
   setState,
   rewardPool,
@@ -155,7 +158,8 @@ export const Settings = React.memo<SettingsProps>(({
   addXP,
   activeSection,
   setActiveSection,
-  onTabChange
+  onTabChange,
+  onOpenAstralArchives
 }) => {
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
@@ -183,7 +187,7 @@ export const Settings = React.memo<SettingsProps>(({
   return (
     <div className="p-6 space-y-8">
       <div className="flex flex-wrap items-center justify-center gap-1.5 p-1.5 bg-slate-900/80 backdrop-blur rounded-3xl w-full border border-slate-800">
-        {(['general', 'timer', 'level', 'merchant', 'dev', 'about'] as const).map(tab => {
+        {(['general', 'timer', 'level', 'merchant', 'cloud', 'dev', 'about'] as const).map(tab => {
           return (
             <button
               key={tab}
@@ -195,7 +199,7 @@ export const Settings = React.memo<SettingsProps>(({
                   : "text-slate-500 hover:text-slate-300 hover:bg-slate-800/30"
               )}
             >
-              {tab === 'dev' ? 'Developer' : tab === 'level' ? 'Level' : tab === 'merchant' ? 'Merchant' : tab === 'about' ? 'About' : tab}
+              {tab === 'dev' ? 'Developer' : tab === 'level' ? 'Level' : tab === 'merchant' ? 'Merchant' : tab === 'about' ? 'About' : tab === 'cloud' ? 'Cloud' : tab}
             </button>
           );
         })}
@@ -213,6 +217,14 @@ export const Settings = React.memo<SettingsProps>(({
             onUpdateRewards={onUpdateRewards}
             onResetRewards={onResetRewards}
             onTabChange={onTabChange}
+          />
+        )}
+        {activeSection === 'cloud' && (
+          <CloudSettingsSection 
+            state={state}
+            setState={setState}
+            setActiveSection={setActiveSection}
+            onOpenAstralArchives={onOpenAstralArchives || (() => {})}
           />
         )}
         {(activeSection === 'level' as any || activeSection === 'levelRewards' as any) && (

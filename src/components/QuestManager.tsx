@@ -383,7 +383,7 @@ export const QuestManager = React.memo<QuestManagerProps>(({ quests, questHistor
         )}
       </AnimatePresence>
 
-      <div className="relative p-6 sm:p-10 rounded-2xl qb-board border border-indigo-100 dark:border-slate-800">
+      <div className="relative p-6 sm:p-10 rounded-2xl qb-board border">
         {activeTab === 'history' ? (
           <div className="space-y-4">
             <div className="flex items-center gap-2 mb-6">
@@ -504,7 +504,7 @@ export const QuestManager = React.memo<QuestManagerProps>(({ quests, questHistor
                         style={{ width: `${Math.min(100, (quest.progress / quest.target) * 100)}%` }}
                       />
                     </div>
-                    <span className="text-[10px] font-black text-slate-900 tabular-nums">{quest.progress}/{quest.target}</span>
+                    <span className="text-[10px] font-black qb-progress-text tabular-nums">{quest.progress}/{quest.target}</span>
                   </div>
                   
                   {isEditMode && (
@@ -542,11 +542,11 @@ export const QuestManager = React.memo<QuestManagerProps>(({ quests, questHistor
                       </button>
                     ) : (quest.completed && quest.claimed) ? (
                       <span className="flex items-center w-6 justify-end">
-                        <CheckSquare size={24} className="text-emerald-600 opacity-80" />
+                        <CheckSquare size={24} className="qb-checkbox-checked opacity-80" />
                       </span>
                     ) : (
                       <span className="flex items-center w-6 justify-end opacity-20">
-                        <Square size={24} className="text-[#3e2723]" />
+                        <Square size={24} className="qb-checkbox-empty" />
                       </span>
                     )}
                   </div>
