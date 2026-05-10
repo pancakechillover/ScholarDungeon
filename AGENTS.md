@@ -21,7 +21,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors:** When designing UI elements that highlight based on themes, note that ONLY `indigo-400`, `indigo-500`, and `indigo-600` are overridden by the custom theme variables in `index.css`. DO NOT use `indigo-300` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v4.10.9
+- **Current Version:** v4.10.13
 - **Last Update Date:** 2026-05-10
 
 ## Dark Themes Definition
@@ -46,6 +46,20 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v4.10.13 (2026-05-10):** Quest Board CSS Export & Layout Polish.
+  - *Feature:* Added an "Export CSS" button to the CSS Debugger, generating minified CSS variables ready for production integration.
+  - *UI:* Scaled down the preview mockup wrapper to 90% (`h-[40%]`), ensuring the complete visual state bounds flawlessly inside 1080p and smaller vertically constrained laptops without needing a scrollbar.
+  - *UX:* Rebuilt the mock representation of checkboxes and task progress elements in the debugger side-pane to 1:1 match the exact physical dimensions and flex behaviors used originally on the `QuestManager.tsx` board.
+- **v4.10.12 (2026-05-10):** Guidebook Swipe Interactions.
+  - *UX:* Added smooth touch swipe gestures to turn pages intuitively left or right within the Adventure Guide.
+- **v4.10.11 (2026-05-10):** CSS Debugger GUI Overlay.
+  - *Feature:* Transformed the CSS Debugger into a standalone visual color picker dashboard with discrete controls for every layout variable.
+  - *UI:* Expanded debugger layout to full screen size, maintaining a rigid split view between the precise UI Mockup and the adjustable inputs.
+  - *UX:* Improved mockup accuracy to mirror exact spacing, progress bars, and checkable action zones directly from the production Quest Board.
+- **v4.10.10 (2026-05-10):** Quest Board CSS Live Editor.
+  - *Feature:* Added an interactive live CSS editor to the Quest Board CSS Debugger modal, allowing real-time injection and manipulation of `--qb-*` CSS variables without leaving the app.
+  - *UI:* Decoupled generic Tailwind hardcodes from `QuestManager.tsx` quest cards, forcing them to natively respect the new `.qb-*` classes in real-time.
+  - *Persistance:* Custom CSS entered in the debugger is stored in `localStorage` and automatically injected when the app boots, acting as a permanent local CSS override switch for the Quest Board.
 - **v4.10.9 (2026-05-10):** Expedition Undo Drag Operations.
   - *Feature:* Implemented a dedicated Undo button to safely revert complex hierarchy drag-and-drop operations within the Expedition menu.
   - *Architecture:* Deeply integrated drag-and-drop caching into the `useGameState` unified store. Added deterministic `onDragStart` captures.

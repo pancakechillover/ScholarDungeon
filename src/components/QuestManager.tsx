@@ -464,30 +464,30 @@ export const QuestManager = React.memo<QuestManagerProps>(({ quests, questHistor
                 quest={quest} 
                 isEditMode={isEditMode}
                 className={cn(
-                  "paper-texture border border-slate-200 rounded-sm p-5 flex items-center justify-between gap-4 group transition-all shadow-md",
-                  quest.completed ? "grayscale-[0.4]" : "hover:shadow-xl hover:-translate-y-1"
+                  "qb-card border rounded-lg p-5 flex items-center justify-between gap-4 group transition-all shadow-md relative",
+                  quest.completed ? "opacity-80 grayscale-[0.4]" : "hover:shadow-xl hover:-translate-y-1"
                 )}
               >
                 <div className="flex items-center gap-4 flex-1 min-w-0">
                   <div className={cn(
-                    "w-12 h-12 rounded-lg flex items-center justify-center border-2 shrink-0 shadow-sm",
-                    quest.completed ? "bg-emerald-600 border-emerald-700 text-white" : "bg-slate-900 dark:bg-white border-slate-800 dark:border-slate-200 text-white dark:text-slate-900"
+                    "w-12 h-12 rounded-lg flex items-center justify-center border shrink-0 shadow-sm transition-colors",
+                    quest.completed ? "qb-success" : "qb-dark-box"
                   )}>
                     {quest.completed ? <CheckCircle2 size={24} /> : (quest.isAchievement ? <Trophy size={24} /> : <Target size={24} />)}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 mb-0.5">
-                      <h4 className="font-serif font-black text-slate-900 text-base leading-tight truncate">{quest.title}</h4>
-                      <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-indigo-600 text-[9px] font-bold text-white uppercase tracking-tighter shrink-0 border border-indigo-700">
+                      <h4 className="font-bold text-base leading-tight truncate">{quest.title}</h4>
+                      <div className="flex items-center gap-1 px-1.5 py-0.5 rounded qb-tag text-[9px] font-bold uppercase tracking-tighter shrink-0 border">
                         <Clock size={10} />
                         {getCycleLabel(quest.type)}
                       </div>
                     </div>
-                    <p className="font-handwriting text-sm text-slate-800 font-bold leading-tight line-clamp-2">{quest.description}</p>
+                    <p className="qb-card-desc font-handwriting text-sm font-bold leading-tight line-clamp-2">{quest.description}</p>
                     
                     <div className="flex flex-wrap items-center gap-3 mt-2">
                       {(quest.rewards || [quest.reward]).map((reward, ridx) => (
-                        <div key={ridx} className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 border border-slate-300 text-[10px] font-black text-slate-900 shadow-sm">
+                        <div key={ridx} className="flex items-center gap-1 px-2 py-0.5 rounded qb-tag border text-[10px] font-black shadow-sm">
                           {reward.type === 'coins' ? <Coins size={10} className="text-amber-600" /> : <Zap size={10} className="text-indigo-600" />}
                           <span>{reward.amount}</span>
                         </div>

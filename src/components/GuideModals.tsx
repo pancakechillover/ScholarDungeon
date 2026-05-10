@@ -27,6 +27,10 @@ export const GuideBookModal: React.FC<GuideBookModalProps> = ({
   const [oldPages, setOldPages] = useState<number[]>([]);
   const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
 
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const [touchEndX, setTouchEndX] = useState<number | null>(null);
+  const minSwipeDistance = 50;
+
   if (isOpen !== prevIsOpen) {
     setPrevIsOpen(isOpen);
     if (isOpen) {
@@ -581,6 +585,29 @@ export const GuideBookModal: React.FC<GuideBookModalProps> = ({
     }
   };
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchEndX(null);
+    setTouchStartX(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEndX(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStartX || !touchEndX) return;
+    const distance = touchStartX - touchEndX;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+    
+    if (isLeftSwipe) {
+      nextPage();
+    }
+    if (isRightSwipe) {
+      prevPage();
+    }
+  };
+
   const renderNavButtons = () => (
     <>
       <button 
@@ -636,7 +663,11 @@ export const GuideBookModal: React.FC<GuideBookModalProps> = ({
         <div className="absolute inset-0 p-1 sm:p-2 flex flex-col z-10 pointer-events-none">
             {/* The Pages Container */}
             <div className="relative flex-1 flex rounded overflow-hidden pointer-events-auto" 
-                 style={{ perspective: 1500 }}>
+                 style={{ perspective: 1500 }}
+                 onTouchStart={handleTouchStart}
+                 onTouchMove={handleTouchMove}
+                 onTouchEnd={handleTouchEnd}
+            >
                  
                 {/* Center Spine Crease */}
                 {!isMobile && (

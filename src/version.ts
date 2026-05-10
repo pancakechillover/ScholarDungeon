@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v4.10.9';
+export const APP_VERSION = 'v4.10.13';
 export const LAST_UPDATE_DATE = '2026-05-10';
-export const LAST_UPDATE_TIME = '15:45:00';
+export const LAST_UPDATE_TIME = '16:15:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,48 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v4.10.13',
+    date: '2026-05-10',
+    time: '16:15:00',
+    title: 'Quest Board CSS Export & Layout Polish',
+    items: [
+      { category: 'Feature', description: 'Added an Export CSS button to the CSS Debugger, generating minified CSS variables ready for production integration.' },
+      { category: 'UI', description: 'Scaled down the preview mockup wrapper to 90%, ensuring it fits flawlessly inside vertically constrained laptops without needing a scrollbar.' },
+      { category: 'UX', description: 'Rebuilt the mock representation of checkboxes and task progress elements in the debugger to perfectly match the flex behaviors used on the real Quest Board.' }
+    ]
+  },
+  {
+    version: 'v4.10.12',
+    date: '2026-05-10',
+    time: '16:08:00',
+    title: 'Guidebook Swipe Interactions',
+    items: [
+      { category: 'UX', description: 'Added smooth touch swipe gestures to turn pages intuitively left or right within the Adventure Guide.' }
+    ]
+  },
+  {
+    version: 'v4.10.11',
+    date: '2026-05-10',
+    time: '16:04:00',
+    title: 'CSS Debugger GUI Overlay',
+    items: [
+      { category: 'Feature', description: 'Transformed the CSS Debugger into a robust visual color picker dashboard with discrete inputs.' },
+      { category: 'UI', description: 'Expanded layout space for the debugger modal to perfectly capture mockup and pickers at once.' },
+      { category: 'UX', description: 'Improved mockup view to precisely showcase progress tracking boxes and checkout elements.' }
+    ]
+  },
+  {
+    version: 'v4.10.10',
+    date: '2026-05-10',
+    time: '15:52:00',
+    title: 'Quest Board CSS Live Editor',
+    items: [
+      { category: 'Feature', description: 'Added an interactive live CSS editor to the Quest Board CSS Debugger modal for real-time styling of `--qb-*` variables.' },
+      { category: 'UI', description: 'Decoupled hardcoded style constraints in Quests tab to ensure they natively respect the injected .qb-* classes.' },
+      { category: 'Persistance', description: 'Custom CSS from the debugger is permanently stored locally and loads gracefully across app restarts.' }
+    ]
+  },
   {
     version: 'v4.10.9',
     date: '2026-05-10',

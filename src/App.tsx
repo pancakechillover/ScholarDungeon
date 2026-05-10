@@ -72,6 +72,20 @@ function App() {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'explore' | 'dungeons' | 'talents' | 'shop' | 'stats' | 'settings' | 'vault'>('explore');
   const [pipWindow, setPipWindow] = useState<Window | null>(null);
 
+  useEffect(() => {
+    // Inject any custom Quest Board CSS at app startup
+    const savedCss = localStorage.getItem('questBoardCustomCss');
+    if (savedCss && savedCss.trim() !== '') {
+      let styleEl = document.getElementById('questboard-live-css');
+      if (!styleEl) {
+        styleEl = document.createElement('style');
+        styleEl.id = 'questboard-live-css';
+        document.head.appendChild(styleEl);
+      }
+      styleEl.innerHTML = savedCss;
+    }
+  }, []);
+
   const [activeSettingsSection, setActiveSettingsSection] = useState<'general' | 'timer' | 'rewards' | 'shop' | 'gacha' | 'dev' | 'levelRewards' | 'about' | 'level' | 'merchant'>('general');
 
   const canPip = 'documentPictureInPicture' in window;
