@@ -426,3 +426,17 @@ input[type="number"]::-webkit-outer-spin-button {
   background: currentColor;
   cursor: pointer;
 }
+
+:root {
+  --qb-progress-bg: #e2e8f0;
+  --qb-progress-fill: #4f46e5;
+  --qb-progress-fill-done: #10b981;
+}
+
+[data-theme="night"], [data-theme="forest"], [data-theme="ocean"] {
+  --qb-progress-bg: #334155;
+}
+
+.qb-progress-bg { background-color: var(--qb-progress-bg); }
+.qb-progress-fill { background-color: var(--qb-progress-fill); }
+.qb-progress-fill-done { background-color: var(--qb-progress-fill-done); }

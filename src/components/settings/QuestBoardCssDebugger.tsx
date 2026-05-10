@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X, CheckCircle2, Clock, Target, Coins, Zap, Gift, Square, CheckSquare, Copy } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { X, CheckCircle2, Clock, Target, Coins, Zap, Gift, Square, CheckSquare, Copy, Pin } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 interface QuestBoardCssDebuggerProps {
@@ -23,6 +24,9 @@ const CSS_VARIABLES = [
   { name: '--qb-dark-box-bg', label: 'Icon Box BG' },
   { name: '--qb-dark-box-border', label: 'Icon Box Border' },
   { name: '--qb-dark-box-text', label: 'Icon Box Text' },
+  { name: '--qb-progress-bg', label: 'Progress Track BG' },
+  { name: '--qb-progress-fill', label: 'Progress Fill Active' },
+  { name: '--qb-progress-fill-done', label: 'Progress Fill Done' },
 ];
 
 const THEMES = [
@@ -120,9 +124,10 @@ export const QuestBoardCssDebugger: React.FC<QuestBoardCssDebuggerProps> = ({ on
 
   const activeTheme = THEMES.find(t => t.id === activeThemeId)!;
   const currentVars = colorOverrides[activeThemeId] || {};
+  const [realisticMode, setRealisticMode] = useState(false);
 
-  return (
-    <div className="fixed inset-0 z-[100] bg-slate-950/95 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] bg-slate-950/95 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4">
       <div className="bg-slate-900 border border-slate-700 rounded-3xl w-full h-full max-w-none flex flex-col shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="p-3 border-b border-slate-800 flex justify-between items-center bg-slate-800/50 shrink-0">
@@ -144,6 +149,17 @@ export const QuestBoardCssDebugger: React.FC<QuestBoardCssDebuggerProps> = ({ on
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <button 
+              onClick={() => setRealisticMode(!realisticMode)}
+              className={cn(
+                "hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border",
+                realisticMode 
+                  ? "bg-indigo-600 border-indigo-500 text-white" 
+                  : "bg-slate-800 border-slate-700 text-slate-400 hover:text-slate-200"
+              )}
+            >
+              Realistic Mode
+            </button>
             <button 
               onClick={handleExport}
               className="flex items-center gap-2 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-xs font-bold transition-colors text-white"
@@ -183,7 +199,15 @@ export const QuestBoardCssDebugger: React.FC<QuestBoardCssDebuggerProps> = ({ on
             <div className="w-full max-w-4xl qb-board p-4 rounded-xl relative shadow-xl mt-6">
               <div className="flex flex-col gap-3">
                 {/* 1. Active Quest (Not Completed) */}
-                <div className="qb-card border rounded-lg p-4 flex items-center justify-between gap-4 relative shadow-md transition-all hover:shadow-xl hover:-translate-y-0.5">
+                <div 
+                  className="qb-card border rounded-lg p-4 flex items-center justify-between gap-4 relative shadow-md transition-all hover:shadow-xl hover:-translate-y-0.5"
+                  style={{ transform: realisticMode ? 'rotate(-1deg)' : 'none' }}
+                >
+                  {realisticMode && (
+                    <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-10 text-rose-600 drop-shadow-md">
+                      <Pin size={20} fill="currentColor" strokeWidth={1} className="-rotate-12" />
+                    </div>
+                  )}
                   <div className="flex items-center gap-4 flex-1 min-w-0">
                     <div className="w-10 h-10 rounded-lg flex items-center justify-center border shrink-0 shadow-sm transition-colors qb-dark-box">
                       <Target size={20} />
@@ -207,8 +231,8 @@ export const QuestBoardCssDebugger: React.FC<QuestBoardCssDebuggerProps> = ({ on
                   <div className="flex items-center justify-end gap-3 shrink-0">
                     <div className="hidden sm:flex flex-col items-end gap-1 px-3 py-1.5 bg-white border border-slate-200 rounded-lg">
                       <div className="flex items-center gap-2">
-                        <div className="h-1 w-16 bg-slate-200 rounded-full overflow-hidden">
-                          <div className="h-full transition-all duration-500 bg-indigo-600 w-1/2" />
+                        <div className="h-1 w-16 qb-progress-bg rounded-full overflow-hidden">
+                          <div className="h-full transition-all duration-500 qb-progress-fill w-1/2" />
                         </div>
                         <span className="text-[9px] font-black text-slate-900 tabular-nums">0/1</span>
                       </div>
@@ -223,7 +247,15 @@ export const QuestBoardCssDebugger: React.FC<QuestBoardCssDebuggerProps> = ({ on
                 </div>
 
                 {/* 2. Completed (Not Claimed) */}
-                <div className="qb-card border rounded-lg p-4 flex items-center justify-between gap-4 relative shadow-md opacity-80 grayscale-[0.4] transition-all">
+                <div 
+                  className="qb-card border rounded-lg p-4 flex items-center justify-between gap-4 relative shadow-md opacity-80 grayscale-[0.4] transition-all"
+                  style={{ transform: realisticMode ? 'rotate(0.5deg)' : 'none' }}
+                >
+                  {realisticMode && (
+                    <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-10 text-rose-600 drop-shadow-md">
+                      <Pin size={20} fill="currentColor" strokeWidth={1} className="rotate-6" />
+                    </div>
+                  )}
                   <div className="flex items-center gap-4 flex-1 min-w-0">
                     <div className="w-10 h-10 rounded-lg flex items-center justify-center border shrink-0 shadow-sm transition-colors qb-success">
                       <CheckCircle2 size={20} />
@@ -247,8 +279,8 @@ export const QuestBoardCssDebugger: React.FC<QuestBoardCssDebuggerProps> = ({ on
                   <div className="flex items-center justify-end gap-3 shrink-0">
                     <div className="hidden sm:flex flex-col items-end gap-1 px-3 py-1.5 bg-white border border-slate-200 rounded-lg">
                       <div className="flex items-center gap-2">
-                        <div className="h-1 w-16 bg-slate-200 rounded-full overflow-hidden">
-                          <div className="h-full transition-all duration-500 bg-emerald-500 w-full" />
+                        <div className="h-1 w-16 qb-progress-bg rounded-full overflow-hidden">
+                          <div className="h-full transition-all duration-500 qb-progress-fill-done w-full" />
                         </div>
                         <span className="text-[9px] font-black text-slate-900 tabular-nums">10/10</span>
                       </div>
@@ -264,7 +296,15 @@ export const QuestBoardCssDebugger: React.FC<QuestBoardCssDebuggerProps> = ({ on
                 </div>
 
                 {/* 3. Completed (Claimed) */}
-                <div className="qb-card border rounded-lg p-4 flex items-center justify-between gap-4 relative shadow-md opacity-80 grayscale-[0.4] transition-all">
+                <div 
+                  className="qb-card border rounded-lg p-4 flex items-center justify-between gap-4 relative shadow-md opacity-80 grayscale-[0.4] transition-all"
+                  style={{ transform: realisticMode ? 'rotate(-0.5deg)' : 'none' }}
+                >
+                  {realisticMode && (
+                    <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-10 text-rose-600 drop-shadow-md">
+                      <Pin size={20} fill="currentColor" strokeWidth={1} className="-rotate-6" />
+                    </div>
+                  )}
                   <div className="flex items-center gap-4 flex-1 min-w-0">
                     <div className="w-10 h-10 rounded-lg flex items-center justify-center border shrink-0 shadow-sm transition-colors qb-success">
                       <CheckCircle2 size={20} />
@@ -288,8 +328,8 @@ export const QuestBoardCssDebugger: React.FC<QuestBoardCssDebuggerProps> = ({ on
                   <div className="flex items-center justify-end gap-3 shrink-0">
                     <div className="hidden sm:flex flex-col items-end gap-1 px-3 py-1.5 bg-white border border-slate-200 rounded-lg">
                       <div className="flex items-center gap-2">
-                        <div className="h-1 w-16 bg-slate-200 rounded-full overflow-hidden">
-                          <div className="h-full transition-all duration-500 bg-emerald-500 w-full" />
+                        <div className="h-1 w-16 qb-progress-bg rounded-full overflow-hidden">
+                          <div className="h-full transition-all duration-500 qb-progress-fill-done w-full" />
                         </div>
                         <span className="text-[9px] font-black text-slate-900 tabular-nums">1/1</span>
                       </div>
@@ -376,7 +416,8 @@ export const QuestBoardCssDebugger: React.FC<QuestBoardCssDebuggerProps> = ({ on
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v4.10.13';
+export const APP_VERSION = 'v4.10.14';
 export const LAST_UPDATE_DATE = '2026-05-10';
-export const LAST_UPDATE_TIME = '16:15:00';
+export const LAST_UPDATE_TIME = '16:34:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,17 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v4.10.14',
+    date: '2026-05-10',
+    time: '16:34:00',
+    title: 'CSS Debugger Full Screen & Progress Polish',
+    items: [
+      { category: 'Architecture', description: 'Moved the CSS Debugger modal to React Portals, enforcing true full-screen overlay across all native UI modules and sidebars.' },
+      { category: 'Feature', description: 'Added a Realistic Mode toggle to the CSS Debugger that previews exact procedural card rotations and absolute thumbtack decorations.' },
+      { category: 'UI', description: 'Fully integrated progress bar fill and track colors into the Quest Board CSS dynamic overrides system via 3 new root variables.' }
+    ]
+  },
   {
     version: 'v4.10.13',
     date: '2026-05-10',
