@@ -3,11 +3,14 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, ChevronLeft, ChevronRight, Bookmark, Compass, Network, LayoutDashboard, Sword, Timer as TimerIcon, ShoppingBag, Package, BarChart3, Scroll, Trophy, Sparkles, Shield, Rocket, Briefcase, BookOpen, Coins, Puzzle, Zap } from 'lucide-react';
 import { HandBook, HandCoins, HandTarget, HandZap } from './icons/HandDrawnIcons';
 import { createPortal } from 'react-dom';
+import { playSound } from '../lib/sound';
 
 interface GuideBookModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialPage: number;
+  soundEnabled?: boolean;
+  soundVolume?: number;
   navigateToSettings: (section: 'general' | 'timer' | 'rewards' | 'shop' | 'gacha' | 'dev' | 'levelRewards' | 'about' | 'level' | 'merchant') => void;
   onTabChange: (tab: 'dashboard' | 'dungeons' | 'explore' | 'talents' | 'shop' | 'vault' | 'stats' | 'settings', subTab?: string) => void;
 }
@@ -16,6 +19,8 @@ export const GuideBookModal: React.FC<GuideBookModalProps> = ({
   isOpen, 
   onClose, 
   initialPage,
+  soundEnabled = true,
+  soundVolume = 0.5,
   navigateToSettings,
   onTabChange
 }) => {
@@ -68,6 +73,7 @@ export const GuideBookModal: React.FC<GuideBookModalProps> = ({
     if (target === pageIndex) return;
     setDirection(target > pageIndex ? 1 : -1);
     setPageIndex(target);
+    playSound('pageTurn', soundVolume, soundEnabled);
   };
 
   const pages = [
@@ -564,6 +570,7 @@ export const GuideBookModal: React.FC<GuideBookModalProps> = ({
     if (pageIndex >= maxIndex) {
       onClose();
     } else {
+      playSound('pageTurn', soundVolume, soundEnabled);
       setOldPages(isMobile ? [pageIndex] : [pageIndex, pageIndex + 1]);
       setFlipDir(1);
       setPageIndex(p => p + (isMobile ? 1 : 2));
@@ -577,6 +584,7 @@ export const GuideBookModal: React.FC<GuideBookModalProps> = ({
     if (pageIndex <= (isMobile ? 1 : 0)) {
       onClose();
     } else {
+      playSound('pageTurn', soundVolume, soundEnabled);
       setOldPages(isMobile ? [pageIndex] : [pageIndex, pageIndex + 1]);
       setFlipDir(-1);
       setPageIndex(p => p - (isMobile ? 1 : 2));

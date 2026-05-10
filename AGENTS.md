@@ -21,7 +21,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors:** When designing UI elements that highlight based on themes, note that ONLY `indigo-400`, `indigo-500`, and `indigo-600` are overridden by the custom theme variables in `index.css`. DO NOT use `indigo-300` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v4.10.14
+- **Current Version:** v4.10.17
 - **Last Update Date:** 2026-05-10
 
 ## Dark Themes Definition
@@ -46,6 +46,15 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v4.10.17 (2026-05-10):** Guidebook Audio File Integration.
+  - *Audio:* Replaced synthesized page turn logic with the native page-flip.mp3 audio file.
+- **v4.10.16 (2026-05-10):** iOS Scroll & Touch Stability.
+  - *Bugfix:* Fixed an issue on iOS devices where scrolling the page would incorrectly move the nav sidebar or rubber-band the viewport.
+  - *Bugfix:* Restored normal touch scrolling inside the Expedition menu by disabling framer-motion touch-action overrides outside of drag handles.
+  - *Architecture:* Applied overscroll-contain to scrollable zones and decoupled fixed elements from height-restricted HTML blocks.
+- **v4.10.15 (2026-05-10):** Guidebook Audio Enhancements.
+  - *Audio:* Implemented a custom procedural soft "page turn" sound effect using the Web Audio API for the Adventure Guide.
+  - *UX:* Linked page turn sound effects to swiping, clicking navigation arrows, and using table of contents bookmarks within the Guidebook.
 - **v4.10.14 (2026-05-10):** CSS Debugger Full Screen & Progress Polish.
   - *Architecture:* Moved the CSS Debugger modal to React Portals (`createPortal`), enforcing true full-screen overlay across all native UI modules and sidebars.
   - *Feature:* Added a "Realistic Mode" toggle to the CSS Debugger that previews exact procedural card rotations and absolute thumbtack decorations to mirror production layouts.

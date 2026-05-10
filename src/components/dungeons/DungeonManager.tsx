@@ -14,8 +14,7 @@ const DraggableItem = ({ item, isEditMode, children, className, handleClassName,
       value={item} 
       dragListener={false} 
       dragControls={controls} 
-      className={cn(className, isEditMode && "touch-none")}
-      style={{ touchAction: isEditMode ? 'none' : 'auto' }}
+      className={className}
       layout
       whileDrag={{ 
         scale: 1.02, 
@@ -348,7 +347,6 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
         }}
         data-id={parentId}
         data-drop-target="true"
-        style={{ touchAction: 'none' }}
         className={cn(
         "space-y-0.5 min-h-[10px]",
         "ml-3 border-l border-slate-800 pl-3"
@@ -859,7 +857,6 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
               }}
               data-id="root"
               data-drop-target="true"
-              style={{ touchAction: 'none' }}
               className="space-y-1 bg-slate-900/10 rounded-2xl border border-slate-800/30 p-1 min-h-[100px]"
             >
             {filteredMajors.map(major => (

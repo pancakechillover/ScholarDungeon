@@ -11,13 +11,23 @@ export const initAudio = () => {
   }
 };
 
-type SoundType = 'success' | 'reward' | 'gacha' | 'redeem' | 'click' | 'levelUp';
+type SoundType = 'success' | 'reward' | 'gacha' | 'redeem' | 'click' | 'levelUp' | 'pageTurn';
 
 export const playSound = (type: SoundType, volume: number = 0.5, enabled: boolean = true) => {
   if (!enabled || volume <= 0) return;
   
   initAudio();
   if (!audioCtx) return;
+
+  // Master volume
+  const v = Math.max(0, Math.min(1, volume));
+
+  if (type === 'pageTurn') {
+    const audio = new Audio('/page-flip.mp3');
+    audio.volume = v;
+    audio.play().catch(e => console.error('Audio play failed:', e));
+    return;
+  }
 
   const t = audioCtx.currentTime;
   const osc = audioCtx.createOscillator();
@@ -26,10 +36,8 @@ export const playSound = (type: SoundType, volume: number = 0.5, enabled: boolea
   osc.connect(gain);
   gain.connect(audioCtx.destination);
 
-  // Master volume
-  const v = Math.max(0, Math.min(1, volume));
-
   switch (type) {
+
     case 'click':
       osc.type = 'sine';
       osc.frequency.setValueAtTime(600, t);

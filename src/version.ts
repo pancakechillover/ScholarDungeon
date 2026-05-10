@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v4.10.14';
+export const APP_VERSION = 'v4.10.17';
 export const LAST_UPDATE_DATE = '2026-05-10';
-export const LAST_UPDATE_TIME = '16:34:00';
+export const LAST_UPDATE_TIME = '17:01:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,36 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v4.10.17',
+    date: '2026-05-10',
+    time: '17:01:00',
+    title: 'Guidebook Audio File Integration',
+    items: [
+      { category: 'Audio', description: 'Replaced synthesized page turn logic with the native page-flip.mp3 audio file.' }
+    ]
+  },
+  {
+    version: 'v4.10.16',
+    date: '2026-05-10',
+    time: '16:50:00',
+    title: 'iOS Scroll & Touch Stability',
+    items: [
+      { category: 'Bugfix', description: 'Fixed an issue on iOS devices where scrolling the page would incorrectly move the nav sidebar or rubber-band the viewport.' },
+      { category: 'Bugfix', description: 'Restored normal touch scrolling inside the Expedition menu by disabling framer-motion touch-action overrides outside of drag handles.' },
+      { category: 'Architecture', description: 'Applied overscroll-contain to scrollable zones and decoupled fixed elements from height-restricted HTML blocks.' }
+    ]
+  },
+  {
+    version: 'v4.10.15',
+    date: '2026-05-10',
+    time: '16:45:00',
+    title: 'Guidebook Audio Enhancements',
+    items: [
+      { category: 'Audio', description: 'Implemented a custom procedural soft "page turn" sound effect using the Web Audio API for the Adventure Guide.' },
+      { category: 'UX', description: 'Linked page turn sound effects to swiping, clicking navigation arrows, and using table of contents bookmarks within the Guidebook.' }
+    ]
+  },
   {
     version: 'v4.10.14',
     date: '2026-05-10',

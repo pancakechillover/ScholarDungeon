@@ -763,7 +763,7 @@ function App() {
           </button>
         </div>
 
-        <div className="flex-grow px-3 py-6 space-y-2 overflow-y-auto scrollbar-hide">
+        <div className="flex-grow px-3 py-6 space-y-2 overflow-y-auto scrollbar-hide overscroll-contain">
           {navItems.map(item => (
             <NavItem 
               key={item.id}
@@ -1206,6 +1206,8 @@ function App() {
         isOpen={showGuideBook}
         initialPage={guideInitialPage}
         onClose={() => setShowGuideBook(false)}
+        soundEnabled={state.soundEnabled}
+        soundVolume={state.soundVolume}
         navigateToSettings={(section) => {
           setActiveTab('settings');
           setActiveSettingsSection(section);
