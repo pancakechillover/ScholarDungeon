@@ -223,7 +223,7 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({
             animate={{ y: 0, opacity: 1 }}
             className="inline-block"
           >
-            <h2 className="text-2xl sm:text-5xl font-black text-white tracking-tighter italic pr-1 uppercase mb-1 drop-shadow-2xl">
+            <h2 className="text-2xl sm:text-5xl font-black text-slate-50 tracking-tighter italic pr-1 uppercase mb-1 drop-shadow-2xl">
               {showSummary ? 'Summoning Summary' : (isMulti ? 'Summoning Results' : 'New Treasure!')}
             </h2>
             <div className="h-1 w-12 sm:w-20 bg-indigo-500 mx-auto rounded-full mb-2" />
@@ -264,9 +264,9 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <span className={cn("text-[10px] font-black uppercase tracking-widest", styles.text)}>{res.rarity}</span>
-                          {res.rarity.toUpperCase() === 'LASTONE' && <span className="text-[8px] bg-rose-500 text-white px-1.5 rounded uppercase font-black">Bonus</span>}
+                          {res.rarity.toUpperCase() === 'LASTONE' && <span className="text-[8px] bg-rose-500 text-slate-50 px-1.5 rounded uppercase font-black">Bonus</span>}
                         </div>
-                        <p className="text-white font-bold truncate text-sm">{res.item}</p>
+                        <p className="text-slate-100 font-bold truncate text-sm">{res.item}</p>
                       </div>
                     </div>
                   );
@@ -283,13 +283,13 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({
               {/* Navigation Arrows */}
               <button 
                 onClick={(e) => { e.stopPropagation(); handlePrev(); }}
-                className="absolute left-0 sm:left-4 z-50 p-3 sm:p-4 bg-white/5 hover:bg-white/10 text-white rounded-full backdrop-blur-md border border-white/10 transition-all active:scale-90"
+                className="absolute left-0 sm:left-4 z-50 p-3 sm:p-4 bg-white/5 hover:bg-white/10 text-slate-100 rounded-full backdrop-blur-md border border-white/10 transition-all active:scale-90"
               >
                 <ChevronLeft className="w-6 h-6 sm:w-8 sm:h-8" />
               </button>
               <button 
                 onClick={(e) => { e.stopPropagation(); handleNext(); }}
-                className="absolute right-0 sm:right-4 z-50 p-3 sm:p-4 bg-white/5 hover:bg-white/10 text-white rounded-full backdrop-blur-md border border-white/10 transition-all active:scale-90"
+                className="absolute right-0 sm:right-4 z-50 p-3 sm:p-4 bg-white/5 hover:bg-white/10 text-slate-100 rounded-full backdrop-blur-md border border-white/10 transition-all active:scale-90"
               >
                 <ChevronRight className="w-6 h-6 sm:w-8 sm:h-8" />
               </button>
@@ -397,7 +397,7 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({
                 
                 {/* Multi-pull Indicator */}
                 <div className="absolute bottom-4 flex flex-col items-center gap-2 z-50">
-                  <div className="px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/10 text-[10px] font-black tracking-widest text-white/70">
+                  <div className="px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/10 text-[10px] font-black tracking-widest text-slate-300">
                     {currentIndex + 1} / {normalResults.length}
                   </div>
                   <div className="flex gap-2">
@@ -521,9 +521,9 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({
                   setLastOneClaimed(true);
                   playSound('levelUp', soundVolume, soundEnabled);
                 }}
-                className="group relative flex flex-col items-center gap-2 p-6 bg-gradient-to-br from-indigo-500 to-indigo-700 text-white rounded-3xl font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95 shadow-[0_20px_40px_-10px_rgba(99,102,241,0.4)] border-2 border-indigo-400"
+                className="group relative flex flex-col items-center gap-2 p-6 bg-gradient-to-br from-indigo-500 to-indigo-700 text-slate-50 rounded-3xl font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95 shadow-[0_20px_40px_-10px_rgba(99,102,241,0.4)] border-2 border-indigo-400"
               >
-                <Crown size={32} className="text-white drop-shadow-lg mb-1" />
+                <Crown size={32} className="text-slate-50 drop-shadow-lg mb-1" />
                 <span className="text-xs sm:text-sm">Claim Last One Prize!</span>
                 {lastOneResults.map((lor, idx) => (
                   <span key={idx} className="text-[10px] opacity-80 font-bold max-w-[200px] truncate">{lor.item}</span>

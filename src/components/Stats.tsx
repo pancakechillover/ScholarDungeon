@@ -284,7 +284,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
         {/* Daily Activity */}
         <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800 flex flex-col space-y-6">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-bold text-slate-200">Daily Activity</h3>
+            <h3 className="text-lg font-bold text-slate-100">Daily Activity</h3>
             <div className="flex items-center gap-2 bg-slate-800/50 rounded-lg p-1">
               <button onClick={() => setDailyDate(subDays(dailyDate, 1))} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-slate-200"><ChevronLeft size={16} /></button>
               <div className="relative flex items-center justify-center">
@@ -468,7 +468,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
         <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800 flex flex-col space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <h3 className="text-lg font-bold text-slate-200">Weekly Activity</h3>
+              <h3 className="text-lg font-bold text-slate-100">Weekly Activity</h3>
               <div className="flex bg-slate-800/50 p-1 rounded-lg">
                 <button
                   onClick={() => setWeeklyMode('calendar')}
@@ -605,7 +605,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
         <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800 lg:col-span-2">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <div className="flex items-center gap-4">
-              <h3 className="text-lg font-bold text-slate-200">Heatmap</h3>
+              <h3 className="text-lg font-bold text-slate-100">Heatmap</h3>
               <div className="flex bg-slate-800/50 p-1 rounded-lg">
                 <button
                   onClick={() => setHeatmapMetric('time')}

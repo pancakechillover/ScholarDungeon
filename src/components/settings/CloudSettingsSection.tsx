@@ -56,6 +56,15 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
     return () => window.removeEventListener('message', handleMessage);
   }, [setState]);
 
+  const [localNickname, setLocalNickname] = useState(state.deviceNickname || '');
+  const [showSavedFeedback, setShowSavedFeedback] = useState(false);
+
+  const handleSaveNickname = () => {
+    setState(s => ({ ...s, deviceNickname: localNickname }));
+    setShowSavedFeedback(true);
+    setTimeout(() => setShowSavedFeedback(false), 2000);
+  };
+
   const handleRedisClick = () => {
     if (state.isRedisUnlocked) {
       onOpenAstralArchives();
@@ -239,15 +248,22 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
           <div className="flex flex-wrap items-center gap-x-6 gap-y-3 mt-4">
             <div className="flex flex-col">
               <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Connection</span>
-              <div className="mt-1">
+              <div className="mt-1 flex items-center gap-2">
                 {isSyncing ? (
                   <span className="flex items-center gap-1.5 px-2 py-0.5 bg-amber-500/10 text-amber-500 text-[10px] font-black uppercase tracking-widest rounded-md border border-amber-500/20 w-max">
                     <RefreshCw size={10} className="animate-spin" /> Syncing
                   </span>
                 ) : (state.secretCode || state.syncProvider) ? (
-                  <span className="flex items-center gap-1.5 px-2 py-0.5 bg-emerald-500/10 text-emerald-400 text-[10px] font-black uppercase tracking-widest rounded-md border border-emerald-500/20 w-max">
-                    <CheckCircle2 size={10} /> Active
-                  </span>
+                  <>
+                    <span className="flex items-center gap-1.5 px-2 py-0.5 bg-emerald-500/10 text-emerald-400 text-[10px] font-black uppercase tracking-widest rounded-md border border-emerald-500/20 w-max">
+                      <CheckCircle2 size={10} /> Active
+                    </span>
+                    {hasUnsyncedChanges && (
+                      <span className="flex items-center gap-1.5 px-2 py-0.5 bg-rose-500/10 text-rose-500 text-[10px] font-black uppercase tracking-widest rounded-md border border-rose-500/20 w-max animate-pulse">
+                        Unsynced
+                      </span>
+                    )}
+                  </>
                 ) : (
                   <span className="flex items-center gap-1.5 px-2 py-0.5 bg-slate-800 text-slate-400 text-[10px] font-black uppercase tracking-widest rounded-md border border-slate-700 w-max">
                     <X size={10} /> Inactive
@@ -265,8 +281,8 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
             
             <div className="flex flex-col">
               <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">State Data</span>
-              <span className={cn("text-sm font-black mt-1 uppercase tracking-tight", hasUnsyncedChanges ? "text-amber-400" : "text-emerald-400")}>
-                {hasUnsyncedChanges ? 'Pending' : 'Up to Date'}
+              <span className={cn("text-sm font-black mt-1 uppercase tracking-tight", hasUnsyncedChanges ? "text-rose-500" : "text-emerald-400")}>
+                {hasUnsyncedChanges ? 'Unsynced' : 'Up to Date'}
               </span>
             </div>
             
@@ -324,15 +340,30 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
               <div className="flex flex-col gap-1">
                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Current Device Nickname</label>
                 <div className="flex gap-2">
-                  <input
-                    type="text"
-                    maxLength={20}
-                    placeholder="e.g. Work PC, Gaming Laptop"
-                    value={state.deviceNickname || ''}
-                    onChange={(e) => setState(s => ({ ...s, deviceNickname: e.target.value }))}
-                    className="flex-1 px-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder:text-slate-700 focus:outline-none focus:border-indigo-500 transition-all font-bold text-sm"
-                  />
-                  <div className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl flex items-center justify-center text-[10px] font-black text-slate-400 uppercase tracking-tighter">
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      maxLength={20}
+                      placeholder="e.g. Work PC, Gaming Laptop"
+                      value={localNickname}
+                      onChange={(e) => setLocalNickname(e.target.value)}
+                      className="w-full px-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder:text-slate-700 focus:outline-none focus:border-indigo-500 transition-all font-bold text-sm pr-16"
+                    />
+                    <button
+                      onClick={handleSaveNickname}
+                      className={cn(
+                        "absolute right-1 top-1 bottom-1 px-3 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all active:scale-95",
+                        showSavedFeedback 
+                          ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" 
+                          : localNickname !== (state.deviceNickname || '')
+                            ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20"
+                            : "bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700"
+                      )}
+                    >
+                      {showSavedFeedback ? 'Saved!' : 'Save'}
+                    </button>
+                  </div>
+                  <div className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl flex items-center justify-center text-[10px] font-black text-slate-400 uppercase tracking-tighter shrink-0">
                     {state.deviceType || 'PC'}
                   </div>
                 </div>
@@ -362,7 +393,7 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
               <div className="p-2.5 rounded-xl bg-slate-800 text-indigo-400 group-hover:bg-indigo-500/20 transition-colors">
                 <Server size={24} />
               </div>
-              {state.secretCode && (
+              {(state.secretCode && (state.syncProvider === 'Redis' || !state.syncProvider)) && (
                 <div className="px-2 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-md text-[10px] font-black text-emerald-400 uppercase tracking-widest flex items-center gap-1">
                   <CheckCircle2 size={12} />
                   Connected

@@ -101,7 +101,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <div className="absolute top-0 right-0 p-8 opacity-10">
             <Sword size={120} />
           </div>
-          <h2 className="text-3xl font-bold text-white mb-2">
+          <h2 className="text-3xl font-bold text-slate-50 mb-2">
             {state.history.length === 0 ? "Welcome, Brave Seeker." : "Welcome back, Seeker."}
           </h2>
           <p className="text-slate-400 mb-8 max-w-md">
@@ -116,7 +116,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <span className="text-[10px] sm:text-xs font-bold text-indigo-400 uppercase tracking-widest">Current Quest</span>
                 <span className="text-[9px] sm:text-xs text-slate-500">{currentDungeon.completedSessions}/{currentDungeon.totalSessions} Sessions Cleared</span>
               </div>
-              <h3 className="font-bold text-white mb-4 truncate pr-2" style={{ fontSize: 'clamp(1rem, 4vw, 1.25rem)' }}>{currentDungeon.name}</h3>
+              <h3 className="font-bold text-slate-50 mb-4 truncate pr-2" style={{ fontSize: 'clamp(1rem, 4vw, 1.25rem)' }}>{currentDungeon.name}</h3>
               <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden mb-6">
                 <motion.div 
                   initial={{ width: 0 }}
@@ -126,7 +126,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </div>
               <button 
                 onClick={() => setActiveTab('explore')}
-                className="flex items-center space-x-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold transition-all"
+                className="flex items-center space-x-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-slate-50 rounded-xl font-bold transition-all"
               >
                 <span>Enter Dungeon</span>
                 <ChevronRight size={18} />
@@ -137,7 +137,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <p className="text-slate-500 mb-4">No active dungeon exploration.</p>
               <button 
                 onClick={() => setActiveTab('dungeons')}
-                className="px-6 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-colors"
+                className="px-6 py-2 bg-slate-800 hover:bg-slate-700 text-slate-50 rounded-xl font-bold transition-colors"
               >
                 {state.history.length === 0 ? "Start Your First Dungeon" : "Delve into Goal"}
               </button>
@@ -155,7 +155,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </div>
             </div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-2xl font-bold text-white">{state.dailySessions}</span>
+              <span className="text-2xl font-bold text-slate-50">{state.dailySessions}</span>
               {(() => {
                 const timezone = state.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
                 const dateString = new Date().toLocaleString("en-US", { weekday: 'long', timeZone: timezone });
@@ -199,7 +199,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
 
           <div className="bg-slate-900 rounded-3xl border border-slate-800 p-6">
-            <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                 <BookOpen size={16} /> Guides
             </h3>
             <div className="space-y-2">

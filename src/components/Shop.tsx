@@ -114,7 +114,7 @@ export const Shop = React.memo<ShopProps>(({
                       </div>
                     )}
                   </div>
-                  <h3 className="text-lg font-bold text-white mb-2">{item.name}</h3>
+                  <h3 className="text-lg font-bold text-slate-100 mb-2">{item.name}</h3>
                   <p className="text-sm text-slate-400 mb-6 flex-grow">{item.description}</p>
                   <button
                     onClick={() => onPurchase(item.id)}
@@ -123,7 +123,7 @@ export const Shop = React.memo<ShopProps>(({
                       "w-full py-3 rounded-xl font-bold transition-all flex items-center justify-center space-x-2",
                       (coins >= item.price && !isOutOfStock)
                         ? "bg-amber-500 hover:bg-amber-600 text-slate-900" 
-                        : "bg-slate-800 text-slate-600 cursor-not-allowed"
+                        : "bg-slate-800 text-slate-500 cursor-not-allowed"
                     )}
                   >
                     <Coins size={18} />
@@ -166,10 +166,10 @@ export const Shop = React.memo<ShopProps>(({
                   <SlotMachine size={64} className="text-indigo-400" />
                 </div>
                 <div className="flex items-center justify-center gap-3">
-                  <h3 className="text-2xl font-bold text-white">{gachaPool.name}</h3>
+                  <h3 className="text-2xl font-bold text-slate-50">{gachaPool.name}</h3>
                   <button 
                     onClick={() => setShowProbabilities(!showProbabilities)}
-                    className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-full transition-colors"
+                    className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 rounded-full transition-colors"
                   >
                     <HelpCircle size={18} />
                   </button>
@@ -299,7 +299,7 @@ export const Shop = React.memo<ShopProps>(({
             {ichibanPool && (
               <div key={ichibanPool.id} className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-12 border-b border-slate-800/50 last:border-0">
                 <div className="lg:col-span-1 bg-slate-900 p-8 rounded-3xl border border-emerald-500/30 space-y-6 relative h-fit">
-                  <h3 className="text-2xl font-bold text-white">{ichibanPool.name}</h3>
+                  <h3 className="text-2xl font-bold text-slate-50">{ichibanPool.name}</h3>
                   <p className="text-slate-400 text-sm">Limited pool. Draw all to get the Last One prize!</p>
                   
                   <div className="flex flex-col gap-3">
@@ -401,7 +401,7 @@ export const Shop = React.memo<ShopProps>(({
                               </span>
                               <div className="flex flex-wrap gap-2">
                                 {subItems.map((sub, sIdx) => (
-                                  <span key={sIdx} className="text-sm text-white font-bold bg-slate-800 px-3 py-1 rounded-lg border border-slate-700/50">
+                                  <span key={sIdx} className="text-sm text-slate-100 font-bold bg-slate-800 px-3 py-1 rounded-lg border border-slate-700/50">
                                     {sub}
                                   </span>
                                 ))}
@@ -409,8 +409,8 @@ export const Shop = React.memo<ShopProps>(({
                             </div>
                             <div className="flex items-center gap-3 bg-slate-950 px-4 py-2 rounded-xl border border-slate-800 self-end sm:self-auto">
                               <div className="text-right">
-                                <div className="text-xs font-bold text-slate-500 uppercase tracking-tighter leading-none">Remaining</div>
-                                <div className="text-lg font-black text-white leading-none mt-1">{item.count}</div>
+                                <div className="text-xs font-bold text-slate-400 uppercase tracking-tighter leading-none">Remaining</div>
+                                <div className="text-lg font-black text-slate-100 leading-none mt-1">{item.count}</div>
                               </div>
                               {item.initialCount !== undefined && (
                                 <div className="h-8 w-px bg-slate-800" />

@@ -243,12 +243,12 @@ export const RewardHistory: React.FC<RewardHistoryProps> = ({ history, onToggleR
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-bottom border-slate-800 bg-slate-950/50">
-                <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] w-16">Icon</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Reward</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] hidden md:table-cell w-24 text-center">Rarity</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] hidden sm:table-cell w-32">Source</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] w-40 text-center">Date</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] text-center w-32">Status</th>
+                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] w-16">Icon</th>
+                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Reward</th>
+                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] hidden md:table-cell w-24 text-center">Rarity</th>
+                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] hidden sm:table-cell w-32">Source</th>
+                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] w-40 text-center">Date</th>
+                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center w-32">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/50">
@@ -298,7 +298,7 @@ export const RewardHistory: React.FC<RewardHistoryProps> = ({ history, onToggleR
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
                         <div className="flex items-center gap-2">
-                          <span className="font-bold text-white group-hover:text-indigo-400 transition-colors text-sm">
+                          <span className="font-bold text-slate-100 group-hover:text-indigo-400 transition-colors text-sm">
                             {item.name}
                           </span>
                           {item.amount && item.amount > 1 && item.type !== 'coins' && item.type !== 'xp' && item.itemType !== 'xp_bonus_percent' && item.itemType !== 'coin_bonus_percent' && (

@@ -79,6 +79,12 @@ export function useCloudSync(
     setIsSyncing(true);
     setSyncError(null);
 
+    if (!isOnline()) {
+      setSyncError("Network unavailable. Please connect to the void to access archives.");
+      setIsSyncing(false);
+      return;
+    }
+
     try {
       const fullLocalStorage: Record<string, string> = {};
       for (let i = 0; i < localStorage.length; i++) {
@@ -380,8 +386,14 @@ export function useCloudSync(
         setState((prev: any) => ({
             ...syncCheckResult.cloudData.state,
             deviceNickname: prev.deviceNickname || syncCheckResult.cloudData.state.deviceNickname,
-            secretCode: prev.secretCode || syncCheckResult.cloudData.state.secretCode,
-            syncProvider: prev.syncProvider || syncCheckResult.cloudData.state.syncProvider,
+            secretCode: (syncCheckResult.code !== 'WebDAV' && syncCheckResult.code !== 'GoogleDrive' && syncCheckResult.code !== 'GoogleDriveAuth') 
+                ? syncCheckResult.code 
+                : (prev.secretCode || syncCheckResult.cloudData.state.secretCode),
+            syncProvider: syncCheckResult.code === 'WebDAV' 
+                ? 'WebDAV' 
+                : (syncCheckResult.code === 'GoogleDrive' || syncCheckResult.code === 'GoogleDriveAuth') 
+                    ? 'Google Drive' 
+                    : 'Redis',
             googleDriveTokens: prev.googleDriveTokens || syncCheckResult.cloudData.state.googleDriveTokens,
             googleDriveFileId: prev.googleDriveFileId || syncCheckResult.cloudData.state.googleDriveFileId,
             webdavSettings: prev.webdavSettings || syncCheckResult.cloudData.state.webdavSettings,
@@ -393,8 +405,16 @@ export function useCloudSync(
         
         logSyncEvent('cloud_to_local', syncCheckResult.code);
       } else if (!useCloud) {
-        setState(prev => ({ ...prev, secretCode: syncCheckResult.code }));
-        await syncToCloud(true, { ...state, secretCode: syncCheckResult.code }, 'Manual');
+        const isProviderCode = syncCheckResult.code === 'WebDAV' || syncCheckResult.code === 'GoogleDrive' || syncCheckResult.code === 'GoogleDriveAuth';
+        const newSecretCode = isProviderCode ? state.secretCode : syncCheckResult.code;
+        const newSyncProvider = syncCheckResult.code === 'WebDAV' ? 'WebDAV' : (syncCheckResult.code === 'GoogleDrive' || syncCheckResult.code === 'GoogleDriveAuth' ? 'Google Drive' : 'Redis');
+        
+        setState(prev => ({ 
+          ...prev, 
+          secretCode: newSecretCode,
+          syncProvider: newSyncProvider
+        }));
+        await syncToCloud(true, { ...state, secretCode: newSecretCode, syncProvider: newSyncProvider }, 'Manual');
       }
       setSyncCheckResult(null);
     } finally {
@@ -406,6 +426,12 @@ export function useCloudSync(
     setIsSyncing(true);
     setSyncError(null);
     setIsVerifying(false);
+
+    if (!isOnline()) {
+      setSyncError("Network unavailable. Please connect to the void to access archives.");
+      setIsSyncing(false);
+      return;
+    }
 
     try {
       let cloudDataToProcess: any = null;
@@ -459,7 +485,7 @@ export function useCloudSync(
 
       logSyncEvent('login', code, 'Manual');
       if (cloudDataToProcess) {
-        const cloudTime = new Date(cloudDataToProcess.lastUpdated || 0).getTime();
+        const cloudTime = new Date(cloudDataToProcess.lastUpdated || (cloudDataToProcess.state && cloudDataToProcess.state.lastUpdated) || 0).getTime();
         const localTime = new Date(state.lastUpdated || 0).getTime();
 
         const localDataToCompare = stripVolatile({
@@ -479,11 +505,12 @@ export function useCloudSync(
         const identitiesMatch = !cloudIdentity || cloudIdentity === localIdentity;
 
         if (JSON.stringify(localDataToCompare) === JSON.stringify(cloudDataToCompare) && identitiesMatch) {
+          const isProviderCode = code === 'WebDAV' || code === 'GoogleDrive' || code === 'GoogleDriveAuth';
           setState(prev => ({ 
             ...prev, 
             lastUpdated: cloudDataToProcess.lastUpdated, 
-            secretCode: (code !== 'WebDAV' && code !== 'GoogleDrive') ? code : prev.secretCode,
-            syncProvider: (code === 'WebDAV') ? 'WebDAV' : (code === 'GoogleDrive' ? 'Google Drive' : prev.syncProvider)
+            secretCode: !isProviderCode ? code : prev.secretCode,
+            syncProvider: (code === 'WebDAV') ? 'WebDAV' : ((code === 'GoogleDrive' || code === 'GoogleDriveAuth') ? 'Google Drive' : 'Redis')
           }));
           setSyncCheckResult(null);
           return;
@@ -516,17 +543,20 @@ export function useCloudSync(
     setIsVerifying(false);
     setSyncError(null);
 
-    const checkNewer = async (data: any, code: string) => {
-        // ENTER VERIFICATION PHASE
-        setIsVerifying(true);
-        await delay(1200); // Artificial delay to simulate thorough checking
+    if (!isOnline()) {
+      // For silent checks, we might want to be less intrusive, but the user requested a reminder.
+      setSyncError("Network unavailable. Please connect to the void to access archives.");
+      setIsSyncing(false);
+      return;
+    }
 
+    const checkNewer = async (data: any, code: string) => {
         if (!data) {
             setSyncCheckResult({ status: 'no_save', code });
             return;
         }
         
-        const cloudTime = new Date(data.lastUpdated || 0).getTime();
+        const cloudTime = new Date(data.lastUpdated || (data.state && data.state.lastUpdated) || 0).getTime();
         const localTime = new Date(state.lastUpdated || 0).getTime();
 
         const localDataToCompare = stripVolatile({
@@ -545,15 +575,33 @@ export function useCloudSync(
         const localIdentity = state.deviceNickname || state.deviceType;
         const identitiesMatch = !cloudIdentity || cloudIdentity === localIdentity;
 
+        // Check for exact data match first
         if (JSON.stringify(localDataToCompare) === JSON.stringify(cloudDataToCompare) && !forceModal && identitiesMatch) {
+          const isProviderCode = code === 'WebDAV' || code === 'GoogleDrive' || code === 'GoogleDriveAuth';
           setState(prev => ({ 
             ...prev, 
-            lastUpdated: data.lastUpdated, 
-            secretCode: (code !== 'WebDAV' && code !== 'GoogleDrive') ? code : prev.secretCode 
+            lastUpdated: data.lastUpdated || (data.state && data.state.lastUpdated), 
+            secretCode: !isProviderCode ? code : prev.secretCode,
+            syncProvider: (code === 'WebDAV') ? 'WebDAV' : ((code === 'GoogleDrive' || code === 'GoogleDriveAuth') ? 'Google Drive' : 'Redis')
           }));
           setSyncCheckResult(null);
+          setIsVerifying(false);
+          setIsSyncing(false);
           return;
         }
+
+        // SILENT SYNC: If local is newer or equal and identity matches, just upload silently
+        if (identitiesMatch && localTime >= cloudTime && !forceModal) {
+          console.log("[Cloud Sync] Silent integrity check passed: Local is newer or equal on same device. Overwriting cloud archive...");
+          await syncToCloud(true, undefined, 'Immediate');
+          setIsVerifying(false);
+          setIsSyncing(false);
+          return;
+        }
+
+        // ENTER VERIFICATION PHASE ONLY FOR CONFLICTS
+        setIsVerifying(true);
+        await delay(1200); // Artificial delay to simulate thorough checking
 
         if (cloudTime > localTime || !identitiesMatch) {
           setSyncCheckResult({ status: 'cloud_newer', cloudData: data, code });
@@ -575,7 +623,7 @@ export function useCloudSync(
             if (result.is404 || !result.data) {
                 setSyncCheckResult({ status: 'no_save', code: 'WebDAV' });
             } else {
-                checkNewer(result.data, 'WebDAV');
+                await checkNewer(result.data, 'WebDAV');
             }
         } else {
             throw new Error(await response.text() || 'Failed to fetch from WebDAV');
@@ -585,7 +633,7 @@ export function useCloudSync(
         const fileId = state.googleDriveFileId || await drive.findSaveFile();
         if (fileId) {
             const result = await drive.readSaveFile(fileId);
-            checkNewer(result, 'GoogleDrive');
+            await checkNewer(result, 'GoogleDrive');
         } else {
             setSyncCheckResult({ status: 'no_save', code: 'GoogleDrive' });
         }
@@ -606,7 +654,7 @@ export function useCloudSync(
         }
         logSyncEvent('login', state.secretCode, 'Manual');
         if (data.cloudData) {
-            checkNewer(data.cloudData, state.secretCode);
+            await checkNewer(data.cloudData, state.secretCode);
         } else {
             setSyncCheckResult({ status: 'no_save', code: state.secretCode });
         }
@@ -672,6 +720,7 @@ export function useCloudSync(
     isSyncing,
     isVerifying,
     syncError,
+    setSyncError,
     syncCheckResult,
     setSyncCheckResult,
     syncToCloud,
@@ -683,3 +732,7 @@ export function useCloudSync(
     checkCloudSync
   };
 }
+
+const isOnline = () => {
+  return typeof navigator !== 'undefined' && navigator.onLine;
+};

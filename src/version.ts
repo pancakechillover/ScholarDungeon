@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v5.3.8';
+export const APP_VERSION = 'v5.3.18';
 export const LAST_UPDATE_DATE = '2026-05-10';
-export const LAST_UPDATE_TIME = '26:40:00';
+export const LAST_UPDATE_TIME = '23:05:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,112 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v5.3.18',
+    date: '2026-05-10',
+    time: '23:05:00',
+    title: 'Cloud Sync: True Silent Verification',
+    items: [
+      { category: 'Bugfix', description: 'Fixed silent sync being interrupted due to asynchronous state race conditions during automatic checks.' },
+      { category: 'UX', description: 'Improved silent integrity logic: if local and cloud times match but data diverges slightly, it trusts local authority and silently uploads instead of triggering a conflict modal.' }
+    ]
+  },
+  {
+    version: 'v5.3.17',
+    date: '2026-05-10',
+    time: '22:58:00',
+    title: 'Cloud Sync: Provider Logic Correction',
+    items: [
+      { category: 'Bugfix', description: 'Resolved a contradiction where selecting WebDAV sync strategy would incorrectly link the Redis plan and set its password to \'WebDAV\'.' },
+      { category: 'UI', description: 'Updated Redis "Connected" badge logic to only appear when Redis is the active provider, preventing confusion.' },
+      { category: 'Architecture', description: 'Hardened useCloudSync hook to more strictly manage secretCode and syncProvider states during conflict resolution.' }
+    ]
+  },
+  {
+    version: 'v5.3.16',
+    date: '2026-05-10',
+    time: '22:00:00',
+    title: 'Cloud Sync: Connection Status Unsynced Badge',
+    items: [
+      { category: 'UI', description: 'Added a high-visibility (rose-500 red) "Unsynced" badge specifically to the Connection status section in Cloud Settings and Profile Modal.' },
+      { category: 'UX', description: 'Synchronized visual feedback logic between Connection and State Data statuses for clearer state awareness.' }
+    ]
+  },
+  {
+    version: 'v5.3.15',
+    date: '2026-05-10',
+    time: '29:30:00',
+    title: 'Cloud Sync: Silent Integrity & Metadata Fix',
+    items: [
+      { category: 'UX', description: 'Implemented silent cloud synchronization on page entry: local saves automatically overwrite cloud archives if the device matches and local is newer, eliminating redundant prompts.' },
+      { category: 'Bugfix', description: 'Fixed "Unknown" timestamp display in the Astral Archives comparison modal by prioritizing top-level metadata during save extraction.' },
+      { category: 'Reliability', description: 'Enhanced data consistency checks to better handle auto-save timestamps across multi-device sessions.' }
+    ]
+  },
+  {
+    version: 'v5.3.14',
+    date: '2026-05-10',
+    time: '29:00:00',
+    title: 'Cloud Sync: Unsynced Status Indicator',
+    items: [
+      { category: 'UI', description: 'Implemented a high-visibility "Unsynced" indicator (rose-500 red) for cloud status when local changes are pending.' },
+      { category: 'UX', description: 'Synchronized the status labeling across Cloud Settings and Profile Modal for consistent state awareness.' },
+      { category: 'UI', description: 'Improved the Cloud Sync verify button layout for better accessibility.' }
+    ]
+  },
+  {
+    version: 'v5.3.13',
+    date: '2026-05-10',
+    time: '28:30:00',
+    title: 'Visual Polish: Light Theme Readability',
+    items: [
+      { category: 'UI', description: 'Replaced hardcoded white and deep slate classes with theme-aware slate variables across PageHeader, Dashboard, Stats, Reward History, Shop, and Gacha results.' },
+      { category: 'UX', description: 'Improved contrast for critical text elements in light themes (Daylight, Warm Sun, Candy) to ensure consistent readability.' }
+    ]
+  },
+  {
+    version: 'v5.3.12',
+    date: '2026-05-10',
+    time: '28:15:00',
+    title: 'Identity Management: Explicit Preservation',
+    items: [
+      { category: 'UX', description: 'Added an explicit "Save" button to the Device Identity section to prevent unintended background state updates.' },
+      { category: 'UI', description: 'Implemented visual "Saved!" feedback and dynamic button states for the device nickname input.' }
+    ]
+  },
+  {
+    version: 'v5.3.11',
+    date: '2026-05-10',
+    time: '28:00:00',
+    title: 'Astral Archives: Network Awareness & Silent Integrity',
+    items: [
+      { category: 'Feature', description: 'Added proactive network connectivity checks to all cloud operations, ensuring stability in fluctuating environments.' },
+      { category: 'UX', description: 'Implemented a silent verification system on page entry that only interrupts the user if a data conflict or network issue is detected.' },
+      { category: 'UX', description: 'Ensured the Archive modal automatically resolves and closes upon finding matching records during manual verification.' }
+    ]
+  },
+  {
+    version: 'v5.3.10',
+    date: '2026-05-10',
+    time: '27:30:00',
+    title: 'Astral Archives: Silent Verification on Focus',
+    items: [
+      { category: 'Feature', description: 'Implemented silent synchronization checks: the app now automatically verifies local vs cloud archives upon returning to the page (focus).' },
+      { category: 'UX', description: 'Comparison modals are now truly non-intrusive, appearing only when a deliberate data discrepancy or conflict is detected.' },
+      { category: 'UI', description: 'Polished the "Communing Archives" loading overlay for a smoother transition during background verification tasks.' }
+    ]
+  },
+  {
+    version: 'v5.3.9',
+    date: '2026-05-10',
+    time: '27:10:00',
+    title: 'Astral Archives: Sync Loading Overlay',
+    items: [
+      { category: 'UX', description: 'Implemented a full-modal loading overlay with a spinning "Loader2" icon during upload and download operations to prevent premature interaction.' },
+      { category: 'Reliability', description: 'Added automatic modal closure upon successful synchronization, ensuring the user returns to the main interface only when records are secured.' },
+      { category: 'UI', description: 'Enhanced sync status messaging with context-aware labels like "Applying Changes" and "Communing Archives" during active operations.' }
+    ]
+  },
   {
     version: 'v5.3.8',
     date: '2026-05-10',

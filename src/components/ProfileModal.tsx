@@ -31,6 +31,7 @@ interface ProfileModalProps {
   setActiveTab: (tab: any) => void;
   isSyncing: boolean;
   hasUnsyncedChanges: boolean;
+  triggerSyncCheck?: (forceModal?: boolean) => void;
   isTalentLevel: (lvl: number) => boolean;
   getNextTalentLevel: (lvl: number, rewards?: any[]) => number;
 }
@@ -50,6 +51,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   setActiveTab,
   isSyncing,
   hasUnsyncedChanges,
+  triggerSyncCheck,
   isTalentLevel,
   getNextTalentLevel
 }) => {
@@ -235,9 +237,16 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                         <RefreshCw size={10} className="animate-spin" /> Syncing
                       </span>
                     ) : (state.secretCode || state.syncProvider) ? (
-                      <span className="flex items-center gap-1.5 px-2 py-0.5 bg-emerald-500/10 text-emerald-400 text-[9px] font-black uppercase tracking-widest rounded-md border border-emerald-500/20">
-                        <CheckCircle2 size={10} /> Active
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="flex items-center gap-1.5 px-2 py-0.5 bg-emerald-500/10 text-emerald-400 text-[9px] font-black uppercase tracking-widest rounded-md border border-emerald-500/20">
+                          <CheckCircle2 size={10} /> Active
+                        </span>
+                        {hasUnsyncedChanges && (
+                          <span className="flex items-center gap-1.5 px-2 py-0.5 bg-rose-500/10 text-rose-500 text-[9px] font-black uppercase tracking-widest rounded-md border border-rose-500/20 animate-pulse">
+                            Unsynced
+                          </span>
+                        )}
+                      </div>
                     ) : (
                       <span className="flex items-center gap-1.5 px-2 py-0.5 bg-slate-800 text-slate-400 text-[9px] font-black uppercase tracking-widest rounded-md border border-slate-700">
                         <X size={10} /> Inactive
@@ -253,8 +262,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                   </div>
                   <div className="flex justify-between items-center text-xs">
                     <span className="text-slate-500 font-medium">Save State</span>
-                    <span className={cn("font-bold", hasUnsyncedChanges ? "text-amber-400" : "text-emerald-400")}>
-                      {hasUnsyncedChanges ? 'Pending Sync' : 'Up to Date'}
+                    <span className={cn("font-bold", hasUnsyncedChanges ? "text-rose-500" : "text-emerald-400")}>
+                      {hasUnsyncedChanges ? 'Unsynced' : 'Up to Date'}
                     </span>
                   </div>
                   <div className="flex justify-between items-center text-xs">
@@ -263,6 +272,16 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                         {state.lastUpdated ? new Date(state.lastUpdated).toLocaleString() : 'Never'}
                     </span>
                   </div>
+                  {(state.secretCode || state.syncProvider) && triggerSyncCheck && (
+                    <button 
+                      onClick={() => triggerSyncCheck(true)}
+                      disabled={isSyncing}
+                      className="mt-2 w-full py-2 bg-indigo-500/10 hover:bg-indigo-500/20 disabled:opacity-50 text-indigo-400 rounded-xl font-black uppercase tracking-widest text-[9px] transition-all flex items-center justify-center gap-2 border border-indigo-500/20 active:scale-[0.98]"
+                    >
+                      <RefreshCw size={12} className={cn(isSyncing && "animate-spin")} /> 
+                      Verify & Compare Archives
+                    </button>
+                  )}
                 </div>
               </div>
 

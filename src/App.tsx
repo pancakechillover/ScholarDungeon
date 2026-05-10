@@ -324,6 +324,7 @@ function App() {
     unbindFromCloud,
     deleteCloudData,
     setSyncCheckResult,
+    setSyncError,
     logSyncEvent,
     checkCloudSync
   } = useCloudSync(state, setState, setDungeons, setMajorDungeons);
@@ -401,6 +402,11 @@ function App() {
     const handleVisibilityChange = () => {
       if (document.hidden && hasUnsyncedChanges && state.secretCode) {
         syncToCloud(false, undefined, 'Visibility API Active');
+      } else if (!document.hidden) {
+        // Silent check on return to the page
+        if (state.syncProvider === 'Google Drive' || state.syncProvider === 'WebDAV' || state.secretCode) {
+          checkCloudSync();
+        }
       }
     };
 
@@ -938,6 +944,33 @@ function App() {
           
           <div className="flex-1 flex items-center justify-between sm:justify-end gap-2 sm:gap-4 md:gap-6">
 
+            {/* Cloud Status */}
+            {(state.secretCode || state.syncProvider) && (
+              <button 
+                onClick={() => checkCloudSync(true)}
+                disabled={isSyncing || isVerifying}
+                className={cn(
+                  "p-2 rounded-xl transition-all flex items-center justify-center gap-2 group relative border",
+                  hasUnsyncedChanges 
+                    ? "bg-amber-500/10 border-amber-500/30 text-amber-500 hover:bg-amber-500/20" 
+                    : (isSyncing || isVerifying)
+                      ? "bg-indigo-500/10 border-indigo-500/30 text-indigo-400"
+                      : "bg-slate-800/80 border-slate-700/50 text-slate-400 hover:text-indigo-400 hover:bg-slate-800"
+                )}
+                title={hasUnsyncedChanges ? "Unsynced Changes - Click to Verify" : "Verify & Compare Archives"}
+              >
+                <div className={cn("transition-transform group-hover:rotate-180 duration-500")}>
+                  <RefreshCw size={16} className={isSyncing || isVerifying ? "animate-spin" : ""} />
+                </div>
+                {hasUnsyncedChanges && (
+                  <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500 border-2 border-slate-900"></span>
+                  </span>
+                )}
+              </button>
+            )}
+
             {/* XP Bar */}
             <div className="flex items-center gap-1.5 sm:gap-2 group relative" title="Experience">
               <span className="text-[10px] sm:text-xs font-black text-white bg-indigo-600 px-1.5 sm:px-2 py-0.5 rounded-lg italic pr-1 leading-none shrink-0 shadow-lg shadow-indigo-600/20">
@@ -1195,7 +1228,10 @@ function App() {
                 onOpenAstralArchives={() => setShowCloudSync(true)}
                 isSyncing={isSyncing}
                 hasUnsyncedChanges={hasUnsyncedChanges}
-                triggerSyncCheck={checkCloudSync}
+                triggerSyncCheck={(force) => {
+                  if (force) setShowCloudSync(true);
+                  checkCloudSync(force);
+                }}
               />
             )}
           </AnimatePresence>
@@ -1234,6 +1270,7 @@ function App() {
         setActiveTab={setActiveTab}
         isSyncing={isSyncing}
         hasUnsyncedChanges={hasUnsyncedChanges}
+        triggerSyncCheck={() => checkCloudSync(true)}
         isTalentLevel={isTalentLevel}
         getNextTalentLevel={getNextTalentLevel}
       />
@@ -1271,12 +1308,13 @@ function App() {
       {/* Cloud Sync Modal */}
       {createPortal(
         <AnimatePresence>
-          {(showCloudSync || syncCheckResult) && (
+          {(showCloudSync || syncCheckResult || syncError) && (
             <CloudSyncModal
-              isOpen={showCloudSync || !!syncCheckResult}
+              isOpen={showCloudSync || !!syncCheckResult || !!syncError}
               onClose={() => {
                 setShowCloudSync(false);
                 if (syncCheckResult) setSyncCheckResult(null);
+                if (syncError) setSyncError(null);
               }}
               secretCode={state.secretCode}
               isSyncing={isSyncing}
@@ -1292,6 +1330,7 @@ function App() {
               onManualSync={() => syncToCloud(true, undefined, 'Manual')}
               onUnbind={unbindFromCloud}
               onDeleteCloudData={deleteCloudData}
+              onVerify={() => checkCloudSync(true)}
               syncHistory={state.syncHistory}
               localState={state}
             />

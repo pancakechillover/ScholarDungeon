@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Cloud, Key, X, AlertTriangle, Check, Loader2, Database, Sparkles, HelpCircle, Unlink, Info, Eye, EyeOff, Copy, RefreshCw, Trash2, History } from 'lucide-react';
+import { Cloud, Key, X, AlertTriangle, Check, Loader2, Database, Sparkles, HelpCircle, Unlink, Info, Eye, EyeOff, Copy, RefreshCw, Trash2, History, UploadCloud, DownloadCloud, Search } from 'lucide-react';
 import { getDeviceType } from '../lib/utils';
 
 interface CloudSyncModalProps {
@@ -20,6 +20,7 @@ interface CloudSyncModalProps {
   onManualSync: () => void;
   onUnbind: () => void;
   onDeleteCloudData: () => void;
+  onVerify?: () => void;
   syncHistory?: {
     type: 'login' | 'force_sync' | 'local_to_cloud' | 'cloud_to_local' | 'cancel_login' | 'unbind_local' | 'delete_cloud';
     code: string;
@@ -47,6 +48,7 @@ export function CloudSyncModal({
   onManualSync,
   onUnbind,
   onDeleteCloudData,
+  onVerify,
   syncHistory,
   localState
 }: CloudSyncModalProps) {
@@ -64,6 +66,20 @@ export function CloudSyncModal({
     requiresTextConfirm?: boolean;
     showComparison?: boolean;
   } | null>(null);
+
+  const prevSyncingRef = useRef(isSyncing);
+
+  // Auto-close modal after successful sync
+  useEffect(() => {
+    if (prevSyncingRef.current && !isSyncing && !syncError && !syncCheckResult) {
+      // If we were syncing and now we are not, and there is no error, and no pending comparison result, close it.
+      const timer = setTimeout(() => {
+        onClose();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+    prevSyncingRef.current = isSyncing;
+  }, [isSyncing, syncError, syncCheckResult, onClose]);
 
   const generatePassword = () => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@*￥$%^&';
@@ -221,7 +237,7 @@ export function CloudSyncModal({
                             {localState?.lastUpdated ? new Date(localState.lastUpdated).toLocaleDateString() : '-'}
                           </div>
                           <div className="text-center text-[8px] text-indigo-500/70 font-mono leading-tight whitespace-nowrap">
-                            {syncCheckResult?.cloudData?.state?.lastUpdated ? new Date(syncCheckResult.cloudData.state.lastUpdated).toLocaleDateString() : '-'}
+                            {(syncCheckResult?.cloudData?.lastUpdated || syncCheckResult?.cloudData?.state?.lastUpdated) ? new Date(syncCheckResult.cloudData.lastUpdated || syncCheckResult.cloudData.state.lastUpdated).toLocaleDateString() : '-'}
                           </div>
                         </div>
                       </div>
@@ -356,7 +372,7 @@ export function CloudSyncModal({
                   Back
                 </button>
               </motion.div>
-            ) : isVerifying ? (
+            ) : (isVerifying || isSyncing) ? (
               <motion.div 
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -367,9 +383,15 @@ export function CloudSyncModal({
                   <Loader2 className="animate-spin text-indigo-400 relative z-10" size={48} />
                 </div>
                 <div className="space-y-2">
-                  <h3 className="text-xl font-black text-indigo-300 uppercase tracking-widest">Verifying Archives</h3>
+                  <h3 className="text-xl font-black text-indigo-300 uppercase tracking-widest">
+                    {isSyncing ? (
+                      syncCheckResult ? 'Applying Changes' : 'Communing Archives'
+                    ) : 'Verifying Archives'}
+                  </h3>
                   <p className="text-slate-400 text-sm max-w-[250px] mx-auto leading-relaxed">
-                    Analyzing temporal data and local inscriptions for discrepancies...
+                    {isSyncing ? (
+                      syncCheckResult ? 'Inscribing selected data to the astral records...' : 'Synchronizing temporal data across the void...'
+                    ) : 'Analyzing temporal data and local inscriptions for discrepancies...'}
                   </p>
                 </div>
                 <div className="flex gap-1">
@@ -455,9 +477,9 @@ export function CloudSyncModal({
                             {localState?.lastUpdated ? new Date(localState.lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                           </div>
                           <div className="text-center text-[9px] text-indigo-500/60 leading-tight font-mono">
-                            {syncCheckResult.cloudData?.state?.lastUpdated ? new Date(syncCheckResult.cloudData.state.lastUpdated).toLocaleDateString() : 'Unknown'}
+                            {(syncCheckResult.cloudData?.lastUpdated || syncCheckResult.cloudData?.state?.lastUpdated) ? new Date(syncCheckResult.cloudData.lastUpdated || syncCheckResult.cloudData.state.lastUpdated).toLocaleDateString() : 'Unknown'}
                             <br />
-                            {syncCheckResult.cloudData?.state?.lastUpdated ? new Date(syncCheckResult.cloudData.state.lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                            {(syncCheckResult.cloudData?.lastUpdated || syncCheckResult.cloudData?.state?.lastUpdated) ? new Date(syncCheckResult.cloudData.lastUpdated || syncCheckResult.cloudData.state.lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                           </div>
                         </div>
                       </div>
@@ -582,6 +604,18 @@ export function CloudSyncModal({
                         <Check size={18} />
                         <span className="text-sm font-bold">Bound to Astral Archives</span>
                       </div>
+                      
+                      {onVerify && (
+                        <button 
+                          onClick={onVerify}
+                          disabled={isSyncing}
+                          className="w-full py-4 bg-indigo-500/10 hover:bg-indigo-500/20 disabled:opacity-50 text-indigo-400 rounded-2xl font-black uppercase tracking-widest text-xs transition-all flex items-center justify-center gap-3 border border-indigo-500/30"
+                        >
+                          <Search size={20} />
+                          Verify & Compare Archives
+                        </button>
+                      )}
+
                       <button 
                         onClick={() => setConfirmDialog({
                           title: 'Force Sync',

@@ -22,7 +22,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors:** When designing UI elements that highlight based on themes, note that `indigo-300`, `indigo-400`, `indigo-500`, and `indigo-600` are overridden by the custom theme variables in `index.css`. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v5.3.8
+- **Current Version:** v5.3.18
 - **Last Update Date:** 2026-05-10
 
 ## Dark Themes Definition
@@ -47,6 +47,42 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v5.3.18 (2026-05-10):** Cloud Sync: True Silent Verification.
+  - *Bugfix:* Fixed silent sync being interrupted due to asynchronous state race conditions during automatic checks.
+  - *UX:* Improved silent integrity logic: if local and cloud times match but data diverges slightly, it trusts local authority and silently uploads instead of triggering a conflict modal.
+- **v5.3.17 (2026-05-10):** Cloud Sync: Provider Logic Correction.
+  - *Bugfix:* Resolved a contradiction where selecting WebDAV sync strategy would incorrectly link the Redis plan and set its password to 'WebDAV'.
+  - *UI:* Updated Redis "Connected" badge logic to only appear when Redis is the active provider, preventing confusion during multi-provider sessions.
+  - *Architecture:* Hardened `useCloudSync` hook to more strictly manage `secretCode` and `syncProvider` states during conflict resolution and initial checks.
+- **v5.3.16 (2026-05-10):** Cloud Sync: Connection Status Unsynced Badge.
+  - *UI:* Added a high-visibility (rose-500 red) "Unsynced" badge specifically to the Connection status section in Cloud Settings and Profile Modal when local changes are pending.
+  - *UX:* Synchronized visual feedback logic between Connection and State Data statuses for clearer state awareness.
+- **v5.3.15 (2026-05-10):** Cloud Sync: Silent Integrity & Metadata Fix.
+  - *UX:* Implemented silent cloud synchronization on page entry: local saves automatically overwrite cloud archives if the device matches and local is newer, eliminating redundant prompts.
+  - *Bugfix:* Fixed "Unknown" timestamp display in the Astral Archives comparison modal by prioritizing top-level metadata during save extraction.
+  - *Reliability:* Enhanced data consistency checks to better handle auto-save timestamps across multi-device sessions.
+- **v5.3.14 (2026-05-10):** Cloud Sync: Unsynced Status Indicator.
+  - *UI:* Implemented a high-visibility "Unsynced" indicator (rose-500 red) for cloud status when local changes are pending.
+  - *UX:* Synchronized the status labeling across Cloud Settings and Profile Modal for consistent state awareness.
+  - *UI:* Improved the Cloud Sync verify button layout for better accessibility.
+- **v5.3.13 (2026-05-10):** Visual Polish: Light Theme Readability.
+  - *UI:* Replaced hardcoded white and deep slate classes with theme-aware slate variables across PageHeader, Dashboard, Stats, Reward History, Shop, and Gacha results.
+  - *UX:* Improved contrast for critical text elements in light themes (Daylight, Warm Sun, Candy) to ensure consistent readability.
+- **v5.3.12 (2026-05-10):** Identity Management: Explicit Preservation.
+  - *UX:* Added an explicit "Save" button to the Device Identity section to prevent unintended background state updates.
+  - *UI:* Implemented visual "Saved!" feedback and dynamic button states for the device nickname input.
+- **v5.3.11 (2026-05-10):** Astral Archives: Network Awareness & Silent Integrity.
+  - *Feature:* Added proactive network connectivity checks to all cloud operations, ensuring stability in fluctuating environments.
+  - *UX:* Implemented a silent verification system on page entry that only interrupts the user if a data conflict or network issue is detected.
+  - *UX:* Ensured the Archive modal automatically resolves and closes upon finding matching records during manual verification.
+- **v5.3.10 (2026-05-10):** Astral Archives: Silent Verification on Focus.
+  - *Feature:* Implemented silent synchronization checks: the app now automatically verifies local vs cloud archives upon returning to the page (focus).
+  - *UX:* Comparison modals are now truly non-intrusive, appearing only when a deliberate data discrepancy or conflict is detected.
+  - *UI:* Polished the "Communing Archives" loading overlay for a smoother transition during background verification tasks.
+- **v5.3.9 (2026-05-10):** Astral Archives: Sync Loading Overlay.
+  - *UX:* Implemented a full-modal loading overlay with a spinning "Loader2" icon during upload and download operations to prevent premature interaction.
+  - *Reliability:* Added automatic modal closure upon successful synchronization, ensuring the user returns to the main interface only when records are secured.
+  - *UI:* Enhanced sync status messaging with context-aware labels like "Applying Changes" and "Communing Archives" during active operations.
 - **v5.3.8 (2026-05-10):** Quest & Achievement Talent Indicators.
   - *Aesthetic:* Added talent effect tags for Quests and Achievements that are unlocked via specific talents.
   - *Architecture:* Enhanced Quest History to capture and store talent requirements globally.
