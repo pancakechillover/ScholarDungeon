@@ -22,8 +22,8 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors:** When designing UI elements that highlight based on themes, note that `indigo-300`, `indigo-400`, `indigo-500`, and `indigo-600` are overridden by the custom theme variables in `index.css`. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v5.3.18
-- **Last Update Date:** 2026-05-10
+- **Current Version:** v5.3.20
+- **Last Update Date:** 2026-05-11
 
 ## Dark Themes Definition
 The following themes are considered "Dark Themes" and form the baseline for vibrant visual effects and high-contrast glowing elements:
@@ -47,6 +47,14 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v5.3.20 (2026-05-11):** Cloud Sync: Device Code Identity & UX Polish.
+  - *Architecture:* Implemented randomly-generated, persistent device codes to replace volatile nicknames for more reliable identity matching.
+  - *UX:* Silent synchronization now triggers automatically when device codes match and local archives are newer or equal to cloud saves.
+  - *UI:* Added Device Identity card in Cloud Settings with device code display and copy-to-clipboard functionality.
+  - *UI:* Updated Sync Status & History table to record and display device codes for every operation.
+- **v5.3.19 (2026-05-11):** Cloud Sync: Device Code Identity.
+  - *Architecture:* Replaced volatile device nickname matching with permanent, randomly-generated device codes stored locally, preventing false conflicts.
+  - *UX:* Silent sync will now automatically upload when the device code matches and the local timestamp is newer or equal.
 - **v5.3.18 (2026-05-10):** Cloud Sync: True Silent Verification.
   - *Bugfix:* Fixed silent sync being interrupted due to asynchronous state race conditions during automatic checks.
   - *UX:* Improved silent integrity logic: if local and cloud times match but data diverges slightly, it trusts local authority and silently uploads instead of triggering a conflict modal.

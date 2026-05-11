@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v5.3.18';
-export const LAST_UPDATE_DATE = '2026-05-10';
-export const LAST_UPDATE_TIME = '23:05:00';
+export const APP_VERSION = 'v5.3.20';
+export const LAST_UPDATE_DATE = '2026-05-11';
+export const LAST_UPDATE_TIME = '02:02:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,28 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v5.3.20',
+    date: '2026-05-11',
+    time: '02:02:00',
+    title: 'Cloud Sync: Device Code Identity & UX Polish',
+    items: [
+      { category: 'Architecture', description: 'Implemented randomly-generated, persistent device codes to replace volatile nicknames for more reliable identity matching.' },
+      { category: 'UX', description: 'Silent synchronization now triggers automatically when device codes match and local archives are newer or equal to cloud saves.' },
+      { category: 'UI', description: 'Added Device Identity card in Cloud Settings with device code display and copy-to-clipboard functionality.' },
+      { category: 'UI', description: 'Updated Sync Status & History table to record and display device codes for every operation.' }
+    ]
+  },
+  {
+    version: 'v5.3.19',
+    date: '2026-05-11',
+    time: '01:21:00',
+    title: 'Cloud Sync: Device Code Identity',
+    items: [
+      { category: 'Architecture', description: 'Replaced volatile device nickname matching with permanent, randomly-generated device codes stored locally, preventing false conflicts.' },
+      { category: 'UX', description: 'Silent sync will now automatically upload when the device code matches and the local timestamp is newer or equal.' }
+    ]
+  },
   {
     version: 'v5.3.18',
     date: '2026-05-10',

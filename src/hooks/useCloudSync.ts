@@ -2,6 +2,15 @@ import { useState, useCallback } from 'react';
 import { AppState } from '../types';
 import { GoogleDriveAPI } from '../lib/googleDriveApi';
 
+export const getDeviceCode = () => {
+    let code = localStorage.getItem('scholars_dungeon_device_code');
+    if (!code) {
+        code = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        localStorage.setItem('scholars_dungeon_device_code', code);
+    }
+    return code;
+};
+
 export function useCloudSync(
   state: AppState, 
   setState: React.Dispatch<React.SetStateAction<AppState>>,
@@ -56,6 +65,7 @@ export function useCloudSync(
         timestamp: new Date().toISOString(), 
         deviceType: prev.deviceType,
         deviceNickname: prev.deviceNickname,
+        deviceCode: getDeviceCode(),
         syncMethod,
         syncProvider: syncProvider || (prev.syncProvider as any) || 'Redis'
       });
@@ -99,6 +109,7 @@ export function useCloudSync(
       let localData: any = {
         state: currentState,
         savedBy: localIdentity, // Metadata to identify the saving device
+        savedByDeviceCode: getDeviceCode(), // Unique device identifier
         dungeons: JSON.parse(localStorage.getItem('scholars_dungeon_state_dungeons') || '[]'),
         majorDungeons: JSON.parse(localStorage.getItem('scholars_dungeon_state_major_dungeons') || '[]'),
         fullLocalStorage,
@@ -149,8 +160,8 @@ export function useCloudSync(
           if (getResponse.ok) {
             const result = await getResponse.json();
             if (result.data) {
-              const cloudIdentity = result.data.savedBy;
-              const identitiesMatch = !cloudIdentity || cloudIdentity === localIdentity;
+              const cloudDeviceCode = result.data.savedByDeviceCode;
+              const identitiesMatch = cloudDeviceCode ? cloudDeviceCode === getDeviceCode() : (!result.data.savedBy || result.data.savedBy === localIdentity);
 
               // IF identities mismatch: 
               // 1. If visibility trigger -> abort (can't show modal)
@@ -215,8 +226,8 @@ export function useCloudSync(
           // Check if cloud is newer or identity mismatch
           const cloudData = await drive.readSaveFile(fileId);
           if (cloudData) {
-            const cloudIdentity = cloudData.savedBy;
-            const identitiesMatch = !cloudIdentity || cloudIdentity === localIdentity;
+            const cloudDeviceCode = cloudData.savedByDeviceCode;
+            const identitiesMatch = cloudDeviceCode ? cloudDeviceCode === getDeviceCode() : (!cloudData.savedBy || cloudData.savedBy === localIdentity);
 
             if (!identitiesMatch) {
               if (syncMethod === 'Visibility API Active') {
@@ -276,8 +287,8 @@ export function useCloudSync(
           if (getResponse.ok) {
             const data = await getResponse.json();
             if (data.cloudData) {
-              const cloudIdentity = data.cloudData.savedBy;
-              const identitiesMatch = !cloudIdentity || cloudIdentity === localIdentity;
+              const cloudDeviceCode = data.cloudData.savedByDeviceCode;
+              const identitiesMatch = cloudDeviceCode ? cloudDeviceCode === getDeviceCode() : (!data.cloudData.savedBy || data.cloudData.savedBy === localIdentity);
 
               if (!identitiesMatch) {
                 if (syncMethod === 'Visibility API Active') {
@@ -500,9 +511,9 @@ export function useCloudSync(
           majorDungeons: cloudDataToProcess.majorDungeons || []
         });
 
-        const cloudIdentity = cloudDataToProcess.savedBy;
         const localIdentity = state.deviceNickname || state.deviceType;
-        const identitiesMatch = !cloudIdentity || cloudIdentity === localIdentity;
+        const cloudDeviceCode = cloudDataToProcess.savedByDeviceCode;
+        const identitiesMatch = cloudDeviceCode ? cloudDeviceCode === getDeviceCode() : (!cloudDataToProcess.savedBy || cloudDataToProcess.savedBy === localIdentity);
 
         if (JSON.stringify(localDataToCompare) === JSON.stringify(cloudDataToCompare) && identitiesMatch) {
           const isProviderCode = code === 'WebDAV' || code === 'GoogleDrive' || code === 'GoogleDriveAuth';
@@ -571,9 +582,9 @@ export function useCloudSync(
           majorDungeons: data.majorDungeons || []
         });
 
-        const cloudIdentity = data.savedBy;
         const localIdentity = state.deviceNickname || state.deviceType;
-        const identitiesMatch = !cloudIdentity || cloudIdentity === localIdentity;
+        const cloudDeviceCode = data.savedByDeviceCode;
+        const identitiesMatch = cloudDeviceCode ? cloudDeviceCode === getDeviceCode() : (!data.savedBy || data.savedBy === localIdentity);
 
         // Check for exact data match first
         if (JSON.stringify(localDataToCompare) === JSON.stringify(cloudDataToCompare) && !forceModal && identitiesMatch) {

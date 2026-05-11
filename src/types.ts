@@ -235,6 +235,7 @@ export interface AppState {
     timestamp: string;
     deviceType?: string;
     deviceNickname?: string;
+    deviceCode?: string;
     syncMethod?: 'Manual' | 'Immediate' | 'Interval polling' | 'Visibility API Active';
     syncProvider?: 'Redis' | 'Google Drive' | 'WebDAV';
   }[];

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Cloud, Server, HardDrive, CheckCircle2, ChevronRight, Settings, Lock, X, History, ArrowDownUp, RefreshCw, LogIn, Trash2, ShieldBan, Eye, Search, UploadCloud, DownloadCloud, Download, Laptop, Monitor, Smartphone, Tablet } from 'lucide-react';
+import { Cloud, Server, HardDrive, CheckCircle2, ChevronRight, Settings, Lock, X, History, ArrowDownUp, RefreshCw, LogIn, Trash2, ShieldBan, Eye, Search, UploadCloud, DownloadCloud, Download, Laptop, Monitor, Smartphone, Tablet, Copy, Key } from 'lucide-react';
 import { AppState } from '../../types';
 import { cn } from '../../lib/utils';
+import { getDeviceCode } from '../../hooks/useCloudSync';
 
 interface CloudSettingsSectionProps {
   state: AppState;
@@ -329,7 +330,7 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
           </div>
         </div>
         
-        <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6">
+        <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 space-y-6">
           <div className="flex flex-col sm:flex-row items-center gap-6">
             <div className="w-16 h-16 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center text-indigo-400 shrink-0">
                {state.deviceType === 'Mobile' ? <Smartphone size={32} /> : 
@@ -339,37 +340,57 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
             <div className="flex-1 space-y-3 w-full">
               <div className="flex flex-col gap-1">
                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Current Device Nickname</label>
-                <div className="flex gap-2">
-                  <div className="relative flex-1">
-                    <input
-                      type="text"
-                      maxLength={20}
-                      placeholder="e.g. Work PC, Gaming Laptop"
-                      value={localNickname}
-                      onChange={(e) => setLocalNickname(e.target.value)}
-                      className="w-full px-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder:text-slate-700 focus:outline-none focus:border-indigo-500 transition-all font-bold text-sm pr-16"
-                    />
-                    <button
-                      onClick={handleSaveNickname}
-                      className={cn(
-                        "absolute right-1 top-1 bottom-1 px-3 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all active:scale-95",
-                        showSavedFeedback 
-                          ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" 
-                          : localNickname !== (state.deviceNickname || '')
-                            ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20"
-                            : "bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700"
-                      )}
-                    >
-                      {showSavedFeedback ? 'Saved!' : 'Save'}
-                    </button>
-                  </div>
-                  <div className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl flex items-center justify-center text-[10px] font-black text-slate-400 uppercase tracking-tighter shrink-0">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    maxLength={20}
+                    placeholder="e.g. Work PC, Gaming Laptop"
+                    value={localNickname}
+                    onChange={(e) => setLocalNickname(e.target.value)}
+                    className="flex-1 min-w-0 px-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder:text-slate-700 focus:outline-none focus:border-indigo-500 transition-all font-bold text-sm h-[40px]"
+                  />
+                  <div className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl flex items-center justify-center text-[10px] font-black text-slate-400 uppercase tracking-tighter shrink-0 h-[40px]">
                     {state.deviceType || 'PC'}
                   </div>
+                  <button
+                    onClick={handleSaveNickname}
+                    className={cn(
+                      "px-3 h-[40px] rounded-lg text-[9px] font-black uppercase tracking-widest transition-all active:scale-95",
+                      showSavedFeedback 
+                        ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" 
+                        : localNickname !== (state.deviceNickname || '')
+                          ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20"
+                          : "bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700"
+                    )}
+                  >
+                    {showSavedFeedback ? 'Saved!' : 'Save'}
+                  </button>
                 </div>
               </div>
               <p className="text-[10px] text-slate-500 italic ml-1">This name identifies this device in your cloud sync history.</p>
             </div>
+          </div>
+
+          <div className="pt-4 border-t border-slate-800/50 flex flex-col gap-3">
+            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Device Sequence Code</label>
+            <div className="flex items-center gap-3 p-4 bg-slate-950 rounded-xl border border-slate-800 group/code">
+              <div className="p-2 bg-slate-900 rounded-lg text-indigo-400">
+                <Key size={16} />
+              </div>
+              <div className="flex-1 font-mono text-xs text-slate-300 break-all select-all font-bold tracking-tight">
+                {getDeviceCode()}
+              </div>
+              <button 
+                onClick={() => {
+                  navigator.clipboard.writeText(getDeviceCode());
+                }}
+                className="p-2 text-slate-500 hover:text-indigo-400 transition-colors"
+                title="Copy Device Code"
+              >
+                <Copy size={16} />
+              </button>
+            </div>
+            <p className="text-[9px] text-slate-600 italic ml-1 font-medium">Unique hash for this installation. Used for silent identity verification during sync.</p>
           </div>
         </div>
       </div>
@@ -670,6 +691,7 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
                   <th className="px-4 py-3 text-[9px] font-black text-slate-500 uppercase tracking-widest">Operation</th>
                   <th className="px-4 py-3 text-[9px] font-black text-slate-500 uppercase tracking-widest">Provider</th>
                   <th className="px-4 py-3 text-[9px] font-black text-slate-500 uppercase tracking-widest">Device Name</th>
+                  <th className="px-4 py-3 text-[9px] font-black text-slate-500 uppercase tracking-widest">Device Code</th>
                   <th className="px-4 py-3 text-[9px] font-black text-slate-500 uppercase tracking-widest">Method</th>
                 </tr>
               </thead>
@@ -712,6 +734,11 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
                             {log.deviceType}
                           </div>
                         )}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="text-[10px] font-mono text-slate-500 break-all w-24 truncate" title={log.deviceCode}>
+                          {log.deviceCode || 'Legacy'}
+                        </div>
                       </td>
                       <td className="px-4 py-3">
                         <span className={cn(
