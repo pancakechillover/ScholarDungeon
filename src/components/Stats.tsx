@@ -8,25 +8,12 @@ import {
 import { StudySession, AppState, RewardHistoryItem } from '../types';
 import { cn } from '../lib/utils';
 import { 
-  BarChart2, Zap, Coins, ChevronLeft, ChevronRight, Calendar, Star, StarHalf, Edit2, Save, X, Eye, EyeOff, LineChart as LineChartIcon, Trophy, Sword,
-  Sun, CloudLightning, Flame, BatteryLow, Sparkles, Brain, Coffee, Smile, Frown, Meh 
+  BarChart2, Zap, Coins, ChevronLeft, ChevronRight, Calendar, Star, StarHalf, Edit2, Save, X, Eye, EyeOff, LineChart as LineChartIcon, Trophy, Sword, Heart
 } from 'lucide-react';
-
-const MOOD_OPTIONS = [
-  { id: 'great', label: 'Great', icon: Sun, color: 'text-amber-400', bg: 'bg-amber-400/10', border: 'border-amber-400/30' },
-  { id: 'good', label: 'Good', icon: Smile, color: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/30' },
-  { id: 'neutral', label: 'Okay', icon: Meh, color: 'text-blue-400', bg: 'bg-blue-400/10', border: 'border-blue-400/30' },
-  { id: 'bad', label: 'Bad', icon: Frown, color: 'text-rose-400', bg: 'bg-rose-400/10', border: 'border-rose-400/30' },
-  { id: 'awful', label: 'Awful', icon: CloudLightning, color: 'text-purple-400', bg: 'bg-purple-400/10', border: 'border-purple-400/30' },
-  { id: 'productive', label: 'Productive', icon: Flame, color: 'text-orange-500', bg: 'bg-orange-500/10', border: 'border-orange-500/30' },
-  { id: 'tired', label: 'Tired', icon: BatteryLow, color: 'text-slate-400', bg: 'bg-slate-400/10', border: 'border-slate-400/30' },
-  { id: 'inspired', label: 'Inspired', icon: Sparkles, color: 'text-yellow-400', bg: 'bg-yellow-400/10', border: 'border-yellow-400/30' },
-  { id: 'focused', label: 'Focused', icon: Brain, color: 'text-fuchsia-400', bg: 'bg-fuchsia-400/10', border: 'border-fuchsia-400/30' },
-  { id: 'chill', label: 'Chill', icon: Coffee, color: 'text-sky-400', bg: 'bg-sky-400/10', border: 'border-sky-400/30' },
-];
+import { MOOD_OPTIONS, DEFAULT_ENABLED_MOODS } from '../constants';
 
 import { PageHeader } from './PageHeader';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, Legend, LineChart, Line, CartesianGrid } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, Legend, LineChart, Line, CartesianGrid, LabelList } from 'recharts';
 import Markdown from 'react-markdown';
 
 interface StatsProps {
@@ -244,17 +231,23 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
   }, [weeklyDays, history, state.rewardHistory, ts]);
 
   const weeklyData = weeklyDays.map(date => {
+    const dateStr = format(date, 'yyyy-MM-dd');
+    const log = dailyLogs[dateStr];
     const daySessions = history.filter(s => isSamePeakDay(new Date(s.timestamp), date));
     const counts = { Morning: 0, Afternoon: 0, Night: 0, Other: 0 };
     daySessions.forEach(s => {
       counts[getPeriod(new Date(s.timestamp))]++;
     });
+    const total = counts.Morning + counts.Afternoon + counts.Night + counts.Other;
     return {
       name: format(date, 'EEE'),
       Morning: counts.Morning,
       Afternoon: counts.Afternoon,
       Night: counts.Night,
-      Other: counts.Other
+      Other: counts.Other,
+      total,
+      moodHeight: 0,
+      mood: log?.mood
     };
   });
 
@@ -284,6 +277,41 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
       if (log.rating < 4.5) return 'bg-indigo-500/80';
       return 'bg-indigo-500';
     }
+  };
+
+  const renderMoodIcon = (props: any) => {
+    const { x, y, width, payload, value } = props;
+    // Extract actual payload whether stacked or not
+    const actualPayload = payload?.payload || payload;
+    if (!actualPayload) return null;
+
+    const moodId = actualPayload.mood;
+    const total = actualPayload.total;
+    const moodObj = moodId ? MOOD_OPTIONS.find((m) => m.id === moodId) : null;
+    const Icon = moodObj ? moodObj.icon : null;
+
+    return (
+      <g transform={`translate(${x + width / 2}, ${y - 10})`}>
+        {/* Render total value */}
+        <text
+          x={0}
+          y={Icon ? -16 : 0}
+          fill="#94a3b8"
+          fontSize={10}
+          fontWeight="bold"
+          textAnchor="middle"
+          dominantBaseline="middle"
+        >
+          {total > 0 ? total : ''}
+        </text>
+        {/* Render mood icon if available */}
+        {Icon && (
+          <g transform={`translate(-7, -7)`}>
+            <Icon size={14} className={moodObj.color} />
+          </g>
+        )}
+      </g>
+    );
   };
 
   return (
@@ -379,7 +407,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Star className="text-amber-400" size={16} />
-                <span className="text-xs font-black text-slate-500 uppercase tracking-widest">Efficiency & Reflection</span>
+                <span className="text-xs font-black text-slate-500 uppercase tracking-widest">Daily Record</span>
               </div>
               {!isEditingLog ? (
                 <button 
@@ -417,50 +445,58 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
 
             {isEditingLog ? (
               <div className="space-y-4">
-                <div className="flex flex-col gap-4">
-                  <div className="flex items-center gap-1">
-                    {Array.from({ length: 5 }).map((_, i) => {
-                      const val = i + 1;
-                      const isFull = editRating >= val;
-                      const isHalf = editRating >= val - 0.5 && editRating < val;
-                      return (
-                        <button
-                          key={val}
-                          onClick={() => setEditRating(isFull ? val - 0.5 : isHalf ? val - 1 : val)}
-                          className="p-0.5 transition-transform hover:scale-110"
-                        >
-                          {isFull ? (
-                            <Star size={16} className="text-amber-400 fill-amber-400" />
-                          ) : isHalf ? (
-                            <StarHalf size={16} className="text-amber-400 fill-amber-400" />
-                          ) : (
-                            <Star size={16} className="text-slate-700" />
-                          )}
-                        </button>
-                      );
-                    })}
+                <div className="flex flex-col gap-5">
+                  {/* Efficiency Rating Edit */}
+                  <div className="space-y-2">
+                    <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-0.5 mb-1">Efficiency Rating</div>
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: 5 }).map((_, i) => {
+                        const val = i + 1;
+                        const isFull = editRating >= val;
+                        const isHalf = editRating >= val - 0.5 && editRating < val;
+                        return (
+                          <button
+                            key={val}
+                            onClick={() => setEditRating(isFull ? val - 0.5 : isHalf ? val - 1 : val)}
+                            className="p-0.5 transition-transform hover:scale-110"
+                          >
+                            {isFull ? (
+                              <Star size={18} className="text-amber-400 fill-amber-400" />
+                            ) : isHalf ? (
+                              <StarHalf size={18} className="text-amber-400 fill-amber-400" />
+                            ) : (
+                              <Star size={18} className="text-slate-700" />
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                   
-                  <div className="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
-                    {MOOD_OPTIONS.map((m) => {
-                      const isSelected = editMood === m.id;
-                      const Icon = m.icon;
-                      return (
-                        <button
-                          key={m.id}
-                          onClick={() => setEditMood(isSelected ? undefined : m.id)}
-                          className={cn(
-                            "flex items-center gap-1.5 px-3 py-1.5 rounded-xl border transition-all whitespace-nowrap",
-                            isSelected 
-                              ? `${m.bg} ${m.border} ${m.color} scale-105 shadow-lg` 
-                              : "bg-slate-900 border-slate-700 text-slate-500 hover:bg-slate-800 hover:text-slate-300"
-                          )}
-                        >
-                          <Icon size={14} />
-                          <span className="text-xs font-bold uppercase tracking-wider">{m.label}</span>
-                        </button>
-                      );
-                    })}
+                  {/* Daily Feelings Edit */}
+                  <div className="space-y-2">
+                    <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-0.5 mb-1">Daily Feelings</div>
+                    <div className="flex gap-2 overflow-x-auto pb-1 custom-scrollbar items-center">
+                      {MOOD_OPTIONS.filter(m => (state.enabledMoods || DEFAULT_ENABLED_MOODS).includes(m.id)).map((m) => {
+                        const isSelected = editMood === m.id;
+                        const Icon = m.icon;
+                        return (
+                          <button
+                            key={m.id}
+                            onClick={() => setEditMood(isSelected ? undefined : m.id)}
+                            className={cn(
+                              "flex items-center gap-1.5 px-3 py-1.5 rounded-xl border transition-all whitespace-nowrap",
+                              isSelected 
+                                ? `${m.bg} ${m.border} ${m.color} scale-105 shadow-lg` 
+                                : "bg-slate-900 border-slate-700 text-slate-500 hover:bg-slate-800 hover:text-slate-300"
+                            )}
+                          >
+                            <Icon size={14} />
+                            <span className="text-[10px] font-bold uppercase tracking-wider">{m.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
                 <div className={cn("grid gap-4", isMarkdownPreview ? "grid-cols-1" : "grid-cols-1")}>
@@ -480,40 +516,51 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
                 </div>
               </div>
             ) : (
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-1">
-                    {currentLog ? (
-                      Array.from({ length: 5 }).map((_, i) => {
-                        const val = i + 1;
-                        if (val <= currentLog.rating) return <Star key={i} size={16} className="text-amber-400 fill-amber-400" />;
-                        if (val - 0.5 === currentLog.rating) return <StarHalf key={i} size={16} className="text-amber-400 fill-amber-400" />;
-                        return <Star key={i} size={16} className="text-slate-800" />;
-                      })
-                    ) : (
-                      <span className="text-xs text-slate-600 italic pr-1">No rating recorded</span>
-                    )}
+              <div className="space-y-4">
+                <div className="flex flex-col gap-3">
+                  {/* Efficiency Rating Row */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Efficiency</span>
+                    <div className="flex items-center gap-1">
+                      {currentLog ? (
+                        Array.from({ length: 5 }).map((_, i) => {
+                          const val = i + 1;
+                          if (val <= currentLog.rating) return <Star key={i} size={15} className="text-amber-400 fill-amber-400" />;
+                          if (val - 0.5 === currentLog.rating) return <StarHalf key={i} size={15} className="text-amber-400 fill-amber-400" />;
+                          return <Star key={i} size={15} className="text-slate-800" />;
+                        })
+                      ) : (
+                        <span className="text-[10px] text-slate-600 italic">No rating</span>
+                      )}
+                    </div>
                   </div>
                   
-                  {currentLog?.mood && (() => {
-                    const moodObj = MOOD_OPTIONS.find(m => m.id === currentLog.mood);
-                    if (!moodObj) return null;
-                    const Icon = moodObj.icon;
-                    return (
-                      <div className={cn("flex items-center gap-1.5 px-2 py-1 rounded-md border", moodObj.bg, moodObj.border, moodObj.color)}>
-                        <Icon size={12} />
-                        <span className="text-[10px] font-bold uppercase tracking-wider">{moodObj.label}</span>
-                      </div>
-                    );
-                  })()}
+                  {/* Daily Feeling Row */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Feelings</span>
+                    {currentLog?.mood ? (() => {
+                      const moodObj = MOOD_OPTIONS.find(m => m.id === currentLog.mood);
+                      if (!moodObj) return <span className="text-[10px] text-slate-600 italic uppercase">None</span>;
+                      const Icon = moodObj.icon;
+                      return (
+                        <div className={cn("flex items-center gap-1.5 px-2 py-0.5 rounded-md border", moodObj.bg, moodObj.border, moodObj.color)}>
+                          <Icon size={10} />
+                          <span className="text-[9px] font-black uppercase tracking-wider">{moodObj.label}</span>
+                        </div>
+                      );
+                    })() : (
+                      <span className="text-[10px] text-slate-600 italic uppercase">None</span>
+                    )}
+                  </div>
                 </div>
-                <div className="text-sm text-slate-300 leading-relaxed">
+
+                <div className="text-sm text-slate-300 leading-relaxed pt-3 border-t border-slate-900">
                   {currentLog?.reflection ? (
                     <div className="prose prose-invert prose-sm max-w-none prose-p:text-slate-300 prose-headings:text-slate-100 prose-strong:text-slate-200">
                       <Markdown>{currentLog.reflection}</Markdown>
                     </div>
                   ) : (
-                    <p className="italic pr-1 text-slate-600">The day's reflections are yet to be chronicled.</p>
+                    <p className="italic text-xs text-slate-600">The day's reflections are yet to be chronicled.</p>
                   )}
                 </div>
               </div>
@@ -608,7 +655,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
           <div className="space-y-8">
             <div className="h-40 min-h-[160px]">
               <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
-                <BarChart data={weeklyData}>
+                <BarChart data={weeklyData} margin={{ top: 35, right: 0, left: 0, bottom: 0 }}>
                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10 }} />
                   <Tooltip 
                     contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '8px' }}
@@ -621,6 +668,10 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
                   {state.showOtherInActivityLog !== false && (
                     <Bar dataKey="Other" stackId="a" fill="#64748b" radius={[4, 4, 0, 0]} />
                   )}
+                  {/* Mood Icon Layer - Stacked with 0 height to stay at the top */}
+                  <Bar dataKey="moodHeight" stackId="a" fill="transparent" isAnimationActive={false}>
+                    <LabelList content={renderMoodIcon} />
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </div>

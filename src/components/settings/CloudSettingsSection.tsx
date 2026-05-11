@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Cloud, Server, HardDrive, CheckCircle2, ChevronRight, Settings, Lock, X, History, ArrowDownUp, RefreshCw, LogIn, Trash2, ShieldBan, Eye, Search, UploadCloud, DownloadCloud, Download, Laptop, Monitor, Smartphone, Tablet, Copy, Key } from 'lucide-react';
+import { Cloud, Server, HardDrive, CheckCircle2, ChevronRight, Settings, Lock, X, History, ArrowDownUp, RefreshCw, LogIn, Trash2, ShieldBan, Eye, Search, UploadCloud, DownloadCloud, Download, Laptop, Monitor, Smartphone, Tablet, Copy, Key, WifiOff } from 'lucide-react';
 import { AppState } from '../../types';
 import { cn } from '../../lib/utils';
 import { getDeviceCode } from '../../hooks/useCloudSync';
@@ -32,6 +32,18 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
   const [unlockTarget, setUnlockTarget] = useState<'redis' | 'google' | 'webdav' | null>(null);
   const [unlockPassword, setUnlockPassword] = useState('');
   const [unlockError, setUnlockError] = useState(false);
+  const [isOnline, setIsOnline] = useState(typeof window !== 'undefined' ? window.navigator.onLine : true);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -253,7 +265,11 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
             <div className="flex flex-col">
               <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Connection</span>
               <div className="mt-1 flex items-center gap-2">
-                {isSyncing ? (
+                {!isOnline ? (
+                  <span className="flex items-center gap-1.5 px-2 py-0.5 bg-slate-800 text-slate-400 text-[10px] font-black uppercase tracking-widest rounded-md border border-slate-700 w-max">
+                    <WifiOff size={10} /> 未联网
+                  </span>
+                ) : isSyncing ? (
                   <span className="flex items-center gap-1.5 px-2 py-0.5 bg-amber-500/10 text-amber-500 text-[10px] font-black uppercase tracking-widest rounded-md border border-amber-500/20 w-max">
                     <RefreshCw size={10} className="animate-spin" /> Syncing
                   </span>

@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v5.4.0';
+export const APP_VERSION = 'v5.5.3';
 export const LAST_UPDATE_DATE = '2026-05-11';
-export const LAST_UPDATE_TIME = '23:15:00';
+export const LAST_UPDATE_TIME = '22:30:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,49 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v5.5.3',
+    date: '2026-05-11',
+    time: '22:30:00',
+    title: 'Weekly Activity Display Polish',
+    items: [
+      { category: 'Data Vis', description: 'Fixed mood icons not displaying properly on stacked bar charts.' },
+      { category: 'Data Vis', description: 'Added numeric text displaying the exact total number of sessions above each day\'s column in the Weekly Activity bar chart.' }
+    ]
+  },
+  {
+    version: 'v5.5.2',
+    date: '2026-05-11',
+    time: '22:05:00',
+    title: 'Mood Rating Removal',
+    items: [
+      { category: 'UI', description: 'Removed the heart-based mood rating module from the Daily Summary to streamline the reflection process.' }
+    ]
+  },
+  {
+    version: 'v5.5.1',
+    date: '2026-05-11',
+    time: '21:55:00',
+    title: 'Cloud Connection Resiliency & Mood Charting',
+    items: [
+      { category: 'Reliability', description: 'Added a 60-second connection timeout and reload button to the Astral Archives verification cycle to prevent infinite loading.' },
+      { category: 'UI', description: 'Added an "Offline" badge to the Cloud Connection status and Profile cloud status when the device loses internet connection.' },
+      { category: 'Feature', description: 'Integrated Mood Icons into the top of the Weekly Activity bar chart.' },
+      { category: 'UI', description: 'Unified Mood Score and Efficiency Rating editing interfaces to align visually.' }
+    ]
+  },
+  {
+    version: 'v5.5.0',
+    date: '2026-05-11',
+    time: '23:45:00',
+    title: 'Enhanced Mood Tracking & Customization',
+    items: [
+      { category: 'Feature', description: 'Implemented a heart-based 0-5 mood rating system (Heart Icons) alongside the efficiency rating.' },
+      { category: 'Feature', description: 'Added mood customization in Settings -> General, allowing users to enable or disable specific mood types.' },
+      { category: 'UX', description: 'Restricted mood selection options to only those enabled in settings, with GREAT, GOOD, OKAY, BAD, and AWFUL as defaults.' },
+      { category: 'UI', description: 'Integrated heart-based rating display and editing directly into the Stats and Daily Summary views.' },
+    ]
+  },
   {
     version: 'v5.4.0',
     date: '2026-05-11',

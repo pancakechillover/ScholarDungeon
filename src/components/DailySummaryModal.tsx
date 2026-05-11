@@ -28,44 +28,15 @@ import {
   File,
   FileText,
   Indent,
-  Sun,
-  Cloud,
-  CloudLightning,
-  Flame,
-  Coffee,
-  Sparkles,
-  Battery,
-  BatteryLow,
-  Brain,
-  Heart,
-  Ghost,
-  Music,
-  Gamepad2,
-  Compass,
-  Palette,
-  Smile,
-  Frown,
-  Meh
+  Heart
 } from 'lucide-react';
 import Markdown from 'react-markdown';
 import { cn } from '../lib/utils';
 import { AppState, StudySession, RewardHistoryItem, Dungeon, MajorDungeon } from '../types';
+import { MOOD_OPTIONS, DEFAULT_ENABLED_MOODS } from '../constants';
 
 import { createPortal } from 'react-dom';
 import { useScrollLock } from '../hooks/useScrollLock';
-
-const MOOD_OPTIONS = [
-  { id: 'great', label: 'Great', icon: Sun, color: 'text-amber-400', bg: 'bg-amber-400/10', border: 'border-amber-400/30' },
-  { id: 'good', label: 'Good', icon: Smile, color: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/30' },
-  { id: 'neutral', label: 'Okay', icon: Meh, color: 'text-blue-400', bg: 'bg-blue-400/10', border: 'border-blue-400/30' },
-  { id: 'bad', label: 'Bad', icon: Frown, color: 'text-rose-400', bg: 'bg-rose-400/10', border: 'border-rose-400/30' },
-  { id: 'awful', label: 'Awful', icon: CloudLightning, color: 'text-purple-400', bg: 'bg-purple-400/10', border: 'border-purple-400/30' },
-  { id: 'productive', label: 'Productive', icon: Flame, color: 'text-orange-500', bg: 'bg-orange-500/10', border: 'border-orange-500/30' },
-  { id: 'tired', label: 'Tired', icon: BatteryLow, color: 'text-slate-400', bg: 'bg-slate-400/10', border: 'border-slate-400/30' },
-  { id: 'inspired', label: 'Inspired', icon: Sparkles, color: 'text-yellow-400', bg: 'bg-yellow-400/10', border: 'border-yellow-400/30' },
-  { id: 'focused', label: 'Focused', icon: Brain, color: 'text-fuchsia-400', bg: 'bg-fuchsia-400/10', border: 'border-fuchsia-400/30' },
-  { id: 'chill', label: 'Chill', icon: Coffee, color: 'text-sky-400', bg: 'bg-sky-400/10', border: 'border-sky-400/30' },
-];
 
 interface DailySummaryModalProps {
   state: AppState;
@@ -610,15 +581,15 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
 
           {/* Mood Selection */}
           <div className="space-y-4">
-            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest">How did you feel today?</h3>
+            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Daily Feelings</h3>
             <div className="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
-              {MOOD_OPTIONS.map((m) => {
+              {MOOD_OPTIONS.filter(m => (state.enabledMoods || DEFAULT_ENABLED_MOODS).includes(m.id)).map((m) => {
                 const isSelected = mood === m.id;
                 const Icon = m.icon;
                 return (
                   <button
                     key={m.id}
-                    onClick={() => setMood(isSelected ? '' : m.id)}
+                    onClick={() => setMood(isSelected ? "" : m.id)}
                     className={cn(
                       "flex flex-col items-center justify-center min-w-[72px] p-3 rounded-2xl border transition-all pointer-events-auto",
                       isSelected 
@@ -633,8 +604,6 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
               })}
             </div>
           </div>
-
-          {/* Efficiency Rating */}
           <div className="space-y-4">
             <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Efficiency Rating</h3>
             <div className="flex justify-center gap-1 sm:gap-2 p-4 sm:p-6 bg-slate-950/50 rounded-3xl border border-slate-800">
@@ -751,6 +720,7 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
               localStorage.removeItem('scholar_reflection_draft');
               localStorage.removeItem('scholar_rating_draft');
               localStorage.removeItem('scholar_mood_draft');
+              localStorage.removeItem('scholar_mood_score_draft');
               onSave(today.dateString, rating, reflection, mood);
               onNavigateToStats();
             }}

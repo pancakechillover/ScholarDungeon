@@ -214,9 +214,11 @@ export interface AppState {
       rating: number;
       reflection: string;
       mood?: string;
+      moodScore?: number;
     };
   };
   reflectionTemplates?: ReflectionTemplate[];
+  enabledMoods?: string[];
   lastUpdated?: string;
   secretCode?: string;
   isRedisUnlocked?: boolean;

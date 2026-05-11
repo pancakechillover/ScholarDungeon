@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   User, 
@@ -10,7 +10,8 @@ import {
   Star, 
   RefreshCw,
   Cloud,
-  CheckCircle2
+  CheckCircle2,
+  WifiOff
 } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { AppState } from '../types';
@@ -55,6 +56,19 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   isTalentLevel,
   getNextTalentLevel
 }) => {
+  const [isOnline, setIsOnline] = useState(typeof window !== 'undefined' ? window.navigator.onLine : true);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
   if (!isOpen) return null;
 
   return createPortal(
@@ -232,8 +246,12 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                     <h4 className="text-[10px] sm:text-xs font-black text-white uppercase tracking-widest">Cloud Sync Status</h4>
                   </div>
                   <div>
-                    {isSyncing ? (
-                      <span className="flex items-center gap-1.5 px-2 py-0.5 bg-amber-500/10 text-amber-500 text-[9px] font-black uppercase tracking-widest rounded-md border border-amber-500/20">
+                    {!isOnline ? (
+                      <span className="flex items-center gap-1.5 px-2 py-0.5 bg-slate-800 text-slate-400 text-[9px] font-black uppercase tracking-widest rounded-md border border-slate-700 w-max">
+                        <WifiOff size={10} /> 未联网
+                      </span>
+                    ) : isSyncing ? (
+                      <span className="flex items-center gap-1.5 px-2 py-0.5 bg-amber-500/10 text-amber-500 text-[9px] font-black uppercase tracking-widest rounded-md border border-amber-500/20 w-max">
                         <RefreshCw size={10} className="animate-spin" /> Syncing
                       </span>
                     ) : (state.secretCode || state.syncProvider) ? (

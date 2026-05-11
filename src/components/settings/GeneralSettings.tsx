@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { RewardCard, ShopItem, GachaPool, Rarity } from '../../types';
-import { INITIAL_GACHA } from '../../constants';
-import { Plus, Trash2, Save, Edit2, X, ChevronRight, Coins, Zap, Sparkles, Trophy, Timer as TimerIcon, Package, Flame, AlertTriangle, Scroll, Volume2, VolumeX, Sun, Moon, Settings as SettingsIcon, ShoppingBag, Trees, Waves, Database, Download, Upload, Target, Gift, User, Sword, Eye, Palette, Check, Bell, BellOff, RefreshCw, Key, Layers, Sunrise, Cloud, CloudSun, Lollipop, Wrench, History, Ticket, Globe } from 'lucide-react';
+import { INITIAL_GACHA, MOOD_OPTIONS, DEFAULT_ENABLED_MOODS } from '../../constants';
+import { Plus, Trash2, Save, Edit2, X, ChevronRight, Coins, Zap, Sparkles, Trophy, Timer as TimerIcon, Package, Flame, AlertTriangle, Scroll, Volume2, VolumeX, Sun, Moon, Smile, Settings as SettingsIcon, ShoppingBag, Trees, Waves, Database, Download, Upload, Target, Gift, User, Sword, Eye, Palette, Check, Bell, BellOff, RefreshCw, Key, Layers, Sunrise, Cloud, CloudSun, Lollipop, Wrench, History, Ticket, Globe } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { APP_VERSION, LAST_UPDATE_DATE, RELEASE_HISTORY } from '../../version';
 import { cn, getXPForLevel, getDefaultRewardForLevel } from '../../lib/utils';
@@ -692,6 +692,59 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
                 )}
               />
             </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-6 pt-6 border-t border-slate-800">
+        <div className="flex items-center gap-2.5 text-rose-400 mb-6 pb-2">
+          <Smile size={20} />
+          <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Mood Configuration</h4>
+        </div>
+
+        <div className="space-y-3">
+          <p className="text-xs text-slate-500 mb-2 italic">Select which moods are available in your daily summary.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {MOOD_OPTIONS.map(mood => {
+              const isEnabled = (state.enabledMoods || DEFAULT_ENABLED_MOODS).includes(mood.id);
+              const Icon = mood.icon;
+              return (
+                <button
+                  key={mood.id}
+                  onClick={() => {
+                    const currentEnabled = state.enabledMoods || DEFAULT_ENABLED_MOODS;
+                    let nextEnabled;
+                    if (isEnabled) {
+                      // Prevent disabling all moods
+                      if (currentEnabled.length <= 1) return;
+                      nextEnabled = currentEnabled.filter(id => id !== mood.id);
+                    } else {
+                      nextEnabled = [...currentEnabled, mood.id];
+                    }
+                    setState(prev => ({ ...prev, enabledMoods: nextEnabled }));
+                  }}
+                  className={cn(
+                    "flex items-center gap-3 p-3 rounded-2xl border transition-all",
+                    isEnabled 
+                      ? "bg-slate-800/80 border-slate-700 shadow-sm" 
+                      : "bg-slate-900 border-slate-800 opacity-60 grayscale-[0.5]"
+                  )}
+                >
+                  <div className={cn("p-2 rounded-xl transition-colors", isEnabled ? `${mood.bg} ${mood.color}` : "bg-slate-800 text-slate-500")}>
+                    <Icon size={18} />
+                  </div>
+                  <div className="flex-1 text-left">
+                    <div className={cn("text-sm font-bold", isEnabled ? "text-white" : "text-slate-500")}>{mood.label}</div>
+                  </div>
+                  <div className={cn(
+                    "w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all",
+                    isEnabled ? "bg-indigo-500 border-indigo-500" : "border-slate-700"
+                  )}>
+                    {isEnabled && <Check size={10} className="text-white" />}
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

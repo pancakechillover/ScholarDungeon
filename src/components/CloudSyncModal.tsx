@@ -67,7 +67,25 @@ export function CloudSyncModal({
     showComparison?: boolean;
   } | null>(null);
 
+  const [timeoutElapsed, setTimeoutElapsed] = useState(false);
+
   const prevSyncingRef = useRef(isSyncing);
+
+  useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout>;
+    if (isVerifying || isSyncing) {
+      setTimeoutElapsed(false);
+      timeoutId = setTimeout(() => {
+        setTimeoutElapsed(true);
+      }, 60000);
+    } else {
+      setTimeoutElapsed(false);
+    }
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [isVerifying, isSyncing]);
 
   // Auto-close modal after successful sync
   useEffect(() => {
@@ -378,32 +396,64 @@ export function CloudSyncModal({
                 animate={{ opacity: 1, scale: 1 }}
                 className="py-12 flex flex-col items-center justify-center text-center space-y-6"
               >
-                <div className="relative">
-                  <div className="absolute inset-0 bg-indigo-500/20 blur-2xl rounded-full" />
-                  <Loader2 className="animate-spin text-indigo-400 relative z-10" size={48} />
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-xl font-black text-indigo-300 uppercase tracking-widest">
-                    {isSyncing ? (
-                      syncCheckResult ? 'Applying Changes' : 'Communing Archives'
-                    ) : 'Verifying Archives'}
-                  </h3>
-                  <p className="text-slate-400 text-sm max-w-[250px] mx-auto leading-relaxed">
-                    {isSyncing ? (
-                      syncCheckResult ? 'Inscribing selected data to the astral records...' : 'Synchronizing temporal data across the void...'
-                    ) : 'Analyzing temporal data and local inscriptions for discrepancies...'}
-                  </p>
-                </div>
-                <div className="flex gap-1">
-                  {[0, 1, 2].map(i => (
-                    <motion.div 
-                      key={i}
-                      animate={{ opacity: [0.3, 1, 0.3], scale: [1, 1.2, 1] }}
-                      transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
-                      className="w-1.5 h-1.5 bg-indigo-500 rounded-full"
-                    />
-                  ))}
-                </div>
+                {timeoutElapsed ? (
+                  <>
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-red-500/20 blur-2xl rounded-full" />
+                      <AlertTriangle className="text-red-400 relative z-10" size={48} />
+                    </div>
+                    <div className="space-y-2">
+                      <h3 className="text-xl font-black text-rose-300 uppercase tracking-widest">
+                        Connection Timeout
+                      </h3>
+                      <p className="text-slate-400 text-sm max-w-[250px] mx-auto leading-relaxed">
+                        The connection to the Astral Archives took too long. Please check your network or try again.
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => window.location.reload()}
+                      className="mt-4 px-6 py-3 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl font-black uppercase tracking-widest text-xs transition-colors flex items-center justify-center gap-2"
+                    >
+                      <RefreshCw size={16} />
+                      Reload Application
+                    </button>
+                    <button
+                      onClick={onClose}
+                      className="mt-2 text-slate-500 hover:text-slate-400 text-[10px] font-bold uppercase tracking-widest underline decoration-slate-700 underline-offset-4"
+                    >
+                      Dismiss
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-indigo-500/20 blur-2xl rounded-full" />
+                      <Loader2 className="animate-spin text-indigo-400 relative z-10" size={48} />
+                    </div>
+                    <div className="space-y-2">
+                      <h3 className="text-xl font-black text-indigo-300 uppercase tracking-widest">
+                        {isSyncing ? (
+                          syncCheckResult ? 'Applying Changes' : 'Communing Archives'
+                        ) : 'Verifying Archives'}
+                      </h3>
+                      <p className="text-slate-400 text-sm max-w-[250px] mx-auto leading-relaxed">
+                        {isSyncing ? (
+                          syncCheckResult ? 'Inscribing selected data to the astral records...' : 'Synchronizing temporal data across the void...'
+                        ) : 'Analyzing temporal data and local inscriptions for discrepancies...'}
+                      </p>
+                    </div>
+                    <div className="flex gap-1">
+                      {[0, 1, 2].map(i => (
+                        <motion.div 
+                          key={i}
+                          animate={{ opacity: [0.3, 1, 0.3], scale: [1, 1.2, 1] }}
+                          transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
+                          className="w-1.5 h-1.5 bg-indigo-500 rounded-full"
+                        />
+                      ))}
+                    </div>
+                  </>
+                )}
               </motion.div>
             ) : syncCheckResult ? (
               <div className="space-y-4">

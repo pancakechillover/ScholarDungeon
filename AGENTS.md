@@ -23,7 +23,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v5.4.0
+- **Current Version:** v5.5.3
 - **Last Update Date:** 2026-05-11
 
 ## Dark Themes Definition
@@ -48,6 +48,20 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v5.5.3 (2026-05-11):** Weekly Activity Chart Formatting.
+  - *Data Vis:* Fixed a rendering bug blocking Recharts stacked bar charts from properly displaying the custom mood icon layer.
+  - *Data Vis:* Added numerical totals to the top of the Weekly Activity bar chart to display the precise session count for each day since the Y-axis is hidden.
+- **v5.5.2 (2026-05-11):** Mood Rating Removal.
+  - *UI:* Removed the heart-based mood rating module from the Daily Summary to streamline the reflection process and simplify user input.
+- **v5.5.1 (2026-05-11):** Cloud Connection Resiliency & Mood Charting.
+  - *Reliability:* Added a 60-second connection timeout and reload button to the Astral Archives verification cycle to prevent infinite loading.
+  - *UI:* Added an "Offline" badge to the Cloud Connection status and Profile cloud status when the device loses internet connection.
+  - *Feature:* Integrated Mood Icons into the top of the Weekly Activity bar chart.
+  - *UI:* Unified Mood Score and Efficiency Rating editing interfaces to align visually.
+- **v5.5.0 (2026-05-11):** Heart-based Mood Tracking & Customization.
+  - *Feature:* Heart-based Mood Rating. Replaced the simplistic mood selector with a polished 0-5 heart rating system for daily moods, mirroring the efficiency rating.
+  - *Customization:* Enabled Mood Types. Added a management interface in General Settings to toggle specific mood types (Great, Good, Okay, Bad, Awful), ensuring a personalized tracking experience.
+  - *UI/UX:* Filtered Mood Display. Synchronized all daily summary and statistics views to only display mood options enabled in the user's settings.
 - **v5.4.0 (2026-05-11):** Emotional Logs & Mood Tracker.
   - *Feature:* Introduced an emotional mood tracker allowing users to assign feelings to their Daily Summary with customizable icons (e.g., Great, Productive, Tired, Chill).
   - *UX:* Persisted unsaved mood drafts using localStorage alongside the reflection draft.
