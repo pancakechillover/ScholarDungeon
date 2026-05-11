@@ -238,15 +238,18 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
   };
 
   return (
-    <div className="space-y-6">
-      <div className="bg-slate-900 border border-slate-700/50 rounded-2xl p-4 sm:p-5 mb-4 relative overflow-hidden group">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-3xl -mr-10 -mt-10 transition-colors group-hover:bg-indigo-500/10" />
-        <div className="relative z-10 space-y-1">
-          <div className="flex items-center gap-2 mb-1">
-            <Cloud size={18} className={state.secretCode || state.syncProvider ? "text-indigo-400" : "text-slate-500"} />
-            <h4 className="text-[12px] sm:text-sm font-black text-white uppercase tracking-widest leading-none">Sync Status</h4>
-          </div>
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-3 mt-4">
+    <>
+    <div className="space-y-8">
+      <div className="space-y-6">
+        <div className="flex items-center gap-2.5 text-indigo-400 mb-6 pb-2">
+          <Cloud size={20} />
+          <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Cloud Sync</h4>
+        </div>
+
+        <div className="bg-slate-900 border border-slate-700/50 rounded-2xl p-4 sm:p-5 relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-3xl -mr-10 -mt-10 transition-colors group-hover:bg-indigo-500/10" />
+          <div className="relative z-10 space-y-1">
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-3 mt-2">
             <div className="flex flex-col">
               <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Connection</span>
               <div className="mt-1 flex items-center gap-2">
@@ -321,13 +324,12 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
           </div>
         </div>
       )}
+      </div>
 
-      <div className="pt-6 border-t border-slate-800">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-2 text-slate-300">
-            <Laptop size={18} />
-            <h4 className="font-bold uppercase tracking-widest text-sm">Device Identity</h4>
-          </div>
+      <div className="space-y-6 pt-6 border-t border-slate-800">
+        <div className="flex items-center gap-2.5 text-slate-300 mb-6 pb-2">
+          <Laptop size={20} />
+          <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Device Identity</h4>
         </div>
         
         <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 space-y-6">
@@ -395,14 +397,13 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
         </div>
       </div>
 
-      <div className="pt-6 border-t border-slate-800">
+      <div className="space-y-6 pt-6 border-t border-slate-800">
         <div className="flex items-center gap-2.5 text-indigo-400 mb-6 pb-2">
           <Server size={20} />
           <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Storage Providers</h4>
         </div>
-      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Redis / The Astral Archives */}
         <button
           onClick={handleRedisClick}
@@ -528,11 +529,12 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
           </div>
         </button>
       </div>
+      </div>
 
-      <div className="pt-6 border-t border-slate-800">
-        <div className="flex items-center gap-2 mb-6 text-slate-300">
-          <Settings size={18} />
-          <h4 className="font-bold uppercase tracking-widest text-sm">Auto-Sync Preferences</h4>
+      <div className="space-y-6 pt-6 border-t border-slate-800">
+        <div className="flex items-center gap-2.5 text-slate-300 mb-6 pb-2">
+          <Settings size={20} />
+          <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Auto-Sync Preferences</h4>
         </div>
         
         <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 space-y-6">
@@ -637,11 +639,11 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
         </div>
       </div>
 
-      <div className="pt-6 border-t border-slate-800">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-2 text-slate-300">
-            <History size={18} />
-            <h4 className="font-bold uppercase tracking-widest text-sm">Sync Status & History</h4>
+      <div className="space-y-6 pt-6 border-t border-slate-800">
+        <div className="flex items-center justify-between mb-6 pb-2">
+          <div className="flex items-center gap-2.5 text-slate-300">
+            <History size={20} />
+            <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Sync Status & History</h4>
           </div>
           {state.syncHistory && state.syncHistory.length > 0 && (
             <button
@@ -762,6 +764,7 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
           </div>
         </div>
       </div>
+    </div>
 
       {showUnlockModal && createPortal(
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
@@ -895,6 +898,6 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
           </div>
         </div>
       , document.body)}
-    </div>
+    </>
   );
 };

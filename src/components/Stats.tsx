@@ -7,14 +7,31 @@ import {
 } from 'date-fns';
 import { StudySession, AppState, RewardHistoryItem } from '../types';
 import { cn } from '../lib/utils';
-import { BarChart2, Zap, Coins, ChevronLeft, ChevronRight, Calendar, Star, StarHalf, Edit2, Save, X, Eye, EyeOff, LineChart as LineChartIcon, Trophy, Sword } from 'lucide-react';
+import { 
+  BarChart2, Zap, Coins, ChevronLeft, ChevronRight, Calendar, Star, StarHalf, Edit2, Save, X, Eye, EyeOff, LineChart as LineChartIcon, Trophy, Sword,
+  Sun, CloudLightning, Flame, BatteryLow, Sparkles, Brain, Coffee, Smile, Frown, Meh 
+} from 'lucide-react';
+
+const MOOD_OPTIONS = [
+  { id: 'great', label: 'Great', icon: Sun, color: 'text-amber-400', bg: 'bg-amber-400/10', border: 'border-amber-400/30' },
+  { id: 'good', label: 'Good', icon: Smile, color: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/30' },
+  { id: 'neutral', label: 'Okay', icon: Meh, color: 'text-blue-400', bg: 'bg-blue-400/10', border: 'border-blue-400/30' },
+  { id: 'bad', label: 'Bad', icon: Frown, color: 'text-rose-400', bg: 'bg-rose-400/10', border: 'border-rose-400/30' },
+  { id: 'awful', label: 'Awful', icon: CloudLightning, color: 'text-purple-400', bg: 'bg-purple-400/10', border: 'border-purple-400/30' },
+  { id: 'productive', label: 'Productive', icon: Flame, color: 'text-orange-500', bg: 'bg-orange-500/10', border: 'border-orange-500/30' },
+  { id: 'tired', label: 'Tired', icon: BatteryLow, color: 'text-slate-400', bg: 'bg-slate-400/10', border: 'border-slate-400/30' },
+  { id: 'inspired', label: 'Inspired', icon: Sparkles, color: 'text-yellow-400', bg: 'bg-yellow-400/10', border: 'border-yellow-400/30' },
+  { id: 'focused', label: 'Focused', icon: Brain, color: 'text-fuchsia-400', bg: 'bg-fuchsia-400/10', border: 'border-fuchsia-400/30' },
+  { id: 'chill', label: 'Chill', icon: Coffee, color: 'text-sky-400', bg: 'bg-sky-400/10', border: 'border-sky-400/30' },
+];
+
 import { PageHeader } from './PageHeader';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, Legend, LineChart, Line, CartesianGrid } from 'recharts';
 import Markdown from 'react-markdown';
 
 interface StatsProps {
   state: AppState;
-  saveDailyLog: (date: string, rating: number, reflection: string) => void;
+  saveDailyLog: (date: string, rating: number, reflection: string, mood?: string) => void;
 }
 
 export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
@@ -46,6 +63,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
   const [isEditingLog, setIsEditingLog] = useState(false);
   const [editRating, setEditRating] = useState(0);
   const [editReflection, setEditReflection] = useState('');
+  const [editMood, setEditMood] = useState<string | undefined>();
   const [isMarkdownPreview, setIsMarkdownPreview] = useState(true);
 
   const dailyDateStr = format(dailyDate, 'yyyy-MM-dd');
@@ -54,11 +72,12 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
   const startEditing = () => {
     setEditRating(currentLog?.rating || 0);
     setEditReflection(currentLog?.reflection || '');
+    setEditMood(currentLog?.mood);
     setIsEditingLog(true);
   };
 
   const saveLog = () => {
-    saveDailyLog(dailyDateStr, editRating, editReflection);
+    saveDailyLog(dailyDateStr, editRating, editReflection, editMood);
     setIsEditingLog(false);
   };
 
@@ -398,27 +417,51 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
 
             {isEditingLog ? (
               <div className="space-y-4">
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: 5 }).map((_, i) => {
-                    const val = i + 1;
-                    const isFull = editRating >= val;
-                    const isHalf = editRating >= val - 0.5 && editRating < val;
-                    return (
-                      <button
-                        key={val}
-                        onClick={() => setEditRating(isFull ? val - 0.5 : isHalf ? val - 1 : val)}
-                        className="p-0.5 transition-transform hover:scale-110"
-                      >
-                        {isFull ? (
-                          <Star size={16} className="text-amber-400 fill-amber-400" />
-                        ) : isHalf ? (
-                          <StarHalf size={16} className="text-amber-400 fill-amber-400" />
-                        ) : (
-                          <Star size={16} className="text-slate-700" />
-                        )}
-                      </button>
-                    );
-                  })}
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: 5 }).map((_, i) => {
+                      const val = i + 1;
+                      const isFull = editRating >= val;
+                      const isHalf = editRating >= val - 0.5 && editRating < val;
+                      return (
+                        <button
+                          key={val}
+                          onClick={() => setEditRating(isFull ? val - 0.5 : isHalf ? val - 1 : val)}
+                          className="p-0.5 transition-transform hover:scale-110"
+                        >
+                          {isFull ? (
+                            <Star size={16} className="text-amber-400 fill-amber-400" />
+                          ) : isHalf ? (
+                            <StarHalf size={16} className="text-amber-400 fill-amber-400" />
+                          ) : (
+                            <Star size={16} className="text-slate-700" />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  
+                  <div className="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
+                    {MOOD_OPTIONS.map((m) => {
+                      const isSelected = editMood === m.id;
+                      const Icon = m.icon;
+                      return (
+                        <button
+                          key={m.id}
+                          onClick={() => setEditMood(isSelected ? undefined : m.id)}
+                          className={cn(
+                            "flex items-center gap-1.5 px-3 py-1.5 rounded-xl border transition-all whitespace-nowrap",
+                            isSelected 
+                              ? `${m.bg} ${m.border} ${m.color} scale-105 shadow-lg` 
+                              : "bg-slate-900 border-slate-700 text-slate-500 hover:bg-slate-800 hover:text-slate-300"
+                          )}
+                        >
+                          <Icon size={14} />
+                          <span className="text-xs font-bold uppercase tracking-wider">{m.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
                 <div className={cn("grid gap-4", isMarkdownPreview ? "grid-cols-1" : "grid-cols-1")}>
                   <textarea
@@ -429,7 +472,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
                   />
                   {isMarkdownPreview && editReflection && (
                     <div className="p-3 bg-slate-900/50 border border-slate-800 rounded-xl overflow-y-auto max-h-32 custom-scrollbar">
-                      <div className="prose prose-invert prose-sm max-w-none">
+                      <div className="prose prose-invert prose-sm max-w-none prose-p:text-slate-300 prose-headings:text-slate-100 prose-strong:text-slate-200">
                         <Markdown>{editReflection}</Markdown>
                       </div>
                     </div>
@@ -438,21 +481,35 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
               </div>
             ) : (
               <div className="space-y-3">
-                <div className="flex items-center gap-1">
-                  {currentLog ? (
-                    Array.from({ length: 5 }).map((_, i) => {
-                      const val = i + 1;
-                      if (val <= currentLog.rating) return <Star key={i} size={16} className="text-amber-400 fill-amber-400" />;
-                      if (val - 0.5 === currentLog.rating) return <StarHalf key={i} size={16} className="text-amber-400 fill-amber-400" />;
-                      return <Star key={i} size={16} className="text-slate-800" />;
-                    })
-                  ) : (
-                    <span className="text-xs text-slate-600 italic pr-1">No rating recorded</span>
-                  )}
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1">
+                    {currentLog ? (
+                      Array.from({ length: 5 }).map((_, i) => {
+                        const val = i + 1;
+                        if (val <= currentLog.rating) return <Star key={i} size={16} className="text-amber-400 fill-amber-400" />;
+                        if (val - 0.5 === currentLog.rating) return <StarHalf key={i} size={16} className="text-amber-400 fill-amber-400" />;
+                        return <Star key={i} size={16} className="text-slate-800" />;
+                      })
+                    ) : (
+                      <span className="text-xs text-slate-600 italic pr-1">No rating recorded</span>
+                    )}
+                  </div>
+                  
+                  {currentLog?.mood && (() => {
+                    const moodObj = MOOD_OPTIONS.find(m => m.id === currentLog.mood);
+                    if (!moodObj) return null;
+                    const Icon = moodObj.icon;
+                    return (
+                      <div className={cn("flex items-center gap-1.5 px-2 py-1 rounded-md border", moodObj.bg, moodObj.border, moodObj.color)}>
+                        <Icon size={12} />
+                        <span className="text-[10px] font-bold uppercase tracking-wider">{moodObj.label}</span>
+                      </div>
+                    );
+                  })()}
                 </div>
                 <div className="text-sm text-slate-300 leading-relaxed">
                   {currentLog?.reflection ? (
-                    <div className="prose prose-invert prose-sm max-w-none">
+                    <div className="prose prose-invert prose-sm max-w-none prose-p:text-slate-300 prose-headings:text-slate-100 prose-strong:text-slate-200">
                       <Markdown>{currentLog.reflection}</Markdown>
                     </div>
                   ) : (

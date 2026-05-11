@@ -63,6 +63,26 @@ export function useGameState() {
       gachaAllowOverlap: false,
       defaultMarkdownEnabled: true,
       dailyLogs: {},
+      reflectionTemplates: [
+        {
+          id: 'preset-1',
+          name: 'Standard Review',
+          content: '### Highlights\n- \n\n### Challenges\n- \n\n### Lessons Learned\n- ',
+          exampleContent: '### Highlights\n- Finished the project proposal early.\n\n### Challenges\n- Kept getting sidetracked by emails.\n\n### Lessons Learned\n- I need to mute notifications during deep work blocks.'
+        },
+        {
+          id: 'preset-2',
+          name: '3-2-1 Summary',
+          content: '### 3 Tasks Completed\n1. \n2. \n3. \n\n### 2 Ideas/Thoughts\n1. \n2. \n\n### 1 Goal for Tomorrow\n1. ',
+          exampleContent: '### 3 Tasks Completed\n1. Responded to pending client tickets\n2. Completed 30 mins workout\n3. Planned meals for the week\n\n### 2 Ideas/Thoughts\n1. Waking up 30 mins earlier felt good.\n2. Should prepare gym bag the night before.\n\n### 1 Goal for Tomorrow\n1. Start on the new feature development.'
+        },
+        {
+          id: 'preset-3',
+          name: 'KISS Retrospective',
+          content: `### 🟢 Keep (What went well and should continue)\n- \n\n### 🟡 Improve (What could be done better)\n- \n\n### 🔴 Stop (What didn't work and should stop)\n- \n\n### 🔵 Start (What new things to try)\n- `,
+          exampleContent: `### 🟢 Keep (What went well and should continue)\n- I woke up early and completed the most important task first.\n- Kept distractions to a minimum during the morning.\n\n### 🟡 Improve (What could be done better)\n- I could communicate my status more clearly to the team.\n- Need to take more consistent breaks to avoid afternoon fatigue.\n\n### 🔴 Stop (What didn't work and should stop)\n- Stop checking social media during small 5-minute breaks.\n- Stop agreeing to meetings that don't have an agenda.\n\n### 🔵 Start (What new things to try)\n- Start scheduling 15 minutes at the end of the day to plan tomorrow.\n- Start drinking a glass of water every hour.`
+        }
+      ],
       rewardPool: INITIAL_REWARD_POOL,
       shopItems: [
         { id: '1', name: 'Watch a Movie', price: 500, description: 'Treat yourself to a cinema experience' },
@@ -190,6 +210,27 @@ export function useGameState() {
         // Migration: Default timeSettings if missing
         if (!parsed.timeSettings) {
           parsed.timeSettings = defaultState.timeSettings;
+        }
+
+        if (!parsed.reflectionTemplates) {
+          parsed.reflectionTemplates = defaultState.reflectionTemplates;
+        } else {
+          // Migration: Change preset-3 to KISS
+          const preset3 = parsed.reflectionTemplates.find((t: any) => t.id === 'preset-3');
+          if (preset3 && preset3.name === 'Rose, Bud, Thorn') {
+            preset3.name = 'KISS Retrospective';
+            preset3.content = `### 🟢 Keep (What went well and should continue)\n- \n\n### 🟡 Improve (What could be done better)\n- \n\n### 🔴 Stop (What didn't work and should stop)\n- \n\n### 🔵 Start (What new things to try)\n- `;
+            preset3.exampleContent = defaultState.reflectionTemplates.find(t => t.id === 'preset-3')?.exampleContent;
+          }
+          
+          // Migration: Ensure preset example contents exist
+          const preset1 = parsed.reflectionTemplates.find((t: any) => t.id === 'preset-1');
+          if (preset1 && !preset1.exampleContent) preset1.exampleContent = defaultState.reflectionTemplates.find(t => t.id === 'preset-1')?.exampleContent;
+          
+          const preset2 = parsed.reflectionTemplates.find((t: any) => t.id === 'preset-2');
+          if (preset2 && !preset2.exampleContent) preset2.exampleContent = defaultState.reflectionTemplates.find(t => t.id === 'preset-2')?.exampleContent;
+
+          if (preset3 && !preset3.exampleContent) preset3.exampleContent = defaultState.reflectionTemplates.find(t => t.id === 'preset-3')?.exampleContent;
         }
 
         // Migration: Default active pool IDs
@@ -1501,12 +1542,16 @@ export function useGameState() {
     });
   }, []);
 
-  const saveDailyLog = useCallback((date: string, rating: number, reflection: string) => {
+  const saveDailyLog = useCallback((date: string, rating: number, reflection: string, mood?: string) => {
     setState(prev => ({
       ...prev,
       dailyLogs: {
         ...(prev.dailyLogs || {}),
-        [date]: { rating, reflection }
+        [date]: { 
+          rating, 
+          reflection,
+          ...(mood ? { mood } : {})
+        }
       }
     }));
   }, []);

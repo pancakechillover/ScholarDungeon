@@ -390,31 +390,35 @@ export function useCloudSync(
               googleDriveTokens: state.googleDriveTokens || syncCheckResult.cloudData.state.googleDriveTokens,
               webdavSettings: state.webdavSettings || syncCheckResult.cloudData.state.webdavSettings
           }));
-          localStorage.setItem('scholars_dungeon_dungeons', JSON.stringify(syncCheckResult.cloudData.dungeons));
-          localStorage.setItem('scholars_dungeon_major_dungeons', JSON.stringify(syncCheckResult.cloudData.majorDungeons));
+          localStorage.setItem('scholars_dungeon_state_dungeons', JSON.stringify(syncCheckResult.cloudData.dungeons));
+          localStorage.setItem('scholars_dungeon_state_major_dungeons', JSON.stringify(syncCheckResult.cloudData.majorDungeons));
         }
 
-        setState((prev: any) => ({
+        const mergedState = {
             ...syncCheckResult.cloudData.state,
-            deviceNickname: prev.deviceNickname || syncCheckResult.cloudData.state.deviceNickname,
+            deviceNickname: state.deviceNickname || syncCheckResult.cloudData.state.deviceNickname,
             secretCode: (syncCheckResult.code !== 'WebDAV' && syncCheckResult.code !== 'GoogleDrive' && syncCheckResult.code !== 'GoogleDriveAuth') 
                 ? syncCheckResult.code 
-                : (prev.secretCode || syncCheckResult.cloudData.state.secretCode),
+                : (state.secretCode || syncCheckResult.cloudData.state.secretCode),
             syncProvider: syncCheckResult.code === 'WebDAV' 
                 ? 'WebDAV' 
                 : (syncCheckResult.code === 'GoogleDrive' || syncCheckResult.code === 'GoogleDriveAuth') 
                     ? 'Google Drive' 
                     : 'Redis',
-            googleDriveTokens: prev.googleDriveTokens || syncCheckResult.cloudData.state.googleDriveTokens,
-            googleDriveFileId: prev.googleDriveFileId || syncCheckResult.cloudData.state.googleDriveFileId,
-            webdavSettings: prev.webdavSettings || syncCheckResult.cloudData.state.webdavSettings,
-            isGoogleDriveUnlocked: prev.isGoogleDriveUnlocked || syncCheckResult.cloudData.state.isGoogleDriveUnlocked,
-            isRedisUnlocked: prev.isRedisUnlocked || syncCheckResult.cloudData.state.isRedisUnlocked
-        }));
+            googleDriveTokens: state.googleDriveTokens || syncCheckResult.cloudData.state.googleDriveTokens,
+            googleDriveFileId: state.googleDriveFileId || syncCheckResult.cloudData.state.googleDriveFileId,
+            webdavSettings: state.webdavSettings || syncCheckResult.cloudData.state.webdavSettings,
+            isGoogleDriveUnlocked: state.isGoogleDriveUnlocked || syncCheckResult.cloudData.state.isGoogleDriveUnlocked,
+            isRedisUnlocked: state.isRedisUnlocked || syncCheckResult.cloudData.state.isRedisUnlocked
+        };
+
+        setState(mergedState);
         setDungeons(syncCheckResult.cloudData.dungeons);
         setMajorDungeons(syncCheckResult.cloudData.majorDungeons);
         
         logSyncEvent('cloud_to_local', syncCheckResult.code);
+
+        await syncToCloud(true, mergedState, 'Immediate');
       } else if (!useCloud) {
         const isProviderCode = syncCheckResult.code === 'WebDAV' || syncCheckResult.code === 'GoogleDrive' || syncCheckResult.code === 'GoogleDriveAuth';
         const newSecretCode = isProviderCode ? state.secretCode : syncCheckResult.code;

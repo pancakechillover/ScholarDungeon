@@ -19,10 +19,11 @@ Whenever you complete a task or make changes to the application:
 - **Full-Screen Modals:** Whenever creating a "full-screen" centered modal (especially `fixed inset-0`), you MUST use `createPortal(..., document.body)` from `react-dom` to render the modal directly on the `body`. If you do not use `createPortal`, parent elements with CSS `transform`, `filter`, or `perspective` will establish unintended containing blocks that capture the `fixed` positioning, causing the modal to appear in the middle of a scrolling page container instead of the actual screen view. Never make this mistake again.
 - **Italic Clipping:** To prevent right-side clipping of italic text (especially in browsers with tight bounding boxes), always add a small right padding (e.g., `pr-1` or `px-0.5`) to the element or its immediate container.
 - **Red Dot / Notification Placement:** Unread message or notification badges (red dots) on icons and buttons MUST ALWAYS be placed in the bottom-right corner (e.g. `absolute -bottom-0.5 -right-0.5`), NEVER in the top-right corner.
-- **Theme-Aware Colors:** When designing UI elements that highlight based on themes, note that `indigo-300`, `indigo-400`, `indigo-500`, and `indigo-600` are overridden by the custom theme variables in `index.css`. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
+- **Touch-Friendly Controls:** Delete buttons or other critical actions MUST NOT be hover-only (e.g. `opacity-0 group-hover:opacity-100`), as this is unfriendly to touch-screen users. They should be visible or adapt properly for mobile devices.
+- **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v5.3.20
+- **Current Version:** v5.4.0
 - **Last Update Date:** 2026-05-11
 
 ## Dark Themes Definition
@@ -47,6 +48,34 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v5.4.0 (2026-05-11):** Emotional Logs & Mood Tracker.
+  - *Feature:* Introduced an emotional mood tracker allowing users to assign feelings to their Daily Summary with customizable icons (e.g., Great, Productive, Tired, Chill).
+  - *UX:* Persisted unsaved mood drafts using localStorage alongside the reflection draft.
+  - *UI:* Updated the daily reflection statistics view to elegantly display the chosen mood indicator next to the efficiency rating.
+  - *Architecture:* Expanded the `DailyLog` internal type structure to support arbitrary mood metadata.
+- **v5.3.26 (2026-05-11):** Daily Summary Immersive Polish.
+  - *Feature:* Added markdown formatting buttons (Bold, Italic, Underline, List/Indent) specifically to the Immersive Reflection editor.
+  - *UI:* Refactored template toggle buttons (Blank & Example modes) to include clear text labels aligning with the primary "Templates" button size.
+  - *Architecture:* Consolidated redundant template control rendering in `DailySummaryModal.tsx` to prevent hydration mismatches and ensure uniformity between views.
+- **v5.3.25 (2026-05-11):** Template Mode & Touch Polish.
+  - *Feature:* Introduced "Blank Mode" and "Example Mode" toggles for reflection templates, allowing users to save and load both empty structures and filled examples under the same template name.
+  - *UI:* Improved touch accessibility by making template delete buttons consistently visible instead of relying on hover states.
+  - *Content:* Updated default reflection presets to include contextual example content modes.
+- **v5.3.24 (2026-05-11):** Template Features & KISS Retrospective.
+  - *Feature:* Added quick-access buttons for loading a Blank Template or an Example Template to the reflection editor.
+  - *Content:* Replaced "Rose, Bud, Thorn" reflection preset with the "KISS" (Keep, Improve, Stop, Start) retrospective framework.
+- **v5.3.23 (2026-05-11):** Daily Summary Modal Polish & Immersive Edit.
+  - *Feature:* Added "Immersive" mode for Daily Reflection, providing a distraction-free, full-screen markdown editing experience.
+  - *Feature:* Implemented draft saving for End of the Day ratings and reflections, ensuring data is not lost if the modal is accidentally closed before saving.
+  - *UI:* Optimized the Reflection panel button layout, grouping related actions and allowing vertical resizing of the textarea.
+- **v5.3.22 (2026-05-11):** Daily Reflection Templates & Display Polish.
+  - *Feature:* Added a template preset system for Daily Reflections, allowing users to choose from built-in templates (Standard Review, 3-2-1 Summary, Rose/Bud/Thorn) and save their own presets.
+  - *UI:* Enhanced the markdown preview panel's font colors for significantly better readability across both light and dark backgrounds.
+- **v5.3.21 (2026-05-11):** Dashboard UI Polish.
+  - *UI:* Enhanced the Daily Progress module with a minimalist theme-aware progress bar, replacing the static emerald color with theme-dependent styling.
+  - *UI:* Added an icon to the Daily Progress title to maintain consistency with other sections.
+  - *UI:* Integrated the Daily Progress and Settlement Period display directly into the "End of the Day" summary modal for better context.
+  - *UX:* Improved timezone formatting for the Settlement Period to display as `24:00` instead of `0:00` of the next day.
 - **v5.3.20 (2026-05-11):** Cloud Sync: Device Code Identity & UX Polish.
   - *Architecture:* Implemented randomly-generated, persistent device codes to replace volatile nicknames for more reliable identity matching.
   - *UX:* Silent synchronization now triggers automatically when device codes match and local archives are newer or equal to cloud saves.

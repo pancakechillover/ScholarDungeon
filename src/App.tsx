@@ -1250,6 +1250,7 @@ function App() {
               setActiveTab('stats');
             }}
             onSave={saveDailyLog}
+            onUpdateState={(update) => setState(s => ({ ...s, ...update }))}
           />
         )}
       </AnimatePresence>

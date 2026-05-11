@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v5.3.20';
+export const APP_VERSION = 'v5.4.0';
 export const LAST_UPDATE_DATE = '2026-05-11';
-export const LAST_UPDATE_TIME = '02:02:00';
+export const LAST_UPDATE_TIME = '23:15:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,83 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v5.4.0',
+    date: '2026-05-11',
+    time: '23:15:00',
+    title: 'Emotional Logs & Mood Tracker',
+    items: [
+      { category: 'Feature', description: 'Introduced an emotional mood tracker allowing users to assign feelings to their Daily Summary with customizable icons (e.g., Great, Productive, Tired, Chill).' },
+      { category: 'UX', description: 'Persisted unsaved mood drafts using localStorage alongside the reflection draft.' },
+      { category: 'UI', description: 'Updated the daily reflection statistics view to elegantly display the chosen mood indicator next to the efficiency rating.' },
+      { category: 'Architecture', description: 'Expanded the `DailyLog` internal type structure to support arbitrary mood metadata.' },
+    ]
+  },
+  {
+    version: 'v5.3.26',
+    date: '2026-05-11',
+    time: '21:30:00',
+    title: 'Daily Summary Immersive Polish',
+    items: [
+      { category: 'Feature', description: 'Added markdown formatting buttons (Bold, Italic, Underline, List/Indent) specifically to the Immersive Reflection editor.' },
+      { category: 'UI', description: 'Refactored template toggle buttons (Blank & Example modes) to include clear text labels aligning with the primary "Templates" button size.' },
+      { category: 'Architecture', description: 'Consolidated redundant template control rendering in DailySummaryModal to prevent hydration mismatches and ensure uniformity between views.' },
+    ]
+  },
+  {
+    version: 'v5.3.25',
+    date: '2026-05-11',
+    time: '20:45:00',
+    title: 'Template Mode & Touch Polish',
+    items: [
+      { category: 'Feature', description: 'Introduced "Blank Mode" and "Example Mode" toggles for reflection templates, allowing users to save and load both empty structures and filled examples under the same template name.' },
+      { category: 'UI', description: 'Improved touch accessibility by making template delete buttons consistently visible instead of relying on hover states.' },
+      { category: 'Content', description: 'Updated default reflection presets to include contextual example content modes.' },
+    ]
+  },
+  {
+    version: 'v5.3.24',
+    date: '2026-05-11',
+    time: '20:30:00',
+    title: 'Template Features & KISS Retrospective',
+    items: [
+      { category: 'Feature', description: 'Added quick-access buttons for loading a Blank Template or an Example Template to the reflection editor.' },
+      { category: 'Content', description: 'Replaced "Rose, Bud, Thorn" reflection preset with the "KISS" (Keep, Improve, Stop, Start) retrospective framework.' },
+    ]
+  },
+  {
+    version: 'v5.3.23',
+    date: '2026-05-11',
+    time: '20:00:00',
+    title: 'Daily Summary Modal Polish & Immersive Edit',
+    items: [
+      { category: 'Feature', description: 'Added "Immersive" mode for Daily Reflection, providing a distraction-free, full-screen markdown editing experience.' },
+      { category: 'Feature', description: 'Implemented draft saving for End of the Day ratings and reflections, ensuring data is not lost if the modal is closed prematurely.' },
+      { category: 'UI', description: 'Optimized the Reflection panel button layout, grouping related actions and allowing vertical resizing of the textarea.' },
+    ]
+  },
+  {
+    version: 'v5.3.22',
+    date: '2026-05-11',
+    time: '19:50:00',
+    title: 'Daily Reflection Templates & Display Polish',
+    items: [
+      { category: 'Feature', description: 'Added a template preset system for Daily Reflections, allowing users to choose from built-in templates (Standard Review, 3-2-1 Summary, Rose/Bud/Thorn) and save their own presets.' },
+      { category: 'UI', description: "Enhanced the markdown preview panel's font colors for significantly better readability across both light and dark backgrounds." },
+    ]
+  },
+  {
+    version: 'v5.3.21',
+    date: '2026-05-11',
+    time: '19:35:00',
+    title: 'Dashboard UI Polish',
+    items: [
+      { category: 'UI', description: 'Enhanced the Daily Progress module with a minimalist theme-aware progress bar, replacing the static emerald color with theme-dependent styling.' },
+      { category: 'UI', description: 'Added an icon to the Daily Progress title to maintain consistency with other sections.' },
+      { category: 'UI', description: 'Integrated the Daily Progress and Settlement Period display directly into the "End of the Day" summary modal for better context.' },
+      { category: 'UX', description: 'Improved timezone formatting for the Settlement Period to display as `24:00` instead of `0:00` of the next day.' },
+    ]
+  },
   {
     version: 'v5.3.20',
     date: '2026-05-11',

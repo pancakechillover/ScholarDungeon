@@ -352,8 +352,8 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
             });
           } else {
             localStorage.setItem('scholars_dungeon_state', JSON.stringify(importedState));
-            if (dungeons) localStorage.setItem('scholars_dungeon_dungeons', JSON.stringify(dungeons));
-            if (majorDungeons) localStorage.setItem('scholars_dungeon_major_dungeons', JSON.stringify(majorDungeons));
+            if (dungeons) localStorage.setItem('scholars_dungeon_state_dungeons', JSON.stringify(dungeons));
+            if (majorDungeons) localStorage.setItem('scholars_dungeon_state_major_dungeons', JSON.stringify(majorDungeons));
           }
           
           window.location.reload();

@@ -129,6 +129,13 @@ export interface QuestHistoryItem {
   talentRequired?: string;
 }
 
+export interface ReflectionTemplate {
+  id: string;
+  name: string;
+  content: string;
+  exampleContent?: string;
+}
+
 export interface AppState {
   level: number;
   xp: number;
@@ -206,8 +213,10 @@ export interface AppState {
     [date: string]: {
       rating: number;
       reflection: string;
+      mood?: string;
     };
   };
+  reflectionTemplates?: ReflectionTemplate[];
   lastUpdated?: string;
   secretCode?: string;
   isRedisUnlocked?: boolean;

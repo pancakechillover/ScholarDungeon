@@ -5,7 +5,7 @@ import { AppState } from '../types';
 
 interface StatsViewProps {
   state: AppState;
-  saveDailyLog: (date: string, rating: number, reflection: string) => void;
+  saveDailyLog: (date: string, rating: number, reflection: string, mood?: string) => void;
 }
 
 export const StatsView: React.FC<StatsViewProps> = ({ state, saveDailyLog }) => {

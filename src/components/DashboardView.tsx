@@ -10,7 +10,8 @@ import {
   Zap,
   Compass,
   Package,
-  Clock
+  Clock,
+  Target
 } from 'lucide-react';
 import { AppState, Dungeon } from '../types';
 import { playSound } from '../lib/sound';
@@ -21,7 +22,7 @@ interface DashboardViewProps {
   setActiveTab: (tab: any) => void;
   setShowDailySummary: (show: boolean) => void;
   openGuideBook: (chapter: number) => void;
-  saveDailyLog: (date: string, rating: number, reflection: string) => void;
+  saveDailyLog: (date: string, rating: number, reflection: string, mood?: string) => void;
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
@@ -77,7 +78,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         }
     }
 
-    const formatDate = (d: Date) => {
+    const formatDate = (d: Date, is24: boolean = false) => {
+      if (is24) {
+        const prev = new Date(d);
+        prev.setDate(prev.getDate() - 1);
+        const mo = (prev.getMonth() + 1).toString().padStart(2, '0');
+        const da = prev.getDate().toString().padStart(2, '0');
+        const m = d.getMinutes().toString().padStart(2, '0');
+        return `${mo}/${da} 24:${m}`;
+      }
       const mo = (d.getMonth() + 1).toString().padStart(2, '0');
       const da = d.getDate().toString().padStart(2, '0');
       const h = d.getHours().toString().padStart(2, '0');
@@ -85,7 +94,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       return `${mo}/${da} ${h}:${m}`;
     };
 
-    return `${formatDate(startDate)} - ${formatDate(endDate)}`;
+    return `${formatDate(startDate)} - ${formatDate(endDate, ts.night.end === 24)}`;
   }, [state.timeSettings, state.timezone]);
 
   return (
@@ -148,10 +157,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         <div className="space-y-6">
           <div className="bg-slate-900 rounded-3xl border border-slate-800 p-6">
             <div className="mb-4">
-              <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-1">Daily Progress</h3>
-              <div className="flex items-center gap-1.5 text-[10px] text-slate-500 font-medium">
+              <div className="flex items-center gap-2 mb-2">
+                <Target size={16} className="text-indigo-400" />
+                <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest leading-none mt-0.5">Daily Progress</h3>
+              </div>
+              <div className="flex items-center gap-1.5 text-[10px] font-medium px-2 py-1 bg-slate-800/50 rounded-lg border border-slate-700/50 inline-flex">
                 <Clock size={10} className="text-indigo-400" />
-                <span>SETTLEMENT: {settlementPeriod}</span>
+                <span className="text-slate-500/80">SETTLEMENT:</span>
+                <span className="text-slate-400 font-semibold">{settlementPeriod}</span>
               </div>
             </div>
             <div className="flex items-center justify-between mb-2">
@@ -180,7 +193,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   : (state.dailyProgressGoalConfig?.[day] ?? 8);
                 return (
                   <div 
-                    className="h-full bg-emerald-500" 
+                    className="h-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.3)] transition-all" 
                     style={{ width: `${Math.min((state.dailySessions / dailyGoal) * 100, 100)}%` }}
                   />
                 );
