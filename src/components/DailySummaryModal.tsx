@@ -63,6 +63,95 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
   const [templateToDelete, setTemplateToDelete] = useState<string | null>(null);
 
   const immersiveTextAreaRef = useRef<HTMLTextAreaElement>(null);
+  const hasInitializedFromLog = useRef(false);
+
+  const today = useMemo(() => {
+    const ts = state.timeSettings || {
+      morning: { start: 8, end: 12 },
+      afternoon: { start: 14, end: 18 },
+      night: { start: 20, end: 24 }
+    };
+
+    const getYMD = (d: Date) => {
+      const year = d.getFullYear();
+      const month = (d.getMonth() + 1).toString().padStart(2, '0');
+      const day = d.getDate().toString().padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+
+    const timezone = state.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+    let now = new Date();
+    if (state.timezone) {
+      try {
+        const str = now.toLocaleString('en-US', { timeZone: state.timezone });
+        now = new Date(str);
+      } catch (e) {
+        console.error("Timezone error:", e);
+      }
+    }
+
+    const currentHour = now.getHours();
+
+    // Start with today's morning
+    let startDate = new Date(now);
+    startDate.setHours(ts.morning.start, 0, 0, 0);
+
+    let endDate = new Date(now);
+    
+    // If the night block spans midnight, the 'end' date needs to be the next day relative to the morning start.
+    let nightEndHour = ts.night.end;
+    let daysToadd = 0;
+    if (ts.night.end < ts.night.start) {
+        nightEndHour = ts.night.end;
+        daysToadd = 1;
+    } else if (ts.night.end === 24) {
+        nightEndHour = 0;
+        daysToadd = 1;
+    }
+    
+    endDate.setHours(nightEndHour, 0, 0, 0);
+    endDate.setDate(endDate.getDate() + daysToadd);
+
+    // If we are currently before the morning start, we belong to the previous day's settlement period
+    if (currentHour < ts.morning.start) {
+        startDate.setDate(startDate.getDate() - 1);
+        endDate.setDate(endDate.getDate() - 1);
+    }
+
+    const formatDate = (d: Date, is24: boolean = false) => {
+      if (is24) {
+        const prev = new Date(d);
+        prev.setDate(prev.getDate() - 1);
+        const mo = (prev.getMonth() + 1).toString().padStart(2, '0');
+        const da = prev.getDate().toString().padStart(2, '0');
+        const m = d.getMinutes().toString().padStart(2, '0');
+        return `${mo}/${da} 24:${m}`;
+      }
+      const mo = (d.getMonth() + 1).toString().padStart(2, '0');
+      const da = d.getDate().toString().padStart(2, '0');
+      const h = d.getHours().toString().padStart(2, '0');
+      const m = d.getMinutes().toString().padStart(2, '0');
+      return `${mo}/${da} ${h}:${m}`;
+    };
+
+    return {
+      dateString: getYMD(startDate),
+      settlementPeriod: `${formatDate(startDate)} - ${formatDate(endDate, ts.night.end === 24)}`
+    };
+  }, [state.timeSettings, state.timezone]);
+
+  // Load existing log if one exists for today
+  React.useEffect(() => {
+    if (!hasInitializedFromLog.current && today.dateString) {
+      const existingLog = state.dailyLogs?.[today.dateString];
+      if (existingLog) {
+        setRating(existingLog.rating);
+        setReflection(existingLog.reflection);
+        if (existingLog.mood) setMood(existingLog.mood);
+      }
+      hasInitializedFromLog.current = true;
+    }
+  }, [state.dailyLogs, today.dateString]);
 
   const applyFormat = (format: 'bold' | 'italic' | 'underline' | 'indent') => {
     const textarea = immersiveTextAreaRef.current;
@@ -297,79 +386,18 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
     else localStorage.removeItem('scholar_mood_draft');
   }, [mood]);
 
-  const today = useMemo(() => {
-    const ts = state.timeSettings || {
-      morning: { start: 8, end: 12 },
-      afternoon: { start: 14, end: 18 },
-      night: { start: 20, end: 24 }
-    };
-
-    const timezone = state.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
-    let now = new Date();
-    if (state.timezone) {
-      try {
-        const str = now.toLocaleString('en-US', { timeZone: state.timezone });
-        now = new Date(str);
-      } catch (e) {
-        console.error("Timezone error:", e);
-      }
-    }
-
-    const currentHour = now.getHours();
-
-    // Start with today's morning
-    let startDate = new Date(now);
-    startDate.setHours(ts.morning.start, 0, 0, 0);
-
-    let endDate = new Date(now);
-    
-    // If the night block spans midnight, the 'end' date needs to be the next day relative to the morning start.
-    let nightEndHour = ts.night.end;
-    let daysToadd = 0;
-    if (ts.night.end < ts.night.start) {
-        nightEndHour = ts.night.end;
-        daysToadd = 1;
-    } else if (ts.night.end === 24) {
-        nightEndHour = 0;
-        daysToadd = 1;
-    }
-    
-    endDate.setHours(nightEndHour, 0, 0, 0);
-    endDate.setDate(endDate.getDate() + daysToadd);
-
-    // If we are currently before the morning start, we belong to the previous day's settlement period
-    if (currentHour < ts.morning.start) {
-        startDate.setDate(startDate.getDate() - 1);
-        endDate.setDate(endDate.getDate() - 1);
-    }
-
-    const formatDate = (d: Date, is24: boolean = false) => {
-      if (is24) {
-        const prev = new Date(d);
-        prev.setDate(prev.getDate() - 1);
-        const mo = (prev.getMonth() + 1).toString().padStart(2, '0');
-        const da = prev.getDate().toString().padStart(2, '0');
-        const m = d.getMinutes().toString().padStart(2, '0');
-        return `${mo}/${da} 24:${m}`;
-      }
-      const mo = (d.getMonth() + 1).toString().padStart(2, '0');
-      const da = d.getDate().toString().padStart(2, '0');
-      const h = d.getHours().toString().padStart(2, '0');
-      const m = d.getMinutes().toString().padStart(2, '0');
-      return `${mo}/${da} ${h}:${m}`;
-    };
-
-    return {
-      dateString: startDate.toISOString().split('T')[0],
-      settlementPeriod: `${formatDate(startDate)} - ${formatDate(endDate, ts.night.end === 24)}`
-    };
-  }, [state.timeSettings, state.timezone]);
-
   const dailyStats = useMemo(() => {
     const ts = state.timeSettings || {
       morning: { start: 8, end: 12 },
       afternoon: { start: 14, end: 18 },
       night: { start: 20, end: 24 }
+    };
+
+    const getYMD = (d: Date) => {
+      const year = d.getFullYear();
+      const month = (d.getMonth() + 1).toString().padStart(2, '0');
+      const day = d.getDate().toString().padStart(2, '0');
+      return `${year}-${month}-${day}`;
     };
 
     const getAssignedDate = (date: Date) => {
@@ -381,17 +409,17 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
       if (ts.night.start > ts.night.end && hour < ts.night.end) {
         const yesterday = new Date(date);
         yesterday.setDate(yesterday.getDate() - 1);
-        return yesterday.toISOString().split('T')[0];
+        return getYMD(yesterday);
       }
       
       // Before morning start check
       if (hour < ts.morning.start) {
         const yesterday = new Date(date);
         yesterday.setDate(yesterday.getDate() - 1);
-        return yesterday.toISOString().split('T')[0];
+        return getYMD(yesterday);
       }
 
-      return date.toISOString().split('T')[0];
+      return getYMD(date);
     };
 
     const sessionsToday = state.history.filter(s => getAssignedDate(new Date(s.timestamp)) === today.dateString);
@@ -472,21 +500,38 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md overflow-y-auto border-0 m-0"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 py-12 bg-slate-950/90 backdrop-blur-md overflow-y-auto border-0 m-0"
     >
       <motion.div
         initial={{ scale: 0.9, y: 20 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.9, y: 20 }}
-        className="bg-slate-900 border border-indigo-500/30 rounded-[2.5rem] w-full max-w-2xl shadow-2xl overflow-hidden my-8 relative"
+        className="bg-slate-900 border border-indigo-500/30 rounded-[2.5rem] w-full max-w-2xl shadow-2xl overflow-hidden my-auto relative"
       >
         {/* Header */}
-        <div className="p-5 sm:p-8 border-b border-slate-800 flex justify-between items-center bg-gradient-to-r from-indigo-500/10 to-transparent">
-          <div>
+        <div className="p-5 sm:p-8 border-b border-slate-800 flex justify-between items-start bg-gradient-to-r from-indigo-500/10 to-transparent">
+          <div className="space-y-1">
             <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tighter uppercase italic pr-1">End of the Day</h2>
-            <p className="text-sm sm:text-base text-slate-400 font-medium">Reflect on your progress and rest for tomorrow.</p>
+            <div className="text-[10px] sm:text-xs font-medium text-slate-500 tracking-wider flex items-center gap-1.5">
+               {(() => {
+                 const parts = today.settlementPeriod.split(' - ');
+                 if (parts.length !== 2) return <span>{today.settlementPeriod}</span>;
+                 const [start, end] = parts;
+                 const startParts = start.split(' ');
+                 if (startParts.length !== 2) return <span>{today.settlementPeriod}</span>;
+                 const [startDatePart, startTimePart] = startParts;
+                 return (
+                   <>
+                     <span className="text-indigo-400 font-bold bg-indigo-500/5 px-1 rounded-sm">{startDatePart}</span>
+                     <span className="text-slate-400">{startTimePart}</span>
+                     <span className="opacity-40">→</span>
+                     <span className="text-slate-500">{end}</span>
+                   </>
+                 );
+               })()}
+            </div>
           </div>
-          <button onClick={onClose} className="p-2 text-slate-500 hover:text-white rounded-full hover:bg-slate-800 transition-all">
+          <button onClick={onClose} className="p-2 -mr-2 text-slate-500 hover:text-white rounded-full hover:bg-slate-800 transition-all">
             <X size={24} />
           </button>
         </div>
@@ -494,22 +539,16 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
         <div className="p-5 sm:p-8 space-y-6 sm:space-y-8 max-h-[80vh] sm:max-h-[70vh] overflow-y-auto custom-scrollbar">
           {/* Daily Progress */}
           <div className="bg-slate-950/50 rounded-3xl border border-slate-800 p-5 sm:p-6">
-            <div className="mb-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Target size={16} className="text-indigo-400" />
-                <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest leading-none mt-0.5">Daily Progress</h3>
+            <div className="flex items-center justify-between mb-3 px-1">
+              <div className="flex items-center gap-2">
+                <Target size={14} className="text-indigo-400" />
+                <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Daily Progress</h3>
               </div>
-              <div className="flex items-center gap-1.5 text-[10px] font-medium px-2 py-1 bg-slate-800/50 rounded-lg border border-slate-700/50 inline-flex">
-                <Clock size={10} className="text-indigo-400" />
-                <span className="text-slate-500/80">SETTLEMENT:</span>
-                <span className="text-slate-400 font-semibold">{today.settlementPeriod}</span>
-              </div>
+              <span className="text-xs font-bold text-slate-400">
+                {dailyStats.sessions} <span className="text-slate-600">/</span> {dailyStats.dailyGoal}
+              </span>
             </div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-2xl font-bold text-slate-50">{dailyStats.sessions}</span>
-              <span className="text-slate-500 text-xs">/ {dailyStats.dailyGoal} Sessions</span>
-            </div>
-            <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+            <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
               <div 
                 className="h-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.3)] transition-all" 
                 style={{ width: `${Math.min((dailyStats.sessions / dailyStats.dailyGoal) * 100, 100)}%` }}
@@ -579,10 +618,10 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
             </AnimatePresence>
           </div>
 
-          {/* Mood Selection */}
-          <div className="space-y-4">
+        {/* Mood Selection */}
+          <div className="pt-6 sm:pt-8 border-t border-slate-800/50 space-y-4">
             <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Daily Feelings</h3>
-            <div className="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
+            <div className="flex flex-wrap justify-center gap-3 py-4 overflow-y-visible">
               {MOOD_OPTIONS.filter(m => (state.enabledMoods || DEFAULT_ENABLED_MOODS).includes(m.id)).map((m) => {
                 const isSelected = mood === m.id;
                 const Icon = m.icon;
@@ -591,14 +630,14 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
                     key={m.id}
                     onClick={() => setMood(isSelected ? "" : m.id)}
                     className={cn(
-                      "flex flex-col items-center justify-center min-w-[72px] p-3 rounded-2xl border transition-all pointer-events-auto",
+                      "flex flex-col items-center justify-center min-w-[68px] p-2.5 rounded-2xl border transition-all pointer-events-auto",
                       isSelected 
-                        ? `${m.bg} ${m.border} ${m.color} scale-105 shadow-lg` 
-                        : "bg-slate-950/50 border-slate-800 text-slate-500 hover:bg-slate-800 hover:border-slate-700"
+                        ? `${m.bg} ${m.border} ${m.color} scale-125 shadow-xl z-10` 
+                        : "bg-slate-950/50 border-slate-800 text-slate-500 hover:bg-slate-800 hover:border-slate-700 hover:scale-110"
                     )}
                   >
-                    <Icon size={24} className="mb-2" />
-                    <span className="text-[10px] font-bold uppercase tracking-wider">{m.label}</span>
+                    <Icon size={20} className="mb-1.5" />
+                    <span className="text-[9px] font-bold uppercase tracking-wider">{m.label}</span>
                   </button>
                 );
               })}
@@ -695,7 +734,7 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
               {isMarkdownEnabled && (
                 <div className="w-full min-h-[160px] bg-slate-950/30 border border-slate-800/50 rounded-3xl p-4 overflow-y-auto custom-scrollbar">
                   {reflection ? (
-                    <div className="prose prose-invert prose-sm max-w-none prose-p:text-slate-300 prose-headings:text-slate-100 prose-strong:text-slate-200">
+                    <div className="prose prose-invert prose-sm max-w-none prose-p:text-slate-300 prose-headings:text-slate-100 prose-strong:text-slate-200 prose-li:text-slate-300">
                       <Markdown>{reflection}</Markdown>
                     </div>
                   ) : (
@@ -745,7 +784,12 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
         >
           <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/50">
             <div className="flex items-center gap-4">
-              <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest italic pr-1">Immersive Reflection</h3>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest italic pr-1">Immersive Reflection</h3>
+                <span className="hidden sm:inline-block text-[10px] font-bold text-indigo-400/80 bg-indigo-500/10 px-1.5 py-0.5 rounded border border-indigo-500/20 tracking-wider">
+                  {today.dateString}
+                </span>
+              </div>
               
               {/* Format Controls */}
               <div className="hidden sm:flex items-center gap-1 border-l border-slate-700 pl-4">

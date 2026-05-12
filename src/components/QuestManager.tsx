@@ -20,7 +20,7 @@ const DraggableQuestItem = ({ quest, isEditMode, children, className }: any) => 
       dragListener={false} 
       dragControls={controls} 
       className={cn(className, "relative")}
-      style={{ rotate: isEditMode ? 0 : `${rotation}deg` }}
+      style={{ rotate: 0 }}
       whileDrag={{ 
         scale: 1.05, 
         rotate: 0,
@@ -28,10 +28,7 @@ const DraggableQuestItem = ({ quest, isEditMode, children, className }: any) => 
         boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.3)"
       }}
     >
-      {/* Pin decoration */}
-      <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-10 text-rose-600 drop-shadow-md">
-        <Pin size={20} fill="currentColor" strokeWidth={1} className="-rotate-12" />
-      </div>
+      {/* Pin decoration removed */}
 
       {isEditMode && (
         <div 
@@ -53,13 +50,10 @@ const HistoryItem = ({ item }: { item: QuestHistoryItem }) => {
     <motion.div 
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
-      style={{ rotate: `${rotation}deg` }}
+      style={{ rotate: 0 }}
       className="paper-texture border border-slate-200 rounded-sm p-4 flex items-center justify-between gap-4 shadow-sm relative group hover:shadow-md transition-shadow"
     >
-      {/* Small subtle pin for history items too */}
-      <div className="absolute -top-1.5 left-2 z-10 text-slate-400 drop-shadow-sm opacity-40 group-hover:opacity-100 transition-opacity">
-        <Pin size={14} fill="currentColor" strokeWidth={1} />
-      </div>
+      {/* Pin removed from history items */}
 
       <div className="flex items-center gap-4">
         <div className={cn(

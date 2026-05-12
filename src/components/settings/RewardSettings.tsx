@@ -70,7 +70,7 @@ export const RewardSettings = ({ pool, onUpdate, onReset }: { pool: RewardCard[]
       <div className="flex justify-between items-center pb-4 mb-6">
         <div className="flex items-center gap-2.5 text-indigo-400">
           <Package size={20} />
-          <h3 className="text-lg font-bold uppercase tracking-widest pr-1">Loot Pool</h3>
+          <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Reward Pool Management</h4>
         </div>
         <div className="flex gap-2">
           {onReset && (

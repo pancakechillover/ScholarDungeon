@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { RewardCard, ShopItem, GachaPool, Rarity } from '../../types';
 import { INITIAL_GACHA, MOOD_OPTIONS, DEFAULT_ENABLED_MOODS } from '../../constants';
-import { Plus, Trash2, Save, Edit2, X, ChevronRight, Coins, Zap, Sparkles, Trophy, Timer as TimerIcon, Package, Flame, AlertTriangle, Scroll, Volume2, VolumeX, Sun, Moon, Smile, Settings as SettingsIcon, ShoppingBag, Trees, Waves, Database, Download, Upload, Target, Gift, User, Sword, Eye, Palette, Check, Bell, BellOff, RefreshCw, Key, Layers, Sunrise, Cloud, CloudSun, Lollipop, Wrench, History, Ticket, Globe } from 'lucide-react';
+import { Plus, Trash2, Save, Edit2, X, ChevronRight, Coins, Zap, Sparkles, Trophy, Timer as TimerIcon, Package, Flame, AlertTriangle, Scroll, Volume2, VolumeX, Sun, Moon, Smile, Settings as SettingsIcon, ShoppingBag, Trees, Waves, Database, Download, Upload, Target, Gift, User, Sword, Eye, Palette, Check, Bell, BellOff, RefreshCw, Key, Layers, Sunrise, Cloud, CloudSun, Lollipop, Wrench, History, Ticket, Globe, ShieldCheck, CalendarCheck } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { APP_VERSION, LAST_UPDATE_DATE, RELEASE_HISTORY } from '../../version';
 import { cn, getXPForLevel, getDefaultRewardForLevel } from '../../lib/utils';
@@ -310,7 +310,7 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
     }
   };
 
-  const handleExport = () => {
+  const handleExport = (includeSensitiveData: boolean = true) => {
     const fullLocalStorage: Record<string, string> = {};
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
@@ -319,16 +319,71 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
       }
     }
 
-    const dataToExport = {
+    let dataToExport: any = {
       ...state,
       dungeons: JSON.parse(localStorage.getItem('scholars_dungeon_state_dungeons') || '[]'),
       majorDungeons: JSON.parse(localStorage.getItem('scholars_dungeon_state_major_dungeons') || '[]'),
       fullLocalStorage
     };
+
+    if (!includeSensitiveData) {
+      // Remove sync passwords and nicknames
+      const { 
+        secretCode, 
+        webdavSettings, 
+        googleDriveTokens, 
+        deviceNickname, 
+        syncHistory,
+        ...safeState 
+      } = dataToExport;
+
+      // Also clean up nested passwords if they exist
+      const safeWebdav = webdavSettings ? { ...webdavSettings } : undefined;
+      if (safeWebdav) delete safeWebdav.password;
+
+      dataToExport = {
+        ...safeState,
+        deviceNickname: undefined,
+        secretCode: undefined,
+        googleDriveTokens: undefined,
+        webdavSettings: safeWebdav,
+        syncHistory: (syncHistory || []).map((h: any) => ({
+          ...h,
+          deviceNickname: undefined,
+          code: '[REDACTED]'
+        }))
+      };
+
+      // Also clean up fullLocalStorage if it's being used as the main source of truth
+      if (dataToExport.fullLocalStorage) {
+        const safeLocal: Record<string, string> = { ...dataToExport.fullLocalStorage };
+        const keysToRemove = [
+          'scholars_dungeon_sync_code',
+          'scholars_dungeon_device_nickname',
+          'scholars_dungeon_webdav_password'
+        ];
+        keysToRemove.forEach(k => delete safeLocal[k]);
+        
+        // Also the main state string in localStorage needs to be updated if it exists there
+        if (safeLocal['scholars_dungeon_state']) {
+          try {
+            const parsed = JSON.parse(safeLocal['scholars_dungeon_state']);
+            delete parsed.secretCode;
+            delete parsed.deviceNickname;
+            delete parsed.webdavSettings?.password;
+            delete parsed.googleDriveTokens;
+            safeLocal['scholars_dungeon_state'] = JSON.stringify(parsed);
+          } catch (e) {}
+        }
+        dataToExport.fullLocalStorage = safeLocal;
+      }
+    }
+
+    const filename = includeSensitiveData ? "scholars_dungeon_full_save.json" : "scholars_dungeon_safe_save.json";
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dataToExport));
     const downloadAnchorNode = document.createElement('a');
     downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", "scholars_dungeon_save.json");
+    downloadAnchorNode.setAttribute("download", filename);
     document.body.appendChild(downloadAnchorNode);
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
@@ -348,7 +403,9 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
           
           if (fullLocalStorage) {
             Object.keys(fullLocalStorage).forEach(key => {
-              localStorage.setItem(key, fullLocalStorage[key]);
+              if (key !== 'scholars_dungeon_device_code') {
+                localStorage.setItem(key, fullLocalStorage[key]);
+              }
             });
           } else {
             localStorage.setItem('scholars_dungeon_state', JSON.stringify(importedState));
@@ -662,12 +719,16 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
       </div>
 
       <div className="space-y-6 pt-6 border-t border-slate-800">
+        <ActivityTimeSettings state={state} setState={setState} />
+      </div>
+
+      <div className="space-y-6 pt-6 border-t border-slate-800">
         <div className="flex items-center gap-2.5 text-indigo-400 mb-6 pb-2">
-          <Eye size={20} />
-          <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Features</h4>
+          <CalendarCheck size={20} />
+          <h4 className="text-lg font-bold uppercase tracking-widest pr-1">End of the day</h4>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div className="flex items-center justify-between p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
             <div className="flex items-center gap-3">
               <div className={cn("p-2 rounded-xl", defaultMarkdownEnabled ? "bg-indigo-500/10 text-indigo-400" : "bg-slate-800 text-slate-500")}>
@@ -693,64 +754,120 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
               />
             </button>
           </div>
-        </div>
-      </div>
 
-      <div className="space-y-6 pt-6 border-t border-slate-800">
-        <div className="flex items-center gap-2.5 text-rose-400 mb-6 pb-2">
-          <Smile size={20} />
-          <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Mood Configuration</h4>
-        </div>
+          <div className="p-4 bg-slate-900/50 rounded-2xl border border-slate-800 space-y-4">
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-rose-400">
+                <Smile size={18} />
+                <h5 className="text-xs font-bold uppercase tracking-widest">Mood Configuration</h5>
+              </div>
+              <p className="text-xs text-slate-500 italic">Select which moods are available in your daily summary.</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {MOOD_OPTIONS.map(mood => {
+                  const isEnabled = (state.enabledMoods || DEFAULT_ENABLED_MOODS).includes(mood.id);
+                  const Icon = mood.icon;
+                  return (
+                    <button
+                      key={mood.id}
+                      onClick={() => {
+                        const currentEnabled = state.enabledMoods || DEFAULT_ENABLED_MOODS;
+                        let nextEnabled;
+                        if (isEnabled) {
+                          if (currentEnabled.length <= 1) return;
+                          nextEnabled = currentEnabled.filter(id => id !== mood.id);
+                        } else {
+                          nextEnabled = [...currentEnabled, mood.id];
+                        }
+                        setState(prev => ({ ...prev, enabledMoods: nextEnabled }));
+                      }}
+                      className={cn(
+                        "flex items-center gap-3 p-3 rounded-2xl border transition-all",
+                        isEnabled 
+                          ? "bg-slate-800/80 border-slate-700 shadow-sm" 
+                          : "bg-slate-900 border-slate-800 opacity-60 grayscale-[0.5]"
+                      )}
+                    >
+                      <div className={cn("p-2 rounded-xl transition-colors", isEnabled ? `${mood.bg} ${mood.color}` : "bg-slate-800 text-slate-500")}>
+                        <Icon size={18} />
+                      </div>
+                      <div className="flex-1 text-left">
+                        <div className={cn("text-sm font-bold", isEnabled ? "text-white" : "text-slate-500")}>{mood.label}</div>
+                      </div>
+                      <div className={cn(
+                        "w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all",
+                        isEnabled ? "bg-indigo-500 border-indigo-500" : "border-slate-700"
+                      )}>
+                        {isEnabled && <Check size={10} className="text-white" />}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
 
-        <div className="space-y-3">
-          <p className="text-xs text-slate-500 mb-2 italic">Select which moods are available in your daily summary.</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {MOOD_OPTIONS.map(mood => {
-              const isEnabled = (state.enabledMoods || DEFAULT_ENABLED_MOODS).includes(mood.id);
-              const Icon = mood.icon;
-              return (
+          <div className="p-4 bg-slate-900/50 rounded-2xl border border-slate-800 space-y-4">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-amber-400">
+                  <Target size={18} />
+                  <h5 className="text-xs font-bold uppercase tracking-widest">Daily Progress Goal</h5>
+                </div>
                 <button
-                  key={mood.id}
-                  onClick={() => {
-                    const currentEnabled = state.enabledMoods || DEFAULT_ENABLED_MOODS;
-                    let nextEnabled;
-                    if (isEnabled) {
-                      // Prevent disabling all moods
-                      if (currentEnabled.length <= 1) return;
-                      nextEnabled = currentEnabled.filter(id => id !== mood.id);
-                    } else {
-                      nextEnabled = [...currentEnabled, mood.id];
-                    }
-                    setState(prev => ({ ...prev, enabledMoods: nextEnabled }));
-                  }}
+                  onClick={() => setState(prev => ({ ...prev, useSameDailyProgressGoalEveryDay: !prev.useSameDailyProgressGoalEveryDay }))}
                   className={cn(
-                    "flex items-center gap-3 p-3 rounded-2xl border transition-all",
-                    isEnabled 
-                      ? "bg-slate-800/80 border-slate-700 shadow-sm" 
-                      : "bg-slate-900 border-slate-800 opacity-60 grayscale-[0.5]"
+                    "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
+                    state.useSameDailyProgressGoalEveryDay ?? true ? "bg-slate-700" : "bg-amber-500"
                   )}
                 >
-                  <div className={cn("p-2 rounded-xl transition-colors", isEnabled ? `${mood.bg} ${mood.color}` : "bg-slate-800 text-slate-500")}>
-                    <Icon size={18} />
-                  </div>
-                  <div className="flex-1 text-left">
-                    <div className={cn("text-sm font-bold", isEnabled ? "text-white" : "text-slate-500")}>{mood.label}</div>
-                  </div>
-                  <div className={cn(
-                    "w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all",
-                    isEnabled ? "bg-indigo-500 border-indigo-500" : "border-slate-700"
-                  )}>
-                    {isEnabled && <Check size={10} className="text-white" />}
-                  </div>
+                  <span
+                    className={cn(
+                      "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+                      state.useSameDailyProgressGoalEveryDay ?? true ? "translate-x-1" : "translate-x-6"
+                    )}
+                  />
                 </button>
-              );
-            })}
+              </div>
+              
+              <p className="text-xs text-slate-500 italic">Sets the target focus session count to track your completion progress in daily summaries.</p>
+
+              {state.useSameDailyProgressGoalEveryDay ?? true ? (
+                <div className="flex items-center justify-between bg-slate-950/50 p-4 rounded-xl border border-slate-800">
+                   <span className="text-sm font-bold text-slate-300">Goal per day:</span>
+                   <SpinnerInput
+                      value={state.dailyProgressGoal ?? 8}
+                      onChange={(val) => setState(prev => ({ ...prev, dailyProgressGoal: typeof val === 'number' ? val : 8 }))}
+                      min={1}
+                    />
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {[1, 2, 3, 4, 5, 6, 0].map(day => (
+                    <div key={day} className="flex flex-col items-center w-[calc(14.28%-0.5rem)] min-w-[4rem] bg-slate-950/50 p-2 rounded-xl border border-slate-800">
+                      <label className="text-[9px] font-bold text-slate-500 uppercase mb-1">
+                        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][day]}
+                      </label>
+                      <SpinnerInput
+                        value={state.dailyProgressGoalConfig?.[day] ?? 8}
+                        onChange={(val) => {
+                          const num = typeof val === 'number' ? val : 1;
+                          setState(prev => ({
+                            ...prev,
+                            dailyProgressGoalConfig: {
+                              ...(prev.dailyProgressGoalConfig || {}),
+                              [day]: num
+                            }
+                          }));
+                        }}
+                        min={1}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
-
-      <div className="space-y-6 pt-6 border-t border-slate-800">
-        <ActivityTimeSettings state={state} setState={setState} />
       </div>
 
       <div className="space-y-6 pt-6 border-t border-slate-800">
@@ -821,63 +938,6 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
         </div>
       </div>
 
-      <div className="space-y-6 pt-6 border-t border-slate-800">
-        <div className="flex items-center justify-between mb-6 pb-2 border-b border-slate-800/50">
-          <div className="flex items-center gap-2.5 text-amber-400">
-            <Target size={20} />
-            <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Daily Progress Goal</h4>
-          </div>
-          <button
-            onClick={() => setState(prev => ({ ...prev, useSameDailyProgressGoalEveryDay: !prev.useSameDailyProgressGoalEveryDay }))}
-            className={cn(
-              "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
-              state.useSameDailyProgressGoalEveryDay ?? true ? "bg-slate-700" : "bg-amber-500"
-            )}
-          >
-            <span
-              className={cn(
-                "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
-                state.useSameDailyProgressGoalEveryDay ?? true ? "translate-x-1" : "translate-x-6"
-              )}
-            />
-          </button>
-        </div>
-        
-        {state.useSameDailyProgressGoalEveryDay ?? true ? (
-          <div className="flex items-center justify-between bg-slate-900/50 p-4 rounded-xl border border-slate-800">
-             <span className="text-sm font-bold text-slate-300">Goal per day:</span>
-             <SpinnerInput
-                value={state.dailyProgressGoal ?? 8}
-                onChange={(val) => setState(prev => ({ ...prev, dailyProgressGoal: typeof val === 'number' ? val : 8 }))}
-                min={1}
-              />
-          </div>
-        ) : (
-          <div className="flex flex-wrap gap-2">
-            {[0, 1, 2, 3, 4, 5, 6].map(day => (
-              <div key={day} className="flex flex-col items-center w-[calc(14.28%-0.5rem)] min-w-[4rem] bg-slate-900/50 p-2 rounded-xl border border-slate-800">
-                <label className="text-[9px] font-bold text-slate-500 uppercase mb-1">
-                  {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][day]}
-                </label>
-                <SpinnerInput
-                  value={state.dailyProgressGoalConfig?.[day] ?? 8}
-                  onChange={(val) => {
-                    const num = typeof val === 'number' ? val : 1;
-                    setState(prev => ({
-                      ...prev,
-                      dailyProgressGoalConfig: {
-                        ...(prev.dailyProgressGoalConfig || {}),
-                        [day]: num
-                      }
-                    }));
-                  }}
-                  min={1}
-                />
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
 
       <div className="space-y-6 pt-6 border-t border-slate-800">
         <div className="flex items-center gap-2.5 text-amber-400 mb-6 pb-2">
@@ -928,7 +988,7 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
         </div>
       </div>
 
-      <div className="space-y-6 pt-6 border-t border-slate-800">
+      <div id="data-management" className="space-y-6 pt-6 border-t border-slate-800">
         <div className="flex items-center gap-2.5 text-blue-400 mb-6 pb-2">
           <Database size={20} />
           <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Data Management</h4>
@@ -936,19 +996,31 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
         
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="p-6 bg-slate-900/50 rounded-2xl border border-slate-800 space-y-4">
-            <div className="flex items-center gap-3 text-white font-bold">
-              <Download size={20} className="text-blue-400" />
-              Export Data
+            <div className="flex items-center justify-between text-white font-bold">
+              <div className="flex items-center gap-3">
+                <Download size={20} className="text-blue-400" />
+                Export Data
+              </div>
             </div>
             <p className="text-xs text-slate-400 leading-relaxed">
-              Save your current progress, inventory, and settings to a file.
+              Save your progress to a file. <b>Safe Export</b> removes sync passwords and your device nickname.
             </p>
-            <button
-              onClick={handleExport}
-              className="w-full px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-all text-sm"
-            >
-              Export JSON
-            </button>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => handleExport(false)}
+                className="px-3 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-all text-[11px] uppercase tracking-wider flex items-center justify-center gap-2 group"
+              >
+                <ShieldCheck size={14} className="text-blue-400 group-hover:scale-110 transition-transform" />
+                Safe Export
+              </button>
+              <button
+                onClick={() => handleExport(true)}
+                className="px-3 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-all text-[11px] uppercase tracking-wider flex items-center justify-center gap-2 group"
+              >
+                <Database size={14} className="text-indigo-400 group-hover:scale-110 transition-transform" />
+                Full Export
+              </button>
+            </div>
           </div>
 
           <div className="p-6 bg-slate-900/50 rounded-2xl border border-slate-800 space-y-4">

@@ -487,3 +487,13 @@ input[type="number"]::-webkit-outer-spin-button {
 .qb-progress-text { color: var(--qb-progress-text); }
 .qb-checkbox-empty { color: var(--qb-checkbox-empty); }
 .qb-checkbox-checked { color: var(--qb-checkbox-checked); }
+
+/* Remove ugly black focus outline from charts */
+.recharts-wrapper:focus,
+.recharts-surface:focus,
+.recharts-wrapper *,
+svg:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-tap-highlight-color: transparent;
+}

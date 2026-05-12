@@ -2,14 +2,7 @@ import { useState, useCallback } from 'react';
 import { AppState } from '../types';
 import { GoogleDriveAPI } from '../lib/googleDriveApi';
 
-export const getDeviceCode = () => {
-    let code = localStorage.getItem('scholars_dungeon_device_code');
-    if (!code) {
-        code = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-        localStorage.setItem('scholars_dungeon_device_code', code);
-    }
-    return code;
-};
+import { getDeviceCode } from '../lib/utils';
 
 export function useCloudSync(
   state: AppState, 
@@ -35,6 +28,7 @@ export function useCloudSync(
       syncHistory, 
       deviceType, 
       deviceNickname,
+      deviceCode,
       pushSubscription, 
       secretCode, 
       googleDriveTokens, 
@@ -54,6 +48,8 @@ export function useCloudSync(
   const logSyncEvent = useCallback((
     type: 'login' | 'force_sync' | 'local_to_cloud' | 'cloud_to_local' | 'cancel_login' | 'unbind_local' | 'delete_cloud', 
     code: string,
+    status: 'success' | 'failed' | 'cancelled' | 'pending' = 'success',
+    error?: string,
     syncMethod?: 'Manual' | 'Immediate' | 'Interval polling' | 'Visibility API Active',
     syncProvider?: 'Redis' | 'Google Drive' | 'WebDAV'
   ) => {
@@ -62,6 +58,8 @@ export function useCloudSync(
       newHistory.unshift({ 
         type, 
         code, 
+        status,
+        error,
         timestamp: new Date().toISOString(), 
         deviceType: prev.deviceType,
         deviceNickname: prev.deviceNickname,
@@ -215,7 +213,7 @@ export function useCloudSync(
           lastUpdated: localData.lastUpdated 
         }));
         setSyncCheckResult(null);
-        logSyncEvent(forceOverwrite ? 'force_sync' : 'local_to_cloud', 'WebDAV', syncMethod, 'WebDAV');
+        logSyncEvent(forceOverwrite ? 'force_sync' : 'local_to_cloud', 'WebDAV', 'success', undefined, syncMethod, 'WebDAV');
 
       } else if (isGoogleDrive && currentState.googleDriveTokens) {
         const drive = new GoogleDriveAPI(currentState.googleDriveTokens.access_token);
@@ -272,7 +270,7 @@ export function useCloudSync(
           googleDriveFileId: fileId 
         }));
         setSyncCheckResult(null);
-        logSyncEvent(forceOverwrite ? 'force_sync' : 'local_to_cloud', 'Google Drive', syncMethod, 'Google Drive');
+        logSyncEvent(forceOverwrite ? 'force_sync' : 'local_to_cloud', 'Google Drive', 'success', undefined, syncMethod, 'Google Drive');
 
       } else {
         // Redis
@@ -339,11 +337,14 @@ export function useCloudSync(
         } else {
           setState(prev => ({ ...prev, lastUpdated: data.cloudData.lastUpdated }));
           setSyncCheckResult(null);
-          logSyncEvent(forceOverwrite ? 'force_sync' : 'local_to_cloud', currentState.secretCode!, syncMethod, 'Redis');
+          logSyncEvent(forceOverwrite ? 'force_sync' : 'local_to_cloud', currentState.secretCode!, 'success', undefined, syncMethod, 'Redis');
         }
       }
     } catch (err: any) {
       setSyncError(err.message);
+      const prov = currentState.syncProvider || 'Redis';
+      const code = prov === 'WebDAV' ? 'WebDAV' : (prov === 'Google Drive' ? 'Google Drive' : (currentState.secretCode || 'Unknown'));
+      logSyncEvent(forceOverwrite ? 'force_sync' : 'local_to_cloud', code, 'failed', err.message, syncMethod, prov);
     } finally {
       setIsSyncing(false);
     }
@@ -368,6 +369,7 @@ export function useCloudSync(
                     ...cloudState,
                     // Preserve local identity/sync settings
                     deviceNickname: localState.deviceNickname || cloudState.deviceNickname,
+                    deviceCode: localState.deviceCode || getDeviceCode(),
                     secretCode: localState.secretCode || cloudState.secretCode,
                     syncProvider: localState.syncProvider || cloudState.syncProvider,
                     googleDriveTokens: localState.googleDriveTokens || cloudState.googleDriveTokens,
@@ -377,7 +379,7 @@ export function useCloudSync(
                     isRedisUnlocked: localState.isRedisUnlocked || cloudState.isRedisUnlocked
                 };
                 localStorage.setItem(key, JSON.stringify(mergedState));
-            } else {
+            } else if (key !== 'scholars_dungeon_device_code') {
                 localStorage.setItem(key, syncCheckResult.cloudData.fullLocalStorage[key]);
             }
           });
@@ -385,6 +387,7 @@ export function useCloudSync(
           localStorage.setItem('scholars_dungeon_state', JSON.stringify({
               ...syncCheckResult.cloudData.state,
               deviceNickname: state.deviceNickname || syncCheckResult.cloudData.state.deviceNickname,
+              deviceCode: state.deviceCode || getDeviceCode(),
               secretCode: state.secretCode || syncCheckResult.cloudData.state.secretCode,
               syncProvider: state.syncProvider || syncCheckResult.cloudData.state.syncProvider,
               googleDriveTokens: state.googleDriveTokens || syncCheckResult.cloudData.state.googleDriveTokens,
@@ -397,6 +400,7 @@ export function useCloudSync(
         const mergedState = {
             ...syncCheckResult.cloudData.state,
             deviceNickname: state.deviceNickname || syncCheckResult.cloudData.state.deviceNickname,
+            deviceCode: state.deviceCode || getDeviceCode(),
             secretCode: (syncCheckResult.code !== 'WebDAV' && syncCheckResult.code !== 'GoogleDrive' && syncCheckResult.code !== 'GoogleDriveAuth') 
                 ? syncCheckResult.code 
                 : (state.secretCode || syncCheckResult.cloudData.state.secretCode),
@@ -416,7 +420,7 @@ export function useCloudSync(
         setDungeons(syncCheckResult.cloudData.dungeons);
         setMajorDungeons(syncCheckResult.cloudData.majorDungeons);
         
-        logSyncEvent('cloud_to_local', syncCheckResult.code);
+        logSyncEvent('cloud_to_local', syncCheckResult.code, 'success');
 
         await syncToCloud(true, mergedState, 'Immediate');
       } else if (!useCloud) {
@@ -498,8 +502,8 @@ export function useCloudSync(
       setIsVerifying(true);
       await delay(1500); // Artificial delay to simulate thorough checking
 
-      logSyncEvent('login', code, 'Manual');
       if (cloudDataToProcess) {
+        logSyncEvent('login', code, 'success', undefined, 'Manual');
         const cloudTime = new Date(cloudDataToProcess.lastUpdated || (cloudDataToProcess.state && cloudDataToProcess.state.lastUpdated) || 0).getTime();
         const localTime = new Date(state.lastUpdated || 0).getTime();
 
@@ -537,10 +541,12 @@ export function useCloudSync(
           setSyncCheckResult({ status: 'local_newer', cloudData: cloudDataToProcess, code });
         }
       } else {
+        logSyncEvent('login', code, 'success', undefined, 'Manual');
         setSyncCheckResult({ status: 'no_save', code });
       }
     } catch (err: any) {
       setSyncError(err.message);
+      logSyncEvent('login', code, 'failed', err.message, 'Manual');
     } finally {
       setIsSyncing(false);
     }
@@ -667,7 +673,6 @@ export function useCloudSync(
         if (!response.ok) {
             throw new Error(data.error || 'Failed to fetch from cloud');
         }
-        logSyncEvent('login', state.secretCode, 'Manual');
         if (data.cloudData) {
             await checkNewer(data.cloudData, state.secretCode);
         } else {
@@ -676,6 +681,9 @@ export function useCloudSync(
       }
     } catch (err: any) {
       setSyncError(err.message);
+      const prov = state.syncProvider || 'Redis';
+      const code = prov === 'WebDAV' ? 'WebDAV' : (prov === 'Google Drive' ? 'Google Drive' : (state.secretCode || 'Unknown'));
+      logSyncEvent('force_sync', code, 'failed', err.message, 'Manual', prov);
     } finally {
       setIsSyncing(false);
       setIsVerifying(false);
@@ -685,7 +693,7 @@ export function useCloudSync(
   const unbindFromCloud = useCallback(() => {
     const provider = state.syncProvider || 'Redis';
     const code = state.secretCode || (provider === 'Google Drive' ? 'Google' : 'WebDAV');
-    logSyncEvent('unbind_local', code, 'Manual', provider);
+    logSyncEvent('unbind_local', code, 'success', undefined, 'Manual', provider);
     
     setState(prev => ({ 
       ...prev, 
@@ -722,10 +730,11 @@ export function useCloudSync(
       if (!response.ok) {
         throw new Error(data.error || 'Failed to delete cloud data');
       }
-      logSyncEvent('delete_cloud', code, 'Manual');
+      logSyncEvent('delete_cloud', code, 'success', undefined, 'Manual');
       unbindFromCloud();
     } catch (err: any) {
       setSyncError(err.message);
+      logSyncEvent('delete_cloud', code, 'failed', err.message, 'Manual');
     } finally {
       setIsSyncing(false);
     }
@@ -744,7 +753,9 @@ export function useCloudSync(
     unbindFromCloud,
     deleteCloudData,
     logSyncEvent,
-    checkCloudSync
+    checkCloudSync,
+    setIsSyncing,
+    setIsVerifying
   };
 }
 

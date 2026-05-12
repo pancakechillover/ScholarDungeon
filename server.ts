@@ -12,11 +12,13 @@ const cleanKey = (key?: string) => key ? key.replace(/['"]/g, '').trim() : '';
 const envPublic = cleanKey(process.env.VAPID_PUBLIC_KEY);
 const envPrivate = cleanKey(process.env.VAPID_PRIVATE_KEY);
 // Valid fallback keys
-const fallbackPublic = "BJgimrTgCLcXvp_P1leS8zy56ZKqfMueXM5iitrQyLMmA1swEho4wNXRovLGJdwP0mftM9-s-EkH_15PyiyM0aw";
-const fallbackPrivate = "UKT36f_f6QUyadIQ0JK1PR4rD46bjeQVSCqDvmSfuO4";
+const fallbackPublic = "BGgAf2N50RnZ_jZoA3oYm99t0uXIB_pitYBf-gqXH96NU2v1IV7YlW4M2qdO2XiNiBjgujFhP3-yPCP-vcnHf2c";
+const fallbackPrivate = "RB-8YFdylQhLuCKKM2YXVi4cX9ltvA6YsImsRMCFChc";
 
-const vapidPublicKey = envPublic || fallbackPublic;
-const vapidPrivateKey = envPrivate || fallbackPrivate;
+// Only use environment keys if they look like real VAPID keys (at least 50+ chars)
+// This prevents placeholders like "SET_ME" from causing startup crashes
+const vapidPublicKey = (envPublic && envPublic.length > 50) ? envPublic : fallbackPublic;
+const vapidPrivateKey = (envPrivate && envPrivate.length > 20) ? envPrivate : fallbackPrivate;
 const vapidEmailInput = process.env.VAPID_EMAIL || "iz.karakarakarakan@gmail.com";
 const vapidSubject = vapidEmailInput.startsWith('http') || vapidEmailInput.startsWith('mailto:')
   ? vapidEmailInput

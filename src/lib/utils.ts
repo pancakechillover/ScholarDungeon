@@ -27,3 +27,13 @@ export function getDeviceType(): string {
   if (/Linux/i.test(ua)) return 'Linux';
   return 'Unknown Device';
 }
+
+export function getDeviceCode(): string {
+  if (typeof localStorage === 'undefined') return 'server';
+  let code = localStorage.getItem('scholars_dungeon_device_code');
+  if (!code) {
+    code = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    localStorage.setItem('scholars_dungeon_device_code', code);
+  }
+  return code;
+}

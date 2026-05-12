@@ -145,15 +145,6 @@ export const GachaSettings = ({ pools, onUpdate }: { pools: GachaPool[], onUpdat
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-end gap-3 mb-4">
-        <button 
-          onClick={handleImport}
-          className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-slate-300 rounded-xl text-xs font-bold hover:bg-slate-700 transition-colors"
-        >
-          <Upload size={14} /> Import Pool
-        </button>
-      </div>
-
       <div className="space-y-12">
         {/* Gacha Pools Section */}
         <div className="space-y-6">
@@ -162,12 +153,20 @@ export const GachaSettings = ({ pools, onUpdate }: { pools: GachaPool[], onUpdat
               <SlotMachine size={20} />
               <h3 className="text-lg font-bold uppercase tracking-widest pr-1">Gacha</h3>
             </div>
-            <button 
-              onClick={() => addNewPool('gacha')}
-              className="flex items-center gap-2 px-3 py-1.5 bg-purple-500/10 text-purple-400 border border-purple-500/30 rounded-lg text-xs font-bold hover:bg-purple-500/20 transition-all"
-            >
-              <Plus size={16} /> Add Pool
-            </button>
+            <div className="flex gap-2">
+              <button 
+                onClick={handleImport}
+                className="flex items-center gap-2 px-3 py-1.5 bg-slate-800/50 text-slate-400 border border-slate-800 rounded-lg text-xs font-bold hover:bg-slate-800 hover:text-slate-200 transition-all font-mono"
+              >
+                <Upload size={14} /> Import Pool
+              </button>
+              <button 
+                onClick={() => addNewPool('gacha')}
+                className="flex items-center gap-2 px-3 py-1.5 bg-purple-500/10 text-purple-400 border border-purple-500/30 rounded-lg text-xs font-bold hover:bg-purple-500/20 transition-all"
+              >
+                <Plus size={16} /> Add Pool
+              </button>
+            </div>
           </div>
           <div className="grid grid-cols-1 gap-6">
             {pools.filter(p => p.type === 'gacha').map(pool => (

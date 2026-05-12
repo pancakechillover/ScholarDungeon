@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Cloud, Server, HardDrive, CheckCircle2, ChevronRight, Settings, Lock, X, History, ArrowDownUp, RefreshCw, LogIn, Trash2, ShieldBan, Eye, Search, UploadCloud, DownloadCloud, Download, Laptop, Monitor, Smartphone, Tablet, Copy, Key, WifiOff } from 'lucide-react';
 import { AppState } from '../../types';
-import { cn } from '../../lib/utils';
-import { getDeviceCode } from '../../hooks/useCloudSync';
+import { cn, getDeviceCode } from '../../lib/utils';
 
 interface CloudSettingsSectionProps {
   state: AppState;
@@ -590,7 +589,15 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
           {syncMode === 'manual' && (
             <div className="pt-4 border-t border-slate-800/50">
               <button
-                onClick={() => setActiveSection('general')}
+                onClick={() => {
+                  setActiveSection('general');
+                  setTimeout(() => {
+                    const el = document.getElementById('data-management');
+                    if (el) {
+                      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                  }, 100);
+                }}
                 className="w-full p-4 bg-slate-800/50 hover:bg-slate-800 border border-slate-700 rounded-xl transition-colors flex items-center justify-between group"
               >
                 <div className="flex items-center gap-3">

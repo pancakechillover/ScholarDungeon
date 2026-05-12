@@ -1,10 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { History, Clock, Trophy, Edit2, Trash2, Filter, Search, X, Check, SearchX, Calendar, Sword, ArrowUp, ArrowDown, ChevronUp, ChevronDown, Zap } from 'lucide-react';
+import { History, Clock, Trophy, Edit2, Trash2, Filter, Search, X, Check, SearchX, Calendar, Sword, ArrowUp, ArrowDown, ChevronUp, ChevronDown, Zap, Layers } from 'lucide-react';
 import { StudySession, Dungeon, MajorDungeon, RewardCard } from '../types';
 import { cn } from '../lib/utils';
 import { format, parseISO, isAfter, isBefore, startOfDay, endOfDay } from 'date-fns';
 import { SpinnerInput } from './SpinnerInput';
+import { BulkSessionModal } from './BulkSessionModal';
 
 interface RecentSessionsProps {
   history: StudySession[];
@@ -12,6 +13,8 @@ interface RecentSessionsProps {
   majorDungeons: MajorDungeon[];
   updateSession: (id: string, updates: Partial<StudySession>) => void;
   deleteSession: (id: string) => void;
+  bulkCreateSessions?: (data: { count: number, objectiveId: string, startTime: string, endTime: string }) => void;
+  bulkDeleteSessions?: (data: { startTime: string, endTime: string }) => void;
   rewardPool: RewardCard[];
 }
 
@@ -21,10 +24,13 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
   majorDungeons,
   updateSession,
   deleteSession,
+  bulkCreateSessions,
+  bulkDeleteSessions,
   rewardPool
 }) => {
   const [editingSession, setEditingSession] = useState<StudySession | null>(null);
   const [viewingRewardName, setViewingRewardName] = useState<string | null>(null);
+  const [showBulkModal, setShowBulkModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterDungeon, setFilterDungeon] = useState<string>('all');
   const [showFilters, setShowFilters] = useState(false);
@@ -166,8 +172,24 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
               <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
             )}
           </button>
+
+          <button
+            onClick={() => setShowBulkModal(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900/50 border border-slate-800 text-slate-400 hover:border-indigo-500/50 hover:text-indigo-400 transition-all text-sm font-bold active:scale-95 shadow-lg shadow-indigo-500/5"
+          >
+            <Layers size={16} />
+            Bulk Manage
+          </button>
         </div>
       </div>
+
+      <BulkSessionModal 
+        isOpen={showBulkModal}
+        onClose={() => setShowBulkModal(false)}
+        onBulkCreate={(data) => bulkCreateSessions?.(data)}
+        onBulkDelete={(data) => bulkDeleteSessions?.(data)}
+        dungeons={dungeons}
+      />
 
       <AnimatePresence>
         {showFilters && (

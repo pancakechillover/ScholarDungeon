@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import confetti from 'canvas-confetti';
 import { Talent } from '../types';
 import { TALENTS } from '../constants';
 import { cn } from '../lib/utils';
@@ -84,6 +85,19 @@ export const TalentTree = React.memo<TalentTreeProps>(({
     }
 
     onUnlock(talent.id, talent.cost);
+
+    // Celebration Confetti
+    const colors = talent.branch === 'A' ? ['#818cf8', '#6366f1'] : 
+                   talent.branch === 'B' ? ['#fbbf24', '#f59e0b'] : 
+                   ['#34d399', '#10b981'];
+
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: colors,
+      zIndex: 10000
+    });
   };
 
   return (

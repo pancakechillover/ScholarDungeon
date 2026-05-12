@@ -38,8 +38,8 @@ const SharedPopoverContent = ({
   const MoodIcon = moodObj ? moodObj.icon : null;
 
   return (
-    <div className="bg-slate-900/95 backdrop-blur-md border border-slate-700/50 shadow-xl shadow-indigo-500/10 rounded-xl p-3 sm:p-4 z-50 min-w-[150px]">
-      <p className="text-slate-50 font-bold mb-2 pb-2 border-b border-slate-800/50">{label}</p>
+    <div className="bg-slate-900/95 backdrop-blur-md border border-slate-700/50 shadow-xl shadow-indigo-500/10 rounded-xl p-3 sm:p-4 z-[100] w-[180px] sm:w-[200px]">
+      <p className="text-slate-50 font-bold mb-2 pb-2 border-b border-slate-800/50 text-[13px] sm:text-sm">{label}</p>
       <div className="space-y-1.5 text-xs text-slate-300">
         {totalSessions > 0 ? (
           <>
@@ -87,7 +87,7 @@ const CustomWeeklyTooltip = ({ active, payload, label }: any) => {
     const data = payload[0].payload;
     return (
       <SharedPopoverContent 
-        label={label}
+        label={data.fullDate || label}
         totalSessions={data.total}
         morning={data.Morning}
         afternoon={data.Afternoon}
@@ -158,17 +158,43 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
   const [heatmapMode, setHeatmapMode] = useState<'30days' | 'month' | 'year'>('30days');
   const [heatmapMetric, setHeatmapMetric] = useState<'time' | 'efficiency'>('time');
   const [selectedHeatmapDate, setSelectedHeatmapDate] = useState<number | null>(null);
-  const [chartTooltipKey, setChartTooltipKey] = useState(Date.now());
+  const [chartKeys, setChartKeys] = useState({
+    daily: Date.now(),
+    weeklyBar: Date.now() + 1,
+    weeklyLine: Date.now() + 2
+  });
+
+  const handleChartClick = (chartState: any, chart: 'daily' | 'weeklyBar' | 'weeklyLine') => {
+    // If no active payload, we clicked empty space - reset ALL keys including current one
+    const isEmptyClick = !chartState || !chartState.activePayload || chartState.activePayload.length === 0;
+
+    setChartKeys(prev => ({
+      daily: (chart === 'daily' && !isEmptyClick) ? prev.daily : Date.now() + Math.random(),
+      weeklyBar: (chart === 'weeklyBar' && !isEmptyClick) ? prev.weeklyBar : Date.now() + Math.random(),
+      weeklyLine: (chart === 'weeklyLine' && !isEmptyClick) ? prev.weeklyLine : Date.now() + Math.random()
+    }));
+  };
 
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent | TouchEvent) => {
-      if (!(e.target as Element).closest('.heatmap-cell-container')) {
+      const target = e.target as Element;
+      if (!target.closest('.heatmap-cell-container')) {
         if (selectedHeatmapDate) {
           setSelectedHeatmapDate(null);
         }
       }
-      if (!(e.target as Element).closest('.recharts-wrapper')) {
-        setChartTooltipKey(Date.now());
+      
+      const inTooltip = !!target.closest('.recharts-tooltip-wrapper');
+      const inBar = !!target.closest('.recharts-bar-rectangle');
+      const inDot = !!target.closest('.recharts-dot') || !!target.closest('.recharts-active-dot');
+      const inChartWrapper = !!target.closest('.recharts-wrapper');
+      
+      if (!inTooltip && (!inChartWrapper || (!inBar && !inDot))) {
+         setChartKeys({
+           daily: Date.now() + Math.random(),
+           weeklyBar: Date.now() + Math.random(),
+           weeklyLine: Date.now() + Math.random()
+         });
       }
     };
     document.addEventListener('mousedown', handleOutsideClick);
@@ -177,7 +203,11 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
     const handleJump = (e: any) => {
       setDailyDate(new Date(e.detail));
       setSelectedHeatmapDate(null);
-      setChartTooltipKey(Date.now());
+      setChartKeys({
+        daily: Date.now() + Math.random(),
+        weeklyBar: Date.now() + Math.random(),
+        weeklyLine: Date.now() + Math.random()
+      });
       document.getElementById('daily-activity-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     };
     window.addEventListener('statsNavJump', handleJump);
@@ -210,9 +240,9 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
     });
 
     return (
-      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 pointer-events-auto">
+      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 pointer-events-auto z-[100]">
         <SharedPopoverContent 
-            label={format(date, 'MMM d, yyyy')}
+            label={format(date, 'EEE, MMM d, yyyy')}
             totalSessions={daySessions.length}
             morning={counts.Morning}
             afternoon={counts.Afternoon}
@@ -503,6 +533,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
       const total = counts.Morning + counts.Afternoon + counts.Night + counts.Other;
       return {
         name: format(date, 'EEE'),
+        fullDate: format(date, 'EEE, MMM d, yyyy'),
         Morning: counts.Morning,
         Afternoon: counts.Afternoon,
         Night: counts.Night,
@@ -656,13 +687,14 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
 
           <div className="h-48 min-h-[192px]">
             <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
-              <BarChart data={dailyData}>
+              <BarChart data={dailyData} onClick={(state) => handleChartClick(state, 'daily')} style={{ outline: 'none' }}>
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10 }} />
                 <Tooltip 
-                  key={chartTooltipKey}
+                  key={chartKeys.daily}
                   trigger="click"
                   content={<CustomDailyTooltip />}
                   cursor={{ fill: 'rgba(100, 116, 139, 0.2)' }}
+                  wrapperStyle={{ zIndex: 100 }}
                 />
                 <Bar dataKey="sessions" radius={[4, 4, 0, 0]}>
                   {dailyData.map((entry, index) => (
@@ -779,7 +811,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
                   />
                   {isMarkdownPreview && editReflection && (
                     <div className="p-3 bg-slate-900/50 border border-slate-800 rounded-xl overflow-y-auto max-h-32 custom-scrollbar">
-                      <div className="prose prose-invert prose-sm max-w-none prose-p:text-slate-300 prose-headings:text-slate-100 prose-strong:text-slate-200">
+                      <div className="prose prose-invert prose-sm max-w-none prose-p:text-slate-300 prose-headings:text-slate-100 prose-strong:text-slate-200 prose-li:text-slate-300">
                         <Markdown>{editReflection}</Markdown>
                       </div>
                     </div>
@@ -827,7 +859,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
 
                 <div className="text-sm text-slate-300 leading-relaxed pt-3 border-t border-slate-900">
                   {currentLog?.reflection ? (
-                    <div className="prose prose-invert prose-sm max-w-none prose-p:text-slate-300 prose-headings:text-slate-100 prose-strong:text-slate-200">
+                    <div className="prose prose-invert prose-sm max-w-none prose-p:text-slate-300 prose-headings:text-slate-100 prose-strong:text-slate-200 prose-li:text-slate-300">
                       <Markdown>{currentLog.reflection}</Markdown>
                     </div>
                   ) : (
@@ -926,13 +958,14 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
           <div className="space-y-8">
             <div className="h-40 min-h-[160px]">
               <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
-                <BarChart data={weeklyData} margin={{ top: 35, right: 0, left: 0, bottom: 0 }}>
+                <BarChart data={weeklyData} margin={{ top: 35, right: 0, left: 0, bottom: 0 }} onClick={(state) => handleChartClick(state, 'weeklyBar')} style={{ outline: 'none' }}>
                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10 }} />
                   <Tooltip 
-                    key={chartTooltipKey}
+                    key={chartKeys.weeklyBar}
                     trigger="click"
                     content={<CustomWeeklyTooltip />}
                     cursor={{ fill: 'rgba(100, 116, 139, 0.2)' }}
+                    wrapperStyle={{ zIndex: 100 }}
                   />
                   <Bar dataKey="Morning" stackId="a" fill="#fde047" />
                   <Bar dataKey="Afternoon" stackId="a" fill="#f97316" />
@@ -955,14 +988,15 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
               </div>
               <div className="h-32 min-h-[128px]">
                 <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
-                  <LineChart data={weeklyData}>
+                  <LineChart data={weeklyData} onClick={(state) => handleChartClick(state, 'weeklyLine')} style={{ outline: 'none' }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10 }} />
                     <YAxis hide domain={[0, 5]} />
                     <Tooltip 
-                      key={chartTooltipKey}
+                      key={chartKeys.weeklyLine}
                       trigger="click"
                       content={<CustomWeeklyTooltip />}
+                      wrapperStyle={{ zIndex: 100 }}
                     />
                     <Line 
                       type="monotone" 

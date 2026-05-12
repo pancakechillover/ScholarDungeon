@@ -308,6 +308,8 @@ function App() {
     undoDungeonDrag,
     saveDungeonHistory,
     dungeonHistory,
+    bulkCreateSessions,
+    bulkDeleteSessions,
     selectReward,
     resetLootPool,
     setActivePool
@@ -326,7 +328,9 @@ function App() {
     setSyncCheckResult,
     setSyncError,
     logSyncEvent,
-    checkCloudSync
+    checkCloudSync,
+    setIsSyncing,
+    setIsVerifying
   } = useCloudSync(state, setState, setDungeons, setMajorDungeons);
 
   const [hasUnsyncedChanges, setHasUnsyncedChanges] = useState(() => {
@@ -906,13 +910,13 @@ function App() {
       )}>
         {!isFullscreenExplore && (
           <header className="sticky top-0 z-40 bg-slate-950/80 backdrop-blur-md border-b border-slate-800 px-3 sm:px-8 py-2.5 flex items-center justify-between gap-2">
-          {/* Logo/Title - Hidden on mobile to save space */}
-          <div className="hidden lg:flex items-center space-x-4">
-            <h1 className="text-base font-black text-white uppercase tracking-tighter italic pr-1">{activeTab}</h1>
+          {/* Top Bar Left Content */}
+          <div className="hidden lg:flex items-center">
+            {/* Title removed for cleaner UI */}
           </div>
 
           {/* Persistent Active Dungeon Widget - Simplified */}
-          {currentDungeon && (
+          {currentDungeon ? (
             <motion.div 
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -939,6 +943,20 @@ function App() {
                   />
                 </div>
               </div>
+            </motion.div>
+          ) : (
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              onClick={() => setActiveTab('dungeons')}
+              className="flex items-center gap-2 sm:gap-2.5 group cursor-pointer transition-all px-2"
+            >
+              <div className="flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                <Sword size={14} className="text-slate-500 group-hover:text-indigo-400" />
+              </div>
+              <span className="text-[10px] sm:text-[11px] font-black text-slate-500 group-hover:text-white uppercase tracking-[0.15em] italic pr-1 transition-colors">
+                Go Dungeons
+              </span>
             </motion.div>
           )}
           
@@ -1124,6 +1142,8 @@ function App() {
                  syncToCloud={syncToCloud}
                  updateSession={updateSession}
                  deleteSession={deleteSession}
+                 bulkCreateSessions={bulkCreateSessions}
+                 bulkDeleteSessions={bulkDeleteSessions}
                  togglePip={togglePip}
                  canPip={canPip}
                  isPWA={isPWA}
@@ -1332,6 +1352,12 @@ function App() {
               onUnbind={unbindFromCloud}
               onDeleteCloudData={deleteCloudData}
               onVerify={() => checkCloudSync(true)}
+              onCancelSync={() => {
+                setIsSyncing(false);
+                setIsVerifying(false);
+                setSyncError(null);
+                setSyncCheckResult(null);
+              }}
               syncHistory={state.syncHistory}
               localState={state}
             />

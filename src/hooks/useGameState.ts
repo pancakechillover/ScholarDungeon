@@ -3,7 +3,7 @@ import { AppState, Dungeon, StudySession, Talent, RewardCard, MajorDungeon, Rewa
 import { TALENTS, INITIAL_REWARD_POOL, INITIAL_GACHA, DEFAULT_QUESTS } from '../constants';
 import { format, isSameDay, parseISO, differenceInDays } from 'date-fns';
 
-import { getXPForLevel, getDefaultRewardForLevel, getDeviceType } from '../lib/utils';
+import { getXPForLevel, getDefaultRewardForLevel, getDeviceType, getDeviceCode } from '../lib/utils';
 
 const STORAGE_KEY = 'scholars_dungeon_state';
 
@@ -38,6 +38,7 @@ export function useGameState() {
       pushEnabled: false,
       pushSubscription: null,
       deviceType: getDeviceType(),
+      deviceCode: getDeviceCode(),
       timeSettings: {
         morning: { start: 8, end: 12 },
         afternoon: { start: 14, end: 18 },
@@ -62,6 +63,10 @@ export function useGameState() {
       ichibanAnimation: 'scratch',
       gachaAllowOverlap: false,
       defaultMarkdownEnabled: true,
+      requireFocusConfirmation: false,
+      timerBannerCompactMode: false,
+      timerSkipVictoryMode: 'none',
+      timerBannerShortcuts: ['pomodoro', 'short_break', 'long_break'],
       dailyLogs: {},
       reflectionTemplates: [
         {
@@ -261,6 +266,11 @@ export function useGameState() {
           parsed.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
         }
 
+        if (parsed.requireFocusConfirmation === undefined) parsed.requireFocusConfirmation = false;
+        if (parsed.timerBannerCompactMode === undefined) parsed.timerBannerCompactMode = false;
+        if (parsed.timerSkipVictoryMode === undefined) parsed.timerSkipVictoryMode = 'none';
+        if (parsed.timerBannerShortcuts === undefined) parsed.timerBannerShortcuts = ['pomodoro', 'short_break', 'long_break'];
+
         // Migration: Fix gacha pools (weights to rarities, and color/rarityValue sync)
         if (parsed.gachaPools) {
           parsed.gachaPools = parsed.gachaPools.map((pool: any) => {
@@ -314,7 +324,7 @@ export function useGameState() {
           });
         }
 
-        return { ...defaultState, ...parsed };
+        return { ...defaultState, ...parsed, deviceCode: getDeviceCode() };
       } catch (e) {
         console.error('Failed to parse saved state', e);
         return defaultState;
@@ -365,6 +375,13 @@ export function useGameState() {
       setState(prev => ({ ...prev, deviceType: currentDeviceType }));
     }
   }, [state.deviceType]);
+
+  useEffect(() => {
+    const code = getDeviceCode();
+    if (state.deviceCode !== code) {
+      setState(prev => ({ ...prev, deviceCode: code }));
+    }
+  }, [state.deviceCode]);
 
   // Auto Theme Logic (Time-based with Timezone)
   useEffect(() => {
@@ -1263,7 +1280,8 @@ export function useGameState() {
         return {
           ...prev,
           talentPoints: prev.talentPoints - talent.cost,
-          unlockedTalents: [...prev.unlockedTalents, talentId]
+          unlockedTalents: [...prev.unlockedTalents, talentId],
+          activeTalents: [...prev.activeTalents, talentId]
         };
       }
       return prev;
@@ -1701,6 +1719,76 @@ export function useGameState() {
   }, [dungeons, majorDungeons]);
 
 
+  const bulkCreateSessions = useCallback((data: { count: number, objectiveId: string, startTime: string, endTime: string }) => {
+    const start = new Date(data.startTime).getTime();
+    const end = new Date(data.endTime).getTime();
+    const count = data.count;
+    
+    setState(prev => {
+      let newState = { ...prev };
+      const newSessions: StudySession[] = [];
+      const newPendingChests: AppState['pendingRewardChest'] = [...(prev.pendingRewardChest || [])];
+      
+      for (let i = 0; i < count; i++) {
+        const randomTimestamp = new Date(start + Math.random() * (end - start)).toISOString();
+        const focus = 25 + Math.floor(Math.random() * 35);
+        const rest = 5 + Math.floor(Math.random() * 10);
+        const duration = focus + rest;
+        const xp = Math.floor(100 * (focus / 25));
+        const coins = Math.floor(10 * (focus / 25));
+        
+        const session: StudySession = {
+          id: Math.random().toString(36).substr(2, 9),
+          dungeonId: data.objectiveId || 'free_study',
+          duration,
+          focusDuration: focus,
+          restDuration: rest,
+          timestamp: randomTimestamp,
+          coinsEarned: coins,
+          xpEarned: xp,
+        };
+        
+        newSessions.push(session);
+        const choices: RewardCard[] = [];
+        const pool = [...prev.rewardPool];
+        const shuffled = pool.sort(() => 0.5 - Math.random());
+        choices.push(...shuffled.slice(0, 3));
+        
+        newPendingChests.push({ session, choices });
+
+        if (data.objectiveId && data.objectiveId !== 'free_study') {
+          setDungeons(prevD => prevD.map(d => {
+            if (d.id === data.objectiveId && d.status === 'active') {
+              return { ...d, completedSessions: d.completedSessions + 1 };
+            }
+            return d;
+          }));
+        }
+      }
+      
+      return {
+        ...newState,
+        history: [...newState.history, ...newSessions].sort((a, b) => 
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        ),
+        pendingRewardChest: newPendingChests
+      };
+    });
+  }, [setDungeons]);
+
+  const bulkDeleteSessions = useCallback((data: { startTime: string, endTime: string }) => {
+    const start = new Date(data.startTime).getTime();
+    const end = new Date(data.endTime).getTime();
+    
+    setState(prev => ({
+      ...prev,
+      history: prev.history.filter(s => {
+        const ts = new Date(s.timestamp).getTime();
+        return ts < start || ts > end;
+      })
+    }));
+  }, []);
+
   return {
     state,
     dungeons,
@@ -1734,6 +1822,8 @@ export function useGameState() {
     saveDailyLog,
     undoDungeonDrag,
     saveDungeonHistory,
-    dungeonHistory
+    dungeonHistory,
+    bulkCreateSessions,
+    bulkDeleteSessions
   };
 }

@@ -23,7 +23,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v5.5.7
+- **Current Version:** v5.13.15
 - **Last Update Date:** 2026-05-12
 
 ## Dark Themes Definition
@@ -47,1188 +47,148 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 5. **Direct API Test:** Use the "Test Local Notification (Direct)" tool in Developer settings. If this fails, the browser/OS is blocking notifications globally.
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
-## Task History
-- **v5.5.7 (2026-05-12):** Performance & UX Polish.
-  - *Performance:* Massively improved loading times and responsiveness in the Record page by caching historical peak day calculations.
-  - *Performance:* Eradicated the application-freezing lag previously caused by excessive timezone computations when viewing the Heatmap.
-  - *UX:* Interactive popovers in Recharts graphs will now successfully dismiss upon clicking anywhere outside the chart interface.
-- **v5.5.6 (2026-05-12):** Interactive Chart Polish.
-  - *Performance:* Fixed critical application lag when clicking chart bars by memoizing and elevating the custom Recharts Tooltip components outside the main render cycle.
-  - *UI:* Upgraded Tooltip popovers to correctly inherit theme-aware semi-transparent properties (backdrop blur, slate-900 variables) instead of rigid dark hex colors for better light theme compatibility.
-  - *UX:* Replaced hardcoded Recharts dark cursors with transparent theme-agnostic fills.
-- **v5.5.5 (2026-05-12):** Interactive Chart Popovers.
-  - *Data Vis:* Changed chart tooltips in the Record page (Weekly Activity, Daily Activity, Efficiency Trend) to trigger on click instead of hover.
-  - *Data Vis:* Unified the tooltip experience by injecting rich Custom Tooltips displaying period breakdowns, XP, Gold, and Mood icons.
-  - *UX:* Upgraded the native Heatmap hover titles to an interactive click-to-open portal with unified detailed statistics.
-- **v5.5.4 (2026-05-11):** Timezone & Settlement Bounds.
-  - *Bugfix:* Fixed an issue where the "End of the Day" reflections submitted past midnight were missing from the Record page due to desynchronized timezone boundaries.
-  - *Architecture:* Standardized Settlement logic (`hour < morning.start = previous day`) and global timezone offset application across `Stats.tsx` and `DashboardView.tsx`.
-- **v5.5.3 (2026-05-11):** Weekly Activity Chart Formatting.
-  - *Data Vis:* Fixed a rendering bug blocking Recharts stacked bar charts from properly displaying the custom mood icon layer.
-  - *Data Vis:* Added numerical totals to the top of the Weekly Activity bar chart to display the precise session count for each day since the Y-axis is hidden.
-- **v5.5.2 (2026-05-11):** Mood Rating Removal.
-  - *UI:* Removed the heart-based mood rating module from the Daily Summary to streamline the reflection process and simplify user input.
-- **v5.5.1 (2026-05-11):** Cloud Connection Resiliency & Mood Charting.
-  - *Reliability:* Added a 60-second connection timeout and reload button to the Astral Archives verification cycle to prevent infinite loading.
-  - *UI:* Added an "Offline" badge to the Cloud Connection status and Profile cloud status when the device loses internet connection.
-  - *Feature:* Integrated Mood Icons into the top of the Weekly Activity bar chart.
-  - *UI:* Unified Mood Score and Efficiency Rating editing interfaces to align visually.
-- **v5.5.0 (2026-05-11):** Heart-based Mood Tracking & Customization.
-  - *Feature:* Heart-based Mood Rating. Replaced the simplistic mood selector with a polished 0-5 heart rating system for daily moods, mirroring the efficiency rating.
-  - *Customization:* Enabled Mood Types. Added a management interface in General Settings to toggle specific mood types (Great, Good, Okay, Bad, Awful), ensuring a personalized tracking experience.
-  - *UI/UX:* Filtered Mood Display. Synchronized all daily summary and statistics views to only display mood options enabled in the user's settings.
-- **v5.4.0 (2026-05-11):** Emotional Logs & Mood Tracker.
-  - *Feature:* Introduced an emotional mood tracker allowing users to assign feelings to their Daily Summary with customizable icons (e.g., Great, Productive, Tired, Chill).
-  - *UX:* Persisted unsaved mood drafts using localStorage alongside the reflection draft.
-  - *UI:* Updated the daily reflection statistics view to elegantly display the chosen mood indicator next to the efficiency rating.
-  - *Architecture:* Expanded the `DailyLog` internal type structure to support arbitrary mood metadata.
-- **v5.3.26 (2026-05-11):** Daily Summary Immersive Polish.
-  - *Feature:* Added markdown formatting buttons (Bold, Italic, Underline, List/Indent) specifically to the Immersive Reflection editor.
-  - *UI:* Refactored template toggle buttons (Blank & Example modes) to include clear text labels aligning with the primary "Templates" button size.
-  - *Architecture:* Consolidated redundant template control rendering in `DailySummaryModal.tsx` to prevent hydration mismatches and ensure uniformity between views.
-- **v5.3.25 (2026-05-11):** Template Mode & Touch Polish.
-  - *Feature:* Introduced "Blank Mode" and "Example Mode" toggles for reflection templates, allowing users to save and load both empty structures and filled examples under the same template name.
-  - *UI:* Improved touch accessibility by making template delete buttons consistently visible instead of relying on hover states.
-  - *Content:* Updated default reflection presets to include contextual example content modes.
-- **v5.3.24 (2026-05-11):** Template Features & KISS Retrospective.
-  - *Feature:* Added quick-access buttons for loading a Blank Template or an Example Template to the reflection editor.
-  - *Content:* Replaced "Rose, Bud, Thorn" reflection preset with the "KISS" (Keep, Improve, Stop, Start) retrospective framework.
-- **v5.3.23 (2026-05-11):** Daily Summary Modal Polish & Immersive Edit.
-  - *Feature:* Added "Immersive" mode for Daily Reflection, providing a distraction-free, full-screen markdown editing experience.
-  - *Feature:* Implemented draft saving for End of the Day ratings and reflections, ensuring data is not lost if the modal is accidentally closed before saving.
-  - *UI:* Optimized the Reflection panel button layout, grouping related actions and allowing vertical resizing of the textarea.
-- **v5.3.22 (2026-05-11):** Daily Reflection Templates & Display Polish.
-  - *Feature:* Added a template preset system for Daily Reflections, allowing users to choose from built-in templates (Standard Review, 3-2-1 Summary, Rose/Bud/Thorn) and save their own presets.
-  - *UI:* Enhanced the markdown preview panel's font colors for significantly better readability across both light and dark backgrounds.
-- **v5.3.21 (2026-05-11):** Dashboard UI Polish.
-  - *UI:* Enhanced the Daily Progress module with a minimalist theme-aware progress bar, replacing the static emerald color with theme-dependent styling.
-  - *UI:* Added an icon to the Daily Progress title to maintain consistency with other sections.
-  - *UI:* Integrated the Daily Progress and Settlement Period display directly into the "End of the Day" summary modal for better context.
-  - *UX:* Improved timezone formatting for the Settlement Period to display as `24:00` instead of `0:00` of the next day.
-- **v5.3.20 (2026-05-11):** Cloud Sync: Device Code Identity & UX Polish.
-  - *Architecture:* Implemented randomly-generated, persistent device codes to replace volatile nicknames for more reliable identity matching.
-  - *UX:* Silent synchronization now triggers automatically when device codes match and local archives are newer or equal to cloud saves.
-  - *UI:* Added Device Identity card in Cloud Settings with device code display and copy-to-clipboard functionality.
-  - *UI:* Updated Sync Status & History table to record and display device codes for every operation.
-- **v5.3.19 (2026-05-11):** Cloud Sync: Device Code Identity.
-  - *Architecture:* Replaced volatile device nickname matching with permanent, randomly-generated device codes stored locally, preventing false conflicts.
-  - *UX:* Silent sync will now automatically upload when the device code matches and the local timestamp is newer or equal.
-- **v5.3.18 (2026-05-10):** Cloud Sync: True Silent Verification.
-  - *Bugfix:* Fixed silent sync being interrupted due to asynchronous state race conditions during automatic checks.
-  - *UX:* Improved silent integrity logic: if local and cloud times match but data diverges slightly, it trusts local authority and silently uploads instead of triggering a conflict modal.
-- **v5.3.17 (2026-05-10):** Cloud Sync: Provider Logic Correction.
-  - *Bugfix:* Resolved a contradiction where selecting WebDAV sync strategy would incorrectly link the Redis plan and set its password to 'WebDAV'.
-  - *UI:* Updated Redis "Connected" badge logic to only appear when Redis is the active provider, preventing confusion during multi-provider sessions.
-  - *Architecture:* Hardened `useCloudSync` hook to more strictly manage `secretCode` and `syncProvider` states during conflict resolution and initial checks.
-- **v5.3.16 (2026-05-10):** Cloud Sync: Connection Status Unsynced Badge.
-  - *UI:* Added a high-visibility (rose-500 red) "Unsynced" badge specifically to the Connection status section in Cloud Settings and Profile Modal when local changes are pending.
-  - *UX:* Synchronized visual feedback logic between Connection and State Data statuses for clearer state awareness.
-- **v5.3.15 (2026-05-10):** Cloud Sync: Silent Integrity & Metadata Fix.
-  - *UX:* Implemented silent cloud synchronization on page entry: local saves automatically overwrite cloud archives if the device matches and local is newer, eliminating redundant prompts.
-  - *Bugfix:* Fixed "Unknown" timestamp display in the Astral Archives comparison modal by prioritizing top-level metadata during save extraction.
-  - *Reliability:* Enhanced data consistency checks to better handle auto-save timestamps across multi-device sessions.
-- **v5.3.14 (2026-05-10):** Cloud Sync: Unsynced Status Indicator.
-  - *UI:* Implemented a high-visibility "Unsynced" indicator (rose-500 red) for cloud status when local changes are pending.
-  - *UX:* Synchronized the status labeling across Cloud Settings and Profile Modal for consistent state awareness.
-  - *UI:* Improved the Cloud Sync verify button layout for better accessibility.
-- **v5.3.13 (2026-05-10):** Visual Polish: Light Theme Readability.
-  - *UI:* Replaced hardcoded white and deep slate classes with theme-aware slate variables across PageHeader, Dashboard, Stats, Reward History, Shop, and Gacha results.
-  - *UX:* Improved contrast for critical text elements in light themes (Daylight, Warm Sun, Candy) to ensure consistent readability.
-- **v5.3.12 (2026-05-10):** Identity Management: Explicit Preservation.
-  - *UX:* Added an explicit "Save" button to the Device Identity section to prevent unintended background state updates.
-  - *UI:* Implemented visual "Saved!" feedback and dynamic button states for the device nickname input.
-- **v5.3.11 (2026-05-10):** Astral Archives: Network Awareness & Silent Integrity.
-  - *Feature:* Added proactive network connectivity checks to all cloud operations, ensuring stability in fluctuating environments.
-  - *UX:* Implemented a silent verification system on page entry that only interrupts the user if a data conflict or network issue is detected.
-  - *UX:* Ensured the Archive modal automatically resolves and closes upon finding matching records during manual verification.
-- **v5.3.10 (2026-05-10):** Astral Archives: Silent Verification on Focus.
-  - *Feature:* Implemented silent synchronization checks: the app now automatically verifies local vs cloud archives upon returning to the page (focus).
-  - *UX:* Comparison modals are now truly non-intrusive, appearing only when a deliberate data discrepancy or conflict is detected.
-  - *UI:* Polished the "Communing Archives" loading overlay for a smoother transition during background verification tasks.
-- **v5.3.9 (2026-05-10):** Astral Archives: Sync Loading Overlay.
-  - *UX:* Implemented a full-modal loading overlay with a spinning "Loader2" icon during upload and download operations to prevent premature interaction.
-  - *Reliability:* Added automatic modal closure upon successful synchronization, ensuring the user returns to the main interface only when records are secured.
-  - *UI:* Enhanced sync status messaging with context-aware labels like "Applying Changes" and "Communing Archives" during active operations.
-- **v5.3.8 (2026-05-10):** Quest & Achievement Talent Indicators.
-  - *Aesthetic:* Added talent effect tags for Quests and Achievements that are unlocked via specific talents.
-  - *Architecture:* Enhanced Quest History to capture and store talent requirements globally.
-  - *UI:* Integrated talent icons and names into Quest items and history entries for better clarity.
-- **v5.3.7 (2026-05-10):** Daily Progress: Settlement Period.
-  - *Feature:* Implemented adaptive "Settlement Period" display for Daily Progress, ranging from Morning Start to Night End peaks.
-  - *Architecture:* Synchronized daily reset logic across the app to align with the Morning Start hour, ensuring counter consistency with the settlement period.
-  - *UI:* Added high-contrast settlement period timestamps (MM/DD HH:MM) to the Sanctum Dashboard.
-- **v5.3.6 (2026-05-10):** Identity-Safe Cloud Sync.
-  - *Reliability:* Implemented mandatory identity checks before all cloud sync operations. Silent sync now only occurs if the local device identity matches the cloud record.
-  - *Safety:* Added automatic sync abortion for Visibility API triggers (tab closing/backgrounding) when an identity mismatch is detected, preventing silent data loss.
-  - *UI/UX:* Enhanced the Cloud Sync Modal to prominently display the saving device name for both local and cloud archives during conflicts.
-- **v5.3.5 (2026-05-10):** Device Identity Localization.
-  - *Architecture:* Modified Cloud Sync logic to ensure the `deviceNickname` is stored locally and never synced to the cloud, preventing naming conflicts between multiple synced devices.
-  - *Reliability:* Enhanced data stripping in `useCloudSync` to exclude volatile device identity fields from all upload methods (Redis, Google Drive, WebDAV).
-  - *UX:* Updated state merging during conflict resolution to prioritize preserving the local device nickname over incoming cloud data.
-- **v5.3.4 (2026-05-10):** Visual Polish: "Pinned Note" Randolph Rotation.
-  - *Aesthetic:* Implemented truly random tilting for Quest Board and Achievement items to create an organic "pinned note" feel.
-  - *UX:* Remounts the board components on tab switch to re-randomize rotations every time the user enters the page.
-  - *Visual:* Extended the tilting effect and subtle pins to History items for aesthetic consistency.
-- **v5.3.3 (2026-05-10):** Stability Fix.
-  - *Bugfix:* Fixed `ReferenceError: isVerifying` in `App.tsx` caused by missing variable destructuring.
-- **v5.3.2 (2026-05-10):** Cloud UI Consolidation.
-  - *UX:* Consolidated redundant manual sync buttons into a single primary "Verify & Compare Archives" action.
-  - *UI:* Enhanced the manual operation button styling for better visual hierarchy and clarity.
-- **v5.3.1 (2026-05-10):** New Seeker Onboarding.
-  - *Feature:* Implemented the "New Seeker" onboarding flow for first-time cloud users.
-  - *UX:* Introduced a deliberate "Verification Phase" with artificial checking delays to ensure a thorough comparison of local and cloud documents.
-  - *UI:* Enhanced the `CloudSyncModal` with a dedicated verification animation and a thematic "Initialize Archive" prompt for empty archives.
-  - *Reliability:* Added synchronization triggers in the main app lifecycle to ensure verification occurs immediately after any cloud provider connection.
-- **v5.3.0 (2026-05-10):** Sync Status & Device Identity.
-  - *Feature:* Implemented "Device Nicknaming" to allow users to identify their devices in sync logs.
-  - *UI:* Upgraded the sync history view in Cloud Settings to a table format with CSV export support.
-  - *UI:* Refined layout by splitting Sync Status and Manual Operations into distinct stacked modules for better visibility.
-  - *Architecture:* Enhanced the cloud sync hook and state model to capture and relay device nicknames during all operations.
-- **v5.2.9 (2026-05-10):** Force Sync Data Comparison.
-  - *Feature:* Implemented manual "Force Upload" and "Force Download" buttons in settings, allowing users to forcefully synchronize their data in either direction.
-  - *UI:* Enhanced the side-by-side comparison modal with detailed statistics (Level, Gold, Sessions, Timestamp) to ensure full transparency before overwriting.
-  - *Architecture:* Modified the cloud sync hook to allow forcing the comparison modal even when local and cloud data appear identical.
-- **v5.2.8 (2026-05-10):** WebDAV Input Validation & UI Clarification.
-  - *Reliability:* Added strict validation to detect and prevent local Windows folder paths from being used as WebDAV URLs.
-  - *UX:* Redesigned the WebDAV connection modal with explicit labels, placeholders for Jianguoyun, and clearer instructions to differentiate server URLs from local sync folders.
-  - *Bugfix:* Improved error messaging for "Failed to fetch" scenarios by providing context-aware guidance for Jianguoyun users.
-- **v5.2.7 (2026-05-10):** WebDAV Folder Isolation.
-  - *Feature:* Implemented automatic folder creation and isolation for WebDAV sync. Saves are now stored in a "SCHOLARS DUNGEON" subfolder instead of the root directory.
-  - *Reliability:* Added `MKCOL` health checks during initial connection and sync operations to ensure folder structure integrity.
-- **v5.2.6 (2026-05-10):** Cloud Sync Force Operations.
-  - *Feature:* Implemented "Force Upload" and "Force Download" operations in Cloud Settings.
-  - *UI:* Added a side-by-side comparison modal that visualizes differences between local and cloud save data (Level, Gold, Sessions, Device, Timestamp) before overwriting.
-  - *UX:* Enhanced conflict resolution flow with explicit confirmation steps and data diffing to prevent accidental data loss.
-- **v5.2.5 (2026-05-10):** Sync Status UI Modules.
-  - *Feature:* Added a unified "Sync Status" module to both the `Settings-Cloud` page and the `Profile` modal, displaying active status, sync provider, unsynced changes, and last update time.
-- **v5.2.4 (2026-05-10):** Google Drive Sync Status & Reliability.
-  - *Fix:* Resolved critical token persistence issues where Google Drive connection would drop during conflict resolution or state refreshes.
-  - *UI:* Fixed the "Connected" indicator in Cloud Settings to accurately reflect active credentials stored in the local state.
-  - *Architecture:* Unified state-scrubbing logic in `useCloudSync.ts` to prevent polluting cloud saves with local-only metadata.
-  - *Bugfix:* Fixed a runtime crash on startup when attempting to verify Google Drive saves using an invalid SDK method.
-- **v5.2.3 (2026-05-10):** WebDAV Full Implementation.
-  - *Feature:* Fully integrated WebDAV support as a new primary Sync Provider with a local proxy in `api/webdav/proxy` addressing CORS restrictions gracefully.
-  - *UI:* Unlocked the WebDAV options panel in Cloud Sync settings allowing custom server URL (e.g. Nextcloud, Jianguoyun), Usernames, and Application Passwords.
-  - *Architecture:* Standardized synchronization checks, redirecting App startup to use a new `checkCloudSync` routing which intelligently directs to Google Drive, WebDAV, or Redis logic interchangeably. 
-- **v5.2.2 (2026-05-10):** Google Drive Developer Access Lock.
-  - *Feature:* Added a password lock specifically requiring the string 'GoogleTest' to access Google OAuth, protecting standard users from seeing the "App is not verified" generic error.
-  - *UX:* Adapted the existing Modal from Redis Archives to support dynamic text depending on which cloud service needs to be unlocked.
-- **v5.2.1 (2026-05-10):** Quest Board UI Style Sync.
-  - *UI:* Synchronized all theme-specific CSS variables (`--qb-*`) with the finalized values from the CSS Debugger.
-  - *UX:* Fine-tuned contrast and colors for Quest Cards, Progress Bars, and Board containers across all 7 themes.
-- **v5.2.0 (2026-05-10):** Sync History Metadata.
-  - *Feature:* Implemented detailed metadata tracking for synchronization history, including `syncMethod` (Manual, Immediate, Interval polling, Visibility API Active) and `syncProvider` (Redis, Google Drive, WebDAV).
-  - *Architecture:* Enhanced `AppState.syncHistory` interface and `useCloudSync` hook to capture and persist metadata across all sync events.
-  - *UI:* Updated Cloud Sync Modal and Cloud Settings Section to display sync method and provider details in the history logs.
-  - *Bugfix:* Fixed UI theme-awareness for secondary text elements in Cloud Settings.
-- **v5.1.3 (2026-05-10):** Theme-Aware Color Expansion.
-  - *Architecture:* Synchronized `indigo-300` with the custom theme engine in `index.css`.
-  - *UI:* Verified all `text-indigo-300` usages across Settings, Cloud, and Dungeons now respond to theme changes.
-- **v5.1.2 (2026-05-10):** Quest Board UI Customization Expansion.
-  - *UI:* Added outer white border (outline) to the Quest Board container, configurable via CSS variables.
-  - *Feature:* Expanded Quest Board CSS Debugger with controls for checkbox colors and progress bar text color.
-  - *Architecture:* Decoupled hardcoded checkbox and progress text colors in QuestManager to use themeable CSS variables.
-- **v5.1.1 (2026-05-10):** Data Reliability & App Visibility Hooks.
-  - *Architecture:* Implemented the Visibility API & beforeUnload listeners to forcefully push unsynced changes if the application is closed or loses focus.
-  - *UI:* Added sync operations history and state under the Cloud tab.
-- **v5.1.0 (2026-05-10):** Auto-Sync Configuration & Cloud Access
-  - *Feature:* Added auto-sync strategies (Immediate Debounce, Interval Polling, Manual) into the Cloud Sync settings.
-  - *Feature:* Implemented a Developer Code lock on the Astral Archives due to current Redis storage limitations.
-  - *UX:* Added sliders to let the user select their own sync debounce delay and polling intervals.
-- **v5.0.0 (2026-05-10):** Cloud Synchronization Overhaul.
-  - *Architecture:* Added a dedicated Cloud module in System Settings for managing saving and synchronization preferences.
-  - *UI:* Moved the Astral Archives from Account Status into the Cloud module to prepare for multi-provider support.
-  - *Feature:* Added placeholder interfaces for future Google Drive and WebDAV backup solutions.
-- **v4.10.20 (2026-05-10):** Global Victory Screen.
-  - *UX:* Implemented global timer monitoring so the Victory! screen automatically forces full-screen and redirects to the Explore tab upon completion, regardless of where the user is browsing or if the tab is in the background.
-- **v4.10.19 (2026-05-10):** Quest Board UI Polish.
-  - *UI:* Removed the background styling and "TASK PROGRESS" text from the Quest Board progress bars for a cleaner look.
-  - *UX:* Synchronized the UI changes to the CSS Debugger preview layout as well.
-- **v4.10.18 (2026-05-10):** Touch & Scroll Engine Overhaul.
-  - *Architecture:* Rebuilt root layout engine using a rigid Flexbox structure to completely eliminate iOS Safari scrolling bugs and rubber-banding on the sidebar.
-  - *Bugfix:* Restored fluent mouse-wheel scrolling by properly enforcing overflow boundaries isolated entirely inside the main workspace.
-- **v4.10.17 (2026-05-10):** Guidebook Audio File Integration.
-  - *Audio:* Replaced synthesized page turn logic with the native page-flip.mp3 audio file.
-- **v4.10.16 (2026-05-10):** iOS Scroll & Touch Stability.
-  - *Bugfix:* Fixed an issue on iOS devices where scrolling the page would incorrectly move the nav sidebar or rubber-band the viewport.
-  - *Bugfix:* Restored normal touch scrolling inside the Expedition menu by disabling framer-motion touch-action overrides outside of drag handles.
-  - *Architecture:* Applied overscroll-contain to scrollable zones and decoupled fixed elements from height-restricted HTML blocks.
-- **v4.10.15 (2026-05-10):** Guidebook Audio Enhancements.
-  - *Audio:* Implemented a custom procedural soft "page turn" sound effect using the Web Audio API for the Adventure Guide.
-  - *UX:* Linked page turn sound effects to swiping, clicking navigation arrows, and using table of contents bookmarks within the Guidebook.
-- **v4.10.14 (2026-05-10):** CSS Debugger Full Screen & Progress Polish.
-  - *Architecture:* Moved the CSS Debugger modal to React Portals (`createPortal`), enforcing true full-screen overlay across all native UI modules and sidebars.
-  - *Feature:* Added a "Realistic Mode" toggle to the CSS Debugger that previews exact procedural card rotations and absolute thumbtack decorations to mirror production layouts.
-  - *UI:* Fully integrated progress bar fill and track colors into the Quest Board CSS dynamic overrides system via 3 new root variables.
-- **v4.10.13 (2026-05-10):** Quest Board CSS Export & Layout Polish.
-  - *Feature:* Added an "Export CSS" button to the CSS Debugger, generating minified CSS variables ready for production integration.
-  - *UI:* Scaled down the preview mockup wrapper to 90% (`h-[40%]`), ensuring the complete visual state bounds flawlessly inside 1080p and smaller vertically constrained laptops without needing a scrollbar.
-  - *UX:* Rebuilt the mock representation of checkboxes and task progress elements in the debugger side-pane to 1:1 match the exact physical dimensions and flex behaviors used originally on the `QuestManager.tsx` board.
-- **v4.10.12 (2026-05-10):** Guidebook Swipe Interactions.
-  - *UX:* Added smooth touch swipe gestures to turn pages intuitively left or right within the Adventure Guide.
-- **v4.10.11 (2026-05-10):** CSS Debugger GUI Overlay.
-  - *Feature:* Transformed the CSS Debugger into a standalone visual color picker dashboard with discrete controls for every layout variable.
-  - *UI:* Expanded debugger layout to full screen size, maintaining a rigid split view between the precise UI Mockup and the adjustable inputs.
-  - *UX:* Improved mockup accuracy to mirror exact spacing, progress bars, and checkable action zones directly from the production Quest Board.
-- **v4.10.10 (2026-05-10):** Quest Board CSS Live Editor.
-  - *Feature:* Added an interactive live CSS editor to the Quest Board CSS Debugger modal, allowing real-time injection and manipulation of `--qb-*` CSS variables without leaving the app.
-  - *UI:* Decoupled generic Tailwind hardcodes from `QuestManager.tsx` quest cards, forcing them to natively respect the new `.qb-*` classes in real-time.
-  - *Persistance:* Custom CSS entered in the debugger is stored in `localStorage` and automatically injected when the app boots, acting as a permanent local CSS override switch for the Quest Board.
-- **v4.10.9 (2026-05-10):** Expedition Undo Drag Operations.
-  - *Feature:* Implemented a dedicated Undo button to safely revert complex hierarchy drag-and-drop operations within the Expedition menu.
-  - *Architecture:* Deeply integrated drag-and-drop caching into the `useGameState` unified store. Added deterministic `onDragStart` captures.
-  - *UX:* Only displays the Undo icon when dragging has occurred, preventing accidental clutter.
-- **v4.10.8 (2026-05-10):** Quest Board Developer CSS Toolkit.
-  - *Feature:* Centralized and refactored Quest Board CSS into configurable CSS variables per theme.
-  - *UI:* Created the "Quest Board CSS Debugger" accessible via Developer Settings to preview all 7 theme layouts simultaneously on a single interface.
-  - *Architecture:* Fully decoupled `.qb-*` class styles from hardcoded values, routing them entirely through `--qb-*` root definitions.
-- **v4.10.7 (2026-05-10):** Expedition Drag & Drop Hierarchy Fix.
-  - *Bugfix:* Resolved a critical race condition where dragging a sub-dungeon across tiers caused items to disappear due to outdated local Reorder state overriding global tree structure.
-  - *Architecture:* Refactored `onReorder` handling for MajorDungeons and Sub-Dungeons to exclusively filter and update based on verified state membership.
-- **v4.10.6 (2026-05-10):** Dungeon Tier Creation Title Fix.
-  - *Bugfix:* Fixed a logical error where creating a Tier 1 dungeon goal under an Expedition incorrectly displayed "CREATE TIER 2" as the title.
-  - *Architecture:* Refined `getSubDungeonDepth` utility to correctly identify Major Dungeons as the root depth (Level 0).
-- **v4.10.5 (2026-05-10):** Custom PWA Icon Set Integration.
-  - *Architecture:* Synchronized `vite.config.ts` manifest with customized icon filenames from RealFaviconGenerator.
-  - *UI:* Expanded `index.html` with explicit favicon sizes (16x16, 32x32) and high-res apple-touch-icon links.
-  - *UX:* Implemented cache-busting logic for manifest icons to bypass browser-level persistence issues.
-- **v4.10.4 (2026-05-10):** PWA Desktop Icon & Compatibility Fix.
-- **v4.10.3 (2026-05-10):** Notification API Stability Fix.
-  - *Bugfix:* Fixed `ReferenceError: Can't find variable: Notification` by adding `typeof Notification !== 'undefined'` checks before all API calls.
-  - *Architecture:* Enhanced production stability in environments with limited browser API access (Iframes, restricted browsers).
-  - *Bugfix:* Fixed a critical missing destructuring of `claimAllQuestRewards` in `App.tsx` that caused application crashes.
-- **v4.10.2 (2026-05-10):** Bulk Reward Claiming & Unified Summary.
-  - *Feature:* Implemented a "Claim All" system for quests and achievements, allowing one-click collection of all pending rewards.
-  - *UI:* Added a dedicated Bulk Claim Modal that displays a comprehensive summary of all items completed and total treasure harvested.
-  - *UX:* Synchronized bulk claiming with reward history and real-time state updates for seamless progression.
-- **v4.10.1 (2026-05-10):** Quest History Temporal Filtering.
-  - *Feature:* Added time-based filtering to Quest History (Today, Last 7 Days, All Time).
-  - *UI:* Implemented filter tabs in the History view for improved navigation of past deeds.
-  - *UX:* Optimized empty states to provide context based on active time filters.
-- **v4.10.0 (2026-05-10):** Quest History & Chronicler Integration.
-  - *Feature:* Implemented a full Quest History system that archives all completed and claimed tasks/achievements.
-  - *UI:* Added a dedicated "History" tab to the Quest Board with high-contrast parchment items and timestamp tracking.
-  - *UX:* Integrated automatic history recording for both manual reward claims and auto-claimed session rewards.
-  - *Aesthetic:* Created custom "Chronicler" icon and emerald theme accents for historical records.
-- **v4.9.5 (2026-05-09):** Quest Board High-Contrast & Theme Alignment.
-  - *UI:* Removed transparency, inner shadows, and grain from Quest Board backgrounds, opting for solid theme-aware colors (`bg-indigo-50` / `bg-slate-900`).
-  - *UX:* Improved text readability by using high-contrast slate-900 text on parchment items and bold font weights.
-  - *Aesthetic:* Redesigned icon containers to use theme dark colors in light mode for better visual weight.
-- **v4.9.4 (2026-05-09):** Quest Board Theme & Readability Optimization.
-  - *UI:* Simplified Quest Board background to a flat, theme-responsive indigo scale, removing heavy shadows and grain.
-  - *UX:* Significantly improved quest item readability by increasing text contrast (Titles: #1a1a1a, Descriptions: #333333) and refining reward badge styling.
-  - *Aesthetic:* Harmonized the board layout with consistent theme-aware borders and background opacity.
-- **v4.9.3 (2026-05-09):** Quest Board Theme-Awareness & UI Refinement.
-  - *Aesthetic:* Synchronized Quest Board appearance with active themes by replacing hardcoded wood colors with theme-responsive `indigo` variable scales.
-  - *Bugfix:* Fixed reward badge visibility issues by removing intrusive dark backgrounds and shadows in favor of a clean, high-contrast design on parchment notes.
-- **v4.9.2 (2026-05-09):** Quest Board Aesthetic & Updates Cycle.
-  - *UI:* Completely redesigned the Quest Board with a wooden textured background and pinned parchment note items for a thematic task board look.
-  - *Feature:* Added explicit update cycle badges (Daily, Weekly, Monthly) to all Quest cards to clarify reset periods.
-  - *Aesthetic:* Integrated deterministic item rotation and thumbtack decorations using Lucide icons.
-- **v4.9.1 (2026-05-09):** Drag & Drop Stability & Race Condition Fix.
-  - *Bugfix:* Fixed a critical edge case where items would be "swallowed" during cross-group movement due to conflicting `onReorder` and `onMove` events.
-  - *Architecture:* Refactored `moveDungeonItem` to be functionally atomic, ensuring state consistency during rapid drag operations.
-  - *UX:* Improved mobile drag stability by disabling momentum and adding strict layout constraints.
-- **v4.9.0 (2026-05-09):** Drag & Drop Stability & Mobile UX Fix.
-  - *Bugfix:* Fixed critical issue where dungeon items would disappear during rapid reordering or cross-level movement.
-  - *UX:* Fixed mobile/tablet scrolling bug where dragging an item would trigger page-wide scrolling to the bottom by implementing `touch-none` and `preventDefault`.
-  - *Architecture:* Hardened state synchronization in `DungeonManager` to handle reorder events and move events safely without race condition data loss.
-- **v4.8.11 (2026-05-09):** Critical TypeError Hotfix.
-  - *Bugfix:* Fixed a TypeError in `moveDungeonItem` where it was incorrectly referencing `dungeons` and `majorDungeons` via the `state` object.
-- **v4.8.10 (2026-05-09):** Hierarchical Nesting & Race Conditions Fix.
-  - *Architecture:* Eliminated nested functional state updates from useGameState which created asynchronous duplication bugs when promoting/demoting hierarchies.
-  - *UX:* Automatically expands the container directory visually when hovering or dropping sub-dungeons to clearly indicate hierarchy.
-- **v4.8.9 (2026-05-09):** Drag & Drop Stability & Cycle Prevention.
-  - *Bugfix:* Fixed a critical issue where items would disappear due to circular hierarchy loops (dragging a parent into its own child).
-  - *Architecture:* Enhanced state synchronization between MajorDungeons and Sub-Dungeons collectives to prevent duplicate IDs during cross-group movement.
-  - *Logic:* Implemented a recursive ancestor check in moveDungeonItem to strictly maintain a healthy tree structure.
-- **v4.8.8 (2026-05-09):** Drag & Drop Stability Fix.
-  - *Bugfix:* Fixed a critical issue where items would disappear when dragged across different hierarchy levels or into other dungeons.
-  - *UX:* Improved drop target detection by ignoring the item currently being dragged, preventing self-blocking hit tests.
-  - *Architecture:* Migrated reorder state updates to non-destructive functional updates to preserve items during cross-group movement.
-- **v4.8.7 (2026-05-09):** Hierarchical Drag & Drop.
-  - *Feature:* Implemented full hierarchical reordering and nesting. Drag any level-1 dungeon onto another to make it a child (L2), or move sub-dungeons between parents.
-  - *UX:* Added drop-target detection using viewport coordinates for intuitive "folder-style" nesting during edit mode.
-  - *Architecture:* Enhanced state management to automatically handle promoting sub-dungeons to root MajorDungeons when dropped onto the Expedition container.
-- **v4.8.6 (2026-05-09):** Mobile Drag & Drop Polish.
-  - *UX:* Repositioned drag-and-drop handles for Expedition, Quests, and Achievements to perfectly align with mobile screens without overflowing the horizontal layout.
-  - *UI:* Ensured edit buttons precisely exist between progress bars and completion checkboxes without requiring hover states.
-  - *UI:* Widened progress numeric ratios across all Dungeons menus strictly preventing clipping when ratios like "100/100" are met.
-- **v4.8.5 (2026-05-09):** Edit Layout & Progress Width Update.
-  - *UI:* Widened progress bar numeric ratio elements to comfortably fit 3-digit denominators ("100/100").
-  - *UX:* Reordered Quest and Achievement panels in edit mode so action buttons appear practically between the progress bar and the completion box.
-- **v4.8.4 (2026-05-09):** Quest Board & Achievement Polish.
-  - *UI:* Removed rigid spatial gap limitations between progress bar statistics and completion checkboxes on the Quests and Achievement tabs.
-  - *UX:* Fixed an issue in Quests and Achievements where reordering and edit action buttons frustratingly required explicit mouse hover to appear on desktop views, maintaining consistent visibility.
-- **v4.8.3 (2026-05-09):** Dungeon Checkbox Spacing.
-  - *UI:* Removed rigid sizing from the Dungeon action container block to allow the Checkbox and progress bar text to sit organically close to each other without absurd gap filling.
-- **v4.8.2 (2026-05-09):** Dungeon Tabs Layout Alignment.
-  - *UI:* Aligned progress bars, numerical counters, and rightmost action elements perfectly across the Dungeons, Quests, and Achievements tabs in the Dungeons menu to be identically sized and positioned.
-  - *UX:* Standardized width sizing using strict container anchoring so that flipping between any of the related tabs causes exactly zero horizontal UI shifting for identically purposed elements.
-- **v4.8.1 (2026-05-09):** Dungeon Progress Bar Visibility Fix.
-  - *UI:* Fixed an issue where the dungeon progress bar in the Dungeons menu was invisible (0px internal height) due to thin height allocations clashing with borders.
-  - *UX:* Increased the dungeon progress bar thickness to easily display current percentage clearly.
-- **v4.8.0 (2026-05-09):** Dashboard Quest Navigation Fix.
-  - *UX:* Updated Guidebook links to correctly redirect Quests and Achievements directly to their respective tabs inside the Dungeons page.
-- **v4.7.22 (2026-05-09):** Offline Guidebook Markdown & Mobile Compressing.
-  - *Documentation:* Exported the entire Sanctum Guidebook to a standalone `GUIDEBOOK.md` file in the root directory for offline reading.
-  - *UI:* Improved the Guidebook modal's responsiveness by compressing padding and font sizes on smaller screens to ensure content completely fits on a single mobile page without relying on scrolling.
-- **v4.7.21 (2026-05-09):** Sanctum Items Deep Linking & Responsive Layout.
-  - *Feature:* Added interactive hyperlinked terms within the Sanctum Items chapters to instantly route users to matching sections (Dungeon, Quests, Merchant, Talent Tree).
-  - *UX:* Refined responsive layout for the entire guide book to ensure 100% visibility of all elements on tight mobile viewports without overflowing text.
-- **v4.7.20 (2026-05-09):** Sanctum Items Refinement.
-  - *Documentation:* Merged Core Resources and Advanced Items cleanly into a single continuous Sanctum Items chapter spanning over the designated pages.
-  - *UI:* Bookmarks were modified to include a distinct package icon representing the Items section.
-  - *Aesthetic:* The information for each resource is now displayed using cleaner, Markdown-style `-` bullet points.
-- **v4.7.19 (2026-05-09):** Sanctum Items Guide Polish.
-  - *Documentation:* Expanded the Sanctum Items Guide chapter into 4 dedicated pages, properly separating Core Resources and Advanced Items.
-  - *Localization:* Renamed "Protection Amulet" to "Death Defying Medal" to match core naming.
-  - *UI:* Fully integrated Sanctum Items into the interactive Guidebook Table of Contents with robust page alignments.
-- **v4.7.18 (2026-05-09):** Sanctum Items Guide Chapter.
-  - *Feature:* Added a new "Sanctum Items" chapter to the Guide Book containing encyclopedic details of all Core Resources and Advanced Items (Protection Amulet, XP Card, Gold Card).
-- **v4.7.17 (2026-05-09):** Talent Tree Guide Flow Optimization.
-  - *UX:* Replaced the standalone "How to get points" modal in the Talent Tree with a direct link to the interactive Guidebook (Talent System Chapter) to centralize all tutorials securely.
-- **v4.7.16 (2026-05-09):** Dashboard Guide Polish.
-  - *UI:* Added the Sanctum Map to the Guides section on the Dashboard page.
-  - *UX:* Renamed the introductory welcome message in the Guidebook from Pathfinder to Seeker to ensure consistent narrative terminology.
-- **v4.7.15 (2026-05-10):** Guidebook Thematic Polish.
-  - *UI:* Adjusted Guidebook cover title typography for better responsiveness, utilizing a smaller cascading scale on mobile.
-  - *Aesthetic:* Refined the Sanctum Map and Record icons in the Guidebook, shifting away from generic slate backgrounds to thematic Sky Blue.
-  - *Aesthetic:* Synchronized hyperlinked keywords (Quests, Talents, Dungeons) within Guidebook chapters to seamlessly match the dominant color of their respective pages.
-  - *UX:* Activated deep linking for Quests and Achievements keywords, effortlessly routing players to the Dashboard.
-- **v4.7.14 (2026-05-10):** Guidebook Navigation Polish.
-  - *Bugfix:* Fixed broken code structure and syntax errors in the Guidebook's pages array.
-  - *UX:* Synchronized bookmark icons and colors with the new chapter sequence (Map first).
-  - *Logic:* Re-mapped TOC and Bookmark links to correctly point to the updated page indices.
-- **v4.7.13 (2026-05-10):** Sanctum Navigation & Map Update.
-  - *Feature:* Added "Map to the Sanctum" chapter to the Guidebook, providing a visual and textual overview of all application modules.
-  - *UX:* Implemented interactive deep-links within the Guidebook that navigate directly to corresponding application sections (Vault, Merchant, Talents, etc.).
-  - *UI:* Enhanced Guidebook navigation and bookmark synchronization to accommodate the new chapter.
-- **v4.7.12 (2026-05-09):** Adventure Guide Polish.
-  - *Aesthetic:* Updated Guidebook cover title to Adventure Guide with adaptive sizing to ensure it fits mobile screens.
-  - *Aesthetic:* Applied a luxurious gold gradient effect to the central compass logo to match the typography.
-  - *UI:* Changed the ampersand symbol used in headings to a sans-serif variant to avoid awkward font rendering in serif.
-- **v4.7.11 (2026-05-09):** Pathfinder's Guide & Typography Update.
-  - *Aesthetic:* Added an Introduction page and formally renamed the module to Pathfinder's Guide based on user feedback.
-  - *Typography:* Replaced handwriting body fonts with universally readable standard fonts to enhance legibility.
-  - *UI:* Restructured Table of Contents targets and aligned uniform page numbering across the bottom of the book pages.
-- **v4.7.10 (2026-05-09):** Guidebook Font Size Balancing.
-  - *Bugfix:* Adjusted the Guidebook paragraph and list fonts down to `text-xl` to prevent content overflows on standard pages while leaving the fonts highly readable.
-- **v4.7.9 (2026-05-09):** Guidebook Visual Polish.
-  - *Aesthetic:* Redesigned the Guidebook cover with a gorgeous print-style gilded font (`Playfair Display`) and matching Compass logo, replacing previous hand-drawn traits.
-  - *UI:* Updated the Talent System icons within the Guidebook to the standard `Network` interface icon for structural clarity.
-- **v4.7.8 (2026-05-09):** Guidebook Visual Polish.
-  - *UI:* Replaced default standard vector icons with custom SVG hand-drawn style icons (Book, Coins, Target, Zap) to match the parchment paper aesthetic.
-  - *UX:* Enlarged text significantly within the "How to Acquire" and "Pro Tip" informational blocks to vastly improve readability for users with the cursive font.
-- **v4.7.7 (2026-05-09):** Handwritten Font Injection.
-  - *Aesthetic:* Explicitly forced Caveat cursive font into all inner-page text fields to bypass default cascading limits overriding the paper texture parent font.
-  - *UX:* Enlarged handwritten body text significantly (`text-xl` and `text-2xl`) as cursive fonts natively render much smaller than standard sans-serif.
-- **v4.7.6 (2026-05-09):** Retro Handwriting & Paper Texture.
-  - *Aesthetic:* Replaced all book fonts with a handwritten cursive font (Caveat) and added procedural noise/paper texture to the pages for a retro feel.
-  - *UI:* Desaturated bookmark tab colors to harmonize with the vintage paper appearance.
-- **v4.7.5 (2026-05-09):** Fluid 3D Book Layout Mechanics.
-  - *Animation:* Rewrote the Book Background Base Layer into a 3D split-folding mechanism. Front and back covers now swing synchronously with the pages, eliminating visual overlap and layout thrashing.
-  - *UX:* Prevented the page from opening to intermediate transparent states during the first render loop and on mobile page tracking bounds.
-- **v4.7.4 (2026-05-09):** Guide Book Animation Polish & Layout Centering.
-  - *Bugfix:* Fixed an animation glitch where the book base would transition visually on the first open by synchronously computing initial page states before rendering.
-  - *UI:* Adjusted closed book container translation (`translate-x-1/4`) to smoothly move the book to the center of the screen when closed (Front Cover and Back Cover states) on desktop resolutions.
-- **v4.7.3 (2026-05-09):** Closed Book Layout & Scrollbar Polish.
-  - *UI:* Added Front Cover and Back Cover states to the Guide Book, creating realistic closed states at the start and end of navigation.
-  - *UI:* Removed internal page scrolling, ensuring all chapter content comfortably fits within a single page spread without scrollbars.
-  - *UX:* Synchronized textbook font sizes to match the application's base text metrics for consistent readability.
-- **v4.7.2 (2026-05-09):** Guide Book Realistic Animation & B5 Aspect Ratio.
-  - *UI:* Restructured Guide Book aspect ratio to precisely simulate realistic B5 dimensions for single (mobile) and double pages (desktop).
-  - *UX:* Improved Framer Motion 3D page flip animation to accurately simulate a book page swinging from the spine rather than spinning the entire layout.
-  - *UI:* Snapped interactive bookmarks seamlessly to the right edge of the book base outline.
-- **v4.7.1 (2026-05-09):** Guide Book Mechanics & Mobile UX Polish.
-  - *UX:* Perfected the Guide Book to display as a single page on mobile devices for improved readability, while retaining the dual-page spread on larger screens.
-  - *UI:* Implemented 3D page-flip animations (`rotateY`) across the book's layout for an authentic reading experience.
-  - *UI:* Bookmarks were added to the right-edge of the book linking directly to explicit chapters.
-  - *UX:* Navigation arrows relocated to the lower corners within the page boundary. Refined content to remove obsolete settings tips.
-- **v4.7.0 (2026-05-09):** Interactive Sanctum Guide Book.
-  - *Feature:* Redesigned the Sanctum Guides into a comprehensive, interactive 3D-styled Guide Book.
-  - *UX:* Unified Coins, XP, and Talent guides into a single paginated modal with a Table of Contents.
-  - *UI:* Implemented a parchment-themed book aesthetic with left/right page turning and responsive scaling.
-- **v4.6.22 (2026-05-09):** Sanctum Guides Update.
-  - *Documentation:* Updated Sanctum Guides to reflect that Coins and XP can be obtained from Quests and Achievements rather than Gacha.
-  - *UI:* Improved readability of Guide settings redirect buttons by adding background colors and boosting text contrast against the background.
-- **v4.6.21 (2026-05-09):** Sanctum Guides: Interactive Settings Redirects.
-  - *Documentation:* Rewrote Sanctum Guide content (Gold, XP, Talents) to be more detailed and accurate.
-  - *UX:* Added interactive buttons within the Guides that redirect users to the relevant sections in the Settings page.
-- **v4.6.20 (2026-05-09):** Daily Progress Goal: Synchronization & Bugfix.
-  - *Feature:* Synchronized Daily Progress Goal settings from General Settings to the Sanctum Dashboard display.
-  - *Bugfix:* Fixed timezone-aware daily goal synchronization in Sanctum Dashboard.
-- **v4.6.20 (2026-05-09):** Daily Progress Goal: Label Refinement.
-  - *UX:* Updated weekday labels in Daily Progress Goal configuration to 3-letter abbreviations for improved readability.
-- **v4.6.19 (2026-05-09):** Settings: Daily Progress Goal Switch.
-  - *Feature:* Added a toggle to Daily Progress Goal settings, allowing users to choose between a uniform daily goal or a custom per-day schedule.
-- **v4.6.18 (2026-05-09):** Settings: Daily Progress Goal UI Refinement.
-  - *UX:* Simplified Daily Progress Goal layout to a concise wrap-flex design for better clarity and space efficiency.
-- **v4.6.17 (2026-05-09):** Settings: Daily Progress Goals.
-  - *Feature:* Added the ability to set custom daily session goals per day of the week in General Settings.
-- **v4.6.16 (2026-05-09):** Dashboard: Guide Module Integration.
-  - *Feature:* Added a new Guide module to the Sanctum (Dashboard) for quick access to Coin, XP, and Talent system guides.
-- **v4.6.15 (2026-05-11):** Developer Tools: Talent Tree Reset.
-  - *Feature:* Reset Talent Tree. Added a dedicated developer action to lock all talents and clear the active build, facilitating testing and progression resets.
-  - *Security:* Implemented a double-check confirmation modal for talent resets to prevent accidental progress loss.
-- **v4.6.14 (2026-05-11):** Talent Tree UI & Feedback Polish.
-  - *UI:* Visual Security Markers. Integrated lock icons into the collapsed view of the talent tree to clearly distinguish locked tiers without expanding.
-  - *UX:* Negative Feedback Animation. Implemented a responsive "shake" animation for talent nodes when players attempt to unlock them without sufficient talent points.
-- **v4.6.13 (2026-05-11):** Talent Network Icon Upgrade.
-  - *UI:* Updated Talent Tree representation. Exchanged the generic Zap icon with a specialized Network vector across Navigation and Page Headers for better thematic alignment.
-- **v4.6.12 (2026-05-11):** Precise Theme Schedule & Timezone Logic.
-  - *Feature:* Full Time Selection. Updated theme transition settings to support full HH:mm precision instead of just hours.
-  - *UX:* Renamed "Transition Hour" to "Transition Time" for better clarity and alignment with the new time picker.
-  - *Logic:* Enhanced Timezone Comparison. Implemented robust string-based time comparison for reliable theme switching across all time zones.
-- **v4.6.11 (2026-05-11):** Mobile Layout Polish for Theme Scheduling.
-  - *UX:* Day/Night Theme Configuration Stack. Redesigned the theme configuration layout into a three-row vertical stack to ensure perfect visibility on narrow mobile devices.
-  - *UI:* Reorganized transition time and theme selection elements for better spatial clarity and touch accessibility.
-  - *Architecture:* Synchronized version markers for theme-related refinements.
-- **v4.6.10 (2026-05-11):** Mobile Theme UX & Breakpoint Refinement.
-  - *UX:* Mobile Theme Layout. Redesigned the theme configuration header to stack vertically on small phones, preventing element clashing.
-  - *Architecture:* Custom Breakpoints. Added a dedicated `xs` (400px) breakpoint to the Tailwind configuration for finer mobile UI control.
-  - *UI:* Timezone Selection Polish. Improved the timezone selector responsiveness to ensure proper rendering on narrow viewports.
-- **v4.6.9 (2026-05-11):** Scheduled Auto Theme & Timezone Support.
-  - *Feature:* Scheduled Theme Switching. Added the ability to set specific "Day Start" and "Night Start" hours for automatic theme transitions.
-  - *Feature:* Timezone Selection. Integrated a timezone selector to allow users to override system detection for theme scheduling.
-  - *UX:* Simplified Theme Config. Redesigned the auto-theme pairing UI with a more compact, color-bubble selector.
-- **v4.6.8 (2026-05-11):** Auto Theme Switching & Daylight Default.
-  - *Feature:* System Theme Sync. Added a toggle to automatically switch between customized Day and Night themes based on system color scheme preference.
-  - *Feature:* Custom Theme Pairing. Allowed users to independently set which themes are explicitly used for "Day" and "Night" modes.
-  - *UI:* Default Theme Update. Set "Daylight" as the new default theme for the application.
-  - *UX:* Theme Settings UI. Integrated auto-switch controls and theme preview selectors into the General Settings dashboard.
-- **v4.6.7 (2026-05-11):** Midnight Peak Logic & Aggregate Fixes.
-  - *Logic:* Midnight-Spanning Peak Times. Fully implemented logic for attributing sessions across midnight boundaries based on custom peak settings.
-  - *Fix:* Peak-Aware Statistics. Updated all aggregation helpers (daily, weekly, heatmap, daily summary) to use the new peak-aware date attribution.
-  - *UX:* Midnight Warning. Added visual indicators and color-coded labels in Time Settings for ranges that cross the midnight mark.
-  - *Fix:* Shop Reward Visibility. Adjusted reward categorizations in `RewardHistory.tsx` to ensure items purchased from the Merchant Shop appear in the Vault's Treasure tab.
-- **v4.6.6 (2026-05-11):** Modal Polish & Reward History Verification.
-  - *Architecture:* Fully migrated all viewport-level modals to `createPortal`, ensuring they render at the root of the document for perfect alignment regardless of local scroll states.
-  - *UX:* Implementation of `useScrollLock` across all modals to stabilize background content during focus.
-  - *Fix:* Verified and polished the shop purchase logic to ensure items from the Merchant are reliably logged to the `RewardVault`.
-  - *Architecture:* Standardized all modal overlays to use a uniform background blur and high z-index stacking (`z-[9999]`).
-- **v4.6.5 (2026-05-11):** Universal Modal Integration.
-  - *Architecture:* Replaced all native browser-native confirmation dialogs (`window.confirm` and `alert`) with a custom, theme-aware `ConfirmModal` component across the entire application.
-  - *UX:* Integrated `ConfirmModal` into Developer Settings for security-sensitive actions and Dungeon Manager for task management confirmations.
-  - *Refactor:* Centralized modal logic into a reusable component with `framer-motion` animations and standardized visual states (danger, warning, info).
-- **v4.6.4 (2026-05-11):** Pool Management & Security UX.
-  - *Feature:* Pool Renaming. Added a "Pool Name" field to the Gacha and Ichiban Kuji edit modals, allowing users to customize pool names easily.
-  - *UX:* Reset Confirmations. Implemented "Double Check" warnings when resetting Gacha or Ichiban pools in both settings and shop views.
-  - *UX:* Deletion Security. Standardized deletion confirmation dialogs across Merchant, Shop, and Reward settings to ensure a second confirmation before permanent removal.
-- **v4.6.3 (2026-05-11):** Talent UX & State Persistence.
-  - *Feature:* Talent Tree State Persistence. The collapsed/expanded state of the talent branches is now saved in `localStorage`, preserving the layout across sessions.
-  - *UX:* Interactive Talent Icons. Updated the Explore view to allow clicking on active talent icons to toggle tooltips, making information accessible for mobile users.
-- **v4.6.2 (2026-05-11):** Dynamic Talent Descriptions & Formatting.
-  - *Feature:* Dynamic Crit Description. Linked the "Critical Intuition" (C3) talent description to real-time developer settings (Crit Chance & Multiplier).
-  - *UX:* Improved numeric formatting in talent tooltips to handle floating-point values (e.g., 5.5%) gracefully for better precision.
-- **v4.6.1 (2026-05-11):** Talent Description Accuracy Refinement.
-  - *Documentation:* Updated talent descriptions for A3 (Perfect Theory) and B3 (Bounty Decree) to specify that their effects trigger on the 8th session of the day, matching the code logic.
-  - *UX:* Audited all talent descriptions against `useGameState.ts` and `Timer.tsx` to ensure absolute accuracy for player-facing tooltips.
-- **v4.6.0 (2026-05-10):** Gacha Pool Management & Rotation.
-  - *Feature:* Multi-Pool Support. Implemented the ability to add, delete, and rename multiple Gacha and Ichiban Kuji pools within the Merchant settings.
-  - *UX:* Merchant Rotation. Added a pool selector to the Merchant's Outpost, allowing users to rotate between active card pools in real-time.
-  - *Utility:* Config Serialization. Added Import and Export functionality via clipboard, enabling users to backup or share their custom pool configurations as JSON.
-  - *Persistence:* Integrated active pool selection into the global application state for persistent session-to-session merchant settings.
-- **v4.5.38 (2026-05-09):** Activity Log Personalization.
-  - *Feature:* Added a toggle in Activity Time Peaks settings to allow users to show or hide the "Other" time segment in activity charts.
-  - *UI:* Updated the Record tab to dynamically adjust Daily and Weekly activity charts based on the "Other" peak visibility preference.
-- **v4.5.37 (2026-05-09):** Ichiban Kuji Rarity Hierarchy.
-  - *Feature:* Adjusted the default Ichiban Kuji prize mapping: A Prize is now Rarity 5 (Legendary/Amber), B is 4 (Epic/Purple), C is 3 (Rare/Blue), and D is 2 (Uncommon/Emerald). Last One remains 6 (Mythic/Rose).
-  - *Fix:* Replaced all instances of `fuchsia` color references to the new `rose` Mythic color across `colors.ts`, `useGameState`, and `constants.ts`.
-  - *Fix:* Updated `RewardHistory`, `RewardChestModal` and `Shop` item color fallback methods to accurately support all the newly remapped Ichiban and standard Gacha tiers.
-- **v4.5.36 (2026-05-09):** Custom Rarity Remapping.
-  - *Feature:* Globally remapped rarities and their color associations (Common: slate, Uncommon: emerald, Rare: blue, Epic: purple, Legendary: amber, Mythic: rose).
-  - *Feature:* Aligned default Ichiban Kuji pool colors to match the new numerical rarity sequence.
-- **v4.5.35 (2026-05-08):** Ichiban Kuji Duplication Fix.
-  - *Bugfix:* Re-consolidated Standard Ichiban Kuji default prize definitions in `constants.ts` to prevent "A Prize", "B Prize", etc. from rendering as duplicated rows in the shop.
-  - *System:* Added a migration in `useGameState.ts` to intelligently detect and fix existing corrupted saved states by merging duplicated Ichiban Kuji items back into a single row while safely retaining the player's custom inventory counts.
-- **v4.5.34 (2026-05-08):** Universal Rarity Mapping.
-  - *System:* Established a universal numerical mapping (1-6) for rarity states (Common -> Exotic).
-  - *Feature:* Ichiban Kuji pools and generic Gacha settings now store and interact with formal rarity values.
-  - *UI:* Removed the reddish background from the Last One prize setting card entirely to provide full compatibilty with Light Themes.
-- **v4.5.33 (2026-05-08):** Ichiban Kuji Theme Compatibility Polish.
-  - *Feature:* Added default colors to the initial Ichiban Kuji prize tiers.
-  - *UI:* Fixed an issue where the Last One prize setting block displayed a dark red background/shadow that was incompatible with light themes.
-- **v4.5.32 (2026-05-08):** Ichiban Kuji Pool Layout & Colors.
-  - *UI:* Redesigned the Ichiban Kuji settings modal to mirror the new card-based layout introduced in normal Gacha settings.
-  - *Feature:* Allowed users to assign custom predefined aesthetic color themes to individual Ichiban Kuji prize tiers.
-  - *System:* Updated Shop and Vault renderings to seamlessly consume custom colors directly from Ichiban Kuji reward data.
-- **v4.5.31 (2026-05-08):** Gacha settings modal layout upgrade.
-  - *UI:* Completely redesigned the Gacha edit modal with a clear, card-based layout for configuring rarity tiers and drop weights.
-  - *Feature:* Restricted custom rarity options to "Common, Rare, Epic, Legendary, Mythic, Exotic" and automatically sorted them by rarity value.
-  - *Feature:* Added automatic Drop Rate (%) calculation displayed next to weights.
-- **v4.5.30 (2026-05-08):** Custom Gacha Rarities & Colors.
-  - *Feature:* Gacha pools now support fully customizable rarities, allowing users to add/delete custom rarities and adjust weights for each tier dynamically.
-  - *UI:* Introduced a curated color palette for rarity tiers, applicable seamlessly to custom Gacha sets.
-  - *System:* Gacha reward results and Vault inventory table are now fully synchronized to render the custom rarity colors attached to the obtained items.
-- **v4.5.29 (2026-05-08):** Ichiban Kuji Row Layout Refinement.
-  - *UI:* Redesigned the Ichiban Kuji prize lists to display as a cohesive row-by-row layout instead of a grid, matching the standard Gacha UI for better readability.
-- **v4.5.28 (2026-05-08):** Gacha Settings UI Polish.
-  - *UI:* Redesigned the visualization of standard Gacha prizes in the Merchant settings to use structured cards that clearly split item pools by rarity and drop rates.
-  - *UI:* Redesigned the Ichiban Kuji prize lists into a dedicated grid displaying probability ratios, prize tiers, remaining quantities, and initial quantities cleanly.
-- **v4.5.27 (2026-05-08):** Developer Mode Security UX Update.
-  - *UX:* Moved the "Lock & Disable" button to the very bottom of the Developer Settings page.
-  - *UI:* Redesigned the lock button into a minimalist, centered action with a dedicated icon to prevent accidental triggers and clean up the header.
-- **v4.5.26 (2026-05-08):** Developer Settings Header Cleanup.
-  - *UI:* Removed the redundant "Developer Tools" section header from the Developer Settings page.
-  - *UX:* Relocated the "Lock & Disable" action to the "Resource Modification" header for a more streamlined layout.
-- **v4.5.25 (2026-05-08):** Universal Numeric Input Refactor.
-  - *UI/UX:* Replaced all raw numerical input fields across the application (Shop, Rewards, Gacha, Levels, Timer, Quests, Dungeons, Recent Sessions, Dev Controls) with a unified `SpinnerInput` component.
-  - *Feature:* `SpinnerInput` standardizes numerical adjustment styles with increment/decrement arrow buttons and proper bounds validation.
-  - *Feature:* Added float tracking and `step` capability to `SpinnerInput` to robustly handle decimals like Crit Chance.
-- **v4.5.24 (2026-05-08):** Developer Settings Responsive Layout.
-  - *UI:* Refined "Resource Modification" grid in Developer Settings to be responsive (1 column on mobile, 2 on tablet, 3 on desktop).
-- **v4.5.23 (2026-05-08):** Developer Settings Refactor & Layout Update.
-  - *Architecture:* Extracted Developer Settings from `Settings.tsx` into a dedicated `DeveloperSettings.tsx` component.
-  - *UI:* Modified the "Resource Modification" layout in Developer Settings to dynamically display 3 columns per row for better density.
-- **v4.5.22 (2026-05-08):** Unconditional Reward Chest Storage.
-  - *Feature:* Rewrote reward generation to unconditionally push new rewards to the pending reward chest regardless of victory screen skipping settings.
-  - *Bugfix:* selecting a reward gracefully removes it from the pending chest, ensuring that refreshing or dismissing the victory modal no longer permanently destroys unclaimed rewards.
-- **v4.5.21 (2026-05-08):** Numeric Inputs Empty State & Validation Polish.
-  - *UX:* Rewrote numeric input controls across `DungeonManager`, `ShopSettings`, `RewardSettings`, `GachaSettings`, and `LevelRewardsSettings` to support empty string (`''`) states during editing instead of aggressively snapping to `0` or `1`.
-  - *Feature:* Added strict validation checks on save operations for all previously modified numeric inputs, triggering popup alerts (`window.alert`) when users attempt to save with invalid, missing, or empty numeric data.
-- **v4.5.20 (2026-05-08):** Shop Stock Adjuster Buttons.
-  - *UI:* Added increment and decrement buttons to the Stock input in Shop Item settings.
-  - *UX:* Implemented logic to seamlessly transition between numeric values and infinite (∞) status via adjustment buttons.
-- **v4.5.19 (2026-05-08):** Shop Stock UI Refinement.
-  - *UI:* Updated the Stock Availability input in the Shop Item settings to display the infinity symbol "∞" when the value is set to infinite (-1).
-  - *UX:* Improved input logic to treat empty values as infinite stock.
-- **v4.5.18 (2026-05-08):** Merchant Settings Icon Update.
-  - *UI:* Updated the Gacha section and pool icons in the Merchant settings to use the custom `SlotMachine` component for visual consistency.
-- **v4.5.17 (2026-05-08):** Gacha Icon Refinement.
-  - *UI:* Replaced the SlotMachine vector in `SlotMachine.tsx` with a new custom SVG path provided by the user.
-- **v4.5.16 (2026-05-08):** Splash Screen Icon Polish.
-  - *UI:* Converted `pwa-icon.svg` into an inline React component (`AppIcon.tsx`).
-  - *UI:* Stripped the background from the Splash Screen icon and applied the theme color (`text-indigo-400`), leveraging SVG masks for negative space cutouts.
-- **v4.5.15 (2026-05-08):** Splash Screen Icon Change.
-  - *UI:* Setup `pwa-icon.svg` as a central custom icon.
-  - *UI:* Replaced the generic `Sword` icon inside the Splash Screen with the newly designed dynamic `pwa-icon.svg` reflecting deep textures and color scheme awareness.
-- **v4.5.14 (2026-05-08):** Gacha Icon Update.
-  - *UI:* Created a custom `SlotMachine` SVG icon and integrated it into the Merchant's outposts.
-  - *UI:* Replaced the generic `Sparkles` icon with the new `SlotMachine` icon in the Gacha tab to better represent the feature.
-- **v4.5.13 (2026-05-08):** Settings UI & UX Polish.
-  - *UI:* Adjusted modal container layouts in ShopSettings and RewardSettings to ensure symmetrical column heights.
-  - *UX:* Dynamically updated modal titles to reflect "Add New" vs "Edit" depending on whether the item/reward is new.
-- **v4.5.12 (2026-05-08):** Icon Selection & Reward Visuals.
-  - *UI:* Overhauled icon selection grid for Shop and Rewards with 50+ thematic icons (Fruits, Food, Nature, Vehicles, Tech).
-  - *Feature:* Added custom icon support for Loot Pool rewards, visible in both Settings and Victory screen.
-  - *Architecture:* Extended `RewardCard` type with an optional `icon` field and synchronized its usage across management and presentation layers.
-- **v4.5.11 (2026-05-08):** About Page Refinement.
-  - *UI:* Updated Release History to include precise timestamps (HH:MM:SS) for the latest updates.
-  - *UI:* Implemented collapsible grouping for Release History, categorized by minor version series (e.g., v4.5.x, v4.4.x).
-  - *Architecture:* Created a dedicated `VersionGroup` component to handle collapsible logic while respecting React Hook rules.
-- **v4.5.10 (2026-05-08):** Settings UI Visual Cleanup.
-  - *UI:* Removed background colors from section headers in the Merchant and Loot Pool settings for a cleaner, flatter look.
-- **v4.5.9 (2026-05-08):** Merchant Section Reordering.
-  - *UI:* Reordered the Merchant settings tab to follow the sequence: Fixed Shop Items -> Standard Gacha -> Ichiban Kuji -> Draw Animation.
-- **v4.5.8 (2026-05-08):** Settings Header Refinement.
-  - *UI:* Removed italic styling and bottom borders from all settings section titles for a cleaner, more modern look.
-- **v4.5.7 (2026-05-08):** Settings Header Standardization.
-  - *UI:* Unified all section headers across Settings (General, Timer, Level, Merchant, Developer, About) to use a consistent design template.
-  - *UI:* Standardized icon sizes to 20px and updated typography to 'text-lg font-bold uppercase tracking-widest italic pr-1'.
-  - *UI:* Added a subtle bottom border and padding (pb-2 border-b border-slate-800/50) to all settings headers for improved document structure.
-- **v4.5.6 (2026-05-08):** Crit Setting UI Refinement.
-  - *UI:* Added a bordered container for Crit Chance and Multiplier settings for better visual grouping.
-  - *UI:* Moved the Critical Intuition talent notice to a dedicated full-width block below the inputs.
-  - *UI:* Increased font size and emphasis for the talent requirement notice to improve readability.
-- **v4.5.5 (2026-05-08):** Critical Intuition Talent Notice.
-  - *Architecture:* Extended onTabChange prop through Settings hierarchy to allow internal navigation.
-  - *UI:* Added a status badge and helper text to the Crit Chance setting to inform users of the required talent.
-  - *UX:* Enabled direct jump to the Talents page from the Crit Chance setting notice.
-  - *Bugfix:* Prevented confusion regarding why custom Crit settings might not apply.
-- **v4.5.4 (2026-05-08):** Reward Settings Consolidation.
-  - *Architecture:* Merged "Reward Settings" page into the "Timer" settings tab for improved UX flow.
-  - *UI:* Consolidated related session configurations by grouping timer settings and reward pools.
-  - *UI:* Removed the dedicated "Rewards" tab from the Settings navigation bar.
-- **v4.5.3 (2026-05-08):** Merchant Settings Reorganization.
-  - *UI:* Renamed "Shop Settings" to "Fixed Shop Items" and moved it after Gacha pools.
-  - *UI:* Relocated "Draw Animation" settings from General to the end of the Merchant tab.
-  - *Architecture:* Synchronized version markers across Settings and About pages to use centralized constants.
-- **v4.5.2 (2026-05-08):** Push Notification & Stability Fixes.
-  - *Bugfix:* Resolved `VapidPkHashMismatch` errors by synchronizing VAPID fallback keys and adding auto-detection for key mismatches in the client.
-  - *Feature:* Added "Reset Notifications" button in General Settings to manually clear invalid push subscriptions.
-  - *Optimization:* Fixed TypeScript lint errors related to `ImportMeta` in the notification registration logic.
-- **v4.5.1 (2026-05-08):** Merchant Settings Organization.
-  - *UI:* Separated Gacha and Ichiban Kuji pools into distinct sections within the Merchant settings for better management.
-- **v4.5.0 (2026-05-08):** Merchant & Level UI Refinement.
-  - *UI:* Merged "Shop" and "Gacha" tab into a single "Merchant" tab.
-  - *UI:* Renamed "Level Rewards" tab to "Level".
-  - *UI:* Snugged the Settings navigation tabs by reducing horizontal padding and container gap for a more compact design.
-- **v4.4.9 (2026-05-08):** Settings Tab UX Refinement.
-  - *UI:* Updated the Settings navigation tabs to a wrapping layout, ensuring all categories are visible without horizontal scrolling.
-- **v4.4.8 (2026-05-08):** Settings UI Cleanup.
-  - *UI:* Removed the redundant "Dungeon Settings" banner from the top of the Settings page for a cleaner interface.
-- **v4.4.7 (2026-05-08):** XP Drop Mode Customization.
-  - *Feature:* Allowed users to set the XP Drop Mode as either fixed or random in the Session Reward Settings, bringing it to parity with Gold Drop Mode.
-- **v4.4.6 (2026-05-08):** Timer Skip Count Fix.
-  - *Bugfix:* Fixed an issue where manually skipping a completed timer state could incorrectly increment the loop counter beyond its maximum limit (e.g. showing 3/2).
-- **v4.4.5 (2026-05-08):** Timer Loop Sync Polish.
-  - *Feature:* Refined the Timer Loop counting logic so that loop counters naturally increment only AFTER a full Focus + Rest cycle is fully completed or manually skipped.
-- **v4.4.4 (2026-05-08):** Service Worker Dev Mode Fix.
-  - *Bugfix:* Fixed an issue in Vite configuration and `GeneralSettings.tsx` where manual Service Worker registration failed in development environments due to missing `devOptions` in VitePWA and missing `{ type: 'module' }` attributes for `dev-sw.js`.
-- **v4.4.3 (2026-05-08):** Timer Loop State Fix.
-  - *Bugfix:* Fixed an issue in `Timer.tsx` where continuing or pausing the timer after completing the target loop would incorrectly force the loop count back to 0, preventing the "n/n loops" completion state from displaying properly during the final rest or finished state.
-- **v4.4.2 (2026-05-08):** Reward Chest & Deferred Rewards.
-  - *Feature:* Added a "Defer to Chest" option in Timer Settings to store session rewards and skip the Victory screen.
-  - *UI:* Added a custom Reward Chest modal to view pending sessions and "Auto-Pick Best" for all of them at once.
-- **v4.4.1 (2026-05-08):** Skip Victory Screen Option.
-  - *Feature:* Added a "Skip Victory Screen" option under Timer UI Settings. Users can opt out of the session-end modal and either automatically pick the highest rarity reward or discard rewards entirely, ensuring a continuous timer loop isn't interrupted.
-- **v4.4.0 (2026-05-08):** Settings Page Componentization.
-  - *Architecture:* Completely refactored the massive `Settings.tsx` file by creating a dedicated `settings` folder and breaking down all sub-sections (General, Timer, Rewards, Shop, Gacha, Level Rewards) into independent component files for much better maintainability.
-- **v4.3.15 (2026-05-08):** Timer Settings Quick Access.
-  - *UI:* Added a dedicated gear icon to the top-left corner of the Timer Banner for quick access to the Timer settings page.
-- **v4.3.14 (2026-05-08):** Timer Settings Page Refactor.
-  - *Architecture:* Extracted Timer specifics (Compact Timer Banner, visible shortcuts, and Session Reward Settings) into a newly created dedicated Timer settings page within the Settings dialog.
-- **v4.3.13 (2026-05-07):** Talent Icon Overhaul.
-  - *UI:* Replaced all talent tree node icons with newly assigned Lucide equivalents mapped specifically for each branch and tier.
-- **v4.3.12 (2026-05-07):** Ichiban Ticket Icon Replacement.
-  - *UI:* Replaced all Lucide icons representing the 'Ichiban' feature with `Ticket` across `Settings.tsx` (Ichiban Draw animation settings and Ichiban pool list).
-  - *UI:* Added `Ticket` to the available icon selection array for custom shop and loot items.
-- **v4.3.11 (2026-05-07):** Timer Loop Counting Display Polish.
-  - *Feature:* Loop count display now strictly starts at `0/n` and logically updates to `1/n` only when a full focus task (one cycle unit) is completed.
-  - *Feature:* Stopping at maximum loops will naturally show `n/n`.
-  - *Bugfix:* Modifying loop target or loop activity naturally resets current counts to `0/n`, keeping state and UX synchronized.
-- **v4.3.10 (2026-05-07):** Timer Settings Loop Polish.
-  - *Feature:* Extracted loop logic into `TimerLoopSettings.tsx`.
-  - *Feature:* Allowed user to choose infinite or custom target loop counts.
-  - *UI:* Displayed "{current}/{target} loops" format within the timer circle when looping is active.
-- **v4.3.9 (2026-05-07):** Compact Timer Banner Theme Fix & Theme Standard Rule.
-  - *Bugfix:* Replaced fixed `indigo-300` text colors with `indigo-400` in the Compact Timer Banner settings so the text scales properly with the selected custom theme.
-  - *Documentation:* Added a rule to `AGENTS.md` explicitly defining which `indigo` scale ranges correctly adopt theme colors (`400`, `500`, `600`).
-- **v4.3.8 (2026-05-07):** Timer Banner Customization.
-  - *Feature:* Added a toggle in Settings to use a Compact Timer Banner (hide navigation shortcuts).
-  - *Feature:* Added the ability to customize which navigation shortcuts appear in the Timer Banner when not in compact mode.
-- **v4.3.7 (2026-05-07):** Recent Sessions UI Polish.
-  - *UI:* Centered the contents of the Actions column in the Recent Sessions table for better alignment with the header.
-- **v4.3.6 (2026-05-07):** Reward Details View in Recent Sessions.
-  - *Feature:* Added the ability to click on a Reward in the 'Recent Sessions' table to view its full details (description, rarity, type) matching the current Loot Pool.
-- **v4.3.5 (2026-05-07):** Centralized Versioning System.
-  - *Architecture:* Created `src/version.ts` to centralize application version and release history.
-  - *Refactor:* Updated `Settings.tsx` and `SplashScreen.tsx` to consume data from the centralized source, streamlining future updates.
-- **v4.3.4 (2026-05-07):** Clockwise Timer Progress Fix.
-  - *Bugfix:* Corrected the timer progress ring direction to be clockwise starting from 12 o'clock for both focus and rest states, providing a more intuitive visual experience.
-- **v4.3.3 (2026-05-07):** Theme-Aware Banner Hover Finish.
-  - *UI:* Unified all hover states in the Explore tab's timer navigation banner to use the theme-aware primary color (`indigo-600/30`) for consistent visual feedback across all themes (Light & Dark).
-- **v4.3.2 (2026-05-07):** Timer Banner Hover Polish.
-  - *UI:* Unified all hover states in the Explore tab's timer navigation banner to use a deep, theme-aware dark color (`indigo-950`) for a more consistent and premium look.
-- **v4.3.1 (2026-05-07):** Type Error Fixes & Technical Infrastructure.
-  - *TypeScript:* Resolved all reported `TS2322`, `TS2305`, and `TS2304` errors across the codebase.
-  - *Refactor:* Completed the global renaming of `UserState` to `AppState` for better semantic clarity.
-  - *Bugfix:* Corrected function signatures for `reorderMajorDungeon`, `reorderSubDungeon`, `handleDraw`, and `saveDailyLog` in their respective props and call sites.
-  - *Bugfix:* Resolved the `ReferenceError: Flame is not defined` by ensuring correct icon imports in `App.tsx`.
-- **v4.3.0 (2026-05-07):** App.tsx Refactoring & Componentization.
-  - *Architecture:* Successfully refactored the massive `App.tsx` file by extracting all major tab views (`Dashboard`, `Explore`, `Dungeons`, `Vault`, `Talents`, `Shop`, `Stats`, `Settings`) into dedicated component files.
-  - *Architecture:* Encapsulated complex modal logic (Profile, XP/Coin/Talent Guides, Level Up, Reward Completion) into standalone components, improving code maintainability and readability.
-  - *UI:* Enhanced the Reward Completion experience by integrating the new `RewardCompletionModal` component.
-  - *Cleanup:* Removed redundant inline JSX and unused imports from the main `App.tsx` orchestrator.
-- **v4.2.20 (2026-05-07):** Banner Button Polish.
-  - *UI:* Removed shadows from buttons within the Timer navigation banner for a flatter aesthetic.
-- **v4.2.19 (2026-05-07):** Timer Container Polish.
-  - *UI:* Removed the outer shadow from the Timer container on the Explore tab for a flatter, cleaner design.
-- **v4.2.18 (2026-05-07):** Timer Navigation Icon Polish.
-  - *UI:* Updated the "Recent Sessions" icon in the Timer navigation banner to the `History` icon for better semantic representation.
-- **v4.2.17 (2026-05-07):** Timer Navigation Expanded.
-  - *UI:* Attached the top navigation banner seamlessly to the Timer container edge to form a single cohesive panel.
-  - *UI:* Added additional direct navigation shortcuts for Data/Recent Sessions (Record) and Vault to the banner.
-- **v4.2.16 (2026-05-07):** Timer Navigation Banner.
-  - *UI:* Consolidated the floating navigation shortcuts and Fullscreen/PiP controls into a unified, dedicated banner at the top of the Explore tab's Timer column for a cleaner layout.
-- **v4.2.15 (2026-05-07):** Red Dot Placement Fix.
-  - *UI:* Moved the unread notification badges (red dots) on the Timer navigation icons to the bottom-right corner for consistency.
-  - *Documentation:* Added a rule in `AGENTS.md` enforcing bottom-right placement for all short red dot badges.
-- **v4.2.14 (2026-05-07):** Timer Navigation Shortcuts.
-  - *UI:* Added quick navigation buttons (Dungeons, Quests, Achievements) to the top-left corner of the Timer module in the Explore tab.
-- **v4.2.13 (2026-05-07):** Fullscreen Explore & Tablet Layout Polish.
-  - *UI:* Optimized the Explore tab layout for tablet landscape widths by balancing the column ratios.
-  - *UI:* Enhanced the Fullscreen mode to be strictly non-scrolling and added a minimalist task progress bar at the top for focused sessions.
-- **v4.2.12 (2026-05-07):** Push Notification Error Handle Fix.
-  - *Bugfix:* Extended push notification error catching to clear bad/invalid subscriptions reporting 400, 401, and 403 status codes instead of solely 410 and 404. This resolves the "Received unexpected response code" loop.
-- **v4.2.11 (2026-05-07):** Critical Victory Polish.
-  - *Bugfix:* Fixed an issue where the Gold Coin Rain effect would trigger twice upon a critical victory.
-  - *UI:* Updated the Critical Victory notification text to dynamically display the actual configured gold multiplier and trigger probability.
-- **v4.2.10 (2026-05-07):** Reward Selection Rendering Polish.
-  - *Bugfix:* Fixed an issue where a "0" would inadvertently render on the Reward Selection card when the limit count (Lmt) was set to 0.
-- **v4.2.9 (2026-05-07):** Version Management & Design Review.
-  - *Documentation:* Formally defined "Dark Themes" (Night, Forest, Ocean) to ensure consistency in targeted styling and VFX design.
-  - *UI:* Updated version strings across the app (Splash Screen, Settings, AGENTS.md) and integrated a Release History tracker directly into the About page.
-- **v4.2.8 (2026-05-07):** Reward Rarity Special Effects.
-  - *UI:* Introduced customized 'gorgeous' visual effects for non-Common rewards to make them stand out, including animated sweeping light shimmers for Rare/Epic/Legendary cards.
-  - *UI:* Specifically added slowly rotating `Sparkles` particles and a glowing base border effect to Legendary cards.
-  - *UI:* Designed the effects to execute securely behind text layers using absolute positioning and SVG elements to avoid opacity background conflicts in light themes.
-- **v4.2.7 (2026-05-07):** Victory Screen Desktop Density & Light Theme Polish.
-  - *UI:* Eliminated opacity-based backgrounds (`bg-blue-900/20`, etc.) from Reward Selection cards to fully support Light Mode text visibility.
-  - *UI:* Condensed modal paddings, margins, and textual sizing across the Victory screen to ensure it fits completely within a single desktop viewport without vertical scrolling.
-- **v4.2.6 (2026-05-07):** Victory Screen Polish & Refinement.
-  - *UI:* Removed the "Claim Reward" visual indicator from reward cards for a cleaner minimal look.
-  - *UI:* Increased the font size of the daily limit ('Lmt') text on reward cards for better readability.
-  - *UI:* Removed container shadows from various elements in the Victory modal (reward cards, indicators, icons) to natively integrate with light mode themes.
-- **v4.2.5 (2026-05-07):** Victory Screen Typography & Alignment Polish.
-  - *UI:* Further scaled down typography and icons in the Victory modal to perfectly match the application's overall font sizing and aesthetic density.
-  - *UI:* Centered the "Claim Reward" text and icon within the reward selection cards, adding a subtle background and border for better button affordance.
-- **v4.2.4 (2026-05-07):** Victory Screen Layout & Font Scaling.
-  - *Bugfix:* Changed Victory screen vertical alignment from 'center' to 'start' to prevent top-level content from being cut off on smaller screens.
-  - *UI:* Scaled down headings and statistics (XP/Gold) in the Victory modal to better fit standard resolutions while maintaining a premium feel.
-  - *UI:* Tightened overall vertical spacing and added bottom padding to ensure clean scrolling.
-- **v4.2.3 (2026-05-07):** Victory Screen Polish & Responsive Scaling.
-  - *UI:* Implemented fluid typography and adaptive scaling for the Victory (Reward Selection) screen, ensuring text and stats are appropriately sized on large displays.
-  - *UX:* Removed the staggered entrance animation for reward cards to improve perceived performance and responsiveness.
-  - *UI:* Added real-time daily claim limits (e.g., "1/3 Lmt") directly to the reward selection cards for better player awareness.
-- **v4.2.2 (2026-05-07):** Victory Modal Fullscreen & Theme Compatibility.
-  - *Bugfix:* Overrode `node-domexception` to native `domexception` to resolve npm deprecation warnings during builds.
-  - *UI:* Upgraded the Victory modal to render via a React Portal directly to `document.body`, ensuring a true full-screen experience that escapes container scale transforms.
-  - *UI:* Switched hardware-black background gradients to CSS-theme aware mask-images to ensure the immersive background effect respects and integrates smoothly with Daylight, Warm, and Candy light themes.
-- **v4.2.1 (2026-05-07):** Loot Pool UI & Description Refinement.
-  - *UI:* Optimized table display in Settings to ensure all text is visible without truncation.
-  - *UI:* Ensured all table content is perfectly centered for better visual balance.
-  - *Data:* Further simplified default reward descriptions for maximum clarity.
-- **v4.2.0 (2026-05-07):** Victory Modal & Celebration Overhaul.
-  - *Feature:* Transformed the Victory (Reward Selection) modal into a full-screen immersive experience with atmospheric background gradients and blurred accents.
-  - *Animation:* Added a celebratory confetti effect (`triggerSimpleConfetti`) triggered upon reward selection for better feedback.
-  - *UI:* Enhanced typography and layout density in the Victory screen, including staggered entrance animations for reward cards.
-- **v4.1.2 (2026-05-07):** Loot Pool UI & Description Polish.
-  - *UI:* Centered all content in the Loot Pool table for better visual balance.
-  - *Data:* Simplified default reward descriptions (e.g., "Gain 1 Gold Coin" instead of long sentences).
-- **v4.1.1 (2026-05-07):** Loot Pool UI & Mobile UX Polish.
-  - *UI:* Separated Name and Description into dedicated columns in the Loot Pool settings.
-  - *UX:* Made item action buttons (Edit/Delete) always visible in Settings to fix mobile interaction issues.
-  - *UI:* Improved table layout density and responsiveness in management modules.
-- **v4.1.0 (2026-05-06):** Overhauled Default Loot Pool & Reset Feature.
-  - *Data:* Updated the default Loot Pool with 17 specialized rewards, including item weights and frequency limits (e.g., 3x/day).
-  - *Feature:* Added a "Reset to Defaults" button in Loot Pool settings with a double-check confirmation modal.
-  - *Localization:* Ensured all default reward names and descriptions are in English.
-- **v4.0.0 (2026-05-06):** Major Renaming: Expedition Goal & Tier X.
-  - *Refactor:* Systematically renamed "Dungeon" to "Expedition" across the entire UI and logic strings.
-  - *Naming:* Implemented "Expedition Goal" for top-level folders and "Tier X" for nested levels.
-  - *UI:* Updated buttons, notifications, placeholders, and descriptions to ensure a consistent terminology shift.
-  - *UI:* Changed "Scholar's Dungeon" to "Scholar's Expedition" in various branding elements to align with the new theme.
-- **v3.9.6 (2026-05-06):** Theme Icon & Header Polish.
-  - *UI:* Changed "Daylight" theme icon to `CloudSun` and "Candy" to `Lollipop`.
-  - *UI:* Updated "Global Effects & Theme" section icon to `Palette` and "Developer Tools" to `Wrench`.
-- **v3.9.5 (2026-05-06):** Theme Icon Polish.
-  - *UI:* Changed "Daylight" theme icon to `Cloud` as requested.
-- **v3.9.4 (2026-05-06):** Theme Icon Polish.
-  - *UI:* Changed "Daylight" theme icon to `Sunrise` for a more thematic visual.
-- **v3.9.3 (2026-05-06):** Editor UI Symmetry & Spacing Fixes.
-  - *UI:* Balanced the vertical height of Loot Pool and Shop Item editors by making description textareas expandable and taller.
-  - *UI:* Moved "Infinite" stock hint to label text for cleaner input alignment.
-  - *UI:* Harmonized icon grid spacing (gap-3) and removed redundant horizontal scrolling by using aspect-ratio square buttons.
-- **v3.9.2 (2026-05-06):** Editor UI Polish & Shop Modal Overhaul.
-  - *UI:* Balanced the two-column layout in the Reward Editor for better vertical symmetry.
-  - *UI:* Implemented visual rarity selectors with color-coded buttons (Common, Rare, Epic, Legendary).
-  - *UI:* Upgraded the Shop Item Editor to a wide two-column layout for consistency with the Reward Editor.
-  - *UI:* Refined input focus states and background contrasts across all editor modals.
-- **v3.9.1 (2026-05-06):** Reward Editor UI Overhaul.
-  - *UI:* Transformed the Reward Editor modal into a wider two-column layout to reduce vertical height.
-  - *UI:* Added internal scrolling for smaller viewports to prevent "Off-screen" issues.
-  - *UI:* Cleaned up Drop Weight input styling and Item Functional Type container CSS for better visual consistency.
-- **v3.9.0 (2026-05-06):** Loot Pool Overhaul & Frequency Limits.
-  - *Feature:* Overhauled the Loot Pool system to support frequency-based limits (e.g., "1 occurrence per 1 day").
-  - *UI:* Transformed the Loot Pool settings into a technical table view with automated probability calculations.
-  - *UI:* Added frequency control inputs (Max Occurrences, Period Days) to the Reward Editor.
-  - *Logic:* Implemented reward filtering logic in the Timer component to respect frequency limits and varied weights.
-  - *Architecture:* Centralized reward selection and history tracking in the `useGameState` hook.
-- **v3.8.12 (2026-05-06):** Shop Item Editor UI Overhaul.
-  - *UI:* Replaced the Shop Item icon selection dropdown with a visual, scrollable grid of icons for better UX.
-  - *UI:* Improved the overall layout of the "Edit Shop Item" form with better grouping and spaced elements.
-- **v3.8.11 (2026-05-06):** Shop Settings Icon Preview.
-  - *UI:* Added dynamic Lucide icon rendering to the "Fixed Shop Items" list in Settings.
-  - *UI:* Added a live icon preview box next to the Icon dropdown in the "Edit Shop Item" form.
-- **v3.8.10 (2026-05-06):** Reward Vault Shop Categorization.
-  - *Feature/Fix:* Items purchased from the Shop are now classified as "Custom" rewards in the Reward Vault instead of "Treasures", and users can properly toggle their states between "Pending/Secure" and "Reaped".
-- **v3.8.9 (2026-05-06):** Force Complete Task.
-  - *Feature:* Added a "Force Complete" functionality inside the Dungeon Explorer allowing users to magically complete a sub-dungeon task without finishing all required sessions.
-  - *UI:* The square checkbox now acts as a button that triggers a confirmation modal before forcefully completing the task.
-- **v3.8.8 (2026-04-23):** Floating PiP Timer Fix.
-  - *Feature/Fix:* Fixed "Floating Mode" (Picture-in-Picture) React rendering overlap bug.
-  - *UI:* Added PiP toggle button `<PictureInPicture>` to the top right corner of the Timer container on desktop PWAs.
-- **v3.8.7 (2026-04-23):** UI Polish - Explore Layout.
-  - *UX:* Reduced vertical spacing between Explore header and timer module for tighter UI.
-- **v3.8.6 (2026-04-23):** UI Refinement - Talent Icon.
-  - *UI:* Replaced "Active Talents" icon with `Sparkles`.
-- **v3.8.5 (2026-04-23):** UI Refinement - Module Icons.
-  - *UI:* Updated "Active Talents" icon to `Dna`.
-  - *UI:* Updated "Current Build" icon to `Layers`.
-- **v3.8.4 (2026-04-23):** UI Refinement - Timer Settings & Current Build Icons.
-  - *UI:* Removed Loop toggle icon for a cleaner look.
-  - *UI:* Added Flame icon (matching "Active Talents" size) to "Current Build" title.
-- **v3.8.3 (2026-04-23):** Explore Layout Tuning.
-  - *UI:* Further narrowed the Timer module column on wide screens and expanded the Timer Settings column to 500px to ensure full visibility of settings controls.
-- **v3.8.2 (2026-04-23):** PiP Fix.
-  - *Bugfix:* Resolved an issue where Floating Mode (PiP) would open the window properly but fail to render the timer content.
-- **v3.8.1 (2026-04-23):** Explore Layout Tuning.
-  - *UI:* Narrowed the left column in the Explore tab on wide screens by increasing the fixed-width right column to 440px, creating better visual balance.
-- **v3.8.0 (2026-04-23):** Explore Layout Tuning.
-  - *UI:* Reduced the maximum width of the timer circle on wide screens (`max-w-lg` to `max-w-md`) to ensure the "Timer Settings" column in the split-screen layout is fully visible and usable.
-  - *UI:* Aligned the "Recent Sessions" table width with the "Active Talents" and "Current Build" modules on small screens by adding matching horizontal padding.
-- **v3.7.9 (2026-04-23):** Recent Sessions Table & UI Consistency.
-  - *UI:* Expanded the Recent Sessions table to occupy the full width of the screen on large displays.
-  - *UI:* Rewrote the table headers to ensure uniform icon sizing and spacing across all columns (Date, Dungeon, Duration, Reward, Gains, Actions).
-  - *UI:* Increased header icon prominence to fix a visual bug where certain icons appeared smaller.
-- **v3.7.8 (2026-04-23):** Light Theme Button Contrast.
-  - *UI:* Ensured the "Delete" button text in the Preset deletion modal remains strictly white, even when active in Light Themes (Daylight, Warm Sun, Candy).
-- **v3.7.7 (2026-04-23):** UI Refinement & Interaction Polish.
-  - *UX:* Removed the "View Recent Sessions" shortcut button from the Explore tab to declutter the interface.
-  - *UI:* Simplified Timer Settings presets by removing text labels from "Set Default" and "Clear Default" buttons.
-  - *UI:* Enhanced Timer Settings inputs: made adjustment arrows (spin buttons) always visible on desktop and centered the input values.
-  - *Animation:* Refined Timer visuals by disabling the jumping animation for the countdown digits, maintaining focus on clarity while keeping the playful animation for status indicators.
-- **v3.7.6 (2026-04-23):** Floating Compact Timer (PiP Mode).
-  - *Feature:* Implemented a "Floating Mode" for Desktop PWA users. When active, the application opens a small, always-on-top window containing only the countdown timer and the current dungeon progress bar.
-  - *Tech:* Leveraged the modern Document Picture-in-Picture API for the true "Always on Top" experience.
-  - *UI:* Added a "Floating Mode" toggle button in the Timer component, conditionally displayed for Desktop PWA environments.
-- **v3.7.5 (2026-04-23):** Push Notification Performance Fix.
-  - *Bugfix:* Resolved "Failed to fetch" errors during push scheduling by removing `timeLeft` from the `useEffect` dependencies in the Timer component. This prevents high-frequency network requests (every second) and stabilizes push communication.
-- **v3.7.4 (2026-04-23):** Timer Animation Fix.
-  - *Bugfix:* Restored the character jumping (bobbing) animation for the main timer digits when the timer is active.
-- **v3.7.3 (2026-04-23):** Timer Direction & Preset Management.
-  - *UI:* Restored clockwise timer progress starting from 12 o'clock and moving towards 1 o'clock.
-  - *UI:* Refined Timer Settings labels to display full units (e.g., "25 min + 5 min").
-  - *Feature:* Implemented dynamic preset management in Explore tab.
-  - *Feature:* Added "Save as Preset" button to quickly store custom focus/rest durations.
-  - *Feature:* Added delete functionality for presets with a double-check confirmation modal.
-- **v3.7.2 (2026-04-23):** Timer Direction & Layout Breadth.
-  - *UI:* Reversed timer progress direction to flow clockwise (from top).
-  - *UI:* Expanded the "Recent Sessions" table to fill the entire application width on wide screens by removing container constraints in the Explore tab.
-- **v3.7.1 (2026-04-23):** Explore Layout Refinement & Architecture Optimization.
-  - *UI:* Moved "Timer Settings" from the left column to the right column on wide screens, creating a more balanced and efficient two-column layout.
-  - *Refactor:* Extracted Timer Settings into a dedicated `TimerSettings.tsx` component for better modularity.
-  - *Architecture:* Lifted Timer state management to `App.tsx` and implemented persistent `localStorage` synchronization for focus/rest durations, rest toggle, and looping settings.
-  - *UX:* Ensured the Explore tab remains a "one-screen" non-scrolling experience on wide displays.
-- **v3.7.0 (2026-04-23):** Explore Tab Non-Scrolling Layout.
-  - *UX:* Redesigned the Explore tab for wide screens to achieve a "one-screen" layout.
-  - *Layout:* Implemented a responsive grid that fits Timer, Timer Settings, Active Talents, and Current Build within the calculated viewport height to avoid scrolling.
-  - *UI:* Optimized component density and spacing for better visibility on large displays.
-- **v3.6.5 (2026-04-23):** Dungeon Selection Toggling.
-  - *UX:* Implemented a toggle mechanism for active dungeons – clicking an already selected dungeon now deactivates it, allowing for "Free Study" sessions.
-- **v3.6.4 (2026-04-23):** Explore Layout Overhaul.
-  - *UI:* Implemented a responsive split-screen layout for the Explore tab on wide screens.
-  - *Layout:* Moved Timer and Settings to the left column (sticky), with Active Talents and Current Build on the right column.
-  - *UI:* Relocated the Fullscreen button to the top-right corner of the Timer container for better accessibility.
-  - *UX:* Removed session and streak statistics from the Explore header to reduce visual noise.
-- **v3.6.3 (2026-04-23):** Navigation & Expansion Refinement.
-  - *UX:* Enabled default expansion for all sub-dungeons in the Explorer view.
-  - *UI:* Removed the active dungeon progress tracker from the Explore tab (above the timer) to provide a more focused study environment.
-- **v3.6.2 (2026-04-23):** Versioning Policy Update.
-  - *Documentation:* Established and recorded the x.y.z versioning policy (Major.Minor.Patch) in project instructions.
-- **v3.6.1 (2026-04-21):** Dungeon Hierarchy & UI Polish.
-  - *Naming:* Implemented level-based naming (1级副本, 2级副本, etc.) across the application.
-  - *UI:* Ensured hierarchical vertical lines are visible for all nested levels, including 2nd-level dungeons.
-  - *UX:* Unified sub-dungeon display to show both sequential numbering and expansion toggles simultaneously.
-  - *Visual:* Darkened description text and added inline reward badges (Gold, XP, Items) to both major and sub-dungeon rows for better scannability.
-- **v3.6.0 (2026-04-21):** Recursive Nested Dungeons.
-  - *Feature:* Enabled multi-level nesting for sub-dungeons (up to 3 levels deep).
-  - *UI:* Implemented a recursive tree view in the Dungeon Explorer with hierarchical vertical lines and horizontal connectors.
-  - *UX:* Added a "Plus" button on sub-dungeon rows in Edit Mode to create nested sub-tasks.
-  - *Logic:* Implemented recursive deletion – deleting a parent dungeon (Major or Sub) now automatically cleans up all nested descendants to prevent orphan data.
-  - *Logic:* Added expansion/collapse toggles for nested sub-dungeon branches.
-- **v3.5.8 (2026-04-21):** Edit Mode Layout Fix.
-  - *Bugfix:* Removed borders from all dungeon action buttons (edit, delete, reorder, archive) to prevent layout shifting and "stretching" when Edit Mode is enabled.
-- **v3.5.7 (2026-04-21):** Dungeon Explorer UI Refinements.
-  - *UI:* Darkened sub-dungeon numbering and completed text for better contrast.
-  - *UI:* Replaced major dungeon folder icons with a `Sword` icon for thematic consistency.
-  - *UI:* Removed the "Active" textual label from sub-dungeons to clean up the row layout.
-  - *UX:* Unified edit button visibility; sub-dungeon management buttons are now permanently visible when Edit Mode is enabled.
-- **v3.5.6 (2026-04-21):** Sub-Dungeon Creation UI Overhaul.
-  - *UX:* Migrated the "New Sub Dungeon" creation form from an inline layout to a unified modal, matching the "Edit Sub Dungeon" experience.
-  - *UI:* Standardized modal titles and field logic for a cleaner, consistent management workflow.
-- **v3.5.5 (2026-04-21):** Typography Softening - Dungeon Explorer.
-  - *UI:* Softened the typography in the Dungeon Manager to match the "Quest Board" aesthetic.
-  - *UI:* Replaced `font-black` with `font-bold` for dungeon titles and headers across the application.
-  - *UI:* Disabled forced `uppercase` for major and sub-dungeon names, adopting the more readable mixed-case style of the Quest system.
-  - *UI:* Synchronized typography for the Active Dungeon widget and table headers in the Archives.
-- **v3.5.4 (2026-04-21):** UI Polish & Italic Clipping Fix.
-  - *UI:* Increased font size for sub-dungeon descriptions and progress bar text.
-  - *Bugfix:* Fixed right-side clipping of italic text across the application (restored hidden padding).
-  - *Standard:* Added a project rule to avoid future italic clipping issues.
-- **v3.5.3 (2026-04-21):** Sub-Dungeon Numbering & Reordering.
-  - *UI:* Added sequential numbering ("1.", "2.") to sub-dungeons for better clarity.
-  - *UX:* Enabled manual reordering for sub-dungeons via Up/Down arrows in Edit Mode.
-- **v3.5.2 (2026-04-21):** XP Bar Visual Polish.
-  - *UI:* Inverted the experience bar gradient to follow a "Light-to-Dark" (Left-to-Right) progression for a more professional aesthetic.
-- **v3.5.1 (2026-04-21):** Refined Header Dungeon Widget.
-  - *UI:* Simplified the active dungeon header widget by removing outer frames, backgrounds, and borders for a cleaner look.
-  - *UI:* Only sword icon, title, and progress bar are retained in a minimal layout.
-- **v3.5.0 (2026-04-21):** Persistent Global Active Dungeon Header.
-  - *UX:* Moved the active dungeon display from the Dungeon Explorer list to the global top header.
-  - *UI:* Implemented a compact, interactive dungeon widget in the header for persistent tracking across all tabs.
-  - *UX:* Clicking the header dungeon widget now navigates directly to the Explore tab.
-- **v3.4.6 (2026-04-21):** Description Restoration & Archiving Polish.
-  - *Bugfix:* Restored descriptions for both Major and Sub Dungeons within the list view.
-  - *UX:* Automatically clears the active dungeon status when its parent major dungeon is archived.
-- **v3.4.5 (2026-04-21):** Final UI Refinements.
-  - *UI:* Polished "Ready for Finalization" button styling and size for better fit in Major titles.
-  - *Code:* Refactored conditional logic for Finalization indicator to improve readability.
-- **v3.4.4 (2026-04-21):** Dungeon Explorer UX Polish.
-  - *UI:* Moved "Ready for Finalization" button to the right of Major Dungeon title for better visibility.
-  - *UI:* Repositioned sub-dungeon checkboxes to the right side for a modern to-do look.
-  - *UX:* Renamed "Running" session indicator to "Active" and removed the pulse animation to reduce visual fatigue.
-- **v3.4.3 (2026-04-21):** Dungeon Explorer UI Refinement.
-  - *UI:* Completely refactored the Dungeon list into a minimalist "Paper To-Do List" aesthetic.
-  - *UX:* All major dungeons are now expanded by default for immediate tracking.
-  - *UI:* Simplified "Active Dungeon" display to a high-density single row.
-  - *Archive:* Refined the Archive view by removing row icons and moving them to headers for a technical, data-driven look.
-  - *Logic:* Improved editing logic to allow name changes for completed dungeons while strictly locking rewards.
-- **v3.4.2 (2026-04-20):** Explore Tab UI Refinement.
-  - *Removal:* Removed the "How to get XP" guide button from the Explore tab header.
-  - *Feature:* Replaced "Level" statistic in the Explore header with today's "Sessions" count for immediate activity tracking.
-- **v3.4.1 (2026-04-20):** 'Back to Today' Navigation.
-  - *Feature:* Added "Today" shortcut buttons to Daily and Weekly activity date pickers for one-click navigation to the current date.
-- **v3.4.0 (2026-04-20):** Reward Vault Table Overhaul.
-  - *UI:* Refactored the "Vault" (Reward History) from a vertical card list to a high-density technical data table.
-  - *Feature:* Added responsive columns (Icon, Reward, Rarity, Source, Date, Action) with visibility toggling for mobile devices.
-  - *UX:* Improved scannability with monospace timestamps and themed rarity badges in the table rows.
-- **v3.3.9 (2026-04-20):** Icon Style Refinement.
-  - *UI:* Changed "Efficiency & Reflection" icon from a filled star to a hollow star for a lighter visual footprint.
-- **v3.3.8 (2026-04-20):** Icon Visual Polish.
-  - *UI:* Changed "Tasks" icon to `Sword` across Daily and Weekly activity summaries.
-  - *UI:* Verified "Efficiency & Reflection" section uses the `Star` SVG icon for thematic consistency.
-- **v3.3.7 (2026-04-20):** Weekly View Toggle.
-  - *Feature:* Added a toggle in the "Weekly Activity" view to switch between "Natural Week" (calendar basis) and "Last 7d" (rolling basis).
-  - *UX:* Integrated dynamic date navigation that intelligentally scrolls by 1 day or 7 days depending on the active mode.
-- **v3.3.6 (2026-04-20):** Weekly Dynamic Average calculation.
-  - *Feature:* Refactored "Weekly Activity" daily averages to be calculated based on active days within the week rather than a static 7-day divisor. This provides a more accurate reflection of productivity per functional day.
-- **v3.3.5 (2026-04-20):** Dungeon Archiving Feature.
-  - *Feature:* Added a comprehensive archiving system for completed Major Dungeons.
-  - *UI:* Introduced "Archives" tab in Dungeon Explorer with a searchable, filterable table.
-  - *Data:* Archived dungeons now track completion dates and rewards in a structured history view.
-  - *UX:* Added "Archive" button for cleared dungeons and "Unarchive" functionality for flexibility.
-- **v3.3.4 (2026-04-20):** Persistent Column Widths.
-  - *Feature:* Enabled `localStorage` persistence for the "Recent Sessions" table. Resized column widths are now remembered across browser sessions.
-- **v3.3.3 (2026-04-20):** Recent Sessions Table Polish.
-  - *UI:* Renamed "Date & Time" to "Date" and "Dungeon (Major / Sub)" to "Dungeon" in the Recent Sessions table.
-  - *Data:* Updated duration display to "x min + y min" format with proper spacing for better readability.
-- **v3.3.2 (2026-04-20):** Activity Time Peaks.
-  - *Feature:* Added customization for Morning, Afternoon, and Night time ranges in "Settings > General".
-  - *Sync:* Charts in the Record tab now dynamically update their categorization and labels based on these user-defined ranges.
-- **v3.3.1 (2026-04-20):** Weekly Daily Average.
-  - *Feature:* Refactored the summary row in the "Weekly Activity" module to display calculated Daily Averages for Gold, XP, and Tasks instead of weekly totals.
-  - *UI:* Updated labels to "Daily Avg Gold/Exp/Tasks" to reflect the shift to productivity rate tracking.
-- **v3.3.0 (2026-04-20):** Activity Summary Stats.
-  - *Feature:* Added a data-rich summary row to the "Daily Activity" and "Weekly Activity" modules in the Record tab.
-  - *Metrics:* Displays total Gold acquired, total Experience gained, and total Tasks completed (Study Sessions + Quests) for the selected period.
-  - *UI:* Implemented the "Technical Dashboard" aesthetic with monospace data values, small-cap labels, and theme-accented icons (Amber, Indigo, Emerald).
-- **v3.2.0 (2026-04-20):** Explore Fullscreen Fix & Recent Sessions Polish.
-  - *Bugfix:* Fixed a bug where the entire Explore tab content (Build info, Recent Sessions) would leak into Fullscreen mode.
-  - *Feature:* Streamlined Fullscreen Explore to focus strictly on the Timer and Dungeon Progress Bar, hiding text titles and metadata for a cleaner study environment.
-  - *UI:* Optimized "Recent Sessions" for mobile with simplified column headers (e.g., "Date", "Prize") and tighter layout density.
-- **v3.1.0 (2026-04-20):** Persistent Status Header.
-  - *Feature:* Upgraded the top header to persistently show the Level and Experience bar across all screen sizes.
-  - *UI:* Added detailed XP progress displaying "Current / Target" values to the right of the bar (with responsive visibility).
-  - *UX:* Optimized bar width (`w-8` to `w-20`) for a more compact layout and added a detailed hover tooltip.
-- **v3.0.0 (2026-04-20):** Advanced Session Management & Table UI Overhaul.
-  - *Feature:* Upgraded "Recent Sessions" table with resizable columns for personalized layout.
-  - *Feature:* Added advanced filtering (Date Range, Duration Min/Max) to the session history.
-  - *Feature:* Implemented multi-column sorting (Date, Dungeon, Duration) with ascending/descending modes.
-  - *UI:* Refactored Duration column to show Focus/Rest breakdown (e.g., "25F + 5R").
-  - *UX:* Moved session metadata icons (Clock, Sword, Trophy) to table headers for a cleaner data view.
-- **v2.9.2 (2026-04-20):** Recent Sessions Polish & Timestamp Editing.
-  - *Feature:* Added Major Dungeon names to the Recent Sessions table for better context.
-  - *UX:* Allowed editing of session "Start Time" (timestamp) in the Recent Sessions modal. This directly affects "Daily Activity" and heatmap distribution in the Record tab.
-  - *Search:* Expanded session search to include Major Dungeon names.
-- **v2.9.0 (2026-04-20):** Integrated "Recent Sessions" tracking in Explore tab.
-  - *Feature:* Added a chronological list of recently completed study sessions to the Explore tab.
-  - *Feature:* Sessions now capture and display the specific reward selected by the user.
-  - *UX:* Implemented editing and deletion for historical sessions.
-  - *Sync:* Refactored backend logic in `useGameState` to ensure that editing a session's dungeon or duration correctly recalculates the `completedSessions` counters in the Dungeon Manager and Record charts.
-  - *UI:* Added search and dungeon-based filtering to the session list for easier management.
-- **v2.8.0 (2026-04-20):** Critical Push Notification Fix for Windows/Native environments.
-  - *Fix (Backend):* Discovered that `server.ts` (the main entry point for non-Vercel environments like Windows/Native) was missing the `/api/push/vapid-public-key` endpoint, causing the "Could not retrieve VAPID key" error in PWAs.
-  - *Enhancement (Sync):* Synchronized `server.ts` push logic with `api/push.ts`. Upgraded storage to use Redis Sets (`sAdd`, `sMembers`), enabling multi-device synchronization for a single Secret Code (e.g., synchronous notifications on both iOS and Windows).
-  - *Fix (API):* Added missing `/api/push/check` manual trigger and stabilized the internal scheduler loop.
-- **v2.7.5 (2026-04-18):** Timer UI Enhancement.
-  - *Animation:* Added an active "bobbing" animation effect to the timer display and status indicator when the timer is active for a more playful, responsive feel.
-- **v2.7.4 (2026-04-18):** Cloud Sync Confirmation Refinement & Bugfix.
-  - *UX Logic:* Targeted the "Type Delete to Confirm" requirement strictly to permanent deletions. Overwriting local data via sync now only requires a "Safety Suggestion".
-  - *Bugfix (Sync):* Fixed Comparison Preview in sync modals to robustly handle cloudData structures and added visual status indicators (color highlighting) to clearly display differences between save states.
-  - *UI Enhancement:* Added a "Comparison Preview" table to all sync-related confirmation dialogs.
-- **v2.7.3 (2026-04-18):** Destructive Action Hardening.
-  - *UX/Security:* Implemented mandatory "Type Delete to Confirm" gates and proactive "Export Data" suggestions for both "Clear all data" (Settings) and "Delete Cloud" (Astral Archives) actions.
-- **v2.7.2 (2026-04-18):** Gacha Carousel Indicator Polish.
-  - *UI Logic:* Refined multi-draw indicators in Overlap Mode. Indicator dots now only display rarity colors for cards that have been specifically viewed or revealed, maintaining the element of surprise for upcoming cards.
-- **v2.7.1 (2026-04-18):** Cloud Sync Level-up Fix.
-  - *Bugfix:* Resolved an issue where downloading a cloud save with a higher level than the local save would trigger multiple level-up popups. Implemented a `wasSyncingRef` with a safety buffer to suppress level-up UI during and immediately after state restoration.
-- **v2.7.0 (2026-04-18):** Carousel Smoothness & UI Alignment.
-  - *Animation:* Eliminated flickering in Overlap Mode by stripping conflicting CSS transitions and switching to absolute stacking in `AnimatePresence`. 
-  - *UX:* Skipping the timer in Explore no longer triggers system notifications.
-  - *UI:* Aligned Ichiban Draw setting borders with the active theme color (Indigo).
-- **v2.6.0 (2026-04-18):** Reward Summary & Workflow Hardening.
-  - *Feature:* Added a "Skip Animation" option and a post-draw "Summoning Summary" table to provide a clear inventory of all items won.
-  - *Bugfix:* Patched the "Claim Rewards" button to be strictly gated until 100% of cards are revealed, preventing premature closure.
-  - *Mobile:* Optimized card heights and aspect ratios for mobile browsers to prevent viewport clipping.
-- **v2.5.0 (2026-04-18):** Advanced Carousel Indicators.
-  - *Feature:* Added a "(n/total)" counter to the carousel dots indicator for easier multi-pull tracking.
-  - *Feature:* Dot indicators now dynamically reflect the rarity color of cards once they are revealed, providing an "inventory" preview within the modal.
-- **v2.4.0 (2026-04-18):** Draw UX Polish & Reward Workflow.
-  - *Bugfix:* Eliminated carousel flickering in Overlap Mode by refactoring to a direction-aware `AnimatePresence`. Added 3D `rotateY` transforms for smoother card swaps.
-  - *Feature:* Improved scratch difficulty (10% for Desktop, 30% for Mobile).
-  - *Feature:* Dedicated "Last One" claim button for ICHIBAN draws. Rewards are now strictly gated until all cards are revealed.
-- **v2.3.1 (2026-04-18):** Carousel Smoothness Patch.
-  - *Bugfix:* Eliminated the flickering "flash" during card transitions in Overlap Mode by implementing a direction-aware `AnimatePresence` logic and refactoring the keyed DOM hierarchy.
-  - *Animation:* Added subtle 3D `rotateY` transitions to the carousel cards for a more tactile, premium feel during swaps.
-- **v2.2.0 (2026-04-18):** Scratch & Overlap Mode Stability Patch.
-  - *Scratch-off:* Upgraded to path-based scratching. Drawing a continuous line between movement points ensures 100% transparency removal even with fast mouse/touch movement.
-  - *Bugfix:* Resolved "jumping" layout during Overlap Mode transitions by switching to `popLayout`.
-  - *Bugfix:* Fixed bug where revealed cards would reset to un-scratched state when switching carousel items.
-  - *UI Adjust:* Refined card vertical scaling to prevent clipping on diverse mobile aspect ratios.
-- **v2.1.0 (2026-04-18):** Draw UX Upgrade: Scrolling Lock, Responsive Sizing & Carousel Mode.
-  - *Feature:* Added "Overlap Mode" toggle in settings. When enabled, multi-draw results are shown one by one in a carousel with swipe and arrow navigation.
-  - *UX Logic:* Scrolling is now strictly disabled while the draw modal is active to prevent background scrollbar flickering.
-  - *Responsive Polish:* Redesigned card sizing to be fully fluid based on screen height/width. Classic flip now uses vertical (Portrait) card ratios, while Scratch-off uses horizontal (Landscape) ratios.
-- **v2.0.0 (2026-04-18):** Draw Animation Refinement & Settings Reorg.
-  - *Feature:* Unified Gacha and Ichiban animation settings under a new "Draw Animation" module, relocated below the Audio section for better flow.
-  - *Scratch Visuals:* Switched to a smaller, hard circular brush. Enforced 100% immediate transparency removal for a "heavier" scratch feel.
-  - *UI Polish:* Unified unrevealed scratch card borders to a neutral Slate-400 gray to maintain suspense.
-- **v1.9.9 (2026-04-18):** Advanced Draw Animation Customization.
-  - *Feature:* Split "Draw Animation" settings into separate Gacha and Ichiban toggles.
-  - *Gacha Visuals:* Card Flip mode now uses vertical (Portrait) card orientation for a classic CCG look.
-  - *Scratch Visuals:* Upgraded scratch brush to a square "hard" shape. Increased scratch weight for faster, more impactful reveals. Border and glow effects are now hidden until revealed to maintain mystery.
-  - *Logic:* Cards now auto-reveal when scratched beyond 50%. Cleaned up reveal transition by removing star particle overlays.
-- **v1.9.8 (2026-04-18):** Enhanced Gacha Scratch-off mechanics.
-  - *Feature:* Upgraded the "Scratch-off" system with realistic brushed-metal textures, shimmer highlights, and ICHIBAN watermarks. Added sound feedback for successful reveals.
-  - *UI Adjust:* Moved the "Draw Animation" setting to the top of the "General" settings for better discoverability.
-  - *Logic:* Implemented "Scratch-to-Claim" logic. Modals now prevent accidental closing during scratching and require all cards to be revealed before the "Claim Rewards" button appears.
-- **v1.9.7 (2026-04-18):** New Feature: Interactive Scratch-off Ichiban/Gacha.
-  - *Feature:* Implemented a high-fidelity "Scratch-off" card effect for ICHIBAN and Gacha results. Players can now physically "scratch" the card using mouse or touch to reveal their rewards, complete with metallic textures, watermarks, and particle effects.
-  - *UI Adjust:* Added a new setting in "Settings > Appearance" to toggle between "Card Flip" and "Scratch-off" animations for both Gacha and Ichiban pulls.
-- **v1.9.6 (2026-04-18):** Micro-Responsive Polish (Exploration Card).
-  - *UI Adjust:* Further refined the minimum font-size for Active Dungeon titles on ultra-mobile viewports (`clamp` floor lowered to 0.625rem). This ensures layout stability for users with exceptionally long dungeon naming conventions without compromising the aesthetic "Black" font-weight impact.
-- **v1.9.5 (2026-04-18):** Micro-Responsive Polish (Explore Tab).
-  - *UI Adjust:* Refined the "Active Dungeon" card in the Explore tab for maximum mobile compatibility. Reduced padding, minimized icon sizes (Sword/Target), and adjusted the fluid font-size clamp to ensure the dungeon name and progress fit perfectly on ultra-narrow viewports without vertical or horizontal overflow.
-- **v1.9.4 (2026-04-18):** Bugfix: Permanent Quest Checkboxes.
-  - *Fix (Backend Logic):* Discovered a core lifecycle flaw where daily/weekly/monthly quests were resetting their `completed` state across date boundaries but failing to properly reset their `claimed` boolean tracking. This caused newly reset routine tasks to be permanently locked out of granting rewards. Hardcoded explicit `claimed: false` reset instructions into the `useGameState` chronological boundary loops.
-  - *Fix (Frontend rendering):* Upgraded the `QuestManager` completion indicator ternary loop. Made `CheckSquare` rendering strictly dependent on BOTH `completed == true` AND `claimed == true` to prevent erroneously checking off altered or glitched targets.
-- **v1.9.3 (2026-04-18):** Bugfix: Quest Duplicate Checkboxes.
-  - *Fix:* Resolved an edge case bug where editing a previously cleared/claimed Quest's target to a higher number caused both the `CheckSquare` (from `claimed == true`) and `Square` (from `completed == false`) logic gates to fire simultaneously. Refactored the UI block to a strict mutually exclusive ternary operation so only one indicator or button can ever render.
-- **v1.9.2 (2026-04-18):** Edit Mode across Quests and Achievements.
-  - *Feature:* Expanded the unified "Edit Mode" from the main Dungeon Manager into the "Quests" and "Achievements" sections. Structure modification actions (editing, deleting, reordering) are securely hidden behind user toggle.
-  - *UI Adjust:* Refactored completion markers on Quests/Achievements array. Swapped static "Claimed" label arrays with dynamic interactive Lucide CheckSquare/Square elements, maintaining 100% cohesion with Dungeon tracker aesthetics.
-- **v1.9.1 (2026-04-18):** Dungeons Edit Mode & Explore Rewrite.
-  - *Feature:* Renamed "Simple Mode" to "Edit Mode" with a Pen icon and moved it globally to the top header (`App.tsx` PageHeader) next to the "Add Dungeon" button (`+`). Editing actions are now gated behind toggling "Edit Mode" on.
-  - *Responsive Polish:* Completely rewrote the `Active Dungeon` module inside the "Explore" tab. It now features an interactive layered card design with smooth 0-min widths and proper DOM hierarchy for `truncate`, ensuring long dungeon names safely hide with an ellipsis ("...") instead of blowing out the side editing buttons on varying viewport sizes.
-  - *Bugfix:* Patched `Major Dungeon` and `Sub Dungeon` lists inside `DungeonManager` to use `<div className="min-w-0 flex-1">` wraps so native CSS flexbox truncate handles long strings flawlessly across all devices.
-- **v1.9.0 (2026-04-18):** Dungeon Manager Simple Mode & Fluid Layouts.
-  - *Feature:* Added a "Simple Mode: On/Off" toggle to the Dungeon Manager list that visually hides bulk action buttons (edit, delete, create nested sub-dungeon).
-  - *Feature:* Replaced bare "Cleared" text labels on Sub-Dungeons with a modern Lucide checkbox indicator (CheckSquare/Square) that dynamically reflects their 100% completion status.
-  - *Responsive Polish:* Upgraded Active Dungeon text scaling across Sanctum and Explore sections using CSS `clamp()` for perfectly fluid resizing on all viewport widths, ensuring it isn't just bound by `sm:` breakpoints.
-- **v1.8.9 (2026-04-18):** Micro-Responsive Polish.
-  - *Fix:* Adjusted Active Dungeon card padding and font sizes (`text-[9px] sm:text-xs`) across Sanctum and Explore components to prevent horizontal text overflow on ultra-narrow screens (e.g., iPhone SE).
-- **v1.8.8 (2026-04-18):** VAPID Key Error Handling & Resilience.
-  - *Fix:* Resolved "Vapid public key should be 65 bytes long when decoded." errors caused by malformed environment variables. Added string sanitization (stripping quotes, whitespace) and a robust `try/catch` fallback mechanism in both `server.ts` and `api/push.ts`. The push server now automatically recovers using valid internal fallback keys if user-supplied keys in `.env` are broken.
-- **v1.8.7 (2026-04-18):** Responsive UI Patches & Dungeon Link Routing. 
-  - *Fix:* Re-structured the flexbox layout in Sanctum and Explore "Active Dungeon" components to use `flex-col sm:flex-row`, preventing long dungeon names from overlapping with status labels on narrow phone screens (`truncate` added to titles).
-  - *Enhancement:* Upgraded the "View Details" button in the Record (`DungeonManager`) page. Clicking it now dynamically expands the correct parent Major Dungeon and uses `scrollIntoView` to seamlessly scroll to the target Sub-Dungeon row.
-- **v1.8.6 (2026-04-18):** Global Scrollbar Annihilation - The Final CSS Spec.
-  - *Analysis:* The user identified a continuing double-scrollbar mechanism. While `overflow-x-hidden` was removed from `App.tsx`'s transition wrapper in 1.8.5, the absolute root (`<div id="root">`) in `index.css` *also* still contained `overflow-x: hidden`. According to CSS spec, any `overflow-x: hidden` forces `overflow-y: auto`. Therefore, `#root` itself was acting as the secondary dynamic scroll container when child animations popped out.
-  - *Fix:* Upgraded both `body` and `#root` CSS properties to use `overflow-x: clip;` instead of `hidden`. The powerful `clip` property completely severs the CSS `overflow-y: auto` auto-generation loop, allowing content to bleed out vertically (to be caught by the safe `html { overflow-y: scroll }`) without ever spawning an internal root scrollbar again. No secondary scrollbar = zero horizontal layout collapse.
-- **v1.8.5 (2026-04-18):** Fixed Page Transition Jitter / Double Scrollbar Conflict.
-  - *Analysis:* Found the root cause of the horizontal width snapping during tab transitions (especially Sanctum, Merchant, Record). The main `max-w-[1600px]` transition wrapper had an `overflow-x-hidden` class. During `AnimatePresence popLayout` mode, when a tall exiting component became `position: absolute`, the wrapper physically shrunk to the height of the incoming short component. Because the wrapper had `overflow-x-hidden`, the CSS engine automatically computed its `overflow-y` to `auto`, instantly spawning a new, temporary "small scrollbar" strictly for that wrapper to contain the tall but exiting absolute child. This inner scrollbar shifted the incoming content leftward by 6px, then vanished when the exit animation finished, causing the layout swap jump.
-  - *Fix:* Removed `overflow-x-hidden` from the `relative max-w-[1600px]` transition wrapper in `App.tsx`. The horizontal boundary is cleanly managed by `#root` instead, allowing the exit absolute elements to gracefully visually clear the vertical bounding box without triggering any interior nested scrollbars.
-- **v1.8.4 (2026-04-18):** Global Scrollbar Lock Architecture.
-  - *Analysis:* Resolved layout jitter dynamically caused by `<html>` scrollbar creation/deletion during `Framer Motion popLayout` absolute rendering.
-  - *Fix:* Shifted scrolling responsibility from `#root` to the native `html` element. Added `html { scrollbar-gutter: stable; overflow-y: scroll; }` and removed `overflow: hidden` on body. This establishes an unshakeable browser-level vertical scroll track, severing the link between content height and horizontal expansion.
-- **v1.8.3 (2026-04-18):** Perfected Page Transition Layout Stability & Fixed Console Warnings.
-  - *Fix (Recharts):* Added `minWidth={1}` and `minHeight={1}` to all `<ResponsiveContainer>` components in `Stats.tsx`. This eliminates the persistent `The width(-1) and height(-1) of chart should be greater than 0` warnings in the console caused by Recharts initializing during Framer Motion's virtual DOM absolute-positioning phase before physical dimensions resolve.
-  - *Fix (Scrollbar):* Forced `overflow-y: scroll` on `#root` to permanently reserve physical scrollbar space, eliminating the 6px horizontal layout jump when transitioning between short and long pages.
-  - *Fix (Animation):* Removed `inset-x-0` bounds from `motion.div` containers in `App.tsx` and `Shop.tsx` to stop absolute positioning conflicts with framer-motion's `popLayout` engine during the 6px width recalculations.
-- **v1.8.2 (2026-04-18):** Advanced Layout Stability for Merchant Page.
-  - *Fix (Jitter):* Enforced `w-full` and `left-0` on all tab transition containers in `App.tsx` to stabilize `popLayout` absolute positioning.
-  - *Fix (Shop):* Verticalized all internal tab animations in `Shop.tsx` and ensured 100% width on all sub-containers to prevent sub-pixel horizontal shifts during deep nesting.
-- **v1.8.1 (2026-04-17):** Critical Transition Jitter Fix.
-  - *Fix (Jitter):* Switched all tab transitions from horizontal (`x`) to vertical (`y`) movement. This completely circumvents horizontal sub-pixel calculation errors and `mx-auto` layout shifts during `popLayout` absolute positioning.
-  - *Fix (Layout):* Added `scrollbar-gutter: stable` to global CSS to prevent the entire page from shifting horizontally when scrollbars appear or disappear between tabs of different heights.
-- **v1.8.0 (2026-04-17):** Layout and Chart Stability.
-  - *Fix (Recharts):* Added `min-height` to all chart containers in `Stats.tsx`. This resolves the "width/height (-1)" warnings caused by Recharts elements being initialized before the parent container's dimensions were fully calculated by the browser during tab transitions.
-- **v1.7.9 (2026-04-17):** Push Notification Stability & Performance.
-  - *Fix (NetworkError):* Resolved `NetworkError` when canceling push by removing `timeLeft` from the scheduling `useEffect` in `Timer.tsx`. This stops the app from sending rescheduling requests every single second.
-  - *Optimization (Backend):* Refactored `api/push.ts` to use a O(1) task reference lookup for cancellations, replacing the previous O(N) loop that scanned the entire task queue.
-- **v1.7.8 (2026-04-17):** Mobile Polish & UI Adjustments.
-  - *Fix (Jitter):* Added `w-full` class to all tab root `motion.div` containers inside `AnimatePresence`. This prevents `popLayout`'s `position: absolute` from causing a momentary width collapse and sub-pixel snapping reflow during transitions on mobile devices.
-  - *UI Adjust:* Relocated the notification red dot on the bottom navigation bar (`MobileNavItem`) from the top-right (`-top-1 -right-1`) to the bottom-right (`-bottom-0 -right-1`) to better align with game UI conventions.
-- **v1.7.7 (2026-04-17):** Fixed UI Right-side Black Border.
-  - *Analysis:* Found that `body` had `background: black;`, which was exposed when navigating because `AnimatePresence popLayout` turns exiting elements to `position: absolute`, stretching viewport horizontally.
-  - *Fix:* Added `overflow-x: hidden` to `#root`, removed hardcoded explicit `background: black;` inside `index.css`, and placed `relative` block on the main animating container in `App.tsx` (`max-w-[1600px]`).
-- **v1.7.6 (2026-04-17):** Minor refactor and prep for layout fixing.
-- **v1.7.4 (2026-04-16):** Stability & Layout Polish.
-  - *Fix:* Removed global layout transitions causing jitter during Tab switching.
-  - *Fix:* Switched to Framer Motion `mode="popLayout"` to stabilize content entry/exit and prevent vertical layout jumps.
-  - *Fix:* Implemented root-level `overscroll-behavior: none` to prevent iPad PWA black edges when dragging.
-  - *Fix:* Relocated mobile bottom bar padding to the content wrapper to stabilize header position.
-- **v1.7.3 (2026-04-16):** Polished UI/UX. Fixed tablet fullscreen timer text size, added description field to sub-dungeons, fixed clipping of italic dungeon names, and corrected viewport meta tag to prevent zooming issues on tablet PWAs.
-- **v1.7.2 (2026-04-16):** Fixed Android PWA 'push service error' by injecting generic gcm_sender_id into manifest.
-- **v1.7.1 (2026-04-16):** Android/PWA Compatibility & Multi-Device Sync logic Fix.
-  - *UI:* Added detailed `alert` error messages in `Settings.tsx` to debug Android/PWA subscription failures.
-  - *Logic:* Added 10-second timeout to Service Worker registration to prevent UI lockup.
-  - *Multi-Device:* Added `deviceInfo` tracking during subscription to help server distinguish browsers.
-- **v1.7.0 (2026-04-16):** Enhanced Navigation & Sync Stability.
-  - *UI:* Added "Back to Dungeon" button to reward modals and notification actions.
-  - *Bugfix:* Fixed bug where downloading cloud saves re-triggered all previous level-up popups by syncing `prevLevel` during active synchronization.
-  - *Service Worker:* Upgraded to v1.7.0 with consistent "Back to Dungeon" action labels.
-- **v1.6.6 (2026-04-16):** Multi-Device Synchronization & Notification Fallbacks.
-  - *Backend:* Implemented Redis Set-based subscription storage in `api/push.ts` to support multiple devices per `secretCode` (e.g., Firefox and Edge simultaneously).
-  - *Timer:* Added local `navigator.serviceWorker.showNotification` fallback when the tab is active.
-  - *Logic:* Fixed bug where naturally finishing timers incorrectly cancelled server-side push tasks.
-- **v1.6.5 (2026-04-16):** Security Hardening & Version Alignment.
-  - *Security:* Removed hardcoded VAPID keys from `api/push.ts` to prevent credential leakage. Switched to strict Environment Variable usage.
-  - *Config:* Updated `.env.example` with required notification secrets.
-  - *Personalization:* Updated contact email in `api/push.ts`.
-- **v1.6.4 (2026-04-16):** Narrowed focus to VAPID identity mismatch.
-  - *Breakthrough:* "Direct UI" and "SW Thread" tests confirmed local notification system and Service Worker thread are functional.
-  - *Current Problem:* Remote push (via FCM/WNS) is accepted by push services but silently dropped by the browser. 
-  - *Root Cause:* Likely VAPID key mismatch between client subscription time and server sending time.
-  - *Plan:* Implement "Deep Reset" to force re-handshake and add environment detection for Iframe risks.
-- **v1.6.3 (2026-04-16):** Enhanced Push Troubleshooting.
-  - *Analysis:* Delivery reported as `sent` by WNS/FCM but no receipt logged in client. Likely environment (Iframe) or OS blocking.
-  - *Plan:* Add Direct Notification Test in Settings to isolate OS/Browser vs Push Service issues. Document troubleshooting protocols.
-- **v1.6.2 (2026-04-16):** Added deep synchronization logic.
-  - *Fix:* Auto-correct `pushEnabled` if subscription missing. Added "Clear Server Sub" and "Reset SW" tools.
-- **v1.6.1 (2026-04-16):** Enhanced Service Worker logging and improved toggle error handling.
-- **v1.6.0 (2026-04-16):** Diagnosed `processed: 0` and `401 Unauthorized` manifest errors.
-  - *Analysis:* `processed: 0` is likely due to server/client clock drift or Redis latency. `401` on manifest is likely Vercel Deployment Protection.
-  - *Plan:* Enhance `/api/push/check` with detailed debug info (queue count, server time) and optimize `vercel.json` routing.
-- **v1.5.5 (2026-04-16):** Fixed Web Push Notification delivery by implementing automatic subscription syncing.
-  - *Auto-Sync Logic:* Added a `useEffect` in `App.tsx` that automatically POSTs the browser's `PushSubscription` to `/api/push/subscribe` whenever `pushEnabled` is true and a `secretCode` is available.
-  - *UI Enhancements:* Added a "Force Sync Notifications" button in General Settings.
-  - *Developer Tools:* Added a "Notification Testing" section in Developer Settings to allow immediate testing of push notifications with custom content and real-time console logging of `/api/push/check` results.
-  - *Bugfix:* Fixed a `ReferenceError` where developer notification states were defined in the wrong component scope.
-- **v1.5.4 (2026-04-16):** Analyzed successful Push Subscription but failed notification delivery.
-  - *Subscription Success:* Confirmed that the frontend can now successfully generate a valid `PushSubscription` object (WNS endpoint for Windows).
-  - *Delivery Failure Analysis:*
-    1. **Redis/SecretCode Sync**: Even if the browser subscribes, the subscription must be successfully POSTed to `/api/push/subscribe` with a valid `secretCode`.
-    2. **Cron-Job Payload**: The Cron-Job triggers `/api/push/check`, which looks for tasks in Redis. If the timer logic doesn't correctly call `/api/push/schedule`, no tasks will exist.
-    3. **Service Worker (sw.js) Event Handling**: The SW must correctly listen for the `push` event and call `self.registration.showNotification`.
-  - *New Finding (no_subscription):* Confirmed that `/api/push/check` returns `status: "no_subscription"`. This proves the backend is finding the scheduled task but cannot find the corresponding push subscription in Redis.
-  - *Root Cause:* The frontend is either not sending the subscription to the server, or it's being sent with a different `secretCode` than the one used to schedule the task.
-  - *Feasibility:* High. We need to ensure the subscription is re-synced whenever the `secretCode` changes or the app initializes.
-- **v1.5.3 (2026-04-14):** Analyzed ongoing Web Push Notification failures. 
-  - *Toggle Failure Analysis:* Identified that the "System Notifications" toggle fails if:
-    1. **Service Worker Registration hangs**: `navigator.serviceWorker.ready` never resolves if the SW isn't registered.
-    2. **Invalid VAPID Key**: The current public key (`BOnH4u...`) is 68 chars (likely invalid; should be ~87 chars), causing `subscribe()` to fail.
-    3. **Missing Redis/SecretCode**: Backend requires `REDIS_URL` and frontend requires `secretCode` to persist the subscription.
-  - *Cron-Job Failure Analysis:* 
-    1. **No Subscriptions**: If the toggle fails, no subscription is stored in Redis for the Cron-Job to use.
-    2. **Task Score/Time**: Cron-Job only processes tasks where `targetTime <= now`.
-    3. **VAPID Mismatch**: Backend keys must match the keys used for subscription.
-- **v1.5.2 (2026-04-14):** Fixed CSS bugs related to Light Themes ("Daylight", "Warm Sun", "Candy"). Updated `CloudSyncModal` to use theme-aware colors for "Echoes of the Past Found", Help section, and confirmation dialogs. Added double-check confirmation prompts for "Keep Local" and "Download Cloud" buttons. Formatted dates to English with year. Updated `Stats` heatmap and efficiency trend chart to use theme-aware colors (`var(--color-indigo-500)`).
-- **v1.5.1 (2026-04-14):** Fixed silent sync failure by stripping volatile fields (`lastUpdated`, `syncHistory`, `deviceType`, `pushSubscription`, `secretCode`) before comparison. Added side-by-side data comparison UI in `CloudSyncModal`. Updated Cloud Sync and Export Data to include the entire `localStorage` payload (`fullLocalStorage`) to ensure absolutely no user data (like timer settings) is missed.
-- **v1.5.0 (2026-04-14):** Implemented Smart Cloud Sync (silent identical sync) and Device Tracking. Added `deviceType` to `UserState` and sync history. Updated `CloudSyncModal` to display Cloud and Local device types during conflicts and in the sync history view.
-- **v1.4.11 (2026-04-14):** Fixed Web Push Notifications on Vercel. Added `/api/push/vapid-public-key` endpoint to serve the VAPID key to the frontend (resolving Vite env var issues) and added rewrite rules in `vercel.json` for `/api/push/*`.
-- **v1.4.10 (2026-04-13):** Analyzed Web Push Notification failures on Vercel. Documented root causes (Vite env vars, Vercel routing, and Hobby plan cron limits) in AGENTS.md.
-- **v1.4.9 (2026-04-13):** Fixed "Missing localData" error in Vercel cloud sync. Restored API contract in `api/sync.ts` (handling POST-as-fetch, DELETE, and conflict resolution) and added fallback parsing for stringified `req.body`.
-- **v1.4.8 (2026-04-13):** Analyzed "Missing localData" error in Vercel cloud sync. Documented root causes (Content-Type header, payload structure, or JSON parsing issues) in AGENTS.md for upcoming fix.
-- **v1.4.7 (2026-04-12):** Fixed Cloud Sync missing Dungeon settings. Added stock management and custom icon selection for Shop items. Updated SplashScreen version display.
-- **v1.4.6 (2026-04-12):** Enhanced Explore & Sync logic. Focus sessions now auto-start Rest even if Loop is disabled. Added automatic cloud sync check on app launch. Added "Download from Cloud" button to Astral Archives.
-- **v1.4.5 (2026-04-12):** Fixed Push Notifications on Vercel. Added `/api/push/check` endpoint and Vercel Cron Job configuration to process scheduled notifications in a serverless environment.
-- **v1.4.4 (2026-04-12):** UI/UX Polish. Added Dungeon progress to Explore fullscreen mode. Refactored SplashScreen (removed ring, dynamic colors, version display). Fixed Timer reset bug when Loop is disabled. Simplified PWA icon and updated manifest title.
-- **v1.4.3 (2026-04-12):** Refactored API to use standalone Vercel Serverless Functions. Created api/sync.ts, api/push.ts, and api/health.ts to resolve ESM module resolution errors on Vercel.
-- **v1.4.2 (2026-04-12):** Improved Redis connection handling for Vercel serverless environments. Implemented lazy connection and simplified vercel.json routing.
-- **v1.4.1 (2026-04-12):** Added Vercel deployment support. Created vercel.json for API routing, refactored server.ts to export the app for serverless functions, and added api/index.ts entry point.
-- **v1.4.0 (2026-04-12):** Refactored notification settings. Created a dedicated "System Notifications" section in General Settings and replaced the button-based toggle with a switch component.
-- **v1.3.1 (2026-04-12):** Fixed Cloud Sync 404 error by adding trailing slash support to API routes and updating frontend fetch calls. Added server-side request logging and JSON 404/error handlers for better diagnostics.
-- **v1.3.0 (2026-04-12):** Implemented cross-platform Web Push notifications. Added Redis-based server-side scheduling, Service Worker push handling, and UI settings for notification management.
-- **v1.2.2 (2026-04-12):** Fixed mobile sync and import issues. Added trailing slash support to API routes, improved JSON response validation in frontend, and expanded file picker `accept` types for JSON import.
-- **v1.2.1 (2026-04-12):** Diagnosed mobile sync and import issues. Identified root causes: 404 HTML response for cloud sync (routing/trailing slash issues) and file picker restrictions for JSON import on mobile.
-- **v1.2.0 (2026-04-12):** Performance & UI Polish. Fixed bottom bar jittering (AnimatePresence mode="wait"). Implemented elegant overlay scrollbars. Optimized performance using React.memo for heavy components.
-- **v1.1.0 (2026-04-12):** Created project tracker (`AGENTS.md`). Added version and release date to Settings -> About page.
-- **v1.0.1 (2026-04-12):** Upgraded PWA installation experience (sword icon, splash screen animation).
-- **v1.0.0:** Initial release and subsequent security/UI enhancements (Cloud Sync confirmations, history tracking, etc.).
 
-## Pending Tasks
-- Further optimize state management if lag persists.
+## Task History
+- **v5.13.15 (2026-05-12):** Activity Time Peaks Layout Polish.
+  - *UI:* Added horizontal margins to the timeline container to prevent time labels from being clipped at the edges.
+- **v5.13.14 (2026-05-12):** Activity Time Peaks Sliding Window.
+  - *UX:* Implemented a 24-hour sliding window for the timeline visualization that automatically offsets when periods cross midnight.
+  - *UI:* Refined the timeline labels to only display the specific start and end times for each peak period for a cleaner look.
+- **v5.13.13 (2026-05-12):** Activity Time Peaks Minimalist UI.
+  - *UI:* Removed all text labels (hours, Midnight, Next Day) from the timeline visualization for a clean, minimalist appearance.
+- **v5.13.12 (2026-05-12):** Activity Time Peaks Flat UI.
+  - *UI:* Removed segment glow effects and internal text for a flatter, cleaner look.
+  - *UI:* Widened the cross-day midnight dividing line and increased timeline header text size.
+- **v5.13.11 (2026-05-12):** Activity Time Peaks UI Visual Refinement.
+  - *UI:* Applied custom high-precision colors (#FDE047, #F97316, #6366F1) to time segments and icons.
+  - *UI:* Increased visualization header font size and consistency across the settings module.
+  - *UX:* Added "Midnight" marker and "Next Day" patterned background to make cross-day segments highly visible.
+- **v5.13.10 (2026-05-12):** Activity Time Peaks UI Final Refinement.
+  - *UI:* Increased timeline marker font size and visualization height for better readability.
+  - *UI:* Improved marker positioning logic on the dynamic timeline.
+  - *Cleanup:* Removed redundant time range previews from period cards and pruned unused imports.
+- **v5.13.9 (2026-05-12):** Activity Time Peaks UI Refinement.
+  - *UI:* Repositioned the dynamic timeline below time input blocks for better visual hierarchy.
+  - *UI:* Removed redundant time range previews from input cards to reduce visual noise.
+  - *UI:* Increased font size and improved spacing for time markers on the visualization axis.
+- **v5.13.8 (2026-05-12):** Activity Time Peaks UI Overhaul.
+  - *UI:* Replaced static time range previews with a dynamic integrated timeline visualization.
+  - *UX:* Implemented cross-day extension logic for the timeline, allowing for clear representation of periods spanning across midnight.
+  - *Logic:* Added real-time overlap detection with visual warning messages to prevent configuration conflicts.
+- **v5.13.7 (2026-05-12):** Gacha Settings UI Refinement.
+  - *UI:* Consolidated "Import Pool" and "Add Pool" buttons into the main Gacha section header for better space efficiency.
+- **v5.13.6 (2026-05-12):** Daily Progress UI Reordering.
+  - *UX:* Reordered the days in the Daily Progress Goal configuration to start with Monday for a more standard weekly view.
+- **v5.13.5 (2026-05-12):** Reward Pool UI Consolidation.
+  - *UI:* Consolidated Reward Pool Management title and action buttons (Reset/Add Reward) into a single row for better horizontal space efficiency.
+- **v5.13.4 (2026-05-12):** Settings Layout Refinement.
+  - *UI:* Reordered general settings: "Activity Time Peaks" is now positioned before "End of the Day" for better logical flow.
+- **v5.13.3 (2026-05-12):** Reward Pool UI Cleanup.
+  - *UI:* Removed redundant "Loot Pool" heading from the Reward Pool Management section in Timer Settings for a cleaner interface.
+- **v5.13.2 (2026-05-12):** Settings UI Polishing.
+  - *UI:* Added structured frames to Mood Configuration and Daily Progress Goal sections in Settings for better visual organization.
+  - *UX:* Added descriptive helper text for the Daily Progress Goal setting to clarify its impact on daily activity tracking.
+- **v5.13.1 (2026-05-12):** Sync History UI Final Polish.
+  - *UI:* Optimized Sync History table with flexible column widths and improved status clarity for legacy records.
+  - *UX:* Added horizontal scrolling for history table to handle longer content without clipping.
+- **v5.13.0 (2026-05-12):** Manual Focus Start Option.
+  - *Feature:* Added "Manual Focus Start" setting for loop mode. When rest ends, players can now choose to manually confirm before starting the next focus session.
+  - *UI:* New sleek confirmation prompt for focus sessions after rest periods.
+- **v5.12.1 (2026-05-12):** Sync History UI Refinement.
+  - *UI:* Improved the Status column in Sync History with fixed-width layout and clearer labels for better visibility on smaller screens.
+- **v5.12.0 (2026-05-12):** Archive History Status & UI.
+  - *Feature:* Added a dedicated status column to Sync Status & History, clearly indicating success, failure, or cancellation of cloud operations.
+  - *UI:* Redefined the Archive Chronology layout with a table-style grid for better information density and visual clarity.
+  - *Logic:* Enhanced sync logging to capture error messages during failed login or sync attempts for easier troubleshooting.
+- **v5.11.5 (2026-05-12):** VAPID & Core Robustness.
+  - *Bugfix:* Improved VAPID key validation logic to prevent "65 bytes" decoding errors caused by invalid environment variables.
+  - *Security:* Rotated fallback VAPID keys and enhanced cleaning logic for platform-provided secrets.
+- **v5.11.4 (2026-05-12):** Icon & UI Refinement.
+  - *UI:* Updated the "Morning" icon in Activity Time Peaks to "sunrise" for better visual distinction.
+- **v5.11.3 (2026-05-12):** Settings UI Polish.
+  - *UI:* Updated the "End of the Day" section icon in Settings to "calendar-check" for better visual representation.
+- **v5.11.2 (2026-05-12):** Settings UI Consolidation II.
+  - *UI:* Moved "Daily Progress Goal" into the "End of the Day" section in Settings for better grouping.
+- **v5.11.1 (2026-05-12):** Settings UI Consolidation.
+  - *UI:* Consolidated "Default Markdown" and "Mood Configuration" settings into a single "End of the Day" section for better organization.
+- **v5.11.0 (2026-05-12):** Archive Visibility & End of Day Polish.
+  - *Bugfix:* Fixed Cloud Sync Device Code display issue where it appeared as "?" even when available.
+  - *UI:* Significant refinement of the "End of the Day" modal header, progress, and feelings section.
+  - *UX:* Support for re-editing daily logs: opening the summary modal now automatically loads existing records for the current day.
+- **v5.10.9 (2026-05-12):** Daily Summary Re-editing.
+  - *UX:* If a daily log already exists for the current day, it is automatically loaded when opening the End of the Day modal, allowing users to re-edit their saved reflection and rating.
+- **v5.10.8 (2026-05-12):** Mood Selection UI Polish.
+-   - *UI:* Realignment of mood section title to the left and addition of a section separator for better visual hierarchy in the End of the Day modal.
+- **v5.10.7 (2026-05-12):** Mood Selection UI Polish.
+  - *UI:* Reduced the size of mood selection buttons and centered the layout for a more balanced and compact appearance in the End of the Day modal.
+- **v5.10.6 (2026-05-12):** Daily Progress UI Refinement.
+  - *UI:* Restored the "Daily Progress" title and session ratio in a simplified layout within the End of the Day modal.
+- **v5.10.5 (2026-05-12):** Daily Summary View Simplification.
+  - *UI:* Simplified the End of the Day modal by removing redundant header text and stripping the Daily Progress section down to a minimal interactive bar.
+- **v5.10.4 (2026-05-12):** End of Day UI Refinement.
+  - *UI:* Refined the "End of the Day" header layout: moved the date range below the title, removed borders, and highlighted the recorded date for better clarity.
+- **v5.10.3 (2026-05-12):** Settlement Date Attribution Fix.
+  - *Bugfix:* Fixed a critical bug where settlement and bulk session dates were attributed using UTC instead of local/configured time, causing incorrect record dates for users in non-UTC timezones.
+- **v5.10.2 (2026-05-12):** End of Day Header Date.
+  - *UX:* Added the effective settlement date explicitly at the top of the "End of the Day" modal, making it clearer when logging activities that span across midnight.
+- **v5.10.1 (2026-05-12):** Markdown Readability Polish.
+  - *UX:* Increased font color intensity for Markdown list items (content after "-") to improve readability across all themes.
+- **v5.10.0 (2026-05-12):** Mood Selection UI Polish.
+  - *UX:* Improved the "Daily Feelings" selection area by adding padding and allowing scale effects (up to 125%) without clipping, providing better visual feedback.
+- **v5.9.9 (2026-05-12):** Modal Layout Polish.
+  - *UI:* Adjusted the "End of the Day" modal vertical spacing to ensure a consistent gap from the screen edges on all devices.
+- **v5.9.8 (2026-05-12):** Chart Interaction Polish.
+  - *Bugfix:* Fixed a bug in Weekly Activity charts where tooltips would not disappear when clicking empty space.
+- **v5.9.7 (2026-05-12):** Cloud Sync Comparison UI Enhancement.
+  - *UX:* Added "Device Code" row to the comparison tables in the Astral Archives modal, providing better visibility of which device a cloud save belongs to.
+- **v5.9.6 (2026-05-12):** Cloud Sync Device Identity Fix.
+  - *Bugfix:* Fixed an issue where the unique Device Code was being overwritten during cloud sync or data import, ensuring each platform/device maintains its own identity in the sync history.
+- **v5.9.5 (2026-05-12):** Export UI Refinement.
+  - *UI:* Unified the visual style of "Safe Export" and "Full Export" buttons for better consistency while maintaining distinct icon colors.
+- **v5.9.4 (2026-05-12):** Enhanced Export Portability.
+  - *Feature:* Added a dual-mode Export system allowing users to choose between "Full Export" (all data) and "Safe Export" (privacy-focused).
+  - *Privacy:* Safe Export automatically strips sensitive synchronization passwords, cloud tokens, and device nicknames from the exported JSON.
+- **v5.9.3 (2026-05-12):** Settings Navigation Polish.
+  - *UX:* Improved deep linking from Cloud Sync preferences to Data Management; it now accurately navigates and centers the section on screen.
+- **v5.9.2 (2026-05-12):** Talent Unlock Celebration.
+  - *UX:* Added a colorful confetti effect when successfully unlocking a new talent, providing better visual feedback for progression.
+- **v5.9.1 (2026-05-12):** Talent Auto-Activation.
+  - *UX:* Newly unlocked talents are now automatically enabled upon purchase, reducing the need for manual activation.
+- **v5.9.0 (2026-05-12):** Bulk Session Management.
+  - *Feature:* Implemented a Batch Manage tool in Recent Sessions, allowing users to create or delete sessions in bulk within a time range.
+  - *Feature:* Bulk created sessions automatically generate reward options that are sent to the Treasure Chest for balance.
+  - *UX:* Added clear safety reminders: Batch creation warns about chest rewards, while batch deletion warns that already claimed Gold/XP will not be revoked.
+- **v5.8.1 (2026-05-12):** Astral Archives Logic Polish.
+  - *UX:* Improved navigation within the cloud sync modal; the header close button now returns to the main archive view when in sub-pages.
+  - *UX:* Completely overhauled out-of-date instructional content in the "Archives Info" view.
+- **v5.8.0 (2026-05-12):** Astral Archives Robustness.
+  - *Feature:* Added a 60-second countdown and manual "Cancel Sync" button during the cloud synchronization phase.
+  - *UX:* Improved failure handling with a "Reset & Retry" option when sync stalls or errors occur, improving data reliability.
+  - *UX:* Integrated clear error message display within the sync loading/timeout interface.
+- **v5.7.1 (2026-05-12):** Expedition Data Portability.
+  - *Feature:* Added a direct Download button next to the Copy button in the Expedition Import/Export modal, allowing users to save their list as a Markdown file.
+  - *UX:* Improved UI feedback for data export actions.
+- **v5.7.0 (2026-05-12):** Expedition Markdown Integration.
+  - *Feature:* Implemented Import and Export functionality for the Expedition list using a human-readable Markdown format.
+  - *UX:* Added a dedicated Import/Export modal with clipboard copy support and formatting validation.
+  - *Logic:* Developed a robust recursive parser to handle multi-tiered expeditions and rewards during import operations.
+- **v5.6.5 (2026-05-12):** Data Safety Clarification.
+-   - *UX:* Enhanced the data deletion warning modal with a clearer reminder that clearing local data will not impact cloud archives, reducing user anxiety during reset operations.
+- **v5.6.4 (2026-05-12):** Top Bar Simplification.
+  - *UI:* Removed the page title (e.g., Dashboard) from the top bar for a cleaner, more focused interface.
+- **v5.6.3 (2026-05-12):** Top Bar Polish.
+  - *UI:* Implemented a "Go Dungeons" link with a sword icon in the top header when no active dungeon is selected, improving site navigation.
+- **v5.6.2 (2026-05-12):** Quest Board UI Cleanup.
+  - *UI:* Removed decorative pins and "pinned note" rotation from quest items and history list for a cleaner, flatter aesthetic as requested.
+- **v5.6.1 (2026-05-12):** Chart Visual Cleanup.
+  - *UI:* Completely suppressed default browser focus outlines on all interactive charts using global CSS overrides to ensure a seamless visual experience during interaction.
+- **v5.6.0 (2026-05-12):** UI Visual Cleanup.
+  - *UI:* Removed default browser focus outlines from interactive charts for a cleaner visual experience.
+- **v5.5.9 (2026-05-12):** Chart Interaction Refinement.
+  - *UX:* Refined background click detection in Weekly Activity charts to ensure reliable tooltip dismissal when clicking empty space.
+  - *UX:* Unified date formatting in Heatmap and Weekly popovers to display both day of week and full date.
+  - *Bugfix:* Isolated interactive states between the Bar and Line charts to prevent unintended simultaneous bubble displays.
+- **v5.5.8 (2026-05-12):** Interactive Chart Decoupling.
+  - *UX:* Completely decoupled the Weekly Activity Bar Chart and Efficiency Trend Line Chart tooltips, ensuring they act individually instead of displaying simultaneously.
+  - *Bugfix:* Fixed a bug where interacting with the Bar Chart would not trigger its independent popover immediately.
+  - *Bugfix:* Fixed an issue where clicking empty space within the Weekly Activity charts failed to dismiss active tooltips.

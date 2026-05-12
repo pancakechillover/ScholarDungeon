@@ -8,13 +8,16 @@ import {
   Edit2, 
   Archive,
   CheckCheck,
-  Undo2
+  Undo2,
+  FileText
 } from 'lucide-react';
 import { PageHeader } from '../PageHeader';
 import { DungeonManager } from './DungeonManager';
 import { QuestManager } from '../QuestManager';
 import { AppState, Dungeon, MajorDungeon, DungeonReward } from '../../types';
 import { cn } from '../../lib/utils';
+import { exportExpeditionsToMarkdown, importExpeditionsFromMarkdown } from '../../lib/expeditionMarkdown';
+import { ImportExportModal } from './ImportExportModal';
 
 interface DungeonsViewProps {
   state: AppState;
@@ -93,6 +96,21 @@ export const DungeonsView: React.FC<DungeonsViewProps> = ({
   claimAllQuestRewards,
   questHistory
 }) => {
+  const [isImportExportOpen, setIsImportExportOpen] = React.useState(false);
+
+  const handleImportExpeditions = (mdText: string) => {
+    const { majors: importedMajors, subs: importedSubs } = importExpeditionsFromMarkdown(mdText);
+    
+    // Check if any imported major is not empty or if user is sure?
+    // According to instructions, we append.
+    setMajorDungeons(prev => [...prev, ...importedMajors]);
+    setDungeons(prev => [...prev, ...importedSubs]);
+  };
+
+  const exportText = React.useMemo(() => {
+    return exportExpeditionsToMarkdown(majorDungeons, dungeons);
+  }, [majorDungeons, dungeons, isImportExportOpen]);
+
   return (
     <motion.div
       key="dungeons"
@@ -198,6 +216,16 @@ export const DungeonsView: React.FC<DungeonsViewProps> = ({
                 title="Toggle Archive"
               >
                 <Archive size={18} />
+              </button>
+            )}
+
+            {dungeonSubTab === 'list' && (
+              <button
+                onClick={() => setIsImportExportOpen(true)}
+                className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-xl transition-all bg-slate-800 border-slate-700 text-slate-400 hover:text-white shadow-lg border shrink-0"
+                title="Import/Export Expeditions"
+              >
+                <FileText size={18} />
               </button>
             )}
 
@@ -317,6 +345,13 @@ export const DungeonsView: React.FC<DungeonsViewProps> = ({
           forceTab="history"
         />
       )}
+
+      <ImportExportModal 
+        isOpen={isImportExportOpen}
+        onClose={() => setIsImportExportOpen(false)}
+        onImport={handleImportExpeditions}
+        exportData={exportText}
+      />
     </motion.div>
   );
 };

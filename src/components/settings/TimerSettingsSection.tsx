@@ -122,6 +122,34 @@ export const TimerSettingsSection = ({
               </div>
             </div>
           )}
+
+          <div className="flex items-center justify-between pt-4 border-t border-slate-800/50">
+            <div className="flex items-center gap-3">
+              <div className={cn("p-2 rounded-xl", state.requireFocusConfirmation ? "bg-amber-500/10 text-amber-500" : "bg-slate-800 text-slate-500")}>
+                <Target size={20} />
+              </div>
+              <div>
+                <div className="font-bold text-white">Manual Focus Start</div>
+                <div className="text-xs text-slate-500 italic px-0.5 whitespace-normal leading-relaxed">
+                  Show "Start Focus" prompt after rest ends in Loop mode
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={() => setState(prev => ({ ...prev, requireFocusConfirmation: !prev.requireFocusConfirmation }))}
+              className={cn(
+                "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors",
+                state.requireFocusConfirmation ? "bg-amber-500" : "bg-slate-700"
+              )}
+            >
+              <span
+                className={cn(
+                  "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+                  state.requireFocusConfirmation ? "translate-x-6" : "translate-x-1"
+                )}
+              />
+            </button>
+          </div>
         </div>
 
         <div className="flex flex-col gap-4 p-4 bg-slate-900/50 rounded-2xl border border-slate-800 mt-4">
@@ -334,10 +362,6 @@ export const TimerSettingsSection = ({
 
       {/* Rewards Management Section */}
       <div className="space-y-6 pt-10 border-t border-slate-800">
-        <div className="flex items-center gap-2.5 text-indigo-400 mb-6 pb-2">
-          <Package size={20} />
-          <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Reward Pool Management</h4>
-        </div>
         <RewardSettings pool={rewardPool} onUpdate={onUpdateRewards} onReset={onResetRewards} />
       </div>
     </div>

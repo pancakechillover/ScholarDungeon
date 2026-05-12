@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Cloud, Key, X, AlertTriangle, Check, Loader2, Database, Sparkles, HelpCircle, Unlink, Info, Eye, EyeOff, Copy, RefreshCw, Trash2, History, UploadCloud, DownloadCloud, Search } from 'lucide-react';
+import { Cloud, Key, X, AlertTriangle, Check, Loader2, Database, Sparkles, HelpCircle, Unlink, Info, Eye, EyeOff, Copy, RefreshCw, Trash2, History, UploadCloud, DownloadCloud, Search, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
 import { getDeviceType } from '../lib/utils';
 
 interface CloudSyncModalProps {
@@ -21,10 +21,13 @@ interface CloudSyncModalProps {
   onUnbind: () => void;
   onDeleteCloudData: () => void;
   onVerify?: () => void;
+  onCancelSync?: () => void;
   syncHistory?: {
     type: 'login' | 'force_sync' | 'local_to_cloud' | 'cloud_to_local' | 'cancel_login' | 'unbind_local' | 'delete_cloud';
     code: string;
     timestamp: string;
+    status: 'success' | 'failed' | 'cancelled' | 'pending';
+    error?: string;
     deviceType?: string;
     deviceNickname?: string;
     syncMethod?: 'Manual' | 'Immediate' | 'Interval polling' | 'Visibility API Active';
@@ -49,6 +52,7 @@ export function CloudSyncModal({
   onUnbind,
   onDeleteCloudData,
   onVerify,
+  onCancelSync,
   syncHistory,
   localState
 }: CloudSyncModalProps) {
@@ -68,22 +72,40 @@ export function CloudSyncModal({
   } | null>(null);
 
   const [timeoutElapsed, setTimeoutElapsed] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(60);
 
   const prevSyncingRef = useRef(isSyncing);
 
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout>;
+    let intervalId: ReturnType<typeof setInterval>;
+
     if (isVerifying || isSyncing) {
       setTimeoutElapsed(false);
+      setTimeLeft(60);
+      
+      intervalId = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev <= 1) {
+            clearInterval(intervalId);
+            setTimeoutElapsed(true);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
       timeoutId = setTimeout(() => {
         setTimeoutElapsed(true);
       }, 60000);
     } else {
       setTimeoutElapsed(false);
+      setTimeLeft(60);
     }
 
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
+      if (intervalId) clearInterval(intervalId);
     };
   }, [isVerifying, isSyncing]);
 
@@ -169,7 +191,7 @@ export function CloudSyncModal({
                     setShowHistory(!showHistory);
                     setShowHelp(false);
                   }}
-                  className="p-1.5 bg-slate-800 hover:bg-indigo-500/20 text-slate-400 hover:text-indigo-400 rounded-full transition-colors"
+                  className={`p-1.5 rounded-full transition-colors ${showHistory ? 'bg-indigo-500/20 text-indigo-400' : 'bg-slate-800 hover:bg-indigo-500/20 text-slate-400 hover:text-indigo-400'}`}
                   title="Sync History"
                 >
                   <History size={18} />
@@ -179,14 +201,21 @@ export function CloudSyncModal({
                     setShowHelp(!showHelp);
                     setShowHistory(false);
                   }}
-                  className="p-1.5 bg-slate-800 hover:bg-indigo-500/20 text-slate-400 hover:text-indigo-400 rounded-full transition-colors"
+                  className={`p-1.5 rounded-full transition-colors ${showHelp ? 'bg-indigo-500/20 text-indigo-400' : 'bg-slate-800 hover:bg-indigo-500/20 text-slate-400 hover:text-indigo-400'}`}
                   title="What is this?"
                 >
                   <HelpCircle size={18} />
                 </button>
               </div>
             </h3>
-            <button onClick={onClose} className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 rounded-full transition-colors">
+            <button 
+              onClick={() => {
+                if (showHistory) setShowHistory(false);
+                else if (showHelp) setShowHelp(false);
+                else onClose();
+              }} 
+              className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 rounded-full transition-colors"
+            >
               <X size={20} />
             </button>
           </div>
@@ -248,6 +277,14 @@ export function CloudSyncModal({
                           </div>
                           <div className="text-center text-[10px] text-indigo-400/70 font-bold truncate bg-indigo-500/5 py-0.5 rounded">
                             {syncCheckResult?.cloudData?.savedBy || syncCheckResult?.cloudData?.state?.deviceNickname || syncCheckResult?.cloudData?.state?.deviceType || '?'}
+                          </div>
+
+                          <div className="text-[10px] text-slate-500 font-medium">Device Code</div>
+                          <div className="text-center text-[9px] text-slate-500 font-mono truncate bg-slate-800/30 py-0.5 rounded border border-slate-700/30">
+                            {localState?.deviceCode?.substring(0, 8) || '?'}
+                          </div>
+                          <div className="text-center text-[9px] text-indigo-500/50 font-mono truncate bg-indigo-500/5 py-0.5 rounded border border-indigo-500/10">
+                            {(syncCheckResult?.cloudData?.savedByDeviceCode || syncCheckResult?.cloudData?.state?.deviceCode)?.substring(0, 8) || '?'}
                           </div>
 
                           <div className="text-[10px] text-slate-500 font-medium">Updated</div>
@@ -323,27 +360,24 @@ export function CloudSyncModal({
                 className="space-y-4 max-h-[60vh] overflow-y-auto custom-scrollbar pr-2"
               >
                 <div className="prose prose-invert prose-sm max-w-none">
-                  <h4 className="flex items-center gap-2 text-indigo-500 m-0 mb-2"><Info size={18} /> About the Archives</h4>
-                  <p className="text-slate-400 mt-0">Synchronize your progress across devices. Your journey is automatically inscribed to the cloud after every completed session.</p>
+                  <h4 className="flex items-center gap-2 text-indigo-500 m-0 mb-2"><Sparkles size={18} /> Echoes of the Void</h4>
+                  <p className="text-slate-400 mt-0">The Astral Archives are a persistent ledger of your deeds across the multiverse. When you complete a session, your progress is automatically inscribed to the cloud in real-time.</p>
                   
-                  <h4 className="flex items-center gap-2 text-indigo-500 m-0 mb-2 mt-4"><Key size={18} /> Code Requirements</h4>
-                  <ul className="text-slate-400 mt-0">
-                    <li>Length: 6 to 12 characters</li>
-                    <li>Allowed: Letters, numbers, and <code>@*￥$%^&</code></li>
-                  </ul>
+                  <h4 className="flex items-center gap-2 text-indigo-500 m-0 mb-2 mt-4"><Key size={18} /> The Brave's Code</h4>
+                  <p className="text-slate-400 mt-0">Your 6-12 character code is the <strong>sole key</strong> to your archives. We store no personal info, so your code is both your identifier and your shield. Guard it well.</p>
 
-                  <h4 className="flex items-center gap-2 text-indigo-500 m-0 mb-2 mt-4"><AlertTriangle size={18} /> Crucial Warning</h4>
-                  <p className="text-slate-400 mt-0">Your Brave's Code acts as both your username and password. <strong>Please use a complex and unique code.</strong> Anyone who knows your code can access or overwrite your save data!</p>
+                  <h4 className="flex items-center gap-2 text-indigo-500 m-0 mb-2 mt-4"><RefreshCw size={18} /> Cross-Device Weaving</h4>
+                  <p className="text-slate-400 mt-0">Log in with the same code on any device to resume your journey. If the Archives detect diverging paths (Conflicts), you will be asked to choose which reality to preserve.</p>
 
-                  <h4 className="flex items-center gap-2 text-indigo-500 m-0 mb-2 mt-4"><Database size={18} /> Data Guarantee</h4>
-                  <p className="text-slate-400 mt-0">This platform does not guarantee the permanent preservation of user data. If you are particularly worried about data loss, please regularly export your JSON data via <strong>Settings - General - Data Management</strong>.</p>
+                  <h4 className="flex items-center gap-2 text-indigo-500 m-0 mb-2 mt-4"><Database size={18} /> Data Portability</h4>
+                  <p className="text-slate-400 mt-0">While the Archives are robust, the void is vast. We recommend physical backups via <strong>Settings &rarr; Expedition Export</strong> or <strong>General Settings &rarr; JSON Export</strong> regularly.</p>
                 </div>
 
                 <button 
                   onClick={() => setShowHelp(false)}
-                  className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl font-bold transition-colors mt-4 sticky bottom-0"
+                  className="w-full py-4 bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400 rounded-2xl font-black uppercase tracking-widest text-xs transition-all border border-indigo-500/30 mt-4 sticky bottom-0 backdrop-blur-md"
                 >
-                  I Understand
+                  Return to Archives
                 </button>
               </motion.div>
             ) : showHistory ? (
@@ -354,40 +388,88 @@ export function CloudSyncModal({
               >
                 <h4 className="font-bold text-indigo-400 flex items-center gap-2 mb-4">
                   <History size={18} />
-                  Sync History
+                  Archive Chronology
                 </h4>
-                <div className="max-h-[50vh] overflow-y-auto custom-scrollbar pr-2 space-y-2">
+                <div className="max-h-[50vh] overflow-x-auto custom-scrollbar-h">
                   {syncHistory && syncHistory.length > 0 ? (
-                    syncHistory.map((record, idx) => (
-                      <div key={idx} className="p-3 bg-slate-950/50 border border-slate-800 rounded-xl flex flex-col gap-1">
-                        <div className="flex justify-between items-center">
-                          <span className="text-xs font-bold text-indigo-300">
-                            {record.type === 'login' ? 'Login' :
-                             record.type === 'force_sync' ? 'Force Sync' :
-                             record.type === 'local_to_cloud' ? 'Local ➔ Cloud' : 
-                             record.type === 'cancel_login' ? 'Canceled Login' : 
-                             record.type === 'unbind_local' ? 'Unbind Local' :
-                             record.type === 'delete_cloud' ? 'Delete Cloud' : 'Cloud ➔ Local'}
-                          </span>
-                          <span className="text-[10px] text-slate-500">{new Date(record.timestamp).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-2 mt-1">
-                          <span className="text-[10px] text-slate-400 font-mono">Code: {record.code}</span>
-                          {record.syncMethod && <span className="text-[9px] text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700/50">{record.syncMethod}</span>}
-                          {record.syncProvider && <span className="text-[9px] text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700/50">{record.syncProvider}</span>}
-                          {(record.deviceNickname || record.deviceType) && <span className="text-[9px] text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded-full">{record.deviceNickname || record.deviceType}</span>}
-                        </div>
+                    <div className="min-w-[450px] pr-2">
+                      <div className="grid grid-cols-[1.5fr_auto_1.2fr_minmax(120px,1.5fr)] gap-4 px-3 py-2 text-[10px] font-black uppercase tracking-wider text-slate-500 border-b border-slate-800/50">
+                        <div>Action</div>
+                        <div className="text-center px-2">Status</div>
+                        <div>Identity</div>
+                        <div className="text-right">Timestamp</div>
                       </div>
-                    ))
+                      <div className="divide-y divide-slate-800/30">
+                        {syncHistory.map((record, idx) => (
+                          <div key={idx} className="py-3 px-1 hover:bg-slate-900/40 transition-colors flex flex-col gap-2">
+                            <div className="grid grid-cols-[1.5fr_auto_1.2fr_minmax(120px,1.5fr)] gap-4 items-center">
+                              <span className="text-[11px] font-bold text-indigo-300 truncate">
+                                {record.type === 'login' ? 'Login' :
+                                 record.type === 'force_sync' ? 'Force Sync' :
+                                 record.type === 'local_to_cloud' ? 'Local ➔ Cloud' : 
+                                 record.type === 'cancel_login' ? 'Canceled Login' : 
+                                 record.type === 'unbind_local' ? 'Unbind Local' :
+                                 record.type === 'delete_cloud' ? 'Delete Cloud' : 'Cloud ➔ Local'}
+                              </span>
+                              
+                              <div className="flex justify-center min-w-[60px]">
+                                {(!record.status || record.status === 'success') ? (
+                                  <div className="flex flex-col items-center gap-0.5 text-emerald-400/90" title="Success">
+                                    <CheckCircle2 size={14} strokeWidth={3} />
+                                    <span className="text-[7px] font-black uppercase tracking-tighter">OK</span>
+                                  </div>
+                                ) : record.status === 'failed' ? (
+                                  <div className="flex flex-col items-center gap-0.5 text-rose-500" title={record.error}>
+                                    <XCircle size={14} strokeWidth={3} />
+                                    <span className="text-[7px] font-black uppercase tracking-tighter">Fail</span>
+                                  </div>
+                                ) : record.status === 'cancelled' ? (
+                                  <div className="flex flex-col items-center gap-0.5 text-slate-500" title="Cancelled">
+                                    <AlertCircle size={14} strokeWidth={3} />
+                                    <span className="text-[7px] font-black uppercase tracking-tighter">Void</span>
+                                  </div>
+                                ) : (
+                                  <div className="flex flex-col items-center gap-0.5 text-indigo-400 animate-pulse">
+                                    <Loader2 size={14} className="animate-spin" />
+                                    <span className="text-[7px] font-black uppercase tracking-tighter">...</span>
+                                  </div>
+                                )}
+                              </div>
+
+                              <div className="truncate">
+                                <span className="text-[10px] text-slate-400 font-medium truncate block">
+                                  {record.deviceNickname || record.deviceType || 'Unknown'}
+                                </span>
+                              </div>
+
+                              <span className="text-[10px] text-slate-500 text-right whitespace-nowrap font-mono opacity-80">
+                                {new Date(record.timestamp).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })}
+                              </span>
+                            </div>
+
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pl-1">
+                              <span className="text-[9px] text-slate-600 font-mono">ID: {record.code.substring(0, 8)}...</span>
+                              {record.syncMethod && <span className="text-[8px] text-slate-600 bg-slate-900 border border-slate-800/50 px-1.5 py-0.5 rounded-md font-bold uppercase tracking-tighter">{record.syncMethod}</span>}
+                              {record.syncProvider && <span className="text-[8px] text-slate-600 bg-slate-900 border border-slate-800/50 px-1.5 py-0.5 rounded-md font-bold uppercase tracking-tighter">{record.syncProvider}</span>}
+                              {record.error && (
+                                <span className="text-[9px] text-rose-500/80 italic font-medium line-clamp-1 flex-1 min-w-[150px]" title={record.error}>
+                                  Err: {record.error}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   ) : (
                     <p className="text-sm text-slate-500 text-center py-8">No history recorded yet.</p>
                   )}
                 </div>
                 <button 
                   onClick={() => setShowHistory(false)}
-                  className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl font-bold transition-colors mt-2"
+                  className="w-full py-4 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-2xl font-black uppercase tracking-widest text-xs transition-all border border-slate-700 mt-2"
                 >
-                  Back
+                  Return to Archives
                 </button>
               </motion.div>
             ) : (isVerifying || isSyncing) ? (
@@ -402,33 +484,46 @@ export function CloudSyncModal({
                       <div className="absolute inset-0 bg-red-500/20 blur-2xl rounded-full" />
                       <AlertTriangle className="text-red-400 relative z-10" size={48} />
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-2 px-6">
                       <h3 className="text-xl font-black text-rose-300 uppercase tracking-widest">
-                        Connection Timeout
+                        Sync Interrupted
                       </h3>
-                      <p className="text-slate-400 text-sm max-w-[250px] mx-auto leading-relaxed">
-                        The connection to the Astral Archives took too long. Please check your network or try again.
+                      <p className="text-slate-400 text-sm leading-relaxed">
+                        The connection to the Astral Archives timed out. 
                       </p>
+                      {syncError && (
+                        <div className="mt-2 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-xs font-mono break-all line-clamp-3">
+                          {syncError}
+                        </div>
+                      )}
                     </div>
-                    <button
-                      onClick={() => window.location.reload()}
-                      className="mt-4 px-6 py-3 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl font-black uppercase tracking-widest text-xs transition-colors flex items-center justify-center gap-2"
-                    >
-                      <RefreshCw size={16} />
-                      Reload Application
-                    </button>
-                    <button
-                      onClick={onClose}
-                      className="mt-2 text-slate-500 hover:text-slate-400 text-[10px] font-bold uppercase tracking-widest underline decoration-slate-700 underline-offset-4"
-                    >
-                      Dismiss
-                    </button>
+                    <div className="flex flex-col w-full gap-3 px-4">
+                      <button
+                        onClick={() => {
+                          setTimeoutElapsed(false);
+                          if (onCancelSync) onCancelSync();
+                        }}
+                        className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-bold transition-all shadow-lg flex items-center justify-center gap-3"
+                      >
+                        <RefreshCw size={20} />
+                        Reset & Retry Sync
+                      </button>
+                      <button
+                        onClick={() => window.location.reload()}
+                        className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-bold transition-colors flex items-center justify-center gap-2 text-xs"
+                      >
+                        Reload Application
+                      </button>
+                    </div>
                   </>
                 ) : (
                   <>
                     <div className="relative">
                       <div className="absolute inset-0 bg-indigo-500/20 blur-2xl rounded-full" />
                       <Loader2 className="animate-spin text-indigo-400 relative z-10" size={48} />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-[10px] font-black text-indigo-300/50 mt-12">{timeLeft}s</span>
+                      </div>
                     </div>
                     <div className="space-y-2">
                       <h3 className="text-xl font-black text-indigo-300 uppercase tracking-widest">
@@ -442,6 +537,15 @@ export function CloudSyncModal({
                         ) : 'Analyzing temporal data and local inscriptions for discrepancies...'}
                       </p>
                     </div>
+                    
+                    <button
+                      onClick={onCancelSync}
+                      className="mt-6 px-6 py-2.5 bg-slate-800 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border border-slate-700 hover:border-rose-500/30 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2"
+                    >
+                      <X size={14} />
+                      Cancel Attempt
+                    </button>
+
                     <div className="flex gap-1">
                       {[0, 1, 2].map(i => (
                         <motion.div 
@@ -518,6 +622,14 @@ export function CloudSyncModal({
                           </div>
                           <div className="text-center text-[10px] text-indigo-400/70 font-bold truncate bg-indigo-500/5 py-1 rounded-md">
                             {syncCheckResult.cloudData?.savedBy || syncCheckResult.cloudData?.state?.deviceNickname || syncCheckResult.cloudData?.state?.deviceType || 'Unknown'}
+                          </div>
+
+                          <div className="text-slate-500 font-medium">Device Code</div>
+                          <div className="text-center text-[9px] text-slate-500 font-mono truncate bg-slate-800/30 py-1 rounded-md border border-slate-700/30">
+                            {localState?.deviceCode?.substring(0, 8) || '?'}
+                          </div>
+                          <div className="text-center text-[9px] text-indigo-500/50 font-mono truncate bg-indigo-500/5 py-1 rounded-md border border-indigo-500/10">
+                            {(syncCheckResult.cloudData?.savedByDeviceCode || syncCheckResult.cloudData?.state?.deviceCode)?.substring(0, 8) || '?'}
                           </div>
 
                           <div className="text-slate-500 font-medium">Timestamp</div>

@@ -511,6 +511,13 @@ export const Settings = React.memo<SettingsProps & { onOpenAstralArchives?: () =
                     You are about to clear <strong>ALL</strong> stored data. This includes your progress, talents, inventory, and history. This action <strong>cannot be undone</strong>.
                   </p>
                   
+                  <div className="flex items-start gap-3 p-3 bg-indigo-500/5 rounded-xl border border-indigo-500/10">
+                    <Cloud size={16} className="text-indigo-400 mt-0.5 shrink-0" />
+                    <p className="text-[11px] text-slate-400 leading-normal">
+                      Note: This only affects the data stored on this device. Your <span className="text-indigo-300 font-bold">Cloud Archives</span> in the Astral Archives will remain untouched.
+                    </p>
+                  </div>
+                  
                   <div className="p-4 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 space-y-3">
                     <p className="text-xs text-indigo-300 font-bold leading-relaxed">
                       Before proceeding, we strongly recommend exporting your data for safekeeping.

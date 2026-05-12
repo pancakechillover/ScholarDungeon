@@ -82,6 +82,8 @@ interface ExploreViewProps {
   syncToCloud: (forceOverwrite?: boolean, specificState?: AppState, syncMethod?: 'Manual' | 'Immediate' | 'Interval polling' | 'Visibility API Active') => void;
   updateSession: (id: string, updates: any) => void;
   deleteSession: (id: string) => void;
+  bulkCreateSessions: (data: { count: number, objectiveId: string, startTime: string, endTime: string }) => void;
+  bulkDeleteSessions: (data: { startTime: string, endTime: string }) => void;
   togglePip: () => void;
   canPip: boolean;
   isPWA: boolean;
@@ -139,6 +141,8 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
   syncToCloud,
   updateSession,
   deleteSession,
+  bulkCreateSessions,
+  bulkDeleteSessions,
   togglePip,
   canPip,
   isPWA,
@@ -376,6 +380,7 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
                     secretCode={state.secretCode}
                     pushEnabled={state.pushEnabled}
                     onTogglePip={togglePip}
+                    requireFocusConfirmation={state.requireFocusConfirmation}
                     focusDuration={focusDuration}
                     restDuration={restDuration}
                     enableRest={enableRest}
@@ -468,6 +473,7 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
                       secretCode={state.secretCode}
                       pushEnabled={state.pushEnabled}
                       onTogglePip={togglePip}
+                      requireFocusConfirmation={state.requireFocusConfirmation}
                       focusDuration={focusDuration}
                       restDuration={restDuration}
                       enableRest={enableRest}
@@ -649,6 +655,8 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
             majorDungeons={majorDungeons}
             updateSession={updateSession}
             deleteSession={deleteSession}
+            bulkCreateSessions={bulkCreateSessions}
+            bulkDeleteSessions={bulkDeleteSessions}
             rewardPool={state.rewardPool}
           />
         </div>

@@ -192,6 +192,7 @@ export interface AppState {
   timerBannerCompactMode?: boolean;
   timerSkipVictoryMode?: 'none' | 'auto_pick_highest' | 'skip_rewards' | 'defer_to_chest';
   timerBannerShortcuts?: string[];
+  requireFocusConfirmation?: boolean;
   pendingRewardChest?: { session: StudySession; choices: RewardCard[]; }[];
   // Editable Pools
   rewardPool: RewardCard[];
@@ -240,10 +241,13 @@ export interface AppState {
   autoSyncIntervalMinutes?: number;
   deviceType?: string;
   deviceNickname?: string;
+  deviceCode?: string;
   syncHistory?: {
     type: 'login' | 'force_sync' | 'local_to_cloud' | 'cloud_to_local' | 'cancel_login' | 'unbind_local' | 'delete_cloud';
     code: string;
     timestamp: string;
+    status: 'success' | 'failed' | 'cancelled' | 'pending';
+    error?: string;
     deviceType?: string;
     deviceNickname?: string;
     deviceCode?: string;

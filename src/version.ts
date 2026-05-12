@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v5.5.7';
+export const APP_VERSION = 'v5.13.15';
 export const LAST_UPDATE_DATE = '2026-05-12';
-export const LAST_UPDATE_TIME = '05:15:00';
+export const LAST_UPDATE_TIME = '13:45:00';
 
 export interface ReleaseLog {
   version: string;
@@ -12,2064 +12,536 @@ export interface ReleaseLog {
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
   {
-    version: 'v5.5.7',
+    version: 'v5.13.15',
     date: '2026-05-12',
-    time: '05:15:00',
-    title: 'Performance & UX Polish',
-    items: [
-      { category: 'Performance', description: 'Massively improved loading times and responsiveness in the Record page by caching historical peak day equations. Eradicated the application-freezing lag previously caused by excessive timezone computations when viewing the Heatmap.' },
-      { category: 'UX', description: 'Interactive popovers in Recharts graphs will now successfully dismiss upon clicking anywhere outside the chart interface.' }
-    ]
-  },
-  {
-    version: 'v5.5.6',
-    date: '2026-05-12',
-    time: '01:55:00',
-    title: 'Interactive Chart Polish',
-    items: [
-      { category: 'Performance', description: 'Fixed critical application lag when clicking chart bars by memoizing and elevating the custom Recharts Tooltip components outside the main render cycle.' },
-      { category: 'UI', description: 'Upgraded Tooltip popovers to correctly inherit theme-aware semi-transparent properties (backdrop blur, slate-900 variables) instead of rigid dark hex colors for better light theme compatibility.' },
-      { category: 'UX', description: 'Replaced hardcoded Recharts dark cursors with transparent theme-agnostic fills.' }
-    ]
-  },
-  {
-    version: 'v5.5.5',
-    date: '2026-05-12',
-    time: '01:27:00',
-    title: 'Interactive Chart Popovers',
-    items: [
-      { category: 'Data Vis', description: 'Changed chart tooltips in the Record page (Weekly Activity, Daily Activity, Efficiency Trend) to trigger on click instead of hover.' },
-      { category: 'Data Vis', description: 'Unified the tooltip experience by injecting rich Custom Tooltips displaying period breakdowns, XP, Gold, and Mood icons.' },
-      { category: 'UX', description: 'Upgraded the native Heatmap hover titles to an interactive click-to-open portal with unified detailed statistics.' }
-    ]
-  },
-  {
-    version: 'v5.5.4',
-    date: '2026-05-11',
-    time: '23:45:00',
-    title: 'Timezone & Settlement Bounds',
-    items: [
-      { category: 'Bugfix', description: 'Fixed an issue where End of the Day records submitted past midnight did not display correctly on the Record page due to desynced Settlement Boundaries.' },
-      { category: 'Architecture', description: 'Synchronized the target date lookup for Daily Progress Goals on the dashboard to accurately map with Settlement boundaries.' }
-    ]
-  },
-  {
-    version: 'v5.5.3',
-    date: '2026-05-11',
-    time: '22:30:00',
-    title: 'Weekly Activity Display Polish',
-    items: [
-      { category: 'Data Vis', description: 'Fixed mood icons not displaying properly on stacked bar charts.' },
-      { category: 'Data Vis', description: 'Added numeric text displaying the exact total number of sessions above each day\'s column in the Weekly Activity bar chart.' }
-    ]
-  },
-  {
-    version: 'v5.5.2',
-    date: '2026-05-11',
-    time: '22:05:00',
-    title: 'Mood Rating Removal',
-    items: [
-      { category: 'UI', description: 'Removed the heart-based mood rating module from the Daily Summary to streamline the reflection process.' }
-    ]
-  },
-  {
-    version: 'v5.5.1',
-    date: '2026-05-11',
-    time: '21:55:00',
-    title: 'Cloud Connection Resiliency & Mood Charting',
-    items: [
-      { category: 'Reliability', description: 'Added a 60-second connection timeout and reload button to the Astral Archives verification cycle to prevent infinite loading.' },
-      { category: 'UI', description: 'Added an "Offline" badge to the Cloud Connection status and Profile cloud status when the device loses internet connection.' },
-      { category: 'Feature', description: 'Integrated Mood Icons into the top of the Weekly Activity bar chart.' },
-      { category: 'UI', description: 'Unified Mood Score and Efficiency Rating editing interfaces to align visually.' }
-    ]
-  },
-  {
-    version: 'v5.5.0',
-    date: '2026-05-11',
-    time: '23:45:00',
-    title: 'Enhanced Mood Tracking & Customization',
-    items: [
-      { category: 'Feature', description: 'Implemented a heart-based 0-5 mood rating system (Heart Icons) alongside the efficiency rating.' },
-      { category: 'Feature', description: 'Added mood customization in Settings -> General, allowing users to enable or disable specific mood types.' },
-      { category: 'UX', description: 'Restricted mood selection options to only those enabled in settings, with GREAT, GOOD, OKAY, BAD, and AWFUL as defaults.' },
-      { category: 'UI', description: 'Integrated heart-based rating display and editing directly into the Stats and Daily Summary views.' },
-    ]
-  },
-  {
-    version: 'v5.4.0',
-    date: '2026-05-11',
-    time: '23:15:00',
-    title: 'Emotional Logs & Mood Tracker',
-    items: [
-      { category: 'Feature', description: 'Introduced an emotional mood tracker allowing users to assign feelings to their Daily Summary with customizable icons (e.g., Great, Productive, Tired, Chill).' },
-      { category: 'UX', description: 'Persisted unsaved mood drafts using localStorage alongside the reflection draft.' },
-      { category: 'UI', description: 'Updated the daily reflection statistics view to elegantly display the chosen mood indicator next to the efficiency rating.' },
-      { category: 'Architecture', description: 'Expanded the `DailyLog` internal type structure to support arbitrary mood metadata.' },
-    ]
-  },
-  {
-    version: 'v5.3.26',
-    date: '2026-05-11',
-    time: '21:30:00',
-    title: 'Daily Summary Immersive Polish',
-    items: [
-      { category: 'Feature', description: 'Added markdown formatting buttons (Bold, Italic, Underline, List/Indent) specifically to the Immersive Reflection editor.' },
-      { category: 'UI', description: 'Refactored template toggle buttons (Blank & Example modes) to include clear text labels aligning with the primary "Templates" button size.' },
-      { category: 'Architecture', description: 'Consolidated redundant template control rendering in DailySummaryModal to prevent hydration mismatches and ensure uniformity between views.' },
-    ]
-  },
-  {
-    version: 'v5.3.25',
-    date: '2026-05-11',
-    time: '20:45:00',
-    title: 'Template Mode & Touch Polish',
-    items: [
-      { category: 'Feature', description: 'Introduced "Blank Mode" and "Example Mode" toggles for reflection templates, allowing users to save and load both empty structures and filled examples under the same template name.' },
-      { category: 'UI', description: 'Improved touch accessibility by making template delete buttons consistently visible instead of relying on hover states.' },
-      { category: 'Content', description: 'Updated default reflection presets to include contextual example content modes.' },
-    ]
-  },
-  {
-    version: 'v5.3.24',
-    date: '2026-05-11',
-    time: '20:30:00',
-    title: 'Template Features & KISS Retrospective',
-    items: [
-      { category: 'Feature', description: 'Added quick-access buttons for loading a Blank Template or an Example Template to the reflection editor.' },
-      { category: 'Content', description: 'Replaced "Rose, Bud, Thorn" reflection preset with the "KISS" (Keep, Improve, Stop, Start) retrospective framework.' },
-    ]
-  },
-  {
-    version: 'v5.3.23',
-    date: '2026-05-11',
-    time: '20:00:00',
-    title: 'Daily Summary Modal Polish & Immersive Edit',
-    items: [
-      { category: 'Feature', description: 'Added "Immersive" mode for Daily Reflection, providing a distraction-free, full-screen markdown editing experience.' },
-      { category: 'Feature', description: 'Implemented draft saving for End of the Day ratings and reflections, ensuring data is not lost if the modal is closed prematurely.' },
-      { category: 'UI', description: 'Optimized the Reflection panel button layout, grouping related actions and allowing vertical resizing of the textarea.' },
-    ]
-  },
-  {
-    version: 'v5.3.22',
-    date: '2026-05-11',
-    time: '19:50:00',
-    title: 'Daily Reflection Templates & Display Polish',
-    items: [
-      { category: 'Feature', description: 'Added a template preset system for Daily Reflections, allowing users to choose from built-in templates (Standard Review, 3-2-1 Summary, Rose/Bud/Thorn) and save their own presets.' },
-      { category: 'UI', description: "Enhanced the markdown preview panel's font colors for significantly better readability across both light and dark backgrounds." },
-    ]
-  },
-  {
-    version: 'v5.3.21',
-    date: '2026-05-11',
-    time: '19:35:00',
-    title: 'Dashboard UI Polish',
-    items: [
-      { category: 'UI', description: 'Enhanced the Daily Progress module with a minimalist theme-aware progress bar, replacing the static emerald color with theme-dependent styling.' },
-      { category: 'UI', description: 'Added an icon to the Daily Progress title to maintain consistency with other sections.' },
-      { category: 'UI', description: 'Integrated the Daily Progress and Settlement Period display directly into the "End of the Day" summary modal for better context.' },
-      { category: 'UX', description: 'Improved timezone formatting for the Settlement Period to display as `24:00` instead of `0:00` of the next day.' },
-    ]
-  },
-  {
-    version: 'v5.3.20',
-    date: '2026-05-11',
-    time: '02:02:00',
-    title: 'Cloud Sync: Device Code Identity & UX Polish',
-    items: [
-      { category: 'Architecture', description: 'Implemented randomly-generated, persistent device codes to replace volatile nicknames for more reliable identity matching.' },
-      { category: 'UX', description: 'Silent synchronization now triggers automatically when device codes match and local archives are newer or equal to cloud saves.' },
-      { category: 'UI', description: 'Added Device Identity card in Cloud Settings with device code display and copy-to-clipboard functionality.' },
-      { category: 'UI', description: 'Updated Sync Status & History table to record and display device codes for every operation.' }
-    ]
-  },
-  {
-    version: 'v5.3.19',
-    date: '2026-05-11',
-    time: '01:21:00',
-    title: 'Cloud Sync: Device Code Identity',
-    items: [
-      { category: 'Architecture', description: 'Replaced volatile device nickname matching with permanent, randomly-generated device codes stored locally, preventing false conflicts.' },
-      { category: 'UX', description: 'Silent sync will now automatically upload when the device code matches and the local timestamp is newer or equal.' }
-    ]
-  },
-  {
-    version: 'v5.3.18',
-    date: '2026-05-10',
-    time: '23:05:00',
-    title: 'Cloud Sync: True Silent Verification',
-    items: [
-      { category: 'Bugfix', description: 'Fixed silent sync being interrupted due to asynchronous state race conditions during automatic checks.' },
-      { category: 'UX', description: 'Improved silent integrity logic: if local and cloud times match but data diverges slightly, it trusts local authority and silently uploads instead of triggering a conflict modal.' }
-    ]
-  },
-  {
-    version: 'v5.3.17',
-    date: '2026-05-10',
-    time: '22:58:00',
-    title: 'Cloud Sync: Provider Logic Correction',
-    items: [
-      { category: 'Bugfix', description: 'Resolved a contradiction where selecting WebDAV sync strategy would incorrectly link the Redis plan and set its password to \'WebDAV\'.' },
-      { category: 'UI', description: 'Updated Redis "Connected" badge logic to only appear when Redis is the active provider, preventing confusion.' },
-      { category: 'Architecture', description: 'Hardened useCloudSync hook to more strictly manage secretCode and syncProvider states during conflict resolution.' }
-    ]
-  },
-  {
-    version: 'v5.3.16',
-    date: '2026-05-10',
-    time: '22:00:00',
-    title: 'Cloud Sync: Connection Status Unsynced Badge',
-    items: [
-      { category: 'UI', description: 'Added a high-visibility (rose-500 red) "Unsynced" badge specifically to the Connection status section in Cloud Settings and Profile Modal.' },
-      { category: 'UX', description: 'Synchronized visual feedback logic between Connection and State Data statuses for clearer state awareness.' }
-    ]
-  },
-  {
-    version: 'v5.3.15',
-    date: '2026-05-10',
-    time: '29:30:00',
-    title: 'Cloud Sync: Silent Integrity & Metadata Fix',
-    items: [
-      { category: 'UX', description: 'Implemented silent cloud synchronization on page entry: local saves automatically overwrite cloud archives if the device matches and local is newer, eliminating redundant prompts.' },
-      { category: 'Bugfix', description: 'Fixed "Unknown" timestamp display in the Astral Archives comparison modal by prioritizing top-level metadata during save extraction.' },
-      { category: 'Reliability', description: 'Enhanced data consistency checks to better handle auto-save timestamps across multi-device sessions.' }
-    ]
-  },
-  {
-    version: 'v5.3.14',
-    date: '2026-05-10',
-    time: '29:00:00',
-    title: 'Cloud Sync: Unsynced Status Indicator',
-    items: [
-      { category: 'UI', description: 'Implemented a high-visibility "Unsynced" indicator (rose-500 red) for cloud status when local changes are pending.' },
-      { category: 'UX', description: 'Synchronized the status labeling across Cloud Settings and Profile Modal for consistent state awareness.' },
-      { category: 'UI', description: 'Improved the Cloud Sync verify button layout for better accessibility.' }
-    ]
-  },
-  {
-    version: 'v5.3.13',
-    date: '2026-05-10',
-    time: '28:30:00',
-    title: 'Visual Polish: Light Theme Readability',
-    items: [
-      { category: 'UI', description: 'Replaced hardcoded white and deep slate classes with theme-aware slate variables across PageHeader, Dashboard, Stats, Reward History, Shop, and Gacha results.' },
-      { category: 'UX', description: 'Improved contrast for critical text elements in light themes (Daylight, Warm Sun, Candy) to ensure consistent readability.' }
-    ]
-  },
-  {
-    version: 'v5.3.12',
-    date: '2026-05-10',
-    time: '28:15:00',
-    title: 'Identity Management: Explicit Preservation',
-    items: [
-      { category: 'UX', description: 'Added an explicit "Save" button to the Device Identity section to prevent unintended background state updates.' },
-      { category: 'UI', description: 'Implemented visual "Saved!" feedback and dynamic button states for the device nickname input.' }
-    ]
-  },
-  {
-    version: 'v5.3.11',
-    date: '2026-05-10',
-    time: '28:00:00',
-    title: 'Astral Archives: Network Awareness & Silent Integrity',
-    items: [
-      { category: 'Feature', description: 'Added proactive network connectivity checks to all cloud operations, ensuring stability in fluctuating environments.' },
-      { category: 'UX', description: 'Implemented a silent verification system on page entry that only interrupts the user if a data conflict or network issue is detected.' },
-      { category: 'UX', description: 'Ensured the Archive modal automatically resolves and closes upon finding matching records during manual verification.' }
-    ]
-  },
-  {
-    version: 'v5.3.10',
-    date: '2026-05-10',
-    time: '27:30:00',
-    title: 'Astral Archives: Silent Verification on Focus',
-    items: [
-      { category: 'Feature', description: 'Implemented silent synchronization checks: the app now automatically verifies local vs cloud archives upon returning to the page (focus).' },
-      { category: 'UX', description: 'Comparison modals are now truly non-intrusive, appearing only when a deliberate data discrepancy or conflict is detected.' },
-      { category: 'UI', description: 'Polished the "Communing Archives" loading overlay for a smoother transition during background verification tasks.' }
-    ]
-  },
-  {
-    version: 'v5.3.9',
-    date: '2026-05-10',
-    time: '27:10:00',
-    title: 'Astral Archives: Sync Loading Overlay',
-    items: [
-      { category: 'UX', description: 'Implemented a full-modal loading overlay with a spinning "Loader2" icon during upload and download operations to prevent premature interaction.' },
-      { category: 'Reliability', description: 'Added automatic modal closure upon successful synchronization, ensuring the user returns to the main interface only when records are secured.' },
-      { category: 'UI', description: 'Enhanced sync status messaging with context-aware labels like "Applying Changes" and "Communing Archives" during active operations.' }
-    ]
-  },
-  {
-    version: 'v5.3.8',
-    date: '2026-05-10',
-    time: '26:40:00',
-    title: 'Quest & Achievement Talent Indicators',
-    items: [
-      { category: 'Aesthetic', description: 'Added talent effect tags to Quests and Achievements, clearly identifying tasks unlocked via specific talents.' },
-      { category: 'Architecture', description: 'Enhanced Quest History metadata to persist talent requirements for documented deeds.' },
-      { category: 'UI', description: 'Integrated dynamic talent icons and names into the Quest Board cards and history logs.' }
-    ]
-  },
-  {
-    version: 'v5.3.7',
-    date: '2026-05-10',
-    time: '26:15:00',
-    title: 'Daily Progress: Settlement Period',
-    items: [
-      { category: 'Feature', description: 'Implemented adaptive "Settlement Period" display for Daily Progress, ranging from Morning Start to Night End peaks.' },
-      { category: 'Architecture', description: 'Synchronized daily reset logic across the app to align with the Morning Start hour, ensuring counter consistency with the settlement period.' },
-      { category: 'UI', description: 'Added high-contrast settlement period timestamps (MM/DD HH:MM) to the Sanctum Dashboard.' }
-    ]
-  },
-  {
-    version: 'v5.3.6',
-    date: '2026-05-10',
-    time: '25:55:00',
-    title: 'Identity-Safe Cloud Sync',
-    items: [
-      { category: 'Reliability', description: 'Implemented mandatory identity checks before all cloud sync operations. Silent sync only occurs if the local device identity matches the cloud record.' },
-      { category: 'Safety', description: 'Added automatic sync abortion for Visibility API triggers when an identity mismatch is detected, preventing silent accidental overwrites.' },
-      { category: 'UI/UX', description: 'Enhanced the Cloud Sync Modal to clearly identify which device created the remote archive during conflict resolution.' }
-    ]
-  },
-  {
-    version: 'v5.3.5',
-    date: '2026-05-10',
-    time: '25:35:00',
-    title: 'Device Identity Localization',
-    items: [
-      { category: 'Architecture', description: 'Modified Cloud Sync logic to ensure the Device Nickname is stored locally and never synced to the cloud, preventing naming conflicts between devices.' },
-      { category: 'Reliability', description: 'Enhanced data stripping in useCloudSync to exclude volatile device identity fields from all upload methods (Redis, Google Drive, WebDAV).' },
-      { category: 'UX', description: 'Updated state merging during conflict resolution to prioritize preserving the local device nickname over incoming cloud data.' }
-    ]
-  },
-  {
-    version: 'v5.3.4',
-    date: '2026-05-10',
-    time: '25:20:00',
-    title: 'Visual Polish: "Pinned Note" Randolph Rotation',
-    items: [
-      { category: 'Aesthetic', description: 'Implemented a truly random tilting effect for items on the Quest Board and Achievement lists, creating an organic "pinned note" look.' },
-      { category: 'UX', description: 'Simplified the rotation logic and ensured remounting triggers new random tilts every time the user enters the board or switches tabs.' },
-      { category: 'Visual', description: 'Added random rotations and subtle pins to Quest History entries for consistent aesthetic across all board sections.' }
-    ]
-  },
-  {
-    version: 'v5.3.3',
-    date: '2026-05-10',
-    time: '25:10:00',
-    title: 'Stability Fix: Sync Verification',
-    items: [
-      { category: 'Bugfix', description: 'Fixed a ReferenceError where isVerifying was not properly destructured from the cloud sync hook in App.tsx.' }
-    ]
-  },
-  {
-    version: 'v5.3.2',
-    date: '2026-05-10',
-    time: '25:05:00',
-    title: 'Cloud UI Consolidation',
-    items: [
-      { category: 'UX', description: 'Consolidated redundant manual sync buttons into a single primary "Verify & Compare Archives" action.' },
-      { category: 'UI', description: 'Enhanced the manual operation button styling for better visual hierarchy and clarity.' }
-    ]
-  },
-  {
-    version: 'v5.3.1',
-    date: '2026-05-10',
-    time: '24:50:00',
-    title: 'New Seeker Onboarding',
-    items: [
-      { category: 'Feature', description: 'Implemented the "New Seeker" flow: detect empty cloud archives on first login and prompt for archive initialization.' },
-      { category: 'UX', description: 'Added a deliberate "Verification Phase" with artificial delays when connecting to Cloud storage to allow for thorough data comparison.' },
-      { category: 'UI', description: 'Enhanced CloudSyncModal with a dedicated verification animation and thematic "Initialize Archive" interface.' },
-      { category: 'Reliability', description: 'Added synchronization triggers in App.tsx to ensure immediate verification upon successful provider connection.' }
-    ]
-  },
-  {
-    version: 'v5.3.0',
-    date: '2026-05-10',
-    time: '24:30:00',
-    title: 'Sync Status & Device Identity',
-    items: [
-      { category: 'Feature', description: 'Implemented Device Nicknaming, allowing users to name their current device for easier tracking in sync history.' },
-      { category: 'UI', description: 'Redesigned the Sync History view into a robust table format with sorting and CSV export functionality.' },
-      { category: 'UI', description: 'Refined Cloud Settings layout with separate stacked modules for Sync Status and Manual Operations.' },
-      { category: 'Architecture', description: 'Updated cloud sync payloads to include device nicknames in both save data and operation logs.' }
-    ]
-  },
-  {
-    version: 'v5.2.9',
-    date: '2026-05-10',
-    time: '24:15:00',
-    title: 'Force Sync Data Comparison',
-    items: [
-      { category: 'Feature', description: 'Implemented one-click Force Upload and Force Download buttons in Cloud Settings.' },
-      { category: 'UI', description: 'Polished the Side-by-Side comparison modal with detailed stats (Level, Gold, Sessions, Device, Timestamp) to ensure users know exactly what is being overwritten.' },
-      { category: 'UX', description: 'Forces the comparison modal even if data is identical, allowing users to verify their cloud state manually.' }
-    ]
-  },
-  {
-    version: 'v5.2.8',
-    date: '2026-05-10',
-    time: '24:00:00',
-    title: 'WebDAV UI & Validation Refinement',
-    items: [
-      { category: 'Reliability', description: 'Added path validation to catch and warn when local Windows folders are incorrectly entered as WebDAV URLs.' },
-      { category: 'UX', description: 'Improved connection modal with explicit labels and placeholders to guide Jianguoyun users.' },
-      { category: 'Bugfix', description: 'Enhanced error handling for proxy connection failures.' }
-    ]
-  },
-  {
-    version: 'v5.2.7',
-    date: '2026-05-10',
-    time: '23:55:00',
-    title: 'WebDAV Folder Isolation',
-    items: [
-      { category: 'Feature', description: 'WebDAV sync now automatically creates and uses a "SCHOLARS DUNGEON" subfolder to avoid root directory pollution.' },
-      { category: 'UX', description: 'Enforced subfolder logic in connection setup and continuous sync loops for Jianguoyun and other WebDAV providers.' },
-      { category: 'Bugfix', description: 'Fixed potential sync failures when target folders do not exist on the WebDAV server.' }
-    ]
-  },
-  {
-    version: 'v5.2.6',
-    date: '2026-05-10',
-    time: '23:45:00',
-    title: 'Cloud Sync Force Operations',
-    items: [
-      { category: 'Feature', description: 'Implemented explicit "Force Upload" and "Force Download" actions in cloud settings.' },
-      { category: 'UI', description: 'Created a detailed Side-by-Side comparison view for Cloud vs Local data before any destructive overwrites occur.' },
-      { category: 'UX', description: 'Added double-confirmation layers on force operations to protect user data integrity.' }
-    ]
-  },
-  {
-    version: 'v5.2.5',
-    date: '2026-05-10',
-    time: '23:15:00',
-    title: 'Sync Status Visualization',
-    items: [
-      { category: 'Feature', description: 'Added unified Sync Status panels to the Profile modal and Cloud Settings section to display active connection type and last update times.' },
-      { category: 'Architecture', description: 'Passed globally tracked unsynced change states to settings to inform users if their save game needs uploading.' }
-    ]
-  },
-  {
-    version: 'v5.2.4',
-    date: '2026-05-10',
-    time: '23:00:00',
-    title: 'Google Drive Sync Status & Reliability Fixes',
-    items: [
-      { category: 'Bugfix', description: 'Fixed Google Drive tokens loss during state merges and conflict resolution in `useCloudSync`.' },
-      { category: 'UI', description: 'Corrected the "Connected" status display for Google Drive, ensuring it persists and accurately reflects token presence.' },
-      { category: 'Architecture', description: 'Refactored `useCloudSync` hook to unify state stripping logic and clean up nested callback structures.' },
-      { category: 'Stability', description: 'Fixed a runtime crash in `checkCloudSync` by replacing non-existent `downloadFile` with `readSaveFile`.' }
-    ]
-  },
-  {
-    version: 'v5.2.3',
-    date: '2026-05-10',
-    time: '22:30:00',
-    title: 'WebDAV Full Implementation',
-    items: [
-      { category: 'Architecture', description: 'Standardized synchronization checks, redirecting App startup to use a new `checkCloudSync` routing which intelligently directs to Google Drive, WebDAV, or Redis logic interchangeably.' },
-      { category: 'Feature', description: 'Fully integrated WebDAV support as a new primary Sync Provider with a local API proxy addressing CORS restrictions gracefully.' },
-      { category: 'UI', description: 'Unlocked the WebDAV options panel in Cloud Sync settings allowing custom server URL (e.g. Nextcloud, Jianguoyun), Usernames, and Application Passwords.' }
-    ]
-  },
-  {
-    version: 'v5.2.2',
-    date: '2026-05-10',
-    time: '22:15:00',
-    title: 'Google Drive Developer Access Lock',
-    items: [
-      { category: 'Architecture', description: 'Added a Developer Password Lock to the Google Drive synchronization feature to prevent unauthorized access while the OAuth App is pending Google Verification.' },
-      { category: 'UI', description: 'Updated the Cloud Sync settings interface to dynamically show the lock icon on Google Drive integrations.' },
-      { category: 'UX', description: 'Restructured the developer unlock modal to adapt its description text dynamically based on the syncing method being chosen.' }
-    ]
-  },
-  {
-    version: 'v5.2.1',
-    date: '2026-05-10',
-    time: '21:45:00',
-    title: 'Quest Board UI Style Sync',
-    items: [
-      { category: 'UI', description: 'Synchronized all theme-specific `--qb-*` CSS variables with finalized debugger values.' },
-      { category: 'UX', description: 'Improved visual contrast for Quest cards and progress bars across all themes.' }
-    ]
-  },
-  {
-    version: 'v5.2.0',
-    date: '2026-05-10',
-    time: '21:30:00',
-    title: 'Sync History Metadata',
-    items: [
-      { category: 'Feature', description: 'Implemented detailed metadata tracking for synchronization history (Method and Provider).' },
-      { category: 'Architecture', description: 'Enhanced syncHistory interface and useCloudSync hook to capture and persist sync event metadata.' },
-      { category: 'UI', description: 'Updated Cloud Sync Modal and Cloud Settings Section to display detailed sync history logs.' },
-      { category: 'Bugfix', description: 'Fixed theme-awareness for secondary text elements in Cloud Settings.' }
-    ]
-  },
-  {
-    version: 'v5.1.3',
-    date: '2026-05-10',
-    time: '20:10:00',
-    title: 'Theme-Aware Color Expansion',
-    items: [
-      { category: 'Architecture', description: 'Added `indigo-300` to the theme-aware color system, allowing all `text-indigo-300` usages to adapt to the active theme.' },
-      { category: 'Documentation', description: 'Updated AGENTS.md guidelines for theme-aware colors.' }
-    ]
-  },
-  {
-    version: 'v5.1.2',
-    date: '2026-05-10',
-    time: '20:00:00',
-    title: 'Quest Board UI Customization Expansion',
-    items: [
-      { category: 'UI', description: 'Added outer white border (outline) to the Quest Board container, configurable via CSS variables.' },
-      { category: 'Feature', description: 'Expanded Quest Board CSS Debugger with controls for checkbox colors and progress bar text color.' },
-      { category: 'Architecture', description: 'Decoupled hardcoded checkbox and progress text colors in QuestManager to use themeable CSS variables.' }
-    ]
-  },
-  {
-    version: 'v5.1.1',
-    date: '2026-05-10',
-    time: '19:20:00',
-    title: 'Data Reliability & App Visibility Hooks',
-    items: [
-      { category: 'Architecture', description: 'Implemented the Visibility API & beforeUnload listeners to forcefully push unsynced changes if the application is closed or loses focus.' },
-      { category: 'UI', description: 'Added sync operations history and state under the Cloud tab.' }
-    ]
-  },
-  {
-    version: 'v5.1.0',
-    date: '2026-05-10',
-    time: '18:45:00',
-    title: 'Auto-Sync Configuration & Cloud Access',
-    items: [
-      { category: 'Feature', description: 'Added the ability to choose how data automatically syncs to the backend (Debounce, Interval, or Manual).' },
-      { category: 'Feature', description: 'Implemented a Developer Code lock on the Astral Archives due to current Redis storage limitations.' },
-      { category: 'UX', description: 'Added fine-grained sliders to customize wait duration for Debounce or Polling limits.' }
-    ]
-  },
-  {
-    version: 'v5.0.0',
-    date: '2026-05-10',
-    time: '18:15:00',
-    title: 'Cloud Synchronization Overhaul',
-    items: [
-      { category: 'Architecture', description: 'Added a dedicated Cloud module in System Settings for managing saving and synchronization preferences.' },
-      { category: 'UI', description: 'Moved the Astral Archives from Account Status into the Cloud module to prepare for multi-provider support.' },
-      { category: 'Feature', description: 'Added placeholder interfaces for future Google Drive and WebDAV backup solutions.' }
-    ]
-  },
-  {
-    version: 'v4.10.20',
-    date: '2026-05-10',
-    time: '17:30:00',
-    title: 'Global Victory Screen',
-    items: [
-      { category: 'UX', description: 'Implemented global timer monitoring so the Victory! screen automatically forces full-screen and redirects to the Explore tab upon completion, regardless of where the user is browsing or if the tab is in the background.' }
-    ]
-  },
-  {
-    version: 'v4.10.19',
-    date: '2026-05-10',
-    time: '17:20:00',
-    title: 'Quest Board UI Polish',
-    items: [
-      { category: 'UI', description: 'Removed the background styling and "TASK PROGRESS" text from the Quest Board progress bars for a cleaner look.' },
-      { category: 'UX', description: 'Synchronized the UI changes to the CSS Debugger preview layout as well.' }
-    ]
-  },
-  {
-    version: 'v4.10.18',
-    date: '2026-05-10',
-    time: '17:15:00',
-    title: 'Touch & Scroll Engine Overhaul',
-    items: [
-      { category: 'Architecture', description: 'Rebuilt root layout engine using a rigid Flexbox structure to completely eliminate iOS Safari scrolling bugs and rubber-banding on the sidebar.' },
-      { category: 'Bugfix', description: 'Restored fluent mouse-wheel scrolling by properly enforcing overflow boundaries isolated entirely inside the main workspace.' }
-    ]
-  },
-  {
-    version: 'v4.10.17',
-    date: '2026-05-10',
-    time: '17:01:00',
-    title: 'Guidebook Audio File Integration',
-    items: [
-      { category: 'Audio', description: 'Replaced synthesized page turn logic with the native page-flip.mp3 audio file.' }
-    ]
-  },
-  {
-    version: 'v4.10.16',
-    date: '2026-05-10',
-    time: '16:50:00',
-    title: 'iOS Scroll & Touch Stability',
-    items: [
-      { category: 'Bugfix', description: 'Fixed an issue on iOS devices where scrolling the page would incorrectly move the nav sidebar or rubber-band the viewport.' },
-      { category: 'Bugfix', description: 'Restored normal touch scrolling inside the Expedition menu by disabling framer-motion touch-action overrides outside of drag handles.' },
-      { category: 'Architecture', description: 'Applied overscroll-contain to scrollable zones and decoupled fixed elements from height-restricted HTML blocks.' }
-    ]
-  },
-  {
-    version: 'v4.10.15',
-    date: '2026-05-10',
-    time: '16:45:00',
-    title: 'Guidebook Audio Enhancements',
-    items: [
-      { category: 'Audio', description: 'Implemented a custom procedural soft "page turn" sound effect using the Web Audio API for the Adventure Guide.' },
-      { category: 'UX', description: 'Linked page turn sound effects to swiping, clicking navigation arrows, and using table of contents bookmarks within the Guidebook.' }
-    ]
-  },
-  {
-    version: 'v4.10.14',
-    date: '2026-05-10',
-    time: '16:34:00',
-    title: 'CSS Debugger Full Screen & Progress Polish',
-    items: [
-      { category: 'Architecture', description: 'Moved the CSS Debugger modal to React Portals, enforcing true full-screen overlay across all native UI modules and sidebars.' },
-      { category: 'Feature', description: 'Added a Realistic Mode toggle to the CSS Debugger that previews exact procedural card rotations and absolute thumbtack decorations.' },
-      { category: 'UI', description: 'Fully integrated progress bar fill and track colors into the Quest Board CSS dynamic overrides system via 3 new root variables.' }
-    ]
-  },
-  {
-    version: 'v4.10.13',
-    date: '2026-05-10',
-    time: '16:15:00',
-    title: 'Quest Board CSS Export & Layout Polish',
-    items: [
-      { category: 'Feature', description: 'Added an Export CSS button to the CSS Debugger, generating minified CSS variables ready for production integration.' },
-      { category: 'UI', description: 'Scaled down the preview mockup wrapper to 90%, ensuring it fits flawlessly inside vertically constrained laptops without needing a scrollbar.' },
-      { category: 'UX', description: 'Rebuilt the mock representation of checkboxes and task progress elements in the debugger to perfectly match the flex behaviors used on the real Quest Board.' }
-    ]
-  },
-  {
-    version: 'v4.10.12',
-    date: '2026-05-10',
-    time: '16:08:00',
-    title: 'Guidebook Swipe Interactions',
-    items: [
-      { category: 'UX', description: 'Added smooth touch swipe gestures to turn pages intuitively left or right within the Adventure Guide.' }
-    ]
-  },
-  {
-    version: 'v4.10.11',
-    date: '2026-05-10',
-    time: '16:04:00',
-    title: 'CSS Debugger GUI Overlay',
-    items: [
-      { category: 'Feature', description: 'Transformed the CSS Debugger into a robust visual color picker dashboard with discrete inputs.' },
-      { category: 'UI', description: 'Expanded layout space for the debugger modal to perfectly capture mockup and pickers at once.' },
-      { category: 'UX', description: 'Improved mockup view to precisely showcase progress tracking boxes and checkout elements.' }
-    ]
-  },
-  {
-    version: 'v4.10.10',
-    date: '2026-05-10',
-    time: '15:52:00',
-    title: 'Quest Board CSS Live Editor',
-    items: [
-      { category: 'Feature', description: 'Added an interactive live CSS editor to the Quest Board CSS Debugger modal for real-time styling of `--qb-*` variables.' },
-      { category: 'UI', description: 'Decoupled hardcoded style constraints in Quests tab to ensure they natively respect the injected .qb-* classes.' },
-      { category: 'Persistance', description: 'Custom CSS from the debugger is permanently stored locally and loads gracefully across app restarts.' }
-    ]
-  },
-  {
-    version: 'v4.10.9',
-    date: '2026-05-10',
-    time: '15:45:00',
-    title: 'Expedition Undo Drag Operations',
-    items: [
-      { category: 'Feature', description: 'Implemented a dedicated Undo button to revert complex hierarchy drag-and-drop operations safely.' },
-      { category: 'Architecture', description: 'Deeply integrated drag caching mechanisms into the unified store by precisely capturing the start of dragging actions.' }
-    ]
-  },
-  {
-    version: 'v4.10.8',
-    date: '2026-05-10',
-    time: '15:15:00',
-    title: 'Quest Board Developer CSS Toolkit',
-    items: [
-      { category: 'Feature', description: 'Centralized Quest Board styling logic using CSS variables localized per theme.' },
-      { category: 'UI', description: 'Implemented Quest Board CSS Debugger tool within Developer Settings.' },
-      { category: 'Architecture', description: 'Fully decoupled standard `.qb-*` classes enabling rapid custom theme updates without cross-contamination.' }
-    ]
-  },
-  {
-    version: 'v4.10.7',
-    date: '2026-05-10',
-    time: '11:22:00',
-    title: 'Expedition Drag & Drop Hierarchy Fix',
-    items: [
-      { category: 'Bugfix', description: 'Resolved a critical race condition where dragging a sub-dungeon across tiers caused items to disappear due to outdated local Reorder state.' },
-      { category: 'Architecture', description: 'Refactored onReorder handling for MajorDungeons and Sub-Dungeons to exclusively filter and update based on verified state membership.' }
-    ]
-  },
-  {
-    version: 'v4.10.6',
-    date: '2026-05-10',
-    time: '11:15:00',
-    title: 'Dungeon Tier Creation Title Fix',
-    items: [
-      { category: 'Bugfix', description: 'Fixed a logical error where creating a Tier 1 dungeon goal under an Expedition incorrectly displayed "CREATE TIER 2" as the title.' },
-      { category: 'Architecture', description: 'Refined getSubDungeonDepth utility to correctly identify Major Dungeons as the root depth (Level 0).' }
-    ]
-  },
-  {
-    version: 'v4.10.5',
-    date: '2026-05-10',
-    time: '11:00:00',
-    title: 'Custom PWA Icon Set Integration',
-    items: [
-      { category: 'Architecture', description: 'Updated Vite PWA configuration to support multi-size RealFaviconGenerator icon set including maskable and any purpose icons.' },
-      { category: 'UI', description: 'Standardized favicon and apple-touch-icon links in index.html for cross-platform consistency (iOS/Android/Desktop).' },
-      { category: 'UX', description: 'Added cache-busting versioning to manifest icons to ensure immediate updates on existing installations.' }
-    ]
-  },
-  {
-    version: 'v4.10.3',
-    date: '2026-05-10',
-    time: '10:30:00',
-    title: 'Notification API Stability Fix',
-    items: [
-      { category: 'Bugfix', description: 'Fixed ReferenceError: "Can\'t find variable: Notification" by adding environment safety checks to all Notification API calls.' },
-      { category: 'Architecture', description: 'Implemented non-blocking safeguards in Timer, General Settings, and Developer Settings for better cross-browser compatibility.' },
-      { category: 'Fix', description: 'Resolved a missing destructuring bug for claimAllQuestRewards in the main application entry point.' }
-    ]
-  },
-  {
-    version: 'v4.10.2',
-    date: '2026-05-10',
-    time: '10:20:00',
-    title: 'Bulk Reward Claiming & Unified Summary',
-    items: [
-      { category: 'Feature', description: 'Implemented a "Claim All" system for quests and achievements, allowing one-click collection of all pending rewards.' },
-      { category: 'UI', description: 'Added a dedicated Bulk Claim Modal that displays a comprehensive summary of all items completed and total treasure harvested.' },
-      { category: 'UX', description: 'Synchronized bulk claiming with reward history and real-time state updates for seamless progression.' }
-    ]
-  },
-  {
-    version: 'v4.10.1',
-    date: '2026-05-10',
-    time: '10:10:00',
-    title: 'Quest History Temporal Filtering',
-    items: [
-      { category: 'Feature', description: 'Added time-based filtering to Quest History (Today, Last 7 Days, All Time).' },
-      { category: 'UI', description: 'Implemented filter tabs in the History view for improved navigation of past deeds.' },
-      { category: 'UX', description: 'Optimized empty states to provide context based on active time filters.' }
-    ]
-  },
-  {
-    version: 'v4.10.0',
-    date: '2026-05-10',
-    time: '10:00:00',
-    title: 'Quest History & Chronicler Integration',
-    items: [
-      { category: 'Feature', description: 'Implemented a comprehensive Quest History system that archives all completed and claimed tasks/achievements.' },
-      { category: 'UI', description: 'Added a dedicated "History" tab to the Quest Board with high-contrast parchment items and timestamp tracking.' },
-      { category: 'UX', description: 'Integrated automatic history recording for both manual reward claims and auto-claimed session rewards.' },
-      { category: 'Aesthetic', description: 'Custom "Chronicler" icon and emerald theme accents for historical records.' }
-    ]
-  },
-  {
-    version: 'v4.9.5',
-    date: '2026-05-09',
-    time: '16:50:00',
-    title: 'Quest Board High-Contrast & Theme Alignment',
-    items: [
-      { category: 'UI', description: 'Removed experimental effects (noise, inner shadows, transparency) from Quest Board for a cleaner, high-contrast look.' },
-      { category: 'UX', description: 'Improved readability with solid black text on light parchment and theme-consistent dark backgrounds for icons.' },
-      { category: 'Aesthetic', description: 'Full architectural redesign of the board colors to better support Light and Dark theme transitions.' }
-    ]
-  },
-  {
-    version: 'v4.9.4',
-    date: '2026-05-09',
-    time: '16:45:00',
-    title: 'Quest Board Theme & Readability Optimization',
-    items: [
-      { category: 'UI', description: 'Simplified Quest Board background to a theme-responsive flat color, removing heavy shadows and noise.' },
-      { category: 'UX', description: 'Significantly improved quest item readability with high-contrast text colors and clean reward badges.' },
-      { category: 'Aesthetic', description: 'Harmonized overall board styling with the active application theme.' }
-    ]
-  },
-  {
-    version: 'v4.9.3',
-    date: '2026-05-09',
-    time: '16:35:00',
-    title: 'Quest Board Theme-Awareness & UI Refinement',
-    items: [
-      { category: 'Aesthetic', description: 'Synchronized Quest Board appearance with active themes by replacing hardcoded colors with variable-linked scales.' },
-      { category: 'Bugfix', description: 'Fixed reward badge visibility issues by removing intrusive dark backgrounds and shadows in favor of a clean, high-contrast design.' }
-    ]
-  },
-  {
-    version: 'v4.9.2',
-    date: '2026-05-09',
-    time: '16:30:00',
-    title: 'Quest Board Aesthetic & Updates Cycle',
-    items: [
-      { category: 'UI', description: 'Redesigned labels and cards in Quest Board to resemble a wooden board with pinned parchment notes.' },
-      { category: 'Feature', description: 'Added explicit update cycle indicators (Daily, Weekly, Monthly) to each quest item.' },
-      { category: 'Aesthetic', description: 'Implemented deterministic paper rotation and thumbtack decorations for a more authentic task board feel.' }
-    ]
-  },
-  {
-    version: 'v4.9.1',
-    date: '2026-05-09',
-    time: '16:20:00',
-    title: 'Drag & Drop Stability & Race Condition Fix',
-    items: [
-      { category: 'Bugfix', description: 'Fixed edge case where items disappeared during cross-group movement due to event conflicts.' },
-      { category: 'Architecture', description: 'Refactored moveDungeonItem to be functionally atomic.' },
-      { category: 'UX', description: 'Disabled drag momentum and added layout constraints for mobile stability.' }
-    ]
-  },
-  {
-    version: 'v4.9.0',
-    date: '2026-05-09',
-    time: '16:15:00',
-    title: 'Drag & Drop Stability & Mobile UX Fix',
-    items: [
-      { category: 'Bugfix', description: 'Fixed critical issue where dungeon items would disappear during rapid reordering or cross-level movement.' },
-      { category: 'UX', description: 'Fixed mobile/tablet scrolling bug where dragging an item would trigger page-wide scrolling to the bottom.' },
-      { category: 'Architecture', description: 'Hardened state synchronization in DungeonManager to handle reorder events and move events safely.' }
-    ]
-  },
-  {
-    version: 'v4.8.11',
-    date: '2026-05-09',
-    time: '16:05:00',
-    title: 'Critical TypeError Hotfix',
-    items: [
-      { category: 'Bugfix', description: 'Fixed a TypeError in moveDungeonItem where it was incorrectly referencing dungeons and majorDungeons via the state object.' }
-    ]
-  },
-  {
-    version: 'v4.8.10',
-    date: '2026-05-09',
-    time: '15:55:00',
-    title: 'Hierarchical Nesting & Race Conditions Fix',
-    items: [
-      { category: 'Bugfix', description: 'Solved a critical edge case where dragging a level 1 or 2 dungeon caused it to disappear due to race conditions during state flush in Reorder.Group.' },
-      { category: 'Architecture', description: 'Eliminated nested functional state updates from useGameState which created asynchronous duplication bugs when promoting/demoting hierarchies.' },
-      { category: 'UX', description: 'Automatically expands the container directory visually when hovering or dropping sub-dungeons to clearly indicate hierarchy.' }
-    ]
-  },
-  {
-    version: 'v4.8.9',
-    date: '2026-05-09',
-    time: '15:40:00',
-    title: 'Drag & Drop Stability & Cycle Prevention',
-    items: [
-      { category: 'Bugfix', description: 'Fixed a critical issue where items would disappear due to circular hierarchy loops (dragging a parent into its own child).' },
-      { category: 'Architecture', description: 'Enhanced state synchronization between MajorDungeons and Sub-Dungeons collectives to prevent duplicate IDs during cross-group movement.' },
-      { category: 'Logic', description: 'Implemented a recursive ancestor check in moveDungeonItem to strictly maintain a healthy tree structure.' }
-    ]
-  },
-  {
-    version: 'v4.8.8',
-    date: '2026-05-09',
-    time: '15:15:00',
-    title: 'Drag & Drop Stability Fix',
-    items: [
-      { category: 'Bugfix', description: 'Fixed a critical issue where items would disappear when dragged across different hierarchy levels or into other dungeons.' },
-      { category: 'UX', description: 'Improved drop target detection by ignoring the item currently being dragged, preventing self-blocking hit tests.' },
-      { category: 'Architecture', description: 'Migrated reorder state updates to non-destructive functional updates to preserve items during cross-group movement.' }
-    ]
-  },
-  {
-    version: 'v4.8.7',
-    date: '2026-05-09',
-    time: '15:10:00',
-    title: 'Hierarchical Drag & Drop',
-    items: [
-      { category: 'Feature', description: 'Implemented full hierarchical reordering and nesting. Drag any level-1 dungeon onto another to make it a child (L2), or move sub-dungeons between parents.' },
-      { category: 'UX', description: 'Added drop-target detection using viewport coordinates for intuitive "folder-style" nesting during edit mode.' },
-      { category: 'Architecture', description: 'Enhanced state management to automatically handle promoting sub-dungeons to root MajorDungeons when dropped onto the Expedition container.' }
-    ]
-  },
-  {
-    version: 'v4.8.6',
-    date: '2026-05-09',
-    time: '14:40:00',
-    title: 'Mobile Drag & Drop Polish',
-    items: [
-      { category: 'UX', description: 'Repositioned drag-and-drop handles for Expedition, Quests, and Achievements to perfectly align with mobile screens without overflowing the horizontal layout' },
-      { category: 'UI', description: 'Ensured edit buttons precisely exist between progress bars and completion checkboxes without requiring hover states' },
-      { category: 'UI', description: 'Widened progress numeric ratios across all Dungeons menus strictly preventing clipping when ratios like "100/100" are met' }
-    ]
-  },
-  {
-    version: 'v4.8.5',
-    date: '2026-05-09',
-    time: '14:26:00',
-    title: 'Edit Layout & Progress Width Update',
-    items: [
-      { category: 'UI', description: 'Widened progress bar numeric ratio elements to comfortably fit 3-digit denominators ("100/100")' },
-      { category: 'UX', description: 'Reordered Quest and Achievement panels in edit mode so action buttons appear between the progress bar and the completion box' }
-    ]
-  },
-  {
-    version: 'v4.8.4',
-    date: '2026-05-09',
-    time: '14:20:00',
-    title: 'Quest Board & Achievement Polish',
-    items: [
-      { category: 'UI', description: 'Removed rigid spatial gap limitations between progress bar statistics and completion checkboxes on the Quests and Achievement tabs' },
-      { category: 'UX', description: 'Fixed an issue where sequence reordering and edit action buttons required mouse hover to appear, maintaining consistent visibility for precise editing' }
-    ]
-  },
-  {
-    version: 'v4.8.3',
-    date: '2026-05-09',
-    time: '14:09:00',
-    title: 'Dungeon Checkbox Spacing',
-    items: [
-      { category: 'UI', description: 'Removed rigid sizing from the Dungeon action container block to allow the Checkbox and progress bar text to sit organically close to each other without absurd gap filling' }
-    ]
-  },
-  {
-    version: 'v4.8.2',
-    date: '2026-05-09',
-    time: '12:43:00',
-    title: 'Dungeon Tabs Layout Alignment',
-    items: [
-      { category: 'UI', description: 'Aligned progress bars, numerical counters, and rightmost action elements perfectly across the Dungeons, Quests, and Achievements tabs in the Dungeons menu' },
-      { category: 'UX', description: 'Standardized width sizing using strict container anchoring' }
-    ]
-  },
-  {
-    version: 'v4.8.1',
-    date: '2026-05-09',
-    time: '12:28:00',
-    title: 'Dungeon Progress Bar Visibility Fix',
-    items: [
-      { category: 'UI', description: 'Fixed an issue where the dungeon progress bar in the Dungeons menu was invisible (0px internal height) due to thin height allocations clashing with borders.' },
-      { category: 'UX', description: 'Increased the dungeon progress bar thickness to easily display current percentage clearly.' }
-    ]
-  },
-  {
-    version: 'v4.8.0',
-    date: '2026-05-09',
-    time: '12:15:00',
-    title: 'Dashboard Quest Navigation Fix',
-    items: [
-      { category: 'UX', description: 'Updated Guidebook links to correctly redirect Quests and Achievements directly to their respective tabs inside the Dungeons page.' }
-    ]
-  },
-  {
-    version: 'v4.7.22',
-    date: '2026-05-09',
-    time: '12:08:00',
-    title: 'Offline Guidebook Markdown & Mobile Compressing',
-    items: [
-      { category: 'Documentation', description: 'Exported the entire Sanctum Guidebook to a standalone `GUIDEBOOK.md` file in the root directory for offline reading.' },
-      { category: 'UI', description: 'Improved the Guidebook modal\'s responsiveness by compressing padding and font sizes on smaller screens to ensure content completely fits on a single mobile page without relying on scrolling.' }
-    ]
-  },
-  {
-    version: 'v4.7.21',
-    date: '2026-05-09',
-    time: '12:05:00',
-    title: 'Sanctum Items Deep Linking & Responsive Layout',
-    items: [
-      { category: 'Feature', description: 'Added interactive hyperlinked terms within the Sanctum Items chapters to instantly route users to matching sections (Dungeon, Quests, Merchant, Talent Tree).' },
-      { category: 'UX', description: 'Refined responsive layout for the entire guide book to ensure 100% visibility of all elements on tight mobile viewports without overflowing text.' }
-    ]
-  },
-  {
-    version: 'v4.7.20',
-    date: '2026-05-09',
-    time: '11:57:00',
-    title: 'Sanctum Items Refinement',
-    items: [
-      { category: 'Documentation', description: 'Merged Core Resources and Advanced Items into a single cohesive Sanctum Items chapter.' },
-      { category: 'UI', description: 'Added a dedicated bookmark tab for Sanctum Items to clearly identify its section on the right margin.' },
-      { category: 'Aesthetic', description: 'Redesign item descriptions using markdown-style bullet points for better legibility.' }
-    ]
-  },
-  {
-    version: 'v4.7.19',
-    date: '2026-05-09',
-    time: '11:51:00',
-    title: 'Sanctum Items Guide Expansion',
-    items: [
-      { category: 'Documentation', description: 'Expanded the "Sanctum Items" guide chapter into 4 dedicated pages, splitting Core Resources and Advanced Items for better readability.' },
-      { category: 'Localization', description: 'Renamed "Protection Amulet" to "Death Defying Medal" to better reflect its actual nomenclature.' },
-      { category: 'UI', description: 'Integrated the Sanctum Items chapter into the Guide Book\'s Table of Contents with correct page numbering mapping.' }
-    ]
-  },
-  {
-    version: 'v4.7.18',
-    date: '2026-05-09',
-    time: '11:20:00',
-    title: 'Sanctum Items Guide Chapter',
-    items: [
-      { category: 'Feature', description: 'Added a new "Sanctum Items" chapter to the Guide Book containing encyclopedic details of all Core Resources and Advanced Items (Protection Amulet, XP Card, Gold Card).' }
-    ]
-  },
-  {
-    version: 'v4.7.17',
-    date: '2026-05-09',
-    time: '11:13:00',
-    title: 'Talent Tree Guide Flow Optimization',
-    items: [
-      { category: 'UX', description: 'Replaced the standalone "How to get points" modal in the Talent Tree with a direct link to the interactive Guidebook (Talent System Chapter) to centralize all tutorials securely.' }
-    ]
-  },
-  {
-    version: 'v4.7.16',
-    date: '2026-05-09',
-    time: '11:06:00',
-    title: 'Dashboard Guide Polish',
-    items: [
-      { category: 'UI', description: 'Added the Sanctum Map to the Guides section on the Dashboard page.' },
-      { category: 'UX', description: 'Renamed the introductory welcome message in the Guidebook from Pathfinder to Seeker to ensure consistent narrative terminology.' }
-    ]
-  },
-  {
-    version: 'v4.7.15',
-    date: '2026-05-10',
-    time: '11:15:00',
-    title: 'Guidebook Thematic Polish',
-    items: [
-      { category: 'UI', description: 'Adjusted Guidebook cover title typography for better responsiveness, utilizing a smaller cascading scale on mobile.' },
-      { category: 'Aesthetic', description: 'Refined the Sanctum Map and Record icons in the Guidebook, shifting away from generic slate backgrounds to thematic Sky Blue.' },
-      { category: 'Aesthetic', description: 'Synchronized hyperlinked keywords (Quests, Talents, Dungeons) within Guidebook chapters to seamlessly match the dominant color of their respective pages.' },
-      { category: 'UX', description: 'Activated deep linking for Quests and Achievements keywords, effortlessly routing players to the Dashboard.' }
-    ]
-  },
-  {
-    version: 'v4.7.14',
-    date: '2026-05-10',
-    time: '11:00:00',
-    title: 'Guidebook Navigation Polish',
-    items: [
-      { category: 'Bugfix', description: 'Fixed broken code structure and syntax errors in the Guidebook\'s pages array.' },
-      { category: 'UX', description: 'Synchronized bookmark icons and colors with the new chapter sequence.' },
-      { category: 'Logic', description: 'Re-mapped TOC and Bookmark links to correctly point to the updated page indices.' }
-    ]
-  },
-  {
-    version: 'v4.7.13',
-    date: '2026-05-10',
-    time: '10:30:00',
-    title: 'Sanctum Navigation & Map Update',
-    items: [
-      { category: 'Feature', description: 'Added "Map to the Sanctum" chapter to the Guidebook, providing a visual overview of all application modules.' },
-      { category: 'UX', description: 'Implemented interactive deep-links within the Guidebook that navigate directly to corresponding application sections (Vault, Merchant, Talents, etc.).' },
-      { category: 'UI', description: 'Enhanced Guidebook navigation with updated page limits and bookmark synchronization for the new chapter.' }
-    ]
-  },
-  {
-    version: 'v4.7.12',
-    date: '2026-05-09',
-    time: '10:01:00',
-    title: 'Adventure Guide Polish',
-    items: [
-      { category: 'Aesthetic', description: 'Updated Guidebook cover title to Adventure Guide with dynamic sizing to prevent clipping.' },
-      { category: 'Aesthetic', description: 'Applied a luxurious gold gradient effect to the central compass logo.' },
-      { category: 'UI', description: 'Changed the ampersand symbol to a sans-serif variant in serif headers to fix an awkward font rendering artifact.' }
-    ]
-  },
-  {
-    version: 'v4.7.11',
-    date: '2026-05-09',
-    time: '09:47:00',
-    title: 'Pathfinders Guide Layout & Typography',
-    items: [
-      { category: 'Aesthetic', description: 'Renamed Guidebook to Pathfinders Guide and added a dedicated welcome/introduction chapter.' },
-      { category: 'UI', description: 'Switched primary body text to a highly readable standard font while preserving the serif styling for headings.' },
-      { category: 'UX', description: 'Realigned the Table of Contents dynamically and normalized the layout of page numerals with separating bars across all pages at the bottom edge.' }
-    ]
-  },
-  {
-    version: 'v4.7.10',
-    date: '2026-05-09',
-    time: '09:37:00',
-    title: 'Guidebook Font Size Balancing',
-    items: [
-      { category: 'Bugfix', description: 'Rebalanced Guidebook font sizes down to text-xl to prevent content from overflowing on the pages while keeping them readable.' }
-    ]
-  },
-  {
-    version: 'v4.7.9',
-    date: '2026-05-09',
-    time: '09:28:00',
-    title: 'Guidebook Aesthetic Polish',
-    items: [
-      { category: 'Aesthetic', description: 'Redesign Guidebook cover with Playfair Display gilded font and compass.' },
-      { category: 'Aesthetic', description: 'Revert Talent System icon to Lucide Network.' }
-    ]
-  },
-  {
-    version: 'v4.7.8',
-    date: '2026-05-09',
-    time: '09:21:00',
-    title: 'Guidebook Hand-drawn Icons & Readability Polish',
-    items: [
-      { category: 'UI', description: 'Replaced standard vector icons in the Sanctum Guidebook with custom procedural hand-drawn SVG icons to complement the vintage paper aesthetic.' },
-      { category: 'UX', description: 'Enlarged handwritten font sizes in the "How to Acquire" and "Pro Tip" informational blocks to maximize readability.' }
-    ]
-  },
-  {
-    version: 'v4.7.7',
-    date: '2026-05-09',
-    time: '09:12:00',
-    title: 'Retro Handwriting & Paper Texture Polish',
-    items: [
-      { category: 'Aesthetic', description: 'Explicitly injected Caveat cursive font into all inner-page text fields to bypass default cascading limits.' },
-      { category: 'UX', description: 'Enlarged handwritten body text to improve readability against the new paper texture.' }
-    ]
-  },
-  {
-    version: 'v4.7.6',
-    date: '2026-05-09',
-    time: '09:02:00',
-    title: 'Retro Handwriting & Paper Texture',
-    items: [
-      { category: 'Aesthetic', description: 'Replaced all book fonts with a handwritten cursive font (Caveat) and added procedural noise/paper texture to the pages for a retro feel.' },
-      { category: 'UI', description: 'Desaturated bookmark tab colors to harmonize with the vintage paper appearance.' }
-    ]
-  },
-  {
-    version: 'v4.7.5',
-    date: '2026-05-09',
-    time: '08:53:00',
-    title: 'Fluid 3D Book Layout Mechanics',
-    items: [
-      { category: 'Animation', description: 'Rewrote the Book Background Base Layer into a 3D split-folding mechanism. Front and back covers now swing synchronously with the pages, eliminating visual overlap and layout thrashing.' },
-      { category: 'UX', description: 'Prevented the page from opening to intermediate transparent states during the first render loop and on mobile page tracking bounds.' }
-    ]
-  },
-  {
-    version: 'v4.7.4',
-    date: '2026-05-09',
-    time: '08:41:00',
-    title: 'Guide Book Animation & Layout Centering',
-    items: [
-      { category: 'Bugfix', description: 'Fixed an animation glitch where the book base would transition visually on the first open by synchronously computing initial page states before rendering.' },
-      { category: 'UI', description: 'Adjusted closed book container translation to smoothly move the book to the center of the screen when closed (Front Cover and Back Cover states).' }
-    ]
-  },
-  {
-    version: 'v4.7.3',
-    date: '2026-05-09',
-    time: '08:23:00',
-    title: 'Closed Book Layout & Scrollbar Polish',
-    items: [
-      { category: 'UI', description: 'Added Front Cover and Back Cover states to the Guide Book, creating realistic closed states at the start and end of navigation.' },
-      { category: 'UI', description: 'Removed internal page scrolling, ensuring all chapter content comfortably fits within a single page spread without scrollbars.' },
-      { category: 'UX', description: 'Synchronized textbook font sizes to match the application\'s base text metrics for consistent readability.' }
-    ]
-  },
-  {
-    version: 'v4.7.2',
-    date: '2026-05-09',
-    time: '07:59:00',
-    title: 'Guide Book Realistic Animation & B5 Aspect Ratio',
-    items: [
-      { category: 'UI', description: 'Restructured Guide Book aspect ratio to precisely simulate realistic B5 dimensions for single (mobile) and double pages (desktop).' },
-      { category: 'UX', description: 'Improved Framer Motion 3D page flip animation to accurately simulate a book page swinging from the spine rather than spinning the entire layout.' },
-      { category: 'UI', description: 'Snapped interactive bookmarks seamlessly to the right edge of the book base outline.' }
-    ]
-  },
-  {
-    version: 'v4.7.1',
-    date: '2026-05-09',
-    time: '07:40:00',
-    title: 'Guide Book Mechanics & Mobile UX Polish',
-    items: [
-      { category: 'UX', description: 'Perfected the Guide Book to display as a single page on mobile devices for improved readability, while retaining the dual-page spread on larger screens.' },
-      { category: 'UI', description: 'Implemented 3D page-flip animations (rotateY) across the book\'s layout for an authentic reading experience.' },
-      { category: 'UI', description: 'Bookmarks were added to the right-edge of the book linking directly to explicit chapters.' },
-      { category: 'UX', description: 'Navigation arrows relocated to the lower corners within the page boundary. Refined content to remove obsolete settings tips.' }
-    ]
-  },
-  {
-    version: 'v4.7.0',
-    date: '2026-05-09',
-    time: '07:18:00',
-    title: 'Interactive Sanctum Guide Book',
-    items: [
-      { category: 'Feature', description: 'Redesigned the Sanctum Guides into a comprehensive, interactive 3D-styled Guide Book.' },
-      { category: 'UX', description: 'Unified Coins, XP, and Talent guides into a single paginated modal with a Table of Contents.' },
-      { category: 'UI', description: 'Implemented a parchment-themed book aesthetic with left/right page turning and responsive scaling.' }
-    ]
-  },
-  {
-    version: 'v4.6.22',
-    date: '2026-05-09',
-    time: '07:15:00',
-    title: 'Sanctum Guides Update',
-    items: [
-      { category: 'Documentation', description: 'Updated Sanctum Guides to reflect that Coins and XP can be obtained from Quests and Achievements rather than Gacha.' },
-      { category: 'UI', description: 'Improved readability of Guide settings redirect buttons by adding background colors and boosting text contrast against the background.' }
-    ]
-  },
-  {
-    version: 'v4.6.21',
-    date: '2026-05-09',
-    time: '07:05:00',
-    title: 'Sanctum Guides: Interactive Settings Redirects',
-    items: [
-      { category: 'Documentation', description: 'Rewrote Sanctum Guide content (Gold, XP, Talents) to be more detailed and accurate.' },
-      { category: 'UX', description: 'Added interactive buttons within the Guides that redirect users to the relevant sections in the Settings page.' }
-    ]
-  },
-  {
-    version: 'v4.6.20',
-    date: '2026-05-09',
-    time: '06:50:50',
-    title: 'Daily Progress Goal: Synchronization',
-    items: [
-      { category: 'Feature', description: 'Synchronized Daily Progress Goal settings from General Settings to the Sanctum Dashboard display.' },
-      { category: 'Bugfix', description: 'Fixed timezone-aware daily goal synchronization in Sanctum Dashboard.' }
-    ]
-  },
-  {
-    version: 'v4.6.19',
-    date: '2026-05-09',
-    time: '06:30:00',
-    title: 'Settings: Daily Progress Goal UI Refinement',
-    items: [
-      { category: 'UX', description: 'Simplified Daily Progress Goal layout to a concise wrap-flex design for better clarity and space efficiency.' }
-    ]
-  },
-  {
-    version: 'v4.6.17',
-    date: '2026-05-09',
-    time: '06:22:00',
-    title: 'Settings: Daily Progress Goals',
-    items: [
-      { category: 'Feature', description: 'Added the ability to set custom daily session goals per day of the week in General Settings.' }
-    ]
-  },
-  {
-    version: 'v4.6.16',
-    date: '2026-05-09',
-    time: '06:15:00',
-    title: 'Dashboard: Guide Module Integration',
-    items: [
-      { category: 'Feature', description: 'Added a new Guide module to the Sanctum (Dashboard) for quick access to Coin, XP, and Talent system guides.' }
-    ]
-  },
-  {
-    version: 'v4.6.15',
-    date: '2026-05-11',
-    time: '00:15:00',
-    title: 'Developer Tools: Talent Tree Reset',
-    items: [
-      { category: 'Feature', description: 'Reset Talent Tree. Added a dedicated developer action to lock all talents and clear the active build, facilitating testing and progression resets.' },
-      { category: 'Security', description: 'Implemented a double-check confirmation modal for talent resets to prevent accidental progress loss.' }
-    ]
-  },
-  {
-    version: 'v4.6.14',
-    date: '2026-05-11',
-    time: '23:50:00',
-    title: 'Talent Tree UI & Feedback Polish',
-    items: [
-      { category: 'UI', description: 'Added lock icons to the collapsed talent tree view for at-a-glance status checks of locked talents.' },
-      { category: 'UX', description: 'Implemented a "shake" feedback animation when attempting to unlock a talent with insufficient points, providing immediate intuitive feedback.' }
-    ]
-  },
-  {
-    version: 'v4.6.13',
-    date: '2026-05-11',
-    time: '23:30:00',
-    title: 'Talent Network Icon Upgrade',
-    items: [
-      { category: 'UI', description: 'Updated Talent Tree representation. Exchanged the generic Zap icon with a specialized Network vector across Navigation and Page Headers for better thematic alignment.' }
-    ]
-  },
-  {
-    version: 'v4.6.12',
-    date: '2026-05-11',
-    time: '22:45:00',
-    title: 'Precise Theme Schedule & Timezone Logic',
-    items: [
-      { category: 'Feature', description: 'Full Time Selection. Updated theme transition settings to support full HH:mm precision instead of just hours.' },
-      { category: 'UX', description: 'Renamed "Transition Hour" to "Transition Time" for better clarity and alignment with the new time picker.' },
-      { category: 'Logic', description: 'Enhanced Timezone Comparison. Implemented robust string-based time comparison for reliable theme switching across all time zones.' }
-    ]
-  },
-  {
-    version: 'v4.6.11',
-    date: '2026-05-11',
-    time: '22:15:00',
-    title: 'Mobile Layout Polish for Theme Scheduling',
-    items: [
-      { category: 'UX', description: 'Day/Night Theme Configuration Stack. Redesigned the theme configuration layout into a three-row vertical stack to ensure perfect visibility on narrow mobile devices.' },
-      { category: 'UI', description: 'Reorganized transition time and theme selection elements for better spatial clarity and touch accessibility.' }
-    ]
-  },
-  {
-    version: 'v4.6.10',
-    date: '2026-05-11',
-    time: '21:50:00',
-    title: 'Mobile Theme UX & Breakpoint Refinement',
-    items: [
-      { category: 'UX', description: 'Mobile Theme Layout. Redesigned the theme configuration header to stack vertically on small phones, preventing element clashing.' },
-      { category: 'Architecture', description: 'Custom Breakpoints. Added a dedicated xs (400px) breakpoint to the Tailwind configuration for finer mobile UI control.' },
-      { category: 'UI', description: 'Timezone Selection Polish. Improved the timezone selector responsiveness to ensure proper rendering on narrow viewports.' }
-    ]
-  },
-  {
-    version: 'v4.6.9',
-    date: '2026-05-11',
-    time: '21:30:00',
-    title: 'Scheduled Auto Theme & Timezone Support',
-    items: [
-      { category: 'Feature', description: 'Scheduled Theme Switching. Added the ability to set specific "Day Start" and "Night Start" hours for automatic theme transitions.' },
-      { category: 'Feature', description: 'Timezone Selection. Integrated a timezone selector to allow users to override system detection for theme scheduling.' },
-      { category: 'UX', description: 'Simplified Theme Config. Redesigned the auto-theme pairing UI with a more compact, color-bubble selector.' }
-    ]
-  },
-  {
-    version: 'v4.6.8',
-    date: '2026-05-11',
-    time: '21:00:00',
-    title: 'Auto Theme Switching & Daylight Default',
-    items: [
-      { category: 'Feature', description: 'System Theme Sync. Added a toggle to automatically switch between customized Day and Night themes based on system color scheme preference.' },
-      { category: 'Feature', description: 'Custom Theme Pairing. Allowed users to independently set which themes are explicitly used for "Day" and "Night" modes.' },
-      { category: 'UI', description: 'Default Theme Update. Set "Daylight" as the new default theme for the application.' },
-      { category: 'UX', description: 'Theme Settings UI. Integrated auto-switch controls and theme preview selectors into the General Settings dashboard.' }
-    ]
-  },
-  {
-    version: 'v4.6.7',
-    date: '2026-05-11',
-    time: '20:30:00',
-    title: 'Midnight Peak Logic & Aggregate Fixes',
-    items: [
-      { category: 'Logic', description: 'Midnight-Spanning Peak Times. Fully implemented logic for attributing sessions across midnight boundaries based on custom peak settings.' },
-      { category: 'Fix', description: 'Peak-Aware Statistics. Updated all aggregation helpers (daily, weekly, heatmap, daily summary) to use the new peak-aware date attribution.' },
-      { category: 'UX', description: 'Midnight Warning. Added visual indicators and color-coded labels in Time Settings for ranges that cross the midnight mark.' },
-      { category: 'Fix', description: 'Shop Reward Visibility. Adjusted reward categorizations to ensure items purchased from the Merchant Shop appear in the Vault\'s Treasure tab.' }
-    ]
-  },
-  {
-    version: 'v4.6.6',
-    date: '2026-05-11',
-    time: '18:00:00',
-    title: 'Modal Polish & Reward Persistence',
-    items: [
-      { category: 'UX', description: 'Portal Integration. Migrated all primary modals (Reward, Level Up, Gacha, Daily Summary) to React Portals for perfect centering and viewport isolation.' },
-      { category: 'UX', description: 'Scroll Management. Integrated useScrollLock across all modals to prevent background content jumping while ensuring modals remain interactive.' },
-      { category: 'Fix', description: 'Reward History. Verified that merchant shop item purchases are accurately logged in the Reward Vault even across session transitions.' },
-      { category: 'UI', description: 'Explore View Polish. Updated the Reward Breakdown modal to use Portals and standardized z-index layers for depth consistency.' }
-    ]
-  },
-  {
-    version: 'v4.6.5',
-    date: '2026-05-11',
-    time: '17:15:00',
-    title: 'Universal Modal Integration',
-    items: [
-      { category: 'Architecture', description: 'Replaced all native browser-native confirmation dialogs (window.confirm and alert) with a custom, theme-aware ConfirmModal component across the entire application.' },
-      { category: 'UX', description: 'Integrated ConfirmModal into Developer Settings for security-sensitive actions and Dungeon Manager for task management confirmations.' },
-      { category: 'Refactor', description: 'Centralized modal logic into a reusable component with framer-motion animations and standardized visual states (danger, warning, info).' }
-    ]
-  },
-  {
-    version: 'v4.6.4',
-    date: '2026-05-11',
-    time: '16:45:00',
-    title: 'Pool Management & Security UX',
-    items: [
-      { category: 'Feature', description: 'Pool Renaming. Added a "Pool Name" field to the Gacha and Ichiban Kuji edit modals, allowing users to customize pool names easily.' },
-      { category: 'UX', description: 'Reset Confirmations. Implemented "Double Check" warnings when resetting Gacha or Ichiban pools to prevent accidental data loss.' },
-      { category: 'UX', description: 'Deletion Security. Standardized deletion confirmation dialogs across Merchant, Shop, and Reward settings for consistent safety.' }
-    ]
-  },
-  {
-    version: 'v4.6.3',
-    date: '2026-05-11',
-    time: '16:15:00',
-    title: 'Talent UX & State Persistence',
-    items: [
-      { category: 'Feature', description: 'Talent Tree State. The collapsed/expanded state of the talent branches is now persisted in localStorage.' },
-      { category: 'UX', description: 'Interactive Talent Icons. Talent icons in the Explore view now reveal tooltips on click, improving accessibility for mobile users.' }
-    ]
-  },
-  {
-    version: 'v4.6.2',
-    date: '2026-05-11',
-    time: '15:30:00',
-    title: 'Dynamic Talent Descriptions & Formatting',
-    items: [
-      { category: 'Feature', description: 'Dynamic Crit Description. Linked the "Critical Intuition" (C3) talent description to real-time developer settings (Crit Chance & Multiplier).' },
-      { category: 'UX', description: 'Improved numeric formatting in talent tooltips to handle floating-point values gracefully for better precision.' }
-    ]
-  },
-  {
-    version: 'v4.6.1',
-    date: '2026-05-11',
-    time: '12:00:00',
-    title: 'Talent Description Accuracy Refinement',
-    items: [
-      { category: 'Documentation', description: 'Updated talent descriptions for Branch A and B to accurately reflect their trigger conditions (Perfect Theory & Bounty Decree now specify 8th session completion).' },
-      { category: 'UX', description: 'Matched all talent descriptions in the Talent Tree with actual game logic implementation to prevent player confusion.' }
-    ]
-  },
-  {
-    version: 'v4.6.0',
-    date: '2026-05-10',
-    time: '09:00:00',
-    title: 'Gacha Pool Management Expansion',
-    items: [
-      { category: 'Feature', description: 'Implemented multi-pool management for both Gacha and Ichiban Kuji, allowing users to create, delete, and rename custom pools.' },
-      { category: 'Feature', description: 'Added pool rotation functionality in the Merchant Outpost, enabling seamless switching between different card pools.' },
-      { category: 'Feature', description: 'Introduced Import/Export functionality via clipboard, allowing users to share and backup pool configurations in JSON format.' },
-      { category: 'Architecture', description: 'Synchronized active pool state across the application to ensure persistence of the selected merchant offerings.' },
-    ]
-  },
-  {
-    version: 'v4.5.38',
-    date: '2026-05-09',
-    time: '11:15:00',
-    title: 'Activity Log Personalization',
-    items: [
-      { category: 'Feature', description: 'Added a toggle in Activity Time Peaks settings to allow users to show or hide the "Other" time segment in activity charts.' },
-      { category: 'UI', description: 'Updated the Record tab to dynamically adjust Daily and Weekly activity charts based on the "Other" peak visibility preference.' },
-    ]
-  },
-  {
-    version: 'v4.5.37',
-    date: '2026-05-09',
-    time: '10:55:00',
-    title: 'Ichiban Kuji Rarity Values',
-    items: [
-      { category: 'Feature', description: 'Adjusted the default Ichiban Kuji prize mapping: A Prize is now Rarity 5 (Amber), B is 4 (Purple), C is 3 (Blue), and D is 2 (Emerald).' },
-      { category: 'Fix', description: 'Replaced all hardcoded instances of fuchsia color references with the correct rose Mythic color across the codebase.' },
-      { category: 'Fix', description: 'Updated Reward History and Shop item color fallbacks to accurately intercept the newly remapped Ichiban / Gacha tiers.' },
-    ]
-  },
-  {
-    version: 'v4.5.36',
-    date: '2026-05-09',
-    time: '10:30:00',
-    title: 'Rarity Updates',
-    items: [
-      { category: 'Feature', description: 'Updated rarity and color mappings sequence to: Common (slate), Uncommon (emerald), Rare (blue), Epic (purple), Legendary (amber), Mythic (rose).' },
-    ]
-  },
-  {
-    version: 'v4.5.35',
-    date: '2026-05-08',
-    time: '18:00:00',
-    title: 'Ichiban Kuji Duplication Fix',
-    items: [
-      { category: 'Bugfix', description: 'Fixed an issue where "Standard Ichiban Kuji" displayed identical prize tiers multiple times instead of consolidating them.' },
-      { category: 'System', description: 'Automatically migrated existing corrupt saved data by intelligently grouping items of the same Ichiban Kuji rarity tiers together and recovering standard inventory structures.' }
-    ]
-  },
-  {
-    version: 'v4.5.34',
-    date: '2026-05-08',
-    time: '17:00:00',
-    title: 'Universal Rarity Mapping',
-    items: [
-      { category: 'System', description: 'Established a universal numerical mapping (1-6) for rarity states (Common -> Exotic).' },
-      { category: 'Feature', description: 'Ichiban Kuji pools and generic Gacha settings now store and interact with formal rarity values to ensure logic scaling across future updates.' },
-      { category: 'UI', description: 'Removed the reddish background from the Last One prize setting card entirely to provide full compatibilty with Light Themes.' }
-    ]
-  },
-  {
-    version: 'v4.5.33',
-    date: '2026-05-08',
-    time: '16:44:00',
-    title: 'Ichiban Kuji Theme Compatibility Polish',
-    items: [
-      { category: 'Feature', description: 'Added default colors to the initial Ichiban Kuji prize tiers.' },
-      { category: 'UI', description: 'Fixed an issue where the Last One prize setting block displayed a dark red background/shadow that was incompatible with light themes.' }
-    ]
-  },
-  {
-    version: 'v4.5.32',
-    date: '2026-05-08',
-    time: '16:35:00',
-    title: 'Ichiban Kuji Pool Layout & Colors',
-    items: [
-      { category: 'UI', description: 'Redesigned the Ichiban Kuji settings modal to mirror the new card-based layout introduced in normal Gacha settings.' },
-      { category: 'Feature', description: 'Allowed users to assign custom predefined aesthetic color themes to individual Ichiban Kuji prize tiers.' },
-      { category: 'System', description: 'Updated Shop and Vault renderings to seamlessly consume custom colors directly from Ichiban Kuji reward data.' }
-    ]
-  },
-  {
-    version: 'v4.5.31',
-    date: '2026-05-08',
-    time: '16:26:00',
-    title: 'Gacha Pool Layout Redesign',
-    items: [
-      { category: 'UI', description: 'Completely redesigned the Gacha pool settings modal with a clear, card-based layout.' },
-      { category: 'Feature', description: 'Restricted custom rarity themes strictly to the sequence: Common, Rare, Epic, Legendary, Mythic, Exotic.' },
-      { category: 'Feature', description: 'Added automatic Drop Rate (%) percentage calculation to the weight configurations.' }
-    ]
-  },
-  {
-    version: 'v4.5.30',
-    date: '2026-05-08',
-    time: '15:45:00',
-    title: 'Custom Gacha Rarities & Colors',
-    items: [
-      { category: 'Feature', description: 'Gacha pools now support fully customizable rarities, allowing users to add/delete custom rarities and adjust weights for each tier dynamically.' },
-      { category: 'UI', description: 'Introduced a curated color palette for rarity tiers, applicable seamlessly to custom Gacha sets.' },
-      { category: 'System', description: 'Gacha reward results and Vault inventory table are now fully synchronized to render the custom rarity colors attached to the obtained items.' },
-    ]
-  },
-  {
-    version: 'v4.5.29',
-    date: '2026-05-08',
-    time: '15:10:00',
-    title: 'Ichiban Kuji Row Layout Refinement',
-    items: [
-      { category: 'UI', description: 'Redesigned the Ichiban Kuji prize lists to display as a cohesive row-by-row layout instead of a grid, matching the standard Gacha UI for better readability.' }
-    ]
-  },
-  {
-    version: 'v4.5.28',
-    date: '2026-05-08',
-    time: '14:56:00',
-    title: 'Gacha Settings UI Polish',
-    items: [
-      { category: 'UI', description: 'Redesigned the visualization of standard Gacha prizes in the Merchant settings to use structured cards that clearly split item pools by rarity and drop rates.' },
-      { category: 'UI', description: 'Redesign the Ichiban Kuji prize lists into a dedicated grid displaying probability ratios, prize tiers, remaining quantities, and initial quantities cleanly.' }
-    ]
-  },
-  {
-    version: 'v4.5.27',
-    date: '2026-05-08',
-    time: '14:50:00',
-    title: 'Developer Mode Security UX Update',
-    items: [
-      { category: 'UX', description: 'Moved the "Lock & Disable" button to the very bottom of the Developer Settings page.' },
-      { category: 'UI', description: 'Redesigned the lock button into a minimalist, centered action with a dedicated icon to prevent accidental triggers and clean up the header.' }
-    ]
-  },
-  {
-    version: 'v4.5.26',
-    date: '2026-05-08',
-    time: '14:45:00',
-    title: 'Developer Settings Header Cleanup',
-    items: [
-      { category: 'UI', description: 'Removed the redundant "Developer Tools" section header from the Developer Settings page.' },
-      { category: 'UX', description: 'Relocated the "Lock & Disable" action to the "Resource Modification" header for a more streamlined layout.' }
-    ]
-  },
-  {
-    version: 'v4.5.25',
-    date: '2026-05-08',
-    time: '14:20:00',
-    title: 'Universal Numeric Input Refactor',
-    items: [
-      { category: 'UI/UX', description: 'Replaced all raw numerical input fields across the application with a unified SpinnerInput component.' },
-      { category: 'Feature', description: 'SpinnerInput standardizes numerical adjustment styles with increment/decrement arrow buttons and proper bounds validation.' },
-      { category: 'Feature', description: 'Added float tracking and step capability to SpinnerInput to robustly handle decimals like Crit Chance.' }
-    ]
-  },
-  {
-    version: 'v4.5.24',
-    date: '2026-05-08',
-    time: '13:50:00',
-    title: 'Developer Settings Responsive Layout',
-    items: [
-      { category: 'UI', description: 'Refined "Resource Modification" grid in Developer Settings to be responsive (1 column on mobile, 2 on tablet, 3 on desktop).' }
-    ]
-  },
-  {
-    version: 'v4.5.23',
-    date: '2026-05-08',
     time: '13:45:00',
-    title: 'Developer Settings Refactor & Layout Update',
+    title: 'Activity Time Peaks Layout Polish',
     items: [
-      { category: 'Architecture', description: 'Extracted Developer Settings from Settings.tsx into a dedicated DeveloperSettings.tsx component for better maintainability.' },
-      { category: 'UI', description: 'Modified the "Resource Modification" layout in Developer Settings to statically display 3 columns per row for improved consistency and density.' }
+      { category: 'UI', description: 'Added horizontal margins to the timeline container to prevent time labels from being clipped at the edges.' }
     ]
   },
   {
-    version: 'v4.5.22',
-    date: '2026-05-08',
-    time: '13:35:00',
-    title: 'Unconditional Reward Chest Storage',
+    version: 'v5.13.14',
+    date: '2026-05-12',
+    time: '13:30:00',
+    title: 'Activity Time Peaks Sliding Window',
     items: [
-      { category: 'Feature', description: 'Rewrote reward generation to unconditionally push new rewards to the pending reward chest regardless of victory screen skipping settings.' },
-      { category: 'Bugfix', description: 'Selecting a reward gracefully removes it from the pending chest, ensuring that refreshing or dismissing the victory modal no longer permanently destroys unclaimed rewards.' },
-      { category: 'Theme UI', description: 'Added vertical line connecting trees for release history nodes.' }
+      { category: 'UX', description: 'Implemented a 24-hour sliding window for the timeline visualization.' },
+      { category: 'UI', description: 'Simplified labels to only show period boundaries.' }
     ]
   },
   {
-    version: 'v4.5.21',
-    date: '2026-05-08',
-    time: '12:05:00',
-    title: 'Numeric Inputs Empty State & Validation Polish',
+    version: 'v5.13.13',
+    date: '2026-05-12',
+    time: '13:15:00',
+    title: 'Activity Time Peaks Minimalist UI',
     items: [
-      { category: 'UX', description: 'Rewrote numeric input controls across Settings to support empty string (`\'\'`) states during editing instead of jumping to 0.' },
-      { category: 'Feature', description: 'Added strict validation checks on save operations for numeric inputs, triggering popup alerts when saving missing or invalid numeric data.' }
+      { category: 'UI', description: 'Removed all text labels (hours, Midnight, Next Day) from the timeline visualization for a clean, minimalist appearance.' }
     ]
   },
   {
-    version: 'v4.5.20',
-    date: '2026-05-08',
-    time: '11:55:00',
-    title: 'Shop Stock Adjuster Buttons',
+    version: 'v5.13.12',
+    date: '2026-05-12',
+    time: '13:00:00',
+    title: 'Activity Time Peaks Flat UI',
     items: [
-      { category: 'UI', description: 'Added increment and decrement buttons to the Stock input in Shop Item settings.' },
-      { category: 'UX', description: 'Implemented logic to seamlessly transition between numeric values and infinite (∞) status via adjustment buttons.' }
+      { category: 'UI', description: 'Removed segment glow effects and internal text for a flatter, cleaner look.' },
+      { category: 'UI', description: 'Widened the cross-day midnight dividing line and increased timeline header text size.' }
     ]
   },
   {
-    version: 'v4.5.19',
-    date: '2026-05-08',
-    time: '11:40:00',
-    title: 'Shop Stock UI Refinement',
+    version: 'v5.13.11',
+    date: '2026-05-12',
+    time: '12:45:00',
+    title: 'Activity Time Peaks UI Visual Refinement',
     items: [
-      { category: 'UI', description: 'Updated the Stock Availability input in the Shop Item settings to display the infinity symbol "∞" when the value is set to infinite (-1).' },
-      { category: 'UX', description: 'Improved input logic to treat empty values as infinite stock.' }
+      { category: 'UI', description: 'Applied high-precision colors (#FDE047, #F97316, #6366F1) for peak periods and increased header sizes.' },
+      { category: 'UX', description: 'Enhanced cross-day visualization with a prominent "Midnight" marker and "Next Day" background.' }
     ]
   },
   {
-    version: 'v4.5.18',
-    date: '2026-05-08',
-    time: '11:35:00',
-    title: 'Merchant Settings Icon Update',
+    version: 'v5.13.10',
+    date: '2026-05-12',
+    time: '12:15:00',
+    title: 'Activity Time Peaks UI Final Refinement',
     items: [
-      { category: 'UI', description: 'Updated Gacha section and pool icons in Merchant settings to use the custom SlotMachine component.' }
+      { category: 'UI', description: 'Increased timeline marker font size and visualization height for better readability.' },
+      { category: 'UI', description: 'Improved marker positioning logic on the dynamic timeline.' },
+      { category: 'Cleanup', description: 'Removed redundant time range previews from period cards and pruned unused imports.' }
     ]
   },
   {
-    version: 'v4.5.17',
-    date: '2026-05-08',
-    time: '11:31:00',
-    title: 'Gacha Icon Refinement',
+    version: 'v5.13.9',
+    date: '2026-05-12',
+    time: '12:00:00',
+    title: 'Activity Time Peaks UI Refinement',
     items: [
-      { category: 'UI', description: 'Replaced the SlotMachine vector in SlotMachine.tsx with a new custom SVG.' }
+      { category: 'UI', description: 'Repositioned the dynamic timeline below time input blocks for better visual hierarchy.' },
+      { category: 'UI', description: 'Removed redundant time range previews from input cards and increased visualization font size.' }
     ]
   },
   {
-    version: 'v4.5.16',
-    date: '2026-05-08',
-    time: '11:23:00',
-    title: 'Splash Screen Icon Polish',
+    version: 'v5.13.8',
+    date: '2026-05-12',
+    time: '11:45:00',
+    title: 'Activity Time Peaks UI Overhaul',
     items: [
-      { category: 'UI', description: 'Converted pwa-icon.svg into an inline React component (AppIcon.tsx) for dynamic styling.' },
-      { category: 'UI', description: 'Stripped background from the Splash Screen icon and applied the theme color, leveraging SVG masks for exact cutout shapes.' }
+      { category: 'UI', description: 'Replaced static time range previews with a dynamic integrated timeline visualization.' },
+      { category: 'UX', description: 'Implemented cross-day extension logic for the timeline for periods spanning across midnight.' },
+      { category: 'Logic', description: 'Added real-time overlap detection with visual warning messages to prevent configuration conflicts.' }
     ]
   },
   {
-    version: 'v4.5.15',
-    date: '2026-05-08',
+    version: 'v5.13.7',
+    date: '2026-05-12',
+    time: '11:25:00',
+    title: 'Gacha Settings UI Refinement',
+    items: [
+      { category: 'UI', description: 'Consolidated "Import Pool" and "Add Pool" buttons into the main Gacha section header for better space efficiency.' }
+    ]
+  },
+  {
+    version: 'v5.13.6',
+    date: '2026-05-12',
     time: '11:15:00',
-    title: 'Splash Screen Icon Change',
+    title: 'Daily Progress UI Reordering',
     items: [
-      { category: 'UI', description: 'Setup pwa-icon.svg as a central custom icon.' },
-      { category: 'UI', description: 'Replaced the generic Sword icon inside the Splash Screen with the dynamically responding pwa-icon.svg.' }
+      { category: 'UX', description: 'Reordered the days in the Daily Progress Goal configuration to start with Monday for a more standard weekly view.' }
     ]
   },
   {
-    version: 'v4.5.14',
-    date: '2026-05-08',
-    time: '09:48:00',
-    title: 'Gacha Icon Update',
+    version: 'v5.13.5',
+    date: '2026-05-12',
+    time: '11:00:00',
+    title: 'Reward Pool UI Consolidation',
     items: [
-      { category: 'UI', description: 'Created a custom SlotMachine SVG icon and integrated it into the Merchant\'s outposts.' },
-      { category: 'UI', description: 'Replaced the generic Sparkles icon with the new SlotMachine icon in the Gacha tab.' }
+      { category: 'UI', description: 'Consolidated Reward Pool Management title and action buttons (Reset/Add Reward) into a single row for better horizontal space efficiency.' }
     ]
   },
   {
-    version: 'v4.5.13',
-    date: '2026-05-08',
-    time: '08:44:12',
-    title: 'Settings UI & UX Polish',
+    version: 'v5.13.4',
+    date: '2026-05-12',
+    time: '10:45:00',
+    title: 'Settings Layout Refinement',
     items: [
-      { category: 'UI', description: 'Adjusted modal container layouts in ShopSettings and RewardSettings to ensure symmetrical column heights.' },
-      { category: 'UX', description: 'Dynamically updated modal titles to reflect "Add New" vs "Edit" depending on whether the item/reward is new.' }
+      { category: 'UI', description: 'Reordered general settings: "Activity Time Peaks" is now positioned before "End of the Day" for better logical flow.' }
     ]
   },
   {
-    version: 'v4.5.12',
-    date: '2026-05-08',
-    time: '07:45:12',
-    title: 'Icon Selection & Reward Visuals',
+    version: 'v5.13.3',
+    date: '2026-05-12',
+    time: '10:30:00',
+    title: 'Reward Pool UI Cleanup',
     items: [
-      { category: 'UI', description: 'Overhauled icon selection grid for Shop and Rewards with 50+ thematic icons (Fruits, Food, Nature, Vehicles, Tech).' },
-      { category: 'Feature', description: 'Added custom icon support for Loot Pool rewards, visible in both Settings and Victory screen.' },
-      { category: 'UI', description: 'Improved Reward Modal layout with centered, larger icon displays for a more impactful collection experience.' }
+      { category: 'UI', description: 'Removed redundant "Loot Pool" heading from the Reward Pool Management section in Timer Settings.' }
     ]
   },
   {
-    version: 'v4.5.11',
-    date: '2026-05-08',
-    time: '07:45:12',
-    title: 'About Page Refinement',
+    version: 'v5.13.2',
+    date: '2026-05-12',
+    time: '10:15:00',
+    title: 'Settings UI Polishing',
     items: [
-      { category: 'UI', description: 'Updated Release History to includes precise timestamps (HH:MM:SS).' },
-      { category: 'UI', description: 'Implemented collapsible grouping for Release History by major/minor versions.' }
+      { category: 'UI', description: 'Added structured frames to Mood Configuration and Daily Progress Goal sections in Settings.' },
+      { category: 'UX', description: 'Added descriptive helper text for the Daily Progress Goal setting for better clarity.' }
     ]
   },
   {
-    version: 'v4.5.10',
-    date: '2026-05-08',
-    time: '07:30:45',
-    title: 'Settings UI Visual Cleanup',
+    version: 'v5.13.1',
+    date: '2026-05-12',
+    time: '10:00:00',
+    title: 'Sync History UI Final Polish',
     items: [
-      { category: 'UI', description: 'Removed background colors from section headers in the Merchant and Loot Pool settings for a flatter look.' }
+      { category: 'UI', description: 'Optimized Sync History table with flexible column widths and improved status clarity for legacy records.' },
+      { category: 'UX', description: 'Added horizontal scrolling for history table to handle longer content without clipping.' }
     ]
   },
   {
-    version: 'v4.5.9',
-    date: '2026-05-08',
-    time: '07:28:15',
-    title: 'Merchant Settings Reorganization',
+    version: 'v5.13.0',
+    date: '2026-05-12',
+    time: '09:45:00',
+    title: 'Manual Focus Start Option',
     items: [
-      { category: 'UI', description: 'Reordered Merchant tab sections to follow: Shop, Gacha, Ichiban Kuji, and Draw Animation.' },
-      { category: 'UX', description: 'Improved the logical flow of merchant configuration by prioritizing fixed items over randomized pools.' }
+      { category: 'Feature', description: 'Added "Manual Focus Start" setting for loop mode. When rest ends, players can now choose to manually confirm before starting the next focus session.' },
+      { category: 'UI', description: 'New sleek confirmation prompt for focus sessions after rest periods.' }
     ]
   },
   {
-    version: 'v4.5.8',
-    date: '2026-05-08',
-    time: '07:26:00',
-    title: 'Settings Header Refinement',
+    version: 'v5.12.1',
+    date: '2026-05-12',
+    time: '09:30:00',
+    title: 'Sync History UI Refinement',
     items: [
-      { category: 'UI', description: 'Removed italic styling from all settings section titles for a cleaner look.' },
-      { category: 'UI', description: 'Removed bottom borders from section titles to reduce visual clutter.' }
+      { category: 'UI', description: 'Improved the Status column in Sync History with fixed-width layout and clearer labels for better visibility on smaller screens.' }
     ]
   },
   {
-    version: 'v4.5.7',
-    date: '2026-05-08',
-    time: '07:20:30',
-    title: 'Settings Header Standardization',
+    version: 'v5.12.0',
+    date: '2026-05-12',
+    time: '09:20:00',
+    title: 'Archive History Status & UI',
     items: [
-      { category: 'UI', description: 'Unified all section headers across Settings with standard icon sizes (20px) and typography.' },
-      { category: 'UI', description: 'Added decorative bottom borders to all settings section titles for better visual separation.' },
-      { category: 'UI', description: 'Applied standardized styling to About, Developer, and Activity Time section headers.' }
+      { category: 'Feature', description: 'Added a dedicated status column to Sync History, clearly indicating success, failure, or cancellation of cloud operations.' },
+      { category: 'UI', description: 'Redefined the Archive Chronology layout with a table-style grid for better information density and visual clarity.' },
+      { category: 'Logic', description: 'Enhanced sync logging to capture error messages during failed login or sync attempts for easier troubleshooting.' }
     ]
   },
   {
-    version: 'v4.5.6',
-    date: '2026-05-08',
+    version: 'v5.11.5',
+    date: '2026-05-12',
+    time: '09:10:00',
+    title: 'VAPID & Core Robustness',
+    items: [
+      { category: 'Bugfix', description: 'Improved VAPID key validation logic to prevent "65 bytes" decoding errors caused by invalid environment variables.' },
+      { category: 'Security', description: 'Rotated fallback VAPID keys and enhanced cleaning logic for platform-provided secrets.' }
+    ]
+  },
+  {
+    version: 'v5.11.4',
+    date: '2026-05-12',
+    time: '09:00:00',
+    title: 'Icon & UI Refinement',
+    items: [
+      { category: 'UI', description: 'Updated the "Morning" icon in Activity Time Peaks to a sunrise for better visual distinction.' }
+    ]
+  },
+  {
+    version: 'v5.11.3',
+    date: '2026-05-12',
+    time: '08:55:00',
+    title: 'Settings UI Polish',
+    items: [
+      { category: 'UI', description: 'Updated the "End of the Day" section icon to a calendar-check for better visual representation.' }
+    ]
+  },
+  {
+    version: 'v5.11.2',
+    date: '2026-05-12',
+    time: '08:50:00',
+    title: 'Settings UI Consolidation II',
+    items: [
+      { category: 'UI', description: 'Moved the "Daily Progress Goal" configuration into the "End of the Day" section for better thematic grouping.' }
+    ]
+  },
+  {
+    version: 'v5.11.1',
+    date: '2026-05-12',
+    time: '08:45:00',
+    title: 'Settings UI Consolidation',
+    items: [
+      { category: 'UI', description: 'Consolidated "Default Markdown" and "Mood Configuration" settings into a single "End of the Day" section for better organization.' }
+    ]
+  },
+  {
+    version: 'v5.11.0',
+    date: '2026-05-12',
+    time: '08:35:00',
+    title: 'Archive Visibility & End of Day Polish',
+    items: [
+      { category: 'Bugfix', description: 'Fixed Cloud Sync Device Code display where it appeared as "?" even when available.' },
+      { category: 'UI', description: 'Significant refinement of the "End of the Day" modal: clean header layout, highlighted settlement dates, and minimal daily progress bar.' },
+      { category: 'UX', description: 'Support for re-editing daily logs: opening the summary modal now automatically loads existing records for the current day.' }
+    ]
+  },
+  {
+    version: 'v5.10.9',
+    date: '2026-05-12',
+    time: '08:20:00',
+    title: 'Daily Summary Re-editing',
+    items: [
+      { category: 'UX', description: 'If a daily log already exists for the current day, it is automatically loaded when opening the End of the Day modal, allowing users to re-edit their saved reflection and rating.' }
+    ]
+  },
+  {
+    version: 'v5.10.8',
+    date: '2026-05-12',
+    time: '08:15:00',
+    title: 'Mood Selection UI Polish',
+    items: [
+      { category: 'UI', description: 'Realignment of mood section title and addition of a section separator for better visual hierarchy.' }
+    ]
+  },
+  {
+    version: 'v5.10.7',
+    date: '2026-05-12',
+    time: '08:12:00',
+    title: 'Mood Selection UI Polish',
+    items: [
+      { category: 'UX', description: 'Reduced the size of mood selection buttons and centered the layout for a more balanced and compact appearance in the End of the Day modal.' }
+    ]
+  },
+  {
+    version: 'v5.10.6',
+    date: '2026-05-12',
+    time: '08:08:00',
+    title: 'Daily Progress UI Refinement',
+    items: [
+      { category: 'UI', description: 'Restored the "Daily Progress" title and session ratio in a simplified layout within the End of the Day modal.' }
+    ]
+  },
+  {
+    version: 'v5.10.5',
+    date: '2026-05-12',
+    time: '08:05:00',
+    title: 'Daily Summary View Simplification',
+    items: [
+      { category: 'UI', description: 'Simplified the End of the Day modal by removing redundant header text and stripping the Daily Progress section down to a minimal interactive bar.' }
+    ]
+  },
+  {
+    version: 'v5.10.4',
+    date: '2026-05-12',
+    time: '08:02:00',
+    title: 'End of Day UI Refinement',
+    items: [
+      { category: 'UI', description: 'Refined the "End of the Day" header layout: moved the date range below the title, removed borders, and highlighted the recorded date for better clarity.' }
+    ]
+  },
+  {
+    version: 'v5.10.3',
+    date: '2026-05-12',
+    time: '07:50:00',
+    title: 'Settlement Date Attribution Fix',
+    items: [
+      { category: 'Bugfix', description: 'Fixed a critical bug where settlement and bulk session dates were attributed using UTC instead of local/configured time, causing incorrect record dates for users in non-UTC timezones.' }
+    ]
+  },
+  {
+    version: 'v5.10.2',
+    date: '2026-05-12',
+    time: '07:44:00',
+    title: 'End of Day Header Date',
+    items: [
+      { category: 'UX', description: 'Added the effective settlement date explicitly at the top of the "End of the Day" modal, making it clearer when logging activities that span across midnight.' }
+    ]
+  },
+  {
+    version: 'v5.10.1',
+    date: '2026-05-12',
+    time: '07:35:00',
+    title: 'Markdown Readability Polish',
+    items: [
+      { category: 'UX', description: 'Increased font color intensity for Markdown list items (content after "-") to improve readability across all themes.' }
+    ]
+  },
+  {
+    version: 'v5.10.0',
+    date: '2026-05-12',
+    time: '07:30:00',
+    title: 'Mood Selection UI Polish',
+    items: [
+      { category: 'UX', description: 'Improved the "Daily Feelings" selection area by adding padding and allowing scale effects (up to 125%) without clipping, providing better visual feedback.' }
+    ]
+  },
+  {
+    version: 'v5.9.9',
+    date: '2026-05-12',
+    time: '07:28:00',
+    title: 'Modal Layout Polish',
+    items: [
+      { category: 'UI', description: 'Adjusted the "End of the Day" modal vertical spacing to ensure a consistent gap from the screen edges on all devices.' }
+    ]
+  },
+  {
+    version: 'v5.9.8',
+    date: '2026-05-12',
+    time: '07:25:00',
+    title: 'Chart Interaction Polish',
+    items: [
+      { category: 'Bugfix', description: 'Fixed a bug in Weekly Activity charts where tooltips would not disappear when clicking empty space.' }
+    ]
+  },
+  {
+    version: 'v5.9.7',
+    date: '2026-05-12',
+    time: '07:16:00',
+    title: 'Cloud Sync Comparison UI Enhancement',
+    items: [
+      { category: 'UX', description: 'Added "Device Code" row to the comparison tables in the Astral Archives modal, providing better visibility of which device a cloud save belongs to.' }
+    ]
+  },
+  {
+    version: 'v5.9.6',
+    date: '2026-05-12',
     time: '07:15:00',
-    title: 'Crit Setting UI Refinement',
+    title: 'Cloud Sync Device Identity Fix',
     items: [
-      { category: 'UI', description: 'Added a bordered container for Crit Chance and Multiplier settings.' },
-      { category: 'UI', description: 'Moved the Critical Intuition talent notice to a full-width block below the inputs.' },
-      { category: 'UI', description: 'Increased font size and visibility for the talent requirement notice.' }
+      { category: 'Bugfix', description: 'Fixed an issue where the unique Device Code was being overwritten during cloud sync or data import, ensuring each platform/device maintains its own identity in the sync history.' }
     ]
   },
   {
-    version: 'v4.5.5',
-    date: '2026-05-08',
-    time: '07:10:00',
-    title: 'Critical Intuition Talent Notice',
-    items: [
-      { category: 'Architecture', description: 'Extended onTabChange prop through Settings hierarchy to allow internal navigation.' },
-      { category: 'UI', description: 'Added a status badge and helper text to the Crit Chance setting to inform users of the required talent.' },
-      { category: 'UX', description: 'Enabled direct jump to the Talents page from the Crit Chance setting notice.' }
-    ]
-  },
-  {
-    version: 'v4.5.4',
-    date: '2026-05-08',
+    version: 'v5.9.5',
+    date: '2026-05-12',
     time: '07:05:00',
-    title: 'Reward Settings Consolidation',
+    title: 'Export UI Refinement',
     items: [
-      { category: 'Architecture', description: 'Merged "Reward Settings" page into the "Timer" settings tab for improved UX flow.' },
-      { category: 'UI', description: 'Consolidated related session configurations by grouping timer settings and reward pools.' },
-      { category: 'UI', description: 'Removed the dedicated "Rewards" tab from the Settings navigation bar.' }
+      { category: 'UI', description: 'Unified the visual style of "Safe Export" and "Full Export" buttons for better consistency while maintaining distinct icon colors.' }
     ]
   },
   {
-    version: 'v4.5.3',
-    date: '2026-05-08',
-    time: '07:00:00',
-    title: 'Merchant Settings Reorganization',
+    version: 'v5.9.4',
+    date: '2026-05-12',
+    time: '07:01:00',
+    title: 'Enhanced Export Portability',
     items: [
-      { category: 'UI', description: 'Renamed "Shop Settings" to "Fixed Shop Items" and moved it after Gacha pools.' },
-      { category: 'UI', description: 'Relocated "Draw Animation" settings to the very end of the Merchant tab for better categorization.' },
-      { category: 'Fix', description: 'Ensured Standard Gacha and Ichiban Kuji sections appear first in the Merchant dashboard.' }
+      { category: 'Feature', description: 'Added a dual-mode Export system allowing users to choose between Full Export (all data) and Safe Export (privacy-focused).' },
+      { category: 'Privacy', description: 'Safe Export automatically strips sensitive synchronization passwords, cloud tokens, and device nicknames from the exported JSON.' }
     ]
   },
   {
-    version: 'v4.5.2',
-    date: '2026-05-08',
+    version: 'v5.9.3',
+    date: '2026-05-12',
+    time: '06:58:00',
+    title: 'Settings Navigation Polish',
+    items: [
+      { category: 'UX', description: 'Improved deep linking from Cloud Sync preferences to Data Management; it now accurately navigates and centers the section on screen.' }
+    ]
+  },
+  {
+    version: 'v5.9.2',
+    date: '2026-05-12',
     time: '06:55:00',
-    title: 'Push Notification & Stability Fixes',
+    title: 'Talent Unlock Celebration',
     items: [
-      { category: 'Bugfix', description: 'Resolved VapidPkHashMismatch errors by synchronizing VAPID fallback keys and adding auto-detection for key mismatches in the client.' },
-      { category: 'Feature', description: 'Added "Reset Notifications" button in General Settings to manually clear invalid push subscriptions.' },
-      { category: 'Optimization', description: 'Fixed TypeScript lint errors related to ImportMeta in the notification registration logic.' }
+      { category: 'UX', description: 'Added a colorful confetti effect when successfully unlocking a new talent, providing better visual feedback for progression.' }
     ]
   },
   {
-    version: 'v4.5.1',
-    date: '2026-05-08',
+    version: 'v5.9.1',
+    date: '2026-05-12',
+    time: '06:53:00',
+    title: 'Talent Auto-Activation',
+    items: [
+      { category: 'UX', description: 'Newly unlocked talents are now automatically enabled upon purchase, reducing the need for manual activation.' }
+    ]
+  },
+  {
+    version: 'v5.9.0',
+    date: '2026-05-12',
     time: '06:50:00',
-    title: 'Merchant Settings Organization',
+    title: 'Bulk Session Management',
     items: [
-      { category: 'UI', description: 'Separated Gacha and Ichiban Kuji pools into distinct sections within the Merchant settings for better management.' }
+      { category: 'Feature', description: 'Implemented a Bulk Manage tool in Recent Sessions for batch session creation and deletion.' },
+      { category: 'Logic', description: 'Batch created sessions now generate random reward options stored in the Treasure Chest for manual claiming.' },
+      { category: 'UX', description: 'Added protective warnings for destructive bulk deletions and reminders for multi-tier reward handling.' }
     ]
   },
   {
-    version: 'v4.5.0',
-    date: '2026-05-08',
-    time: '06:45:00',
-    title: 'Merchant & Level UI Refinement',
+    version: 'v5.8.1',
+    date: '2026-05-12',
+    time: '06:42:00',
+    title: 'Astral Archives Usability',
     items: [
-      { category: 'UI', description: 'Merged "Shop" and "Gacha" into a single "Merchant" tab for a more cohesive management experience.' },
-      { category: 'UI', description: 'Renamed "Level Rewards" to "Level" and tightened the overall tab navigation layout for better space efficiency.' }
+      { category: 'UX', description: 'Improved sub-page navigation in the Astral Archives modal: the close button now returns to the main view instead of closing the modal.' },
+      { category: 'Feature', description: 'Updated outdated instructional content in the Archives modal to reflect current cloud sync mechanics.' }
     ]
   },
   {
-    version: 'v4.4.9',
-    date: '2026-05-08',
+    version: 'v5.8.0',
+    date: '2026-05-12',
     time: '06:40:00',
-    title: 'Settings Tab UX Refinement',
+    title: 'Astral Archives Robustness',
     items: [
-      { category: 'UI', description: 'Updated the Settings navigation tabs to a wrapping layout, ensuring all categories are visible without horizontal scrolling.' }
+      { category: 'Feature', description: 'Added a 60-second countdown and manual "Cancel Sync" button during cloud synchronization.' },
+      { category: 'UX', description: 'Implemented a dedicated "Reset & Retry" UI for handling connection timeouts and sync failures.' },
+      { category: 'UX', description: 'Enhanced error reporting during communal archive operations.' }
     ]
   },
   {
-    version: 'v4.4.8',
-    date: '2026-05-08',
+    version: 'v5.7.1',
+    date: '2026-05-12',
     time: '06:35:00',
-    title: 'Settings UI Cleanup',
+    title: 'Expedition Data Portability',
     items: [
-      { category: 'UI', description: 'Removed the redundant "Dungeon Settings" banner from the top of the Settings page for a cleaner interface.' }
+      { category: 'Feature', description: 'Added a direct Download button to save Expeditions as a .md file for easier offline archiving.' },
+      { category: 'UI', description: 'Added Tooltips and improved interaction feedback for the Import/Export modal.' }
     ]
   },
   {
-    version: 'v4.4.7',
-    date: '2026-05-08',
+    version: 'v5.7.0',
+    date: '2026-05-12',
     time: '06:30:00',
-    title: 'XP Drop Mode Customization',
+    title: 'Expedition Markdown Integration',
     items: [
-      { category: 'Feature', description: 'Allowed users to set the XP Drop Mode as either fixed or random in the Session Reward Settings, bringing it to parity with Gold Drop Mode.' }
+      { category: 'Feature', description: 'Implemented Import and Export functionality for Expeditions using a custom Markdown format.' },
+      { category: 'UX', description: 'Added a dedicated modal for managing expedition list serialization and sharing.' },
+      { category: 'Logic', description: 'Developed a robust Markdown parser to handle nested tiers and completion rewards during import.' }
     ]
   },
   {
-    version: 'v4.4.6',
-    date: '2026-05-08',
+    version: 'v5.6.5',
+    date: '2026-05-12',
     time: '06:25:00',
-    title: 'Timer Skip Count Fix',
+    title: 'Data Safety Clarification',
     items: [
-      { category: 'Bugfix', description: 'Fixed an issue where manually skipping a completed timer state could incorrectly increment the loop counter beyond its maximum limit (e.g. showing 3/2).' }
+      { category: 'UX', description: 'Enhanced the data deletion warning modal with a reminder that local deletion does not affect cloud-stored archives.' }
     ]
   },
   {
-    version: 'v4.4.5',
-    date: '2026-05-08',
-    time: '06:20:00',
-    title: 'Timer Loop Sync Polish',
+    version: 'v5.6.4',
+    date: '2026-05-12',
+    time: '06:23:00',
+    title: 'Top Bar Simplification',
     items: [
-      { category: 'Feature', description: 'Refined the Timer Loop counting logic so that loop counters naturally increment only AFTER a full Focus + Rest cycle is fully completed or manually skipped.' }
+      { category: 'UI', description: 'Removed the redundant page title (e.g., Dashboard) from the header for a more minimalist look.' }
     ]
   },
   {
-    version: 'v4.4.4',
-    date: '2026-05-08',
-    time: '06:15:00',
-    title: 'Service Worker Dev Mode Fix',
+    version: 'v5.6.3',
+    date: '2026-05-12',
+    time: '06:21:00',
+    title: 'Top Bar Navigation Polish',
     items: [
-      { category: 'Bugfix', description: 'Fixed an issue where the Service Worker failed to register in development environments due to missing module type attributes and incorrect paths.' }
+      { category: 'UI', description: 'Added a persistent "Go Dungeons" link to the top bar when no dungeon is active for better accessibility.' }
     ]
   },
   {
-    version: 'v4.4.3',
-    date: '2026-05-08',
+    version: 'v5.6.2',
+    date: '2026-05-12',
+    time: '06:18:00',
+    title: 'Quest Board UI Cleanup',
+    items: [
+      { category: 'UI', description: 'Removed decorative pins and pinned note rotation from quest items and history list for a cleaner, flatter aesthetic.' }
+    ]
+  },
+  {
+    version: 'v5.6.1',
+    date: '2026-05-12',
+    time: '06:16:00',
+    title: 'Chart Visual Cleanup',
+    items: [
+      { category: 'UI', description: 'Completely suppressed default browser focus outlines on all interactive charts using global CSS overrides.' }
+    ]
+  },
+  {
+    version: 'v5.6.0',
+    date: '2026-05-12',
+    time: '06:14:00',
+    title: 'UI Visual Cleanup',
+    items: [
+      { category: 'UI', description: 'Removed default browser focus outlines from interactive charts for a cleaner visual experience.' }
+    ]
+  },
+  {
+    version: 'v5.5.9',
+    date: '2026-05-12',
     time: '06:10:00',
-    title: 'Timer Loop State Fix',
+    title: 'Chart Interaction Refinement',
     items: [
-      { category: 'Bugfix', description: 'Fixed an issue where completing the targeted number of loops would sometimes incorrectly reset the loop count to 0, completely breaking the intended n/n tracking state.' }
+      { category: 'UX', description: 'Refined background click detection in Weekly Activity charts to ensure reliable tooltip dismissal when clicking empty space.' },
+      { category: 'UX', description: 'Unified date formatting in Heatmap and Weekly popovers to display both day of week and full date.' },
+      { category: 'Bugfix', description: 'Isolated interactive states between the Bar and Line charts to prevent unintended simultaneous bubble displays.' }
     ]
   },
   {
-    version: 'v4.4.2',
-    date: '2026-05-08',
-    time: '06:05:00',
-    title: 'Reward Chest & Deferred Rewards',
+    version: 'v5.5.8',
+    date: '2026-05-12',
+    time: '05:48:00',
+    title: 'Interactive Chart Decoupling',
     items: [
-      { category: 'Feature', description: 'Added a "Defer to Chest" option in the Timer Settings, allowing users to skip the Victory Screen but store the rewards in a Chest (stash) to review later.' },
-      { category: 'UX', description: 'Added a Reward Chest icon to the Timer banner that shows a notification dot when rewards are pending.' },
-      { category: 'UI', description: 'Created a Reward Chest modal to review and select pending rewards, with an "Auto-Pick Best" option for resolving multiple pending reward sessions instantly.' }
-    ]
-  },
-  {
-    version: 'v4.4.1',
-    date: '2026-05-08',
-    time: '06:00:00',
-    title: 'Skip Victory Screen Option',
-    items: [
-      { category: 'Feature', description: 'Added a setting to automatically skip the Victory screen when a timer session finishes, with options to automatically pick the highest rarity reward or discard rewards entirely.' }
-    ]
-  },
-  {
-    version: 'v4.4.0',
-    date: '2026-05-08',
-    time: '05:55:00',
-    title: 'Settings Page Componentization',
-    items: [
-      { category: 'Architecture', description: 'Completely refactored the massive Settings.tsx file by creating a dedicated settings folder and breaking down all sub-sections into independent component files for much better maintainability.' }
-    ]
-  },
-  {
-    version: 'v4.3.15',
-    date: '2026-05-08',
-    time: '05:50:00',
-    title: 'Timer Settings Quick Access',
-    items: [
-      { category: 'UI', description: 'Added a dedicated gear icon to the top-left corner of the Timer Banner for quick access to the Timer settings page.' }
-    ]
-  },
-  {
-    version: 'v4.3.14',
-    date: '2026-05-08',
-    time: '05:45:00',
-    title: 'Timer Settings Page Refactor',
-    items: [
-      { category: 'Architecture', description: 'Extracted Timer specifics (Compact Timer Banner, visible shortcuts, and Session Reward Settings) into a newly created dedicated Timer settings page within the Settings dialog.' }
-    ]
-  },
-  {
-    version: 'v4.3.13',
-    date: '2026-05-07',
-    time: '23:30:00',
-    title: 'Talent Icon Overhaul',
-    items: [
-      { category: 'UI', description: 'Replaced all talent tree node icons with newly assigned Lucide equivalents mapped specifically for each branch and tier.' }
-    ]
-  },
-  {
-    version: 'v4.3.12',
-    date: '2026-05-07',
-    time: '23:00:00',
-    title: 'Ichiban Ticket Icon Replacement',
-    items: [
-      { category: 'UI', description: 'Replaced all Lucide icons representing the \'Ichiban\' feature with Ticket across Settings.tsx.' },
-      { category: 'UI', description: 'Added Ticket to the available icon selection array for custom shop and loot items.' }
-    ]
-  },
-  {
-    version: 'v4.3.11',
-    date: '2026-05-07',
-    time: '22:30:00',
-    title: 'Timer Loop Counting Display Polish',
-    items: [
-      { category: 'Feature', description: 'Loop count display now strictly starts at 0/n and logically updates to 1/n only when a full focus task (one cycle unit) is completed.' },
-      { category: 'Feature', description: 'Stopping at maximum loops will naturally show n/n.' },
-      { category: 'Bugfix', description: 'Modifying loop target or loop activity naturally resets current counts to 0/n, keeping state and UX synchronized.' }
-    ]
-  },
-  {
-    version: 'v4.3.10',
-    date: '2026-05-07',
-    time: '22:00:00',
-    title: 'Timer Settings Loop Polish',
-    items: [
-      { category: 'Feature', description: 'Extracted loop logic into TimerLoopSettings.tsx.' },
-      { category: 'Feature', description: 'Allowed user to choose infinite or custom target loop counts.' },
-      { category: 'UI', description: 'Displayed {current}/{target} loops format within the timer circle when looping is active.' }
-    ]
-  },
-  {
-    version: 'v4.3.9',
-    date: '2026-05-07',
-    time: '21:30:00',
-    title: 'Compact Timer Banner Theme Fix & Theme Standard Rule',
-    items: [
-      { category: 'Bugfix', description: 'Replaced fixed indigo-300 text colors with indigo-400 in the Compact Timer Banner settings so the text scales properly with the selected custom theme.' },
-      { category: 'Documentation', description: 'Added a rule to AGENTS.md explicitly defining which indigo scale ranges correctly adopt theme colors.' }
-    ]
-  },
-  {
-    version: 'v4.3.8',
-    date: '2026-05-07',
-    time: '21:00:00',
-    title: 'Timer Banner Customization',
-    items: [
-      { category: 'Feature', description: 'Added a toggle in Settings to use a Compact Timer Banner (hide navigation shortcuts).' },
-      { category: 'Feature', description: 'Added the ability to customize which navigation shortcuts appear in the Timer Banner when not in compact mode.' }
-    ]
-  },
-  {
-    version: 'v4.3.7',
-    date: '2026-05-07',
-    time: '20:30:00',
-    title: 'Recent Sessions UI Polish',
-    items: [
-      { category: 'UI', description: 'Centered the contents of the Actions column in the Recent Sessions table for better alignment with the header.' }
-    ]
-  },
-  {
-    version: 'v4.3.6',
-    date: '2026-05-07',
-    time: '20:00:00',
-    title: 'Reward Details View in Recent Sessions',
-    items: [
-      { category: 'Feature', description: 'Added the ability to click on a Reward in the Recent Sessions table to view its full details (description, rarity, type) based on the current Loot Pool.' }
-    ]
-  },
-  {
-    version: 'v4.3.5',
-    date: '2026-05-07',
-    time: '19:30:00',
-    title: 'Centralized Versioning System',
-    items: [
-      { category: 'Architecture', description: 'Created src/version.ts to centralize application version and release history.' },
-      { category: 'Refactor', description: 'Updated Settings and SplashScreen to consume data from the centralized source, making future updates easier.' }
-    ]
-  },
-  {
-    version: 'v4.3.4',
-    date: '2026-05-07',
-    time: '19:00:00',
-    title: 'Clockwise Timer Progress Fix',
-    items: [
-      { category: 'Bugfix', description: 'Corrected the timer progress ring direction to be clockwise starting from 12 o\'clock.' }
-    ]
-  },
-  {
-    version: 'v4.3.3',
-    date: '2026-05-07',
-    time: '18:30:00',
-    title: 'Theme-Aware Banner Hover Finish',
-    items: [
-      { category: 'UI', description: 'Unified all hover states in the Explore tab\'s timer navigation banner to use the theme-aware primary color.' }
-    ]
-  },
-  {
-    version: 'v4.3.2',
-    date: '2026-05-07',
-    time: '18:00:00',
-    title: 'Timer Banner Hover Polish',
-    items: [
-      { category: 'UI', description: 'Unified all hover states in the Explore tab\'s timer navigation banner to use a deep, theme-aware dark color.' }
-    ]
-  },
-  {
-    version: 'v4.3.1',
-    date: '2026-05-07',
-    time: '17:30:00',
-    title: 'Type Error Fixes & Technical Infrastructure',
-    items: [
-      { category: 'TypeScript', description: 'Resolved all reported TS2322, TS2305, and TS2304 errors across the codebase.' },
-      { category: 'Refactor', description: 'Completed global renaming of UserState to AppState for semantic clarity.' },
-      { category: 'Bugfix', description: 'Corrected function signatures for reorder, draw, and log functions.' }
-    ]
-  },
-  {
-    version: 'v4.3.0',
-    date: '2026-05-07',
-    time: '17:00:00',
-    title: 'App.tsx Refactoring & Componentization',
-    items: [
-      { category: 'Architecture', description: 'Successfully refactored App.tsx into dedicated component files.' },
-      { category: 'Architecture', description: 'Encapsulated complex modal logic into standalone components.' },
-      { category: 'UI', description: 'Enhanced the Reward Completion experience by integrating the new component.' }
+      { category: 'UX', description: 'Completely decoupled the Weekly Activity Bar Chart and Efficiency Trend Line Chart tooltips, ensuring they act individually instead of displaying simultaneously.' },
+      { category: 'Bugfix', description: 'Fixed a bug where interacting with the Bar Chart would not trigger its independent popover immediately.' },
+      { category: 'Bugfix', description: 'Fixed an issue where clicking empty space within the Weekly Activity charts failed to dismiss active tooltips.' }
     ]
   }
 ];

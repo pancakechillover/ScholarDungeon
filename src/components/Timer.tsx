@@ -25,6 +25,7 @@ interface TimerProps {
   secretCode?: string;
   pushEnabled?: boolean;
   onTogglePip?: () => void;
+  requireFocusConfirmation?: boolean;
   // External Config
   focusDuration: number;
   restDuration: number;
@@ -73,6 +74,7 @@ export const Timer = React.memo<TimerProps>(({
   secretCode,
   pushEnabled,
   onTogglePip,
+  requireFocusConfirmation = false,
   focusDuration,
   restDuration,
   enableRest,
@@ -95,6 +97,7 @@ export const Timer = React.memo<TimerProps>(({
 }) => {
   const [showRewards, setShowRewards] = useState<{ session: StudySession; choices: RewardCard[] } | null>(null);
   const [showTalentPopup, setShowTalentPopup] = useState<StudySession['triggeredTalents'] | null>(null);
+  const [showFocusPrompt, setShowFocusPrompt] = useState(false);
 
   // Sync to localStorage moved to App.tsx or handled via state setters passed down
 
@@ -212,9 +215,16 @@ export const Timer = React.memo<TimerProps>(({
       const shouldContinueLoop = isLooping && (loopTarget === 0 || nextLoopCount < loopTarget);
       
       if (shouldContinueLoop) {
-        // Automatically start the next loop
-        setIsActive(true);
-        setEndTime(Date.now() + focusDuration * 60 * 1000);
+        if (requireFocusConfirmation) {
+          // Pause and show prompt
+          setShowFocusPrompt(true);
+          setIsActive(false);
+          setEndTime(null);
+        } else {
+          // Automatically start the next loop
+          setIsActive(true);
+          setEndTime(Date.now() + focusDuration * 60 * 1000);
+        }
       } else {
         // done, keep loopCount as is to show n/n loops
         setIsActive(false);
@@ -332,6 +342,7 @@ export const Timer = React.memo<TimerProps>(({
     setIsActive(false);
     setEndTime(null);
     setIsResting(false);
+    setShowFocusPrompt(false);
     setDuration(focusDuration);
     setTimeLeft(focusDuration * 60);
     setLoopCount(0);
@@ -860,6 +871,51 @@ export const Timer = React.memo<TimerProps>(({
               </div>
             </motion.div>
           </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {showFocusPrompt && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="bg-slate-900 w-full max-w-sm rounded-3xl border border-indigo-500/30 overflow-hidden shadow-2xl p-8 text-center space-y-6"
+              >
+                <div className="w-20 h-20 bg-indigo-500/20 rounded-full flex items-center justify-center mx-auto text-indigo-400">
+                  <Play size={40} fill="currentColor" className="ml-1" />
+                </div>
+                
+                <div className="space-y-2">
+                  <h3 className="text-2xl font-black text-white tracking-tight">Rest Over!</h3>
+                  <p className="text-slate-400 text-sm">Ready to start the next focus session?</p>
+                </div>
+
+                <div className="pt-4 flex flex-col gap-3">
+                  <button
+                    onClick={() => {
+                      setShowFocusPrompt(false);
+                      setIsActive(true);
+                      setEndTime(Date.now() + focusDuration * 60 * 1000);
+                    }}
+                    className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-black uppercase tracking-widest text-sm transition-all shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2"
+                  >
+                    <Play size={18} fill="currentColor" />
+                    Start Focus
+                  </button>
+                  <button
+                    onClick={() => setShowFocusPrompt(false)}
+                    className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-2xl font-bold text-xs transition-colors"
+                  >
+                    Maybe Later
+                  </button>
+                </div>
+              </motion.div>
+            </div>
           )}
         </AnimatePresence>,
         document.body

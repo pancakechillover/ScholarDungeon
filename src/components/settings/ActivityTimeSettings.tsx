@@ -1,30 +1,7 @@
-import React, { useState } from 'react';
-import { createPortal } from 'react-dom';
+import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { RewardCard, ShopItem, GachaPool, Rarity } from '../../types';
-import { INITIAL_GACHA } from '../../constants';
-import { Plus, Trash2, Save, Edit2, X, ChevronRight, Coins, Zap, Sparkles, Trophy, Timer as TimerIcon, Package, Flame, AlertTriangle, Scroll, Volume2, VolumeX, Sun, Moon, Settings as SettingsIcon, ShoppingBag, Trees, Waves, Database, Download, Upload, Target, Gift, User, Sword, Eye, Palette, Check, Bell, BellOff, RefreshCw, Key, Layers, Sunrise, Cloud, CloudSun, Lollipop, Wrench, History, Ticket } from 'lucide-react';
-import * as LucideIcons from 'lucide-react';
-import { APP_VERSION, LAST_UPDATE_DATE, RELEASE_HISTORY } from '../../version';
-import { cn, getXPForLevel, getDefaultRewardForLevel } from '../../lib/utils';
-import { playSound } from '../../lib/sound';
-
-// Helper to convert VAPID key
-function urlBase64ToUint8Array(base64String: string) {
-  const padding = '='.repeat((4 - base64String.length % 4) % 4);
-  const base64 = (base64String + padding)
-    .replace(/-/g, '+')
-    .replace(/_/g, '/');
-
-  const rawData = window.atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
-
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i);
-  }
-  return outputArray;
-}
-
+import { Timer as TimerIcon, AlertTriangle, RefreshCw, Layers, Sunrise, Sun, Moon } from 'lucide-react';
+import { cn } from '../../lib/utils';
 
 export const ActivityTimeSettings = ({ state, setState }: { state: any, setState: (fn: (prev: any) => any) => void }) => {
   const timeSettings = state.timeSettings || {
@@ -43,95 +20,241 @@ export const ActivityTimeSettings = ({ state, setState }: { state: any, setState
     }));
   };
 
+  const checkOverlap = (p1: any, p2: any) => {
+    if (!p1 || !p2) return false;
+    const r1 = p1.start < p1.end ? [[p1.start, p1.end]] : [[p1.start, 24], [0, p1.end]];
+    const r2 = p2.start < p2.end ? [[p2.start, p2.end]] : [[p2.start, 24], [0, p2.end]];
+    for (const [s1, e1] of r1) {
+      for (const [s2, e2] of r2) {
+        if (Math.max(s1, s2) < Math.min(e1, e2)) return true;
+      }
+    }
+    return false;
+  };
+
+  const overlaps = [
+    { keys: ['morning', 'afternoon'], active: checkOverlap(timeSettings.morning, timeSettings.afternoon) },
+    { keys: ['morning', 'night'], active: checkOverlap(timeSettings.morning, timeSettings.night) },
+    { keys: ['afternoon', 'night'], active: checkOverlap(timeSettings.afternoon, timeSettings.night) }
+  ].filter(o => o.active);
+
+  // Determine timeline extension (the shift) to keep a 24h scale
+  let maxExtension = 0;
+  Object.values(timeSettings).forEach((s: any) => {
+    if (s.start > s.end) maxExtension = Math.max(maxExtension, s.end);
+  });
+
+  const timelineStart = maxExtension;
+  const timelineDuration = 24; 
+
+  const getPos = (hour: number) => {
+    // If hour < timelineStart, it's the "next day" part of the visualization
+    const normalizedHour = hour < timelineStart ? hour + 24 : hour;
+    return ((normalizedHour - timelineStart) / timelineDuration) * 100;
+  };
+
   const TimeBlock = ({ label, icon: Icon, color, settings, periodKey }: { 
     label: string, 
     icon: any, 
     color: string, 
     settings: { start: number, end: number },
     periodKey: 'morning' | 'afternoon' | 'night'
-  }) => (
-    <div className="p-4 bg-slate-900 border border-slate-800 rounded-3xl space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className={cn("p-2 rounded-xl", color)}>
-            <Icon size={16} />
+  }) => {
+    const isCrossDay = settings.start > settings.end;
+    const duration = isCrossDay ? (24 - settings.start + settings.end) : (settings.end - settings.start);
+
+    return (
+      <div className="p-4 bg-slate-950 border border-slate-900 rounded-3xl space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className={cn("p-2 rounded-xl", color)}>
+              <Icon size={16} />
+            </div>
+            <span className="text-xs font-black uppercase tracking-widest text-slate-200">{label}</span>
           </div>
-          <span className="text-xs font-black uppercase tracking-widest text-slate-200">{label}</span>
+          
+          <div className="flex flex-col items-end">
+             {isCrossDay && (
+               <span className="text-[7px] font-black uppercase tracking-widest text-rose-500/80 mt-1 flex items-center gap-1">
+                 <RefreshCw size={8} /> Midnight Cross
+               </span>
+             )}
+          </div>
         </div>
-        <div className="flex flex-col items-end gap-1">
-          <span className="text-[10px] font-mono font-bold text-slate-300 bg-slate-950 px-2 py-1 rounded-md border border-slate-800">
-            {settings.start.toString().padStart(2, '0')}:00 - {settings.end.toString().padStart(2, '0')}:00
-          </span>
-          {settings.start > settings.end && (
-            <span className="text-[8px] font-black uppercase tracking-widest text-rose-400 bg-rose-500/10 px-1.5 py-0.5 rounded flex items-center gap-1">
-              <RefreshCw size={8} /> Spans Across Midnight
-            </span>
-          )}
-        </div>
-      </div>
-      
-      <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-1.5">
-          <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest px-1">Start Hour</label>
-          <select 
-            value={settings.start}
-            onChange={(e) => updateTime(periodKey, 'start', parseInt(e.target.value))}
-            className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-300 focus:outline-none focus:border-indigo-500 transition-all cursor-pointer"
-          >
-            {Array.from({ length: 25 }).map((_, i) => (
-              <option key={i} value={i}>{i.toString().padStart(2, '0')}:00</option>
-            ))}
-          </select>
-        </div>
-        <div className="space-y-1.5">
-          <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest px-1">End Hour</label>
-          <select 
-            value={settings.end}
-            onChange={(e) => updateTime(periodKey, 'end', parseInt(e.target.value))}
-            className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-300 focus:outline-none focus:border-indigo-500 transition-all cursor-pointer"
-          >
-            {Array.from({ length: 25 }).map((_, i) => (
-              <option key={i} value={i}>{i.toString().padStart(2, '0')}:00</option>
-            ))}
-          </select>
+        
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest px-1">Start</label>
+            <select 
+              value={settings.start}
+              onChange={(e) => updateTime(periodKey, 'start', parseInt(e.target.value))}
+              className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-300 focus:outline-none focus:border-indigo-500 transition-all cursor-pointer"
+            >
+              {Array.from({ length: 25 }).map((_, i) => (
+                <option key={i} value={i}>{i.toString().padStart(2, '0')}:00</option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest px-1">End</label>
+            <select 
+              value={settings.end}
+              onChange={(e) => updateTime(periodKey, 'end', parseInt(e.target.value))}
+              className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-300 focus:outline-none focus:border-indigo-500 transition-all cursor-pointer"
+            >
+              {Array.from({ length: 25 }).map((_, i) => (
+                <option key={i} value={i}>{i.toString().padStart(2, '0')}:00</option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2.5 text-indigo-400 mb-6 pb-2">
-        <TimerIcon size={20} />
-        <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Activity Time Peaks</h4>
+    <div className="space-y-6">
+      <div className="space-y-4">
+        <div className="flex items-center gap-2.5 text-indigo-400">
+          <TimerIcon size={20} />
+          <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Activity Time Peaks</h4>
+        </div>
+        <p className="text-[10px] text-slate-500 italic leading-relaxed">
+          Customize peak periods for activity tracking. 
+          Non-covered regions are labeled as "Other".
+        </p>
       </div>
-      <p className="text-[10px] text-slate-500 italic mb-4 leading-relaxed">
-        Customize the segments for your Record tab's activity charts. 
-        Note: Regions not covered by these ranges will be cataloged as "Other".
-      </p>
       
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <TimeBlock 
           label="Morning" 
-          icon={Sun} 
-          color="bg-amber-500/10 text-amber-400" 
+          icon={Sunrise} 
+          color="bg-[#FDE047]/10 text-[#FDE047]" 
           settings={timeSettings.morning}
           periodKey="morning"
         />
         <TimeBlock 
           label="Afternoon" 
           icon={Sun} 
-          color="bg-orange-500/10 text-orange-400" 
+          color="bg-[#F97316]/10 text-[#F97316]" 
           settings={timeSettings.afternoon}
           periodKey="afternoon"
         />
         <TimeBlock 
           label="Night" 
           icon={Moon} 
-          color="bg-indigo-500/10 text-indigo-400" 
+          color="bg-[#6366F1]/10 text-[#6366F1]" 
           settings={timeSettings.night}
           periodKey="night"
         />
+      </div>
+
+      <div className="space-y-4 pt-2">
+        {/* Global Timeline */}
+        <div className="space-y-3 p-1">
+          <div className="flex items-center justify-between px-1">
+            <span className="text-sm font-black uppercase tracking-widest text-slate-400">Visualization Timeline</span>
+            {timelineStart > 0 && (
+              <span className="text-sm font-black uppercase tracking-widest text-indigo-400 flex items-center gap-1">
+                <RefreshCw size={12} /> Shifted View (+{timelineStart}h Offset)
+              </span>
+            )}
+          </div>
+          <div className="relative h-16 bg-slate-950 border border-slate-800/80 rounded-2xl overflow-hidden p-1 shadow-inner shadow-black/20">
+            <div className="absolute inset-y-0 inset-x-6">
+              {/* Extended Day Pattern Area */}
+              {timelineStart > 0 && (
+                <div 
+                  className="absolute top-0 bottom-0 right-0 bg-slate-900/40 border-l border-dashed border-indigo-500/20 z-0"
+                  style={{ left: `${getPos(24)}%` }}
+                />
+              )}
+
+              {/* Markers */}
+              <div className="absolute inset-0">
+                {Array.from({ length: 25 }).map((_, i) => {
+                  const hour = (timelineStart + i) % 24;
+                  return (
+                    <div 
+                      key={i} 
+                      className={cn(
+                        "absolute top-0 bottom-0 transition-colors", 
+                        hour === 0 ? "border-l-[3px] border-indigo-500/60 z-30 -ml-[1px]" : "border-l border-slate-900/50",
+                        i % 6 === 0 ? "border-slate-800/40" : ""
+                      )}
+                      style={{ left: `${(i / 24) * 100}%` }}
+                    />
+                  );
+                })}
+              </div>
+
+              {/* Labels (Period start/end only) */}
+              <div className="absolute inset-0 h-full flex pointer-events-none">
+                {Object.values(timeSettings).map((s: any, idx) => (
+                  <React.Fragment key={idx}>
+                    <div 
+                      className="absolute bottom-1 -translate-x-1/2 text-[9px] font-black font-mono text-slate-600 whitespace-nowrap"
+                      style={{ left: `${getPos(s.start)}%` }}
+                    >
+                      {s.start}:00
+                    </div>
+                    <div 
+                      className="absolute bottom-1 -translate-x-1/2 text-[9px] font-black font-mono text-slate-600 whitespace-nowrap"
+                      style={{ left: `${getPos(s.start > s.end ? s.end + 24 : s.end)}%` }}
+                    >
+                      {s.end}:00
+                    </div>
+                  </React.Fragment>
+                ))}
+              </div>
+
+              {/* Segments */}
+              <div className="absolute inset-x-0 top-2.5 bottom-7">
+                {Object.entries(timeSettings).map(([key, s]: [string, any]) => {
+                  const colors = {
+                    morning: { bg: 'bg-[#FDE047]' },
+                    afternoon: { bg: 'bg-[#F97316]' },
+                    night: { bg: 'bg-[#6366F1]' }
+                  } as any;
+                  
+                  const { bg } = colors[key];
+                  const start = s.start;
+                  const end = s.start > s.end ? 24 + s.end : s.end;
+                  const width = end - start;
+                  
+                  if (width <= 0) return null;
+
+                  return (
+                    <motion.div
+                      key={key}
+                      layoutId={`peak-${key}`}
+                      className={cn("absolute h-full rounded-xl opacity-90 flex items-center justify-center overflow-hidden", bg)}
+                      style={{ 
+                        left: `${getPos(start)}%`, 
+                        width: `${(width / 24) * 100}%` 
+                      }}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Overlap Warning */}
+        <AnimatePresence>
+          {overlaps.length > 0 && (
+            <motion.div 
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="flex items-center gap-2 p-3 bg-rose-500/10 border border-rose-500/20 rounded-2xl text-rose-400 text-xs font-bold px-4"
+            >
+              <AlertTriangle size={14} className="shrink-0" />
+              <span className="italic">Warning: Segment overlap detected ({overlaps.map(o => o.keys.join(' & ')).join(', ')}). This will lead to overlapping data in your charts.</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       <div className="flex items-center justify-between p-4 bg-slate-900 border border-slate-800 rounded-3xl mt-2">
