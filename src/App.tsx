@@ -177,8 +177,8 @@ function App() {
       try {
         // @ts-ignore
         const pip = await window.documentPictureInPicture.requestWindow({
-          width: 320,
-          height: 380,
+          width: 220,
+          height: 300,
         });
 
         const copyStyles = () => {

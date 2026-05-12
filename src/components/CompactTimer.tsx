@@ -86,7 +86,7 @@ export const CompactTimer: React.FC<CompactTimerProps> = ({
 
       {/* Countdown Module */}
       <div className="relative flex flex-col items-center">
-        <div className="text-7xl font-black font-mono tracking-tighter tabular-nums text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.1)]">
+        <div className="text-6xl font-black font-mono tracking-tighter tabular-nums text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.1)]">
           {formatTime(displayTime)}
         </div>
         

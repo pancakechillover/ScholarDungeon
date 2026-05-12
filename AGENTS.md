@@ -23,7 +23,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v6.0.1
+- **Current Version:** v6.0.2
 - **Last Update Date:** 2026-05-12
 
 ## Dark Themes Definition
@@ -50,6 +50,9 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 ## Task History
 
+- **v6.0.2 (2026-05-12):** PIP Dimensions & Theme Alignment.
+  - *UI:* Reduced default PIP window dimensions to 220x300 for a more compact footprint.
+  - *UI:* Synchronized the PIP window theme with the main application, including dynamic background and accent color updates.
 - **v6.0.1 (2026-05-12):** PIP Timer Throttling Fix.
   - *Bug Fix:* Re-engineered the PIP (Always-on-top) timer component to use local `requestAnimationFrame` loops, preventing the timer from freezing when the main browser window is minimized or inactive.
 - **v6.0.0 (2026-05-12):** Version 6.0.0 Milestone & PIP UI Alignment.

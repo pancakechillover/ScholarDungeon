@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v6.0.1';
+export const APP_VERSION = 'v6.0.2';
 export const LAST_UPDATE_DATE = '2026-05-12';
-export const LAST_UPDATE_TIME = '18:18:00';
+export const LAST_UPDATE_TIME = '22:33:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,16 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v6.0.2',
+    date: '2026-05-12',
+    time: '22:33:00',
+    title: 'PIP Dimensions & Theme Alignment',
+    items: [
+      { category: 'UI', description: 'Reduced default PIP window dimensions to 220x300 for a more compact footprint.' },
+      { category: 'UI', description: 'Synchronized the PIP window theme with the main application, including dynamic background and accent color updates.' }
+    ]
+  },
   {
     version: 'v6.0.1',
     date: '2026-05-12',
