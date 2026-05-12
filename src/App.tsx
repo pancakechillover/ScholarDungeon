@@ -368,11 +368,12 @@ function App() {
       prevSyncDataRef.current = currentData;
       setHasUnsyncedChanges(true);
 
-      if (state.secretCode && state.autoSyncMode && state.autoSyncMode !== 'manual') {
-        if (syncTimeoutRef.current) {
-          clearTimeout(syncTimeoutRef.current);
-        }
+      if (syncTimeoutRef.current) {
+        clearTimeout(syncTimeoutRef.current);
+        syncTimeoutRef.current = null;
+      }
 
+      if (state.secretCode && state.autoSyncMode && state.autoSyncMode !== 'manual') {
         if (state.autoSyncMode === 'debounce') {
           const delay = (state.autoSyncDebounceSeconds || 10) * 1000;
           syncTimeoutRef.current = setTimeout(() => {

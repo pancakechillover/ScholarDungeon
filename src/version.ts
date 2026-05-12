@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v5.13.18';
+export const APP_VERSION = 'v5.13.19';
 export const LAST_UPDATE_DATE = '2026-05-12';
-export const LAST_UPDATE_TIME = '14:30:00';
+export const LAST_UPDATE_TIME = '14:45:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,15 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v5.13.19',
+    date: '2026-05-12',
+    time: '14:45:00',
+    title: 'Cloud Unbind Timeout Fix',
+    items: [
+      { category: 'Bugfix', description: 'Fixed an issue where "Unbind Local" would still trigger a trailing auto-sync if a debounce timer was already active during the unbind operation.' }
+    ]
+  },
   {
     version: 'v5.13.18',
     date: '2026-05-12',

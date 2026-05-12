@@ -23,7 +23,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v5.13.18
+- **Current Version:** v5.13.19
 - **Last Update Date:** 2026-05-12
 
 ## Dark Themes Definition
@@ -49,6 +49,8 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+- **v5.13.19 (2026-05-12):** Cloud Unbind Timeout Fix.
+  - *Bugfix:* Fixed an issue where "Unbind Local" would still trigger a trailing auto-sync if a debounce timer was already active during the unbind operation.
 - **v5.13.18 (2026-05-12):** Timer PIP Context Fix.
   - *Bugfix:* Fixed an error where the Picture-in-Picture window would fail to open in iframe contexts. The button is now hidden when the app is embedded, directing users to open it in a new tab or install as a PWA first.
 - **v5.13.17 (2026-05-12):** Timer PIP Button OS Requirement.
