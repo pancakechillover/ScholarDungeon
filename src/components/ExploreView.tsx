@@ -309,7 +309,7 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
                         <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full border border-slate-900"></span>
                       </button>
                     )}
-                    {canPip && isPWA && isDesktop && (
+                    {canPip && typeof window !== 'undefined' && /Win|Mac/i.test(navigator.userAgent || navigator.platform) && (
                       <button 
                         onClick={togglePip}
                         className="p-2 bg-slate-800/80 hover:bg-indigo-600/30 text-slate-400 hover:text-indigo-400 rounded-xl transition-all border border-slate-700/50 hover:border-indigo-500/30 group"

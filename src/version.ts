@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v5.13.15';
+export const APP_VERSION = 'v5.13.17';
 export const LAST_UPDATE_DATE = '2026-05-12';
-export const LAST_UPDATE_TIME = '13:45:00';
+export const LAST_UPDATE_TIME = '14:15:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,24 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v5.13.17',
+    date: '2026-05-12',
+    time: '14:15:00',
+    title: 'Timer PIP Button OS Requirement',
+    items: [
+      { category: 'UX', description: 'The Floating Mini Timer (Always on Top) button now appears on all Windows and Mac systems that support the feature, instead of only appearing when installed as a PWA.' }
+    ]
+  },
+  {
+    version: 'v5.13.16',
+    date: '2026-05-12',
+    time: '14:00:00',
+    title: 'Top Bar Sync Button Refinement',
+    items: [
+      { category: 'UI', description: 'Reduced the size of the cloud sync button and its icon for a more compact and consistent top bar layout.' }
+    ]
+  },
   {
     version: 'v5.13.15',
     date: '2026-05-12',

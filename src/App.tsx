@@ -968,7 +968,7 @@ function App() {
                 onClick={() => checkCloudSync(true)}
                 disabled={isSyncing || isVerifying}
                 className={cn(
-                  "p-2 rounded-xl transition-all flex items-center justify-center gap-2 group relative border",
+                  "p-1.5 rounded-lg transition-all flex items-center justify-center gap-2 group relative border",
                   hasUnsyncedChanges 
                     ? "bg-amber-500/10 border-amber-500/30 text-amber-500 hover:bg-amber-500/20" 
                     : (isSyncing || isVerifying)
@@ -977,8 +977,8 @@ function App() {
                 )}
                 title={hasUnsyncedChanges ? "Unsynced Changes - Click to Verify" : "Verify & Compare Archives"}
               >
-                <div className={cn("transition-transform group-hover:rotate-180 duration-500")}>
-                  <RefreshCw size={16} className={isSyncing || isVerifying ? "animate-spin" : ""} />
+                <div className={cn("transition-transform group-hover:rotate-180 duration-500 flex items-center")}>
+                  <RefreshCw size={14} className={isSyncing || isVerifying ? "animate-spin" : ""} />
                 </div>
                 {hasUnsyncedChanges && (
                   <span className="absolute -top-1 -right-1 flex h-3 w-3">
