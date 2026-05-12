@@ -1,7 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { History, Clock, Trophy, Edit2, Trash2, Filter, Search, X, Check, SearchX, Calendar, Sword, ArrowUp, ArrowDown, ChevronUp, ChevronDown, Zap, Layers } from 'lucide-react';
-import { StudySession, Dungeon, MajorDungeon, RewardCard } from '../types';
+import { History, Clock, Trophy, Edit2, Trash2, Filter, Search, X, Check, SearchX, Calendar, Sword, ArrowUp, ArrowDown, ChevronUp, ChevronDown, Zap, Layers, Download } from 'lucide-react';
+import { StudySession, Dungeon, MajorDungeon, RewardCard, TimeSettings } from '../types';
 import { cn } from '../lib/utils';
 import { format, parseISO, isAfter, isBefore, startOfDay, endOfDay } from 'date-fns';
 import { SpinnerInput } from './SpinnerInput';
@@ -16,6 +16,7 @@ interface RecentSessionsProps {
   bulkCreateSessions?: (data: { count: number, objectiveId: string, startTime: string, endTime: string }) => void;
   bulkDeleteSessions?: (data: { startTime: string, endTime: string }) => void;
   rewardPool: RewardCard[];
+  timeSettings?: TimeSettings;
 }
 
 export const RecentSessions: React.FC<RecentSessionsProps> = ({
@@ -26,8 +27,10 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
   deleteSession,
   bulkCreateSessions,
   bulkDeleteSessions,
-  rewardPool
+  rewardPool,
+  timeSettings
 }) => {
+  const [showPeriodicSplits, setShowPeriodicSplits] = useState(true);
   const [editingSession, setEditingSession] = useState<StudySession | null>(null);
   const [viewingRewardName, setViewingRewardName] = useState<string | null>(null);
   const [showBulkModal, setShowBulkModal] = useState(false);
@@ -103,6 +106,26 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
     });
   }, [history, sortConfig, dungeons]);
 
+  const getPeriod = useCallback((timestamp: string) => {
+    if (!timeSettings) return { name: 'Other', date: '', fullKey: 'Other' };
+    const dateObj = parseISO(timestamp);
+    const hour = dateObj.getHours();
+    const dateStr = format(dateObj, 'MMM dd');
+    const { morning, afternoon, night } = timeSettings;
+
+    const isInRange = (h: number, start: number, end: number) => {
+      if (start <= end) return h >= start && h < end;
+      return h >= start || h < end; // spans across midnight
+    };
+
+    let pName = 'Other';
+    if (isInRange(hour, morning.start, morning.end)) pName = 'Morning';
+    else if (isInRange(hour, afternoon.start, afternoon.end)) pName = 'Afternoon';
+    else if (isInRange(hour, night.start, night.end)) pName = 'Night';
+    
+    return { name: pName, date: dateStr, fullKey: `${dateStr}-${pName}` };
+  }, [timeSettings]);
+
   const filteredSessions = useMemo(() => {
     return sortedSessions.filter(session => {
       const dungeon = dungeons.find(d => d.id === session.dungeonId);
@@ -140,6 +163,35 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
     });
   }, [sortedSessions, dungeons, majorDungeons, searchTerm, filterDungeon, dateRange, durationRange]);
 
+  const rowSegments = useMemo(() => {
+    const segments: (
+      | { type: 'separator'; period: string; date: string; key: string; bgVariant: number }
+      | { type: 'session'; session: StudySession; key: string; bgVariant: number }
+    )[] = [];
+
+    let currentBgVariant = 0;
+
+    filteredSessions.slice(0, 50).forEach((session, index, array) => {
+      const period = getPeriod(session.timestamp);
+      const prevSession = index > 0 ? array[index - 1] : null;
+      const prevPeriod = prevSession ? getPeriod(prevSession.timestamp) : null;
+      
+      if (showPeriodicSplits && prevPeriod && period.fullKey !== prevPeriod.fullKey) {
+        currentBgVariant = (currentBgVariant + 1) % 2;
+        segments.push({ 
+          type: 'separator', 
+          period: period.name, 
+          date: period.date, 
+          key: `sep-${session.id}`,
+          bgVariant: currentBgVariant
+        });
+      }
+      segments.push({ type: 'session', session, key: session.id, bgVariant: currentBgVariant });
+    });
+
+    return segments;
+  }, [filteredSessions, getPeriod, showPeriodicSplits]);
+
   const stats = useMemo(() => {
     return {
       totalTime: history.reduce((acc, s) => acc + s.duration, 0),
@@ -147,6 +199,47 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
       totalXP: history.reduce((acc, s) => acc + s.xpEarned, 0),
     };
   }, [history]);
+
+  const exportToCSV = useCallback(() => {
+    // CSV Header
+    const headers = ['Date', 'Major Dungeon', 'Dungeon Goal', 'Focus (min)', 'Rest (min)', 'Total (min)', 'Reward', 'XP Earned', 'Gold Earned'];
+    
+    // Data Rows
+    const rows = filteredSessions.map(session => {
+      const dungeon = dungeons.find(d => d.id === session.dungeonId);
+      const majorDungeon = dungeon?.parentId ? majorDungeons.find(m => m.id === dungeon.parentId) : null;
+      
+      return [
+        format(parseISO(session.timestamp), 'yyyy-MM-dd HH:mm'),
+        majorDungeon?.name || '',
+        dungeon?.name || 'Free Study',
+        session.focusDuration || 0,
+        session.restDuration || 0,
+        session.duration || 0,
+        session.rewardName || 'None',
+        session.xpEarned,
+        session.coinsEarned
+      ];
+    });
+
+    // Combine headers and rows
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(r => r.map(field => `"${String(field).replace(/"/g, '""')}"`).join(','))
+    ].join('\n');
+
+    // Create and trigger download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `recent_sessions_${format(new Date(), 'yyyyMMdd_HHmm')}.csv`);
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }, [filteredSessions, dungeons, majorDungeons]);
 
   return (
     <div className="w-full space-y-6 mt-12 pb-20">
@@ -171,6 +264,29 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
             {(filterDungeon !== 'all' || searchTerm) && (
               <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
             )}
+          </button>
+
+          <button
+            onClick={exportToCSV}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900/50 border border-slate-800 text-slate-400 hover:border-amber-500/50 hover:text-amber-400 transition-all text-sm font-bold active:scale-95 shadow-lg shadow-amber-500/5"
+            title="Export as CSV"
+          >
+            <Download size={16} />
+            CSV
+          </button>
+
+          <button
+            onClick={() => setShowPeriodicSplits(!showPeriodicSplits)}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2 rounded-xl border transition-all text-sm font-bold active:scale-95 shadow-lg",
+              showPeriodicSplits 
+                ? "bg-indigo-600 border-indigo-500 text-white shadow-indigo-500/10" 
+                : "bg-slate-900/50 border-slate-800 text-slate-400 hover:border-slate-700 shadow-slate-900/5"
+            )}
+            title="Toggle Periodic Splits"
+          >
+            <Layers size={16} />
+            Splits
           </button>
 
           <button
@@ -433,18 +549,74 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
               </thead>
               <tbody className="divide-y divide-slate-800/50">
                 <AnimatePresence mode="popLayout">
-                  {filteredSessions.slice(0, 50).map((session) => {
+                  {rowSegments.map((segment) => {
+                    const getBgStyle = (variant: number) => ({
+                      bg: variant === 0 ? 'bg-transparent' : 'bg-indigo-500/5',
+                      hover: variant === 0 ? 'hover:bg-indigo-500/5' : 'hover:bg-indigo-500/10',
+                    });
+
+                    const getLabelStyle = (period: string) => {
+                      const styles: Record<string, { label: string, text: string }> = {
+                        'Morning': { label: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30', text: 'text-yellow-300' },
+                        'Afternoon': { label: 'bg-orange-500/20 text-orange-300 border-orange-500/30', text: 'text-orange-300' },
+                        'Night': { label: 'bg-blue-500/20 text-blue-300 border-blue-500/30', text: 'text-blue-300' },
+                        'Other': { label: 'bg-slate-500/20 text-slate-300 border-slate-500/30', text: 'text-slate-300' }
+                      };
+                      return styles[period] || styles['Other'];
+                    };
+
+                    const bg = getBgStyle(segment.bgVariant);
+                    const rowBg = bg.bg;
+                    const rowHover = bg.hover;
+                    const labelStyle = segment.type === 'separator' ? getLabelStyle(segment.period) : null;
+
+                    if (segment.type === 'separator') {
+                      return (
+                        <motion.tr 
+                          layout 
+                          key={segment.key}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          className={cn("relative z-10 transition-colors duration-300", rowBg)}
+                        >
+                          <td colSpan={6} className="px-6 py-3">
+                            <div className="flex items-center gap-4">
+                              <div className="h-[1.5px] flex-1 bg-gradient-to-r from-transparent via-slate-700/50 to-transparent" />
+                              <div className={cn(
+                                "flex items-center gap-2 px-3 py-1.5 rounded-xl border shadow-lg",
+                                labelStyle!.label
+                              )}>
+                                <span className={cn(
+                                  "text-[10px] font-black uppercase tracking-[0.2em]",
+                                  labelStyle!.text
+                                )}>
+                                  {segment.date} • {segment.period}
+                                </span>
+                              </div>
+                              <div className="h-[1.5px] flex-1 bg-gradient-to-r from-transparent via-slate-700/50 to-transparent" />
+                            </div>
+                          </td>
+                        </motion.tr>
+                      );
+                    }
+
+                    const { session } = segment;
                     const dungeon = dungeons.find(d => d.id === session.dungeonId);
                     const majorDungeon = dungeon?.parentId ? majorDungeons.find(m => m.id === dungeon.parentId) : null;
                     
                     return (
                       <motion.tr
                         layout
-                        key={session.id}
+                        key={segment.key}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="group hover:bg-indigo-500/5 transition-colors"
+                        className={cn(
+                          "group transition-all duration-300",
+                          rowBg,
+                          rowHover
+                        )}
                       >
                       <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-center">
                           <div className="text-[10px] sm:text-xs font-bold text-slate-400">

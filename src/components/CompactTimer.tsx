@@ -1,24 +1,59 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Sword, Coffee } from 'lucide-react';
+import { Sword, Coffee, Play, Pause, RotateCcw, SkipForward } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { Dungeon } from '../types';
 
 interface CompactTimerProps {
-  timeLeft: number;
+  timeLeft: number; // Used as fallback or initial
+  endTime: number | null;
   isActive: boolean;
   isResting: boolean;
   currentDungeon: Dungeon | null;
   duration: number;
+  toggleTimer: () => void;
+  resetTimer: () => void;
+  skipSession: () => void;
 }
 
 export const CompactTimer: React.FC<CompactTimerProps> = ({
   timeLeft,
+  endTime,
   isActive,
   isResting,
   currentDungeon,
-  duration
+  duration,
+  toggleTimer,
+  resetTimer,
+  skipSession
 }) => {
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [displayTime, setDisplayTime] = React.useState(timeLeft);
+
+  React.useEffect(() => {
+    setDisplayTime(timeLeft);
+  }, [timeLeft]); // Sync when main thread ticks or prop changes
+
+  React.useEffect(() => {
+    if (!isActive || !endTime) return;
+    
+    // We want to tick locally inside the PIP window to avoid main-window background throttling
+    const win = containerRef.current?.ownerDocument.defaultView || window;
+    
+    let reqId: number;
+    const tick = () => {
+      const remaining = Math.max(0, Math.ceil((endTime - Date.now()) / 1000));
+      setDisplayTime(remaining);
+      reqId = win.requestAnimationFrame(tick);
+    };
+    
+    reqId = win.requestAnimationFrame(tick);
+    
+    return () => {
+      win.cancelAnimationFrame(reqId);
+    };
+  }, [isActive, endTime]);
+
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -26,7 +61,7 @@ export const CompactTimer: React.FC<CompactTimerProps> = ({
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-full w-full bg-slate-950 p-6 text-white font-sans overflow-hidden select-none">
+    <div ref={containerRef} className="flex flex-col items-center justify-center h-[100dvh] w-[100dvw] bg-slate-950 p-6 text-white font-sans overflow-hidden select-none">
       {/* Dungeon Progress */}
       {currentDungeon && (
         <div className="w-full mb-6 space-y-2">
@@ -52,26 +87,86 @@ export const CompactTimer: React.FC<CompactTimerProps> = ({
       {/* Countdown Module */}
       <div className="relative flex flex-col items-center">
         <div className="text-7xl font-black font-mono tracking-tighter tabular-nums text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.1)]">
-          {formatTime(timeLeft)}
+          {formatTime(displayTime)}
         </div>
         
         <div className={cn(
-          "mt-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 border shadow-lg",
-          isResting 
-            ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30" 
-            : "bg-indigo-500/10 text-indigo-400 border-indigo-500/30",
-          isActive ? "animate-pulse" : ""
-        )}>
-          {isResting ? <Coffee size={12} strokeWidth={3} /> : <Sword size={12} strokeWidth={3} />}
-          {isResting ? "Resting" : "Exploring"}
+            "font-bold uppercase tracking-widest text-xs mt-2 flex items-center gap-1",
+            isResting ? "text-emerald-500" : "text-indigo-400"
+          )}>
+          {(() => {
+            const statusText = (isResting ? (isActive ? 'Resting...' : 'Ready to Rest') : (isActive ? 'Exploring...' : 'Ready to Delve'));
+            const charArray = statusText.split('');
+            const totalItems = charArray.length + 1; // +1 for the icon
+            const animationDuration = 0.6;
+            const repeatDelay = (totalItems - 1) * animationDuration;
+
+            return (
+              <>
+                <motion.span
+                  animate={isActive ? { y: [0, -8, 0] } : { y: 0 }}
+                  transition={{
+                    duration: animationDuration,
+                    repeat: isActive ? Infinity : 0,
+                    ease: "easeInOut",
+                    delay: 0,
+                    repeatDelay: repeatDelay
+                  }}
+                  className="inline-block mr-1"
+                >
+                  {isResting ? <Coffee size={14} /> : <Sword size={14} />}
+                </motion.span>
+                {charArray.map((char, i) => (
+                  <motion.span
+                    key={i}
+                    animate={isActive ? { y: [0, -8, 0] } : { y: 0 }}
+                    transition={{
+                      duration: animationDuration,
+                      repeat: isActive ? Infinity : 0,
+                      ease: "easeInOut",
+                      delay: (i + 1) * animationDuration, // Delay based on its position in sequence
+                      repeatDelay: repeatDelay
+                    }}
+                    className="inline-block flex-shrink-0 whitespace-pre"
+                  >
+                    {char}
+                  </motion.span>
+                ))}
+              </>
+            );
+          })()}
         </div>
       </div>
 
-      {!currentDungeon && (
-        <div className="mt-8 text-slate-600 text-[10px] font-bold uppercase tracking-widest bg-slate-900/50 px-3 py-1 rounded-full border border-slate-800/50">
-          Free Session
-        </div>
-      )}
+      {/* Controls */}
+      <div className="flex items-center space-x-6 mt-8">
+        <button
+          onClick={resetTimer}
+          className="p-3 bg-slate-900 text-slate-400 hover:text-white rounded-full border border-slate-800 transition-all"
+          title="Reset Timer"
+        >
+          <RotateCcw size={20} />
+        </button>
+        <button
+          onClick={toggleTimer}
+          className={cn(
+            "w-16 h-16 rounded-full flex items-center justify-center transition-all shadow-2xl shrink-0 outline-none",
+            isActive 
+              ? (isResting ? "bg-slate-900 text-emerald-500 border-2 border-emerald-500" : "bg-slate-900 text-indigo-500 border-2 border-indigo-500") 
+              : (isResting ? "bg-emerald-600 text-white hover:bg-emerald-500" : "bg-indigo-600 text-white hover:bg-indigo-500")
+          )}
+        >
+          {isActive ? <Pause size={28} fill="currentColor" /> : <Play size={28} fill="currentColor" className="ml-1" />}
+        </button>
+        <button
+          onClick={skipSession}
+          className="p-3 bg-slate-900 text-slate-400 hover:text-white rounded-full border border-slate-800 transition-all"
+          title="Skip Session"
+        >
+          <SkipForward size={20} />
+        </button>
+      </div>
+
     </div>
   );
 };

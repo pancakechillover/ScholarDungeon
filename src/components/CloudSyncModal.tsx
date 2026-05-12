@@ -518,11 +518,11 @@ export function CloudSyncModal({
                   </>
                 ) : (
                   <>
-                    <div className="relative">
+                    <div className="relative mb-4">
                       <div className="absolute inset-0 bg-indigo-500/20 blur-2xl rounded-full" />
                       <Loader2 className="animate-spin text-indigo-400 relative z-10" size={48} />
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-[10px] font-black text-indigo-300/50 mt-12">{timeLeft}s</span>
+                        <span className="text-[10px] font-black text-indigo-300/50 mt-24">{timeLeft}s</span>
                       </div>
                     </div>
                     <div className="space-y-2">

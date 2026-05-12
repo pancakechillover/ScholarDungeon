@@ -658,6 +658,7 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
             bulkCreateSessions={bulkCreateSessions}
             bulkDeleteSessions={bulkDeleteSessions}
             rewardPool={state.rewardPool}
+            timeSettings={state.timeSettings}
           />
         </div>
       )}

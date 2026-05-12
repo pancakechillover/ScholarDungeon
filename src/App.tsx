@@ -200,9 +200,12 @@ function App() {
         };
 
         copyStyles();
-        pip.document.body.style.backgroundColor = '#020617';
+        pip.document.body.style.backgroundColor = 'var(--color-slate-950, #020617)';
         pip.document.body.style.margin = '0';
         pip.document.body.style.overflow = 'hidden';
+        if (document.documentElement.hasAttribute('data-theme')) {
+          pip.document.documentElement.setAttribute('data-theme', document.documentElement.getAttribute('data-theme')!);
+        }
 
         pip.addEventListener("pagehide", () => {
              setPipWindow(null);
@@ -433,10 +436,16 @@ function App() {
   React.useEffect(() => {
     if (state.theme) {
       document.documentElement.setAttribute('data-theme', state.theme);
+      if (pipWindow) {
+        pipWindow.document.documentElement.setAttribute('data-theme', state.theme);
+      }
     } else {
       document.documentElement.removeAttribute('data-theme');
+      if (pipWindow) {
+        pipWindow.document.documentElement.removeAttribute('data-theme');
+      }
     }
-  }, [state.theme]);
+  }, [state.theme, pipWindow]);
 
   React.useEffect(() => {
     const handleFullscreenChange = () => {
@@ -793,6 +802,33 @@ function App() {
 
   const handleSplashComplete = useCallback(() => setAppReady(true), []);
 
+  const toggleTimerPip = useCallback(() => {
+    if (isTimerActive) {
+      setIsTimerActive(false);
+      setTimerEndTime(null);
+    } else {
+      if (!isResting && isLooping && loopTarget > 0 && loopCount >= loopTarget) {
+        setLoopCount(0);
+      }
+      setIsTimerActive(true);
+      setTimerEndTime(Date.now() + timerTimeLeft * 1000);
+    }
+  }, [isTimerActive, isResting, isLooping, loopTarget, loopCount, timerTimeLeft]);
+
+  const resetTimerPip = useCallback(() => {
+    setIsTimerActive(false);
+    setTimerEndTime(null);
+    setIsResting(false);
+    setDuration(focusDuration);
+    setTimerTimeLeft(focusDuration * 60);
+    setLoopCount(0);
+  }, [focusDuration]);
+
+  const skipSessionPip = useCallback(() => {
+    setIsTimerActive(true);
+    setTimerEndTime(Date.now() - 1000);
+  }, []);
+
   return (
     <>
       <AnimatePresence>
@@ -802,32 +838,19 @@ function App() {
       {pipWindow && createPortal(
         <CompactTimer 
           timeLeft={timerTimeLeft}
+          endTime={timerEndTime}
           isActive={isTimerActive}
           isResting={isResting}
           currentDungeon={currentDungeon || null}
           duration={duration}
+          toggleTimer={toggleTimerPip}
+          resetTimer={resetTimerPip}
+          skipSession={skipSessionPip}
         />,
         pipWindow.document.body
       )}
 
-      {syncCheckResult && (
-        <CloudSyncModal 
-          isOpen={true}
-          onClose={() => setSyncCheckResult(null)}
-          secretCode={state.secretCode}
-          isSyncing={isSyncing}
-          syncError={syncError}
-          syncCheckResult={syncCheckResult}
-          onConnect={fetchFromCloud}
-          onResolveConflict={resolveConflict}
-          onCancelConnect={() => setSyncCheckResult(null)}
-          onManualSync={() => syncToCloud(true, undefined, 'Manual')}
-          onUnbind={unbindFromCloud}
-          onDeleteCloudData={deleteCloudData}
-          syncHistory={state.syncHistory}
-          localState={state}
-        />
-      )}
+
 
       <div className="min-h-[100dvh] bg-slate-950 text-slate-200 font-sans selection:bg-indigo-500/30">
       {/* Sidebar Navigation - Hidden on mobile, visible on tablet/desktop */}

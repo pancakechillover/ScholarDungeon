@@ -1731,8 +1731,8 @@ export function useGameState() {
       
       for (let i = 0; i < count; i++) {
         const randomTimestamp = new Date(start + Math.random() * (end - start)).toISOString();
-        const focus = 25 + Math.floor(Math.random() * 35);
-        const rest = 5 + Math.floor(Math.random() * 10);
+        const focus = 25;
+        const rest = 5;
         const duration = focus + rest;
         const xp = Math.floor(100 * (focus / 25));
         const coins = Math.floor(10 * (focus / 25));

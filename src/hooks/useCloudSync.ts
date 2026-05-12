@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { AppState } from '../types';
 import { GoogleDriveAPI } from '../lib/googleDriveApi';
 
@@ -13,11 +13,15 @@ export function useCloudSync(
   const [isSyncing, setIsSyncing] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
+  const [isCooledDown, setIsCooledDown] = useState(false);
+  const cooldownEndRef = useRef<number>(0);
   const [syncCheckResult, setSyncCheckResult] = useState<{
     status: 'no_save' | 'cloud_newer' | 'local_newer';
     cloudData?: any;
     code: string;
   } | null>(null);
+
+  const activeSyncRequestRef = useRef<number>(0);
 
   const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 
@@ -84,8 +88,22 @@ export function useCloudSync(
     if (isGoogleDrive && !currentState.googleDriveTokens) return;
     if (isWebDav && (!currentState.webdavSettings || !currentState.webdavSettings.url)) return;
 
+    // Prevent overlapping during active verification
+    if (isVerifying) return;
+
+    const requestId = ++activeSyncRequestRef.current;
     setIsSyncing(true);
     setSyncError(null);
+
+    // Check cool-down
+    if (isCooledDown && Date.now() < cooldownEndRef.current) {
+      const remaining = Math.ceil((cooldownEndRef.current - Date.now()) / 1000);
+      setSyncError(`Transmissions overtaxed (429). The Astral Archives are cooling down. ${remaining}s left.`);
+      setIsSyncing(false);
+      return;
+    } else if (isCooledDown) {
+      setIsCooledDown(false);
+    }
 
     if (!isOnline()) {
       setSyncError("Network unavailable. Please connect to the void to access archives.");
@@ -204,9 +222,17 @@ export function useCloudSync(
             body: JSON.stringify({ url, username, password, method: 'PUT', body: localData })
         });
         
+        if (putResponse.status === 429) {
+          setIsCooledDown(true);
+          cooldownEndRef.current = Date.now() + 60000;
+          throw new Error("Transmissions overtaxed (429). The Astral Archives are cooling down. Please wait 60 seconds.");
+        }
+
         if (!putResponse.ok) {
            throw new Error(await putResponse.text() || 'Failed to sync to WebDAV');
         }
+        
+        if (requestId !== activeSyncRequestRef.current) return;
         
         setState(prev => ({ 
           ...prev, 
@@ -264,6 +290,8 @@ export function useCloudSync(
           fileId = await drive.createSaveFile(localData);
         }
         
+        if (requestId !== activeSyncRequestRef.current) return;
+
         setState(prev => ({ 
           ...prev, 
           lastUpdated: localData.lastUpdated,
@@ -282,6 +310,12 @@ export function useCloudSync(
             body: JSON.stringify({ secretCode: currentState.secretCode })
           });
           
+          if (getResponse.status === 429) {
+            setIsCooledDown(true);
+            cooldownEndRef.current = Date.now() + 60000;
+            throw new Error("Transmissions overtaxed (429). The Astral Archives are cooling down. Please wait 60 seconds.");
+          }
+
           if (getResponse.ok) {
             const data = await getResponse.json();
             if (data.cloudData) {
@@ -318,6 +352,12 @@ export function useCloudSync(
           body: JSON.stringify(payload)
         });
 
+        if (response.status === 429) {
+          setIsCooledDown(true);
+          cooldownEndRef.current = Date.now() + 60000; // 60s cooldown
+          throw new Error("Transmissions overtaxed (429). The Astral Archives are cooling down. Please wait 60 seconds.");
+        }
+
         const contentType = response.headers.get('content-type');
         if (!contentType || !contentType.includes('application/json')) {
           const text = await response.text();
@@ -327,28 +367,36 @@ export function useCloudSync(
         const data = await response.json();
 
         if (response.status === 409) {
-          setSyncCheckResult({
-            status: 'cloud_newer',
-            cloudData: data.cloudData,
-            code: currentState.secretCode!
-          });
+          if (requestId === activeSyncRequestRef.current) {
+            setSyncCheckResult({
+              status: 'cloud_newer',
+              cloudData: data.cloudData,
+              code: currentState.secretCode!
+            });
+          }
         } else if (!response.ok) {
           throw new Error(data.error || 'Failed to sync');
         } else {
-          setState(prev => ({ ...prev, lastUpdated: data.cloudData.lastUpdated }));
-          setSyncCheckResult(null);
-          logSyncEvent(forceOverwrite ? 'force_sync' : 'local_to_cloud', currentState.secretCode!, 'success', undefined, syncMethod, 'Redis');
+          if (requestId === activeSyncRequestRef.current) {
+            setState(prev => ({ ...prev, lastUpdated: data.cloudData.lastUpdated }));
+            setSyncCheckResult(null);
+            logSyncEvent(forceOverwrite ? 'force_sync' : 'local_to_cloud', currentState.secretCode!, 'success', undefined, syncMethod, 'Redis');
+          }
         }
       }
     } catch (err: any) {
-      setSyncError(err.message);
-      const prov = currentState.syncProvider || 'Redis';
-      const code = prov === 'WebDAV' ? 'WebDAV' : (prov === 'Google Drive' ? 'Google Drive' : (currentState.secretCode || 'Unknown'));
-      logSyncEvent(forceOverwrite ? 'force_sync' : 'local_to_cloud', code, 'failed', err.message, syncMethod, prov);
+      if (requestId === activeSyncRequestRef.current) {
+        setSyncError(err.message);
+        const prov = currentState.syncProvider || 'Redis';
+        const code = prov === 'WebDAV' ? 'WebDAV' : (prov === 'Google Drive' ? 'Google Drive' : (currentState.secretCode || 'Unknown'));
+        logSyncEvent(forceOverwrite ? 'force_sync' : 'local_to_cloud', code, 'failed', err.message, syncMethod, prov);
+      }
     } finally {
-      setIsSyncing(false);
+      if (requestId === activeSyncRequestRef.current) {
+        setIsSyncing(false);
+      }
     }
-  }, [state, setState, logSyncEvent]);
+  }, [state, setState, logSyncEvent, isVerifying, stripVolatile]);
 
   const resolveConflict = useCallback(async (useCloud: boolean) => {
     if (!syncCheckResult) return;
@@ -442,9 +490,22 @@ export function useCloudSync(
   }, [syncCheckResult, setState, setDungeons, setMajorDungeons, syncToCloud, state, logSyncEvent]);
 
   const fetchFromCloud = useCallback(async (code: string) => {
+    const requestId = ++activeSyncRequestRef.current;
     setIsSyncing(true);
     setSyncError(null);
+
+    // Check cool-down
+    if (isCooledDown && Date.now() < cooldownEndRef.current) {
+      const remaining = Math.ceil((cooldownEndRef.current - Date.now()) / 1000);
+      setSyncError(`Transmissions overtaxed (429). The Astral Archives are cooling down. ${remaining}s left.`);
+      setIsSyncing(false);
+      return;
+    } else if (isCooledDown) {
+      setIsCooledDown(false);
+    }
+
     setIsVerifying(false);
+    setSyncCheckResult(null);
 
     if (!isOnline()) {
       setSyncError("Network unavailable. Please connect to the void to access archives.");
@@ -484,6 +545,12 @@ export function useCloudSync(
           body: JSON.stringify({ secretCode: code })
         });
 
+        if (response.status === 429) {
+          setIsCooledDown(true);
+          cooldownEndRef.current = Date.now() + 60000;
+          throw new Error("Transmissions overtaxed (429). The Astral Archives are cooling down. Please wait 60 seconds.");
+        }
+
         const contentType = response.headers.get('content-type');
         if (!contentType || !contentType.includes('application/json')) {
           const text = await response.text();
@@ -498,9 +565,15 @@ export function useCloudSync(
         cloudDataToProcess = data.cloudData;
       }
 
+      // Check if request is still active
+      if (requestId !== activeSyncRequestRef.current) return;
+
       // ENTER VERIFICATION PHASE
       setIsVerifying(true);
       await delay(1500); // Artificial delay to simulate thorough checking
+      
+      // Check again after delay
+      if (requestId !== activeSyncRequestRef.current) return;
 
       if (cloudDataToProcess) {
         logSyncEvent('login', code, 'success', undefined, 'Manual');
@@ -532,6 +605,7 @@ export function useCloudSync(
             syncProvider: (code === 'WebDAV') ? 'WebDAV' : ((code === 'GoogleDrive' || code === 'GoogleDriveAuth') ? 'Google Drive' : 'Redis')
           }));
           setSyncCheckResult(null);
+          setIsVerifying(false); 
           return;
         }
 
@@ -545,10 +619,15 @@ export function useCloudSync(
         setSyncCheckResult({ status: 'no_save', code });
       }
     } catch (err: any) {
-      setSyncError(err.message);
-      logSyncEvent('login', code, 'failed', err.message, 'Manual');
+      if (requestId === activeSyncRequestRef.current) {
+        setSyncError(err.message);
+        logSyncEvent('login', code, 'failed', err.message, 'Manual');
+      }
     } finally {
-      setIsSyncing(false);
+      if (requestId === activeSyncRequestRef.current) {
+        setIsSyncing(false);
+        setIsVerifying(false);
+      }
     }
   }, [state, logSyncEvent, stripVolatile, setState]);
 
@@ -560,9 +639,24 @@ export function useCloudSync(
     if (isGoogleDrive && !state.googleDriveTokens) return;
     if (isWebDav && (!state.webdavSettings || !state.webdavSettings.url)) return;
 
+    // Prevent overlapping sync operations
+    if (isSyncing || isVerifying) return;
+
+    const requestId = ++activeSyncRequestRef.current;
     setIsSyncing(true);
-    setIsVerifying(false);
     setSyncError(null);
+
+    // Check cool-down
+    if (isCooledDown && Date.now() < cooldownEndRef.current) {
+      const remaining = Math.ceil((cooldownEndRef.current - Date.now()) / 1000);
+      setSyncError(`Transmissions overtaxed (429). The Astral Archives are cooling down. ${remaining}s left.`);
+      setIsSyncing(false);
+      return;
+    } else if (isCooledDown) {
+      setIsCooledDown(false);
+    }
+
+    setIsVerifying(false);
 
     if (!isOnline()) {
       // For silent checks, we might want to be less intrusive, but the user requested a reminder.
@@ -624,6 +718,8 @@ export function useCloudSync(
         setIsVerifying(true);
         await delay(1200); // Artificial delay to simulate thorough checking
 
+        if (requestId !== activeSyncRequestRef.current) return;
+
         if (cloudTime > localTime || !identitiesMatch) {
           setSyncCheckResult({ status: 'cloud_newer', cloudData: data, code });
         } else {
@@ -665,6 +761,13 @@ export function useCloudSync(
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ secretCode: state.secretCode })
         });
+
+        if (response.status === 429) {
+          setIsCooledDown(true);
+          cooldownEndRef.current = Date.now() + 60000;
+          throw new Error("Transmissions overtaxed (429). The Astral Archives are cooling down. Please wait 60 seconds.");
+        }
+
         const contentType = response.headers.get('content-type');
         if (!contentType || !contentType.includes('application/json')) {
             throw new Error(`Server returned non-JSON response (${response.status}).`);
@@ -685,15 +788,24 @@ export function useCloudSync(
       const code = prov === 'WebDAV' ? 'WebDAV' : (prov === 'Google Drive' ? 'Google Drive' : (state.secretCode || 'Unknown'));
       logSyncEvent('force_sync', code, 'failed', err.message, 'Manual', prov);
     } finally {
-      setIsSyncing(false);
-      setIsVerifying(false);
+      if (requestId === activeSyncRequestRef.current) {
+        setIsSyncing(false);
+        setIsVerifying(false);
+      }
     }
-  }, [state, logSyncEvent, setState, stripVolatile]);
+  }, [state, logSyncEvent, setState, stripVolatile, isSyncing, isVerifying]);
 
   const unbindFromCloud = useCallback(() => {
+    activeSyncRequestRef.current++; // Invalidate any pending requests
     const provider = state.syncProvider || 'Redis';
     const code = state.secretCode || (provider === 'Google Drive' ? 'Google' : 'WebDAV');
     logSyncEvent('unbind_local', code, 'success', undefined, 'Manual', provider);
+    
+    // Clear ephemeral sync states
+    setSyncCheckResult(null);
+    setSyncError(null);
+    setIsSyncing(false);
+    setIsVerifying(false);
     
     setState(prev => ({ 
       ...prev, 
