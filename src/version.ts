@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v5.5.3';
-export const LAST_UPDATE_DATE = '2026-05-11';
-export const LAST_UPDATE_TIME = '22:30:00';
+export const APP_VERSION = 'v5.5.7';
+export const LAST_UPDATE_DATE = '2026-05-12';
+export const LAST_UPDATE_TIME = '05:15:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,48 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v5.5.7',
+    date: '2026-05-12',
+    time: '05:15:00',
+    title: 'Performance & UX Polish',
+    items: [
+      { category: 'Performance', description: 'Massively improved loading times and responsiveness in the Record page by caching historical peak day equations. Eradicated the application-freezing lag previously caused by excessive timezone computations when viewing the Heatmap.' },
+      { category: 'UX', description: 'Interactive popovers in Recharts graphs will now successfully dismiss upon clicking anywhere outside the chart interface.' }
+    ]
+  },
+  {
+    version: 'v5.5.6',
+    date: '2026-05-12',
+    time: '01:55:00',
+    title: 'Interactive Chart Polish',
+    items: [
+      { category: 'Performance', description: 'Fixed critical application lag when clicking chart bars by memoizing and elevating the custom Recharts Tooltip components outside the main render cycle.' },
+      { category: 'UI', description: 'Upgraded Tooltip popovers to correctly inherit theme-aware semi-transparent properties (backdrop blur, slate-900 variables) instead of rigid dark hex colors for better light theme compatibility.' },
+      { category: 'UX', description: 'Replaced hardcoded Recharts dark cursors with transparent theme-agnostic fills.' }
+    ]
+  },
+  {
+    version: 'v5.5.5',
+    date: '2026-05-12',
+    time: '01:27:00',
+    title: 'Interactive Chart Popovers',
+    items: [
+      { category: 'Data Vis', description: 'Changed chart tooltips in the Record page (Weekly Activity, Daily Activity, Efficiency Trend) to trigger on click instead of hover.' },
+      { category: 'Data Vis', description: 'Unified the tooltip experience by injecting rich Custom Tooltips displaying period breakdowns, XP, Gold, and Mood icons.' },
+      { category: 'UX', description: 'Upgraded the native Heatmap hover titles to an interactive click-to-open portal with unified detailed statistics.' }
+    ]
+  },
+  {
+    version: 'v5.5.4',
+    date: '2026-05-11',
+    time: '23:45:00',
+    title: 'Timezone & Settlement Bounds',
+    items: [
+      { category: 'Bugfix', description: 'Fixed an issue where End of the Day records submitted past midnight did not display correctly on the Record page due to desynced Settlement Boundaries.' },
+      { category: 'Architecture', description: 'Synchronized the target date lookup for Daily Progress Goals on the dashboard to accurately map with Settlement boundaries.' }
+    ]
+  },
   {
     version: 'v5.5.3',
     date: '2026-05-11',

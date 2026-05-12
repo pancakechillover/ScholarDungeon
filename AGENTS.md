@@ -23,8 +23,8 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v5.5.3
-- **Last Update Date:** 2026-05-11
+- **Current Version:** v5.5.7
+- **Last Update Date:** 2026-05-12
 
 ## Dark Themes Definition
 The following themes are considered "Dark Themes" and form the baseline for vibrant visual effects and high-contrast glowing elements:
@@ -48,6 +48,21 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 6. **VAPID Integrity:** If VAPID keys change, "Clear Server Sub" + "Reset Service Worker" is mandatory.
 
 ## Task History
+- **v5.5.7 (2026-05-12):** Performance & UX Polish.
+  - *Performance:* Massively improved loading times and responsiveness in the Record page by caching historical peak day calculations.
+  - *Performance:* Eradicated the application-freezing lag previously caused by excessive timezone computations when viewing the Heatmap.
+  - *UX:* Interactive popovers in Recharts graphs will now successfully dismiss upon clicking anywhere outside the chart interface.
+- **v5.5.6 (2026-05-12):** Interactive Chart Polish.
+  - *Performance:* Fixed critical application lag when clicking chart bars by memoizing and elevating the custom Recharts Tooltip components outside the main render cycle.
+  - *UI:* Upgraded Tooltip popovers to correctly inherit theme-aware semi-transparent properties (backdrop blur, slate-900 variables) instead of rigid dark hex colors for better light theme compatibility.
+  - *UX:* Replaced hardcoded Recharts dark cursors with transparent theme-agnostic fills.
+- **v5.5.5 (2026-05-12):** Interactive Chart Popovers.
+  - *Data Vis:* Changed chart tooltips in the Record page (Weekly Activity, Daily Activity, Efficiency Trend) to trigger on click instead of hover.
+  - *Data Vis:* Unified the tooltip experience by injecting rich Custom Tooltips displaying period breakdowns, XP, Gold, and Mood icons.
+  - *UX:* Upgraded the native Heatmap hover titles to an interactive click-to-open portal with unified detailed statistics.
+- **v5.5.4 (2026-05-11):** Timezone & Settlement Bounds.
+  - *Bugfix:* Fixed an issue where the "End of the Day" reflections submitted past midnight were missing from the Record page due to desynchronized timezone boundaries.
+  - *Architecture:* Standardized Settlement logic (`hour < morning.start = previous day`) and global timezone offset application across `Stats.tsx` and `DashboardView.tsx`.
 - **v5.5.3 (2026-05-11):** Weekly Activity Chart Formatting.
   - *Data Vis:* Fixed a rendering bug blocking Recharts stacked bar charts from properly displaying the custom mood icon layer.
   - *Data Vis:* Added numerical totals to the top of the Weekly Activity bar chart to display the precise session count for each day since the Y-axis is hidden.

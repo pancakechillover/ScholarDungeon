@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { 
   format, eachDayOfInterval, isSameDay, 
   startOfWeek, endOfWeek, subDays, addDays, subWeeks, addWeeks,
@@ -21,6 +21,106 @@ interface StatsProps {
   saveDailyLog: (date: string, rating: number, reflection: string, mood?: string) => void;
 }
 
+const SharedPopoverContent = ({
+  label,
+  totalSessions,
+  morning,
+  afternoon,
+  night,
+  other,
+  coins,
+  xp,
+  efficiency,
+  mood,
+  dateTimestamp,
+}: any) => {
+  const moodObj = mood ? MOOD_OPTIONS.find(m => m.id === mood) : null;
+  const MoodIcon = moodObj ? moodObj.icon : null;
+
+  return (
+    <div className="bg-slate-900/95 backdrop-blur-md border border-slate-700/50 shadow-xl shadow-indigo-500/10 rounded-xl p-3 sm:p-4 z-50 min-w-[150px]">
+      <p className="text-slate-50 font-bold mb-2 pb-2 border-b border-slate-800/50">{label}</p>
+      <div className="space-y-1.5 text-xs text-slate-300">
+        {totalSessions > 0 ? (
+          <>
+            <div className="flex justify-between gap-4"><span className="text-slate-500">Sessions</span> <span className="text-slate-50 font-bold">{totalSessions}</span></div>
+            {morning > 0 && <div className="flex justify-between gap-4"><span className="text-amber-400">Morning</span> <span className="text-slate-200">{morning}</span></div>}
+            {afternoon > 0 && <div className="flex justify-between gap-4"><span className="text-orange-400">Afternoon</span> <span className="text-slate-200">{afternoon}</span></div>}
+            {night > 0 && <div className="flex justify-between gap-4"><span className="text-indigo-400">Night</span> <span className="text-slate-200">{night}</span></div>}
+            {other > 0 && <div className="flex justify-between gap-4"><span className="text-slate-400">Other</span> <span className="text-slate-200">{other}</span></div>}
+            <div className="border-t border-slate-800/50 my-1 pt-1 flex justify-between gap-4"><span className="text-yellow-400">Gold</span> <span className="text-slate-200">+{coins}</span></div>
+            <div className="flex justify-between gap-4"><span className="text-cyan-400">XP</span> <span className="text-slate-200">+{xp}</span></div>
+          </>
+        ) : (
+          <p className="text-slate-500 italic">No activity</p>
+        )}
+        
+        {efficiency !== undefined && efficiency !== null && (
+          <div className="flex justify-between gap-4 pt-1"><span className="text-indigo-400">Efficiency</span> <span className="text-slate-50 font-bold">{efficiency}</span></div>
+        )}
+
+        {moodObj && MoodIcon && (
+          <div className="border-t border-slate-800/50 pt-1.5 mt-1.5 flex items-center justify-between gap-2">
+            <span className="text-slate-500">Mood</span>
+            <div className="flex items-center gap-1"><MoodIcon size={14} className={moodObj.color} /> <span className="font-medium text-slate-200">{moodObj.label}</span></div>
+          </div>
+        )}
+
+        {dateTimestamp && (
+          <button 
+            type="button"
+            style={{ pointerEvents: 'auto' }}
+            onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new CustomEvent('statsNavJump', { detail: dateTimestamp })); }}
+            className="w-full mt-4 pt-2 border-t border-slate-800/50 text-indigo-400 hover:text-indigo-300 font-medium text-center transition-colors hover:bg-slate-800/30 rounded px-2 pb-1"
+          >
+            View Daily Record
+          </button>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Moved outside to avoid redefining on every render, which causes extreme lag
+const CustomWeeklyTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    return (
+      <SharedPopoverContent 
+        label={label}
+        totalSessions={data.total}
+        morning={data.Morning}
+        afternoon={data.Afternoon}
+        night={data.Night}
+        other={data.Other}
+        coins={data.coins}
+        xp={data.xp}
+        efficiency={data.efficiency}
+        mood={data.mood}
+        dateTimestamp={data.timestamp}
+      />
+    );
+  }
+  return null;
+};
+
+const CustomDailyTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    return (
+      <div className="bg-slate-900/95 backdrop-blur-md border border-slate-700/50 shadow-xl shadow-indigo-500/10 rounded-xl p-3 z-50 pointer-events-none min-w-[120px]">
+        <p className="text-slate-50 font-bold mb-1.5 pb-1.5 border-b border-slate-800/50">{label}</p>
+        <div className="flex justify-between gap-4 text-xs">
+          <span className="text-slate-400">Sessions</span>
+          <span className="text-indigo-400 font-bold">{data.sessions}</span>
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
+
+
 export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
   const history = state.history;
   const dailyLogs = state.dailyLogs || {};
@@ -31,10 +131,22 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
       afternoon: { start: 14, end: 18 },
       night: { start: 20, end: 24 }
     };
-    const now = new Date();
+    
+    let now = new Date();
+    if (state.timezone) {
+      try {
+        const str = now.toLocaleString('en-US', { timeZone: state.timezone });
+        now = new Date(str);
+      } catch (e) {
+        console.error("Timezone error:", e);
+      }
+    }
+    
     const hour = now.getHours();
     
     if (ts.night.start > ts.night.end && hour < ts.night.end) {
+      return subDays(now, 1);
+    } else if (hour < ts.morning.start) {
       return subDays(now, 1);
     }
     return now;
@@ -45,6 +157,76 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
   const [weeklyMode, setWeeklyMode] = useState<'calendar' | 'rolling'>('calendar');
   const [heatmapMode, setHeatmapMode] = useState<'30days' | 'month' | 'year'>('30days');
   const [heatmapMetric, setHeatmapMetric] = useState<'time' | 'efficiency'>('time');
+  const [selectedHeatmapDate, setSelectedHeatmapDate] = useState<number | null>(null);
+  const [chartTooltipKey, setChartTooltipKey] = useState(Date.now());
+
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent | TouchEvent) => {
+      if (!(e.target as Element).closest('.heatmap-cell-container')) {
+        if (selectedHeatmapDate) {
+          setSelectedHeatmapDate(null);
+        }
+      }
+      if (!(e.target as Element).closest('.recharts-wrapper')) {
+        setChartTooltipKey(Date.now());
+      }
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    document.addEventListener('touchstart', handleOutsideClick);
+
+    const handleJump = (e: any) => {
+      setDailyDate(new Date(e.detail));
+      setSelectedHeatmapDate(null);
+      setChartTooltipKey(Date.now());
+      document.getElementById('daily-activity-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+    window.addEventListener('statsNavJump', handleJump);
+
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+      document.removeEventListener('touchstart', handleOutsideClick);
+      window.removeEventListener('statsNavJump', handleJump);
+    };
+  }, [selectedHeatmapDate]);
+
+  const renderHeatmapPopover = (date: Date) => {
+    const dateStr = format(date, 'yyyy-MM-dd');
+    const log = dailyLogs[dateStr];
+    const daySessions = getSessionsForDate(date);
+    const dayRewards = getRewardsForDate(date);
+    const coins = daySessions.reduce((acc, s) => acc + s.coinsEarned, 0) + 
+                  dayRewards.filter(r => r.type === 'coins').reduce((acc, r) => acc + (r.amount || 0), 0);
+    const xp = daySessions.reduce((acc, s) => acc + s.xpEarned, 0) + 
+               dayRewards.filter(r => r.type === 'xp').reduce((acc, r) => acc + (r.amount || 0), 0);
+    
+    const counts = { Morning: 0, Afternoon: 0, Night: 0, Other: 0 };
+    daySessions.forEach(s => {
+      const p = s.period || getPeriod(new Date(s.timestamp));
+      if (p in counts) {
+        counts[p as keyof typeof counts]++;
+      } else {
+        counts.Other++;
+      }
+    });
+
+    return (
+      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 pointer-events-auto">
+        <SharedPopoverContent 
+            label={format(date, 'MMM d, yyyy')}
+            totalSessions={daySessions.length}
+            morning={counts.Morning}
+            afternoon={counts.Afternoon}
+            night={counts.Night}
+            other={counts.Other}
+            coins={coins}
+            xp={xp}
+            efficiency={log?.rating}
+            mood={log?.mood}
+            dateTimestamp={date.getTime()}
+        />
+      </div>
+    );
+  };
   const [heatmapDate, setHeatmapDate] = useState(getInitialPeakDate());
 
   const [isEditingLog, setIsEditingLog] = useState(false);
@@ -87,34 +269,92 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
   };
 
   const getPeriodInfo = (date: Date) => {
-    const hour = date.getHours();
+    let localDate = new Date(date);
+    if (state.timezone) {
+      try {
+        const str = date.toLocaleString('en-US', { timeZone: state.timezone });
+        localDate = new Date(str);
+      } catch (e) {}
+    }
+    const hour = localDate.getHours();
+    
+  // Check global settlement boundary
+    if (ts.night.start > ts.night.end && hour < ts.night.end) {
+      // Handled normally by Night block logic if within Night
+    } else if (hour < ts.morning.start) {
+      return { period: 'Other', assignedDate: subDays(localDate, 1) };
+    }
     
     // Morning
     if (ts.morning.start < ts.morning.end) {
-      if (hour >= ts.morning.start && hour < ts.morning.end) return { period: 'Morning', assignedDate: date };
+      if (hour >= ts.morning.start && hour < ts.morning.end) return { period: 'Morning', assignedDate: localDate };
     } else {
-      if (hour >= ts.morning.start) return { period: 'Morning', assignedDate: date };
-      if (hour < ts.morning.end) return { period: 'Morning', assignedDate: subDays(date, 1) };
+      if (hour >= ts.morning.start) return { period: 'Morning', assignedDate: localDate };
+      if (hour < ts.morning.end) return { period: 'Morning', assignedDate: subDays(localDate, 1) };
     }
     
     // Afternoon
     if (ts.afternoon.start < ts.afternoon.end) {
-      if (hour >= ts.afternoon.start && hour < ts.afternoon.end) return { period: 'Afternoon', assignedDate: date };
+      if (hour >= ts.afternoon.start && hour < ts.afternoon.end) return { period: 'Afternoon', assignedDate: localDate };
     } else {
-      if (hour >= ts.afternoon.start) return { period: 'Afternoon', assignedDate: date };
-      if (hour < ts.afternoon.end) return { period: 'Afternoon', assignedDate: subDays(date, 1) };
+      if (hour >= ts.afternoon.start) return { period: 'Afternoon', assignedDate: localDate };
+      if (hour < ts.afternoon.end) return { period: 'Afternoon', assignedDate: subDays(localDate, 1) };
     }
 
     // Night
     if (ts.night.start < ts.night.end) {
-      if (hour >= ts.night.start && hour < ts.night.end) return { period: 'Night', assignedDate: date };
+      if (hour >= ts.night.start && hour < ts.night.end) return { period: 'Night', assignedDate: localDate };
     } else {
-      if (hour >= ts.night.start) return { period: 'Night', assignedDate: date };
-      if (hour < ts.night.end) return { period: 'Night', assignedDate: subDays(date, 1) };
+      if (hour >= ts.night.start) return { period: 'Night', assignedDate: localDate };
+      if (hour < ts.night.end) return { period: 'Night', assignedDate: subDays(localDate, 1) };
     }
 
-    return { period: 'Other', assignedDate: date };
+    return { period: 'Other', assignedDate: localDate };
   };
+
+  const processedHistory = useMemo(() => {
+    return history.map(s => {
+      const info = getPeriodInfo(new Date(s.timestamp));
+      return {
+        ...s,
+        assignedDate: info.assignedDate,
+        assignedDateStr: format(info.assignedDate, 'yyyy-MM-dd'),
+        period: info.period
+      };
+    });
+  }, [history, state.timezone, state.timeSettings]);
+
+  const processedRewards = useMemo(() => {
+    return (state.rewardHistory || []).map(r => {
+      const info = getPeriodInfo(new Date(r.timestamp));
+      return {
+        ...r,
+        assignedDate: info.assignedDate,
+        assignedDateStr: format(info.assignedDate, 'yyyy-MM-dd'),
+      };
+    });
+  }, [state.rewardHistory, state.timezone, state.timeSettings]);
+
+  const sessionsByDateStr = useMemo(() => {
+    const map: Record<string, typeof processedHistory> = {};
+    processedHistory.forEach(s => {
+      if (!map[s.assignedDateStr]) map[s.assignedDateStr] = [];
+      map[s.assignedDateStr].push(s);
+    });
+    return map;
+  }, [processedHistory]);
+
+  const rewardsByDateStr = useMemo(() => {
+    const map: Record<string, typeof processedRewards> = {};
+    processedRewards.forEach(r => {
+      if (!map[r.assignedDateStr]) map[r.assignedDateStr] = [];
+      map[r.assignedDateStr].push(r);
+    });
+    return map;
+  }, [processedRewards]);
+
+  const getSessionsForDate = (date: Date) => sessionsByDateStr[format(date, 'yyyy-MM-dd')] || [];
+  const getRewardsForDate = (date: Date) => rewardsByDateStr[format(date, 'yyyy-MM-dd')] || [];
 
   const isSamePeakDay = (sessionDate: Date, targetDate: Date) => {
     const info = getPeriodInfo(sessionDate);
@@ -124,22 +364,16 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
   // --- Aggregate Helpers ---
   const getGainsForPeriod = (sessions: StudySession[], rewards: RewardHistoryItem[], dateRange?: { start: Date, end: Date }) => {
     const periodSessions = dateRange 
-      ? sessions.filter(s => {
-          const sessionDate = new Date(s.timestamp);
+      ? processedHistory.filter(s => {
           if (heatmapMode === 'year' || weeklyMode === 'calendar') {
-             // For long term views, we can stick to calendar days or use the peak logic
-             // But for consistency with the daily chart, let's use peak logic if it's a single day or small range
-             // Actually, for broad statistics, calendar days are usually preferred, 
-             // but if the user specifically asked for this peak logic, let's use it for all categorization.
-             const info = getPeriodInfo(sessionDate);
-             return isWithinInterval(info.assignedDate, dateRange);
+             return isWithinInterval(s.assignedDate, dateRange);
           }
-          return isWithinInterval(sessionDate, dateRange);
+          return isWithinInterval(new Date(s.timestamp), dateRange);
         })
-      : sessions;
+      : processedHistory;
     const periodRewards = dateRange
-      ? rewards.filter(r => isWithinInterval(new Date(r.timestamp), dateRange))
-      : rewards;
+      ? processedRewards.filter(r => isWithinInterval(new Date(r.timestamp), dateRange))
+      : processedRewards;
 
     const coins = periodSessions.reduce((acc, s) => acc + s.coinsEarned, 0) + 
                   periodRewards.filter(r => r.type === 'coins').reduce((acc, r) => acc + (r.amount || 0), 0);
@@ -161,8 +395,8 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
   };
 
   const dailyGains = useMemo(() => {
-    const sessions = history.filter(s => isSamePeakDay(new Date(s.timestamp), dailyDate));
-    const rewards = (state.rewardHistory || []).filter(r => isSamePeakDay(new Date(r.timestamp), dailyDate));
+    const sessions = getSessionsForDate(dailyDate);
+    const rewards = getRewardsForDate(dailyDate);
     
     const coins = sessions.reduce((acc, s) => acc + s.coinsEarned, 0) + 
                   rewards.filter(r => r.type === 'coins').reduce((acc, r) => acc + (r.amount || 0), 0);
@@ -191,19 +425,36 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
     return getPeriodInfo(date).period;
   };
 
-  // --- Daily Data ---
-  const dailySessions = history.filter(s => isSamePeakDay(new Date(s.timestamp), dailyDate));
+  const dailyData = useMemo(() => {
+    const dailySessions = getSessionsForDate(dailyDate);
+    const dailyCounts = { Morning: 0, Afternoon: 0, Night: 0, Other: 0 };
+    dailySessions.forEach(s => {
+      const p = s.period || getPeriod(new Date(s.timestamp));
+      if (p in dailyCounts) {
+        dailyCounts[p as keyof typeof dailyCounts]++;
+      } else {
+        dailyCounts.Other++;
+      }
+    });
+
+    return [
+      { name: `Morning (${ts.morning.start}-${ts.morning.end})`, sessions: dailyCounts.Morning, fill: '#fde047' },
+      { name: `Afternoon (${ts.afternoon.start}-${ts.afternoon.end})`, sessions: dailyCounts.Afternoon, fill: '#f97316' },
+      { name: `Night (${ts.night.start}-${ts.night.end})`, sessions: dailyCounts.Night, fill: '#6366f1' },
+      ...(state.showOtherInActivityLog !== false ? [{ name: 'Other', sessions: dailyCounts.Other, fill: '#64748b' }] : [])
+    ];
+  }, [dailyDate, getSessionsForDate, ts, state.showOtherInActivityLog]);
+
+  const dailySessions = getSessionsForDate(dailyDate);
   const dailyCounts = { Morning: 0, Afternoon: 0, Night: 0, Other: 0 };
   dailySessions.forEach(s => {
-    dailyCounts[getPeriod(new Date(s.timestamp))]++;
+    const p = s.period || getPeriod(new Date(s.timestamp));
+    if (p in dailyCounts) {
+      dailyCounts[p as keyof typeof dailyCounts]++;
+    } else {
+      dailyCounts.Other++;
+    }
   });
-
-  const dailyData = [
-    { name: `Morning (${ts.morning.start}-${ts.morning.end})`, sessions: dailyCounts.Morning, fill: '#fde047' },
-    { name: `Afternoon (${ts.afternoon.start}-${ts.afternoon.end})`, sessions: dailyCounts.Afternoon, fill: '#f97316' },
-    { name: `Night (${ts.night.start}-${ts.night.end})`, sessions: dailyCounts.Night, fill: '#6366f1' },
-    ...(state.showOtherInActivityLog !== false ? [{ name: 'Other', sessions: dailyCounts.Other, fill: '#64748b' }] : [])
-  ];
 
   let maxPeriod = 'Morning';
   let maxCount = dailyCounts.Morning;
@@ -223,47 +474,66 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
 
   const weeklyActiveDaysCount = useMemo(() => {
     const count = weeklyDays.filter(date => {
-      const hasSessions = history.some(s => isSamePeakDay(new Date(s.timestamp), date));
-      const hasRewards = (state.rewardHistory || []).some(r => isSamePeakDay(new Date(r.timestamp), date));
+      const hasSessions = getSessionsForDate(date).length > 0;
+      const hasRewards = getRewardsForDate(date).length > 0;
       return hasSessions || hasRewards;
     }).length;
     return count > 0 ? count : 1;
-  }, [weeklyDays, history, state.rewardHistory, ts]);
+  }, [weeklyDays, sessionsByDateStr, rewardsByDateStr]);
 
-  const weeklyData = weeklyDays.map(date => {
-    const dateStr = format(date, 'yyyy-MM-dd');
-    const log = dailyLogs[dateStr];
-    const daySessions = history.filter(s => isSamePeakDay(new Date(s.timestamp), date));
-    const counts = { Morning: 0, Afternoon: 0, Night: 0, Other: 0 };
-    daySessions.forEach(s => {
-      counts[getPeriod(new Date(s.timestamp))]++;
+  const weeklyData = useMemo(() => {
+    return weeklyDays.map(date => {
+      const dateStr = format(date, 'yyyy-MM-dd');
+      const log = dailyLogs[dateStr];
+      const daySessions = getSessionsForDate(date);
+      const dayRewards = getRewardsForDate(date);
+      const coins = daySessions.reduce((acc, s) => acc + s.coinsEarned, 0) + 
+                    dayRewards.filter(r => r.type === 'coins').reduce((acc, r) => acc + (r.amount || 0), 0);
+      const xp = daySessions.reduce((acc, s) => acc + s.xpEarned, 0) + 
+                 dayRewards.filter(r => r.type === 'xp').reduce((acc, r) => acc + (r.amount || 0), 0);
+      const counts = { Morning: 0, Afternoon: 0, Night: 0, Other: 0 };
+      daySessions.forEach(s => {
+        const p = s.period || getPeriod(new Date(s.timestamp));
+        if (p in counts) {
+          counts[p as keyof typeof counts]++;
+        } else {
+          counts.Other++;
+        }
+      });
+      const total = counts.Morning + counts.Afternoon + counts.Night + counts.Other;
+      return {
+        name: format(date, 'EEE'),
+        Morning: counts.Morning,
+        Afternoon: counts.Afternoon,
+        Night: counts.Night,
+        Other: counts.Other,
+        total,
+        xp,
+        coins,
+        moodHeight: 0,
+        mood: log?.mood,
+        efficiency: log?.rating || null,
+        timestamp: date.getTime(),
+      };
     });
-    const total = counts.Morning + counts.Afternoon + counts.Night + counts.Other;
-    return {
-      name: format(date, 'EEE'),
-      Morning: counts.Morning,
-      Afternoon: counts.Afternoon,
-      Night: counts.Night,
-      Other: counts.Other,
-      total,
-      moodHeight: 0,
-      mood: log?.mood
-    };
-  });
+  }, [weeklyDays, dailyLogs, getSessionsForDate, getRewardsForDate]);
 
   // --- Heatmap Data ---
-  let heatmapDays: Date[] = [];
-  if (heatmapMode === '30days') {
-    heatmapDays = eachDayOfInterval({ start: subDays(heatmapDate, 29), end: heatmapDate });
-  } else if (heatmapMode === 'month') {
-    heatmapDays = eachDayOfInterval({ start: startOfMonth(heatmapDate), end: endOfMonth(heatmapDate) });
-  } else if (heatmapMode === 'year') {
-    heatmapDays = eachDayOfInterval({ start: startOfYear(heatmapDate), end: endOfYear(heatmapDate) });
-  }
+  const heatmapDays = useMemo(() => {
+    let days: Date[] = [];
+    if (heatmapMode === '30days') {
+      days = eachDayOfInterval({ start: subDays(heatmapDate, 29), end: heatmapDate });
+    } else if (heatmapMode === 'month') {
+      days = eachDayOfInterval({ start: startOfMonth(heatmapDate), end: endOfMonth(heatmapDate) });
+    } else if (heatmapMode === 'year') {
+      days = eachDayOfInterval({ start: startOfYear(heatmapDate), end: endOfYear(heatmapDate) });
+    }
+    return days;
+  }, [heatmapMode, heatmapDate]);
 
   const getIntensity = (date: Date) => {
     if (heatmapMetric === 'time') {
-      const count = history.filter(s => isSamePeakDay(new Date(s.timestamp), date)).length;
+      const count = getSessionsForDate(date).length;
       if (count === 0) return 'bg-slate-800/50';
       if (count < 2) return 'bg-indigo-500/20';
       if (count < 4) return 'bg-indigo-500/40';
@@ -329,7 +599,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         
         {/* Daily Activity */}
-        <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800 flex flex-col space-y-6">
+        <div id="daily-activity-section" className="bg-slate-900 p-6 rounded-3xl border border-slate-800 flex flex-col space-y-6">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-bold text-slate-100">Daily Activity</h3>
             <div className="flex items-center gap-2 bg-slate-800/50 rounded-lg p-1">
@@ -389,9 +659,10 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
               <BarChart data={dailyData}>
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10 }} />
                 <Tooltip 
-                  contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '8px' }}
-                  itemStyle={{ color: '#e2e8f0' }}
-                  cursor={{ fill: '#1e293b' }}
+                  key={chartTooltipKey}
+                  trigger="click"
+                  content={<CustomDailyTooltip />}
+                  cursor={{ fill: 'rgba(100, 116, 139, 0.2)' }}
                 />
                 <Bar dataKey="sessions" radius={[4, 4, 0, 0]}>
                   {dailyData.map((entry, index) => (
@@ -658,9 +929,10 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
                 <BarChart data={weeklyData} margin={{ top: 35, right: 0, left: 0, bottom: 0 }}>
                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10 }} />
                   <Tooltip 
-                    contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '8px' }}
-                    itemStyle={{ color: '#e2e8f0' }}
-                    cursor={{ fill: '#1e293b' }}
+                    key={chartTooltipKey}
+                    trigger="click"
+                    content={<CustomWeeklyTooltip />}
+                    cursor={{ fill: 'rgba(100, 116, 139, 0.2)' }}
                   />
                   <Bar dataKey="Morning" stackId="a" fill="#fde047" />
                   <Bar dataKey="Afternoon" stackId="a" fill="#f97316" />
@@ -683,20 +955,18 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
               </div>
               <div className="h-32 min-h-[128px]">
                 <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
-                  <LineChart data={weeklyDays.map(date => ({
-                    name: format(date, 'EEE'),
-                    efficiency: dailyLogs[format(date, 'yyyy-MM-dd')]?.rating || 0
-                  }))}>
+                  <LineChart data={weeklyData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10 }} />
                     <YAxis hide domain={[0, 5]} />
                     <Tooltip 
-                      contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '8px' }}
-                      itemStyle={{ color: 'var(--color-indigo-400, #818cf8)' }}
+                      key={chartTooltipKey}
+                      trigger="click"
+                      content={<CustomWeeklyTooltip />}
                     />
                     <Line 
                       type="monotone" 
-                      dataKey="efficiency" 
+                      dataKey={(d) => d.efficiency || 0} 
                       stroke="var(--color-indigo-500, #6366f1)" 
                       strokeWidth={3} 
                       dot={{ fill: 'var(--color-indigo-500, #6366f1)', strokeWidth: 2, r: 4 }}
@@ -799,12 +1069,18 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
             {heatmapDays.map((date, i) => (
               <div
                 key={i}
-                title={`${format(date, 'MMM d, yyyy')}: ${history.filter(s => isSamePeakDay(new Date(s.timestamp), date)).length} sessions`}
-                className={cn(
-                  "rounded-sm transition-colors aspect-square w-full", 
-                  getIntensity(date)
-                )}
-              />
+                className="relative heatmap-cell-container"
+                onClick={() => setSelectedHeatmapDate(selectedHeatmapDate === date.getTime() ? null : date.getTime())}
+              >
+                <div
+                  className={cn(
+                    "rounded-sm transition-colors aspect-square w-full cursor-pointer hover:ring-2 hover:ring-indigo-500/50",
+                    selectedHeatmapDate === date.getTime() ? "ring-2 ring-indigo-400 scale-110 z-10 relative" : "",
+                    getIntensity(date)
+                  )}
+                />
+                {selectedHeatmapDate === date.getTime() && renderHeatmapPopover(date)}
+              </div>
             ))}
           </div>
           <div className="mt-6 flex items-center justify-end space-x-2 text-[10px] text-slate-500 uppercase font-bold">

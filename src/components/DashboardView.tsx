@@ -171,9 +171,18 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <span className="text-2xl font-bold text-slate-50">{state.dailySessions}</span>
               {(() => {
                 const timezone = state.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
-                const dateString = new Date().toLocaleString("en-US", { weekday: 'long', timeZone: timezone });
-                const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-                const day = days.indexOf(dateString);
+                let now = new Date();
+                if (timezone) {
+                  try {
+                    const str = now.toLocaleString('en-US', { timeZone: timezone });
+                    now = new Date(str);
+                  } catch (e) {}
+                }
+                const ts = state.timeSettings || { morning: { start: 8, end: 12 }, afternoon: { start: 14, end: 18 }, night: { start: 20, end: 24 } };
+                if (now.getHours() < ts.morning.start) {
+                  now.setDate(now.getDate() - 1);
+                }
+                const day = now.getDay();
                 
                 const dailyGoal = state.useSameDailyProgressGoalEveryDay ?? true 
                   ? (state.dailyProgressGoal ?? 8) 
@@ -184,9 +193,18 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden mb-6">
               {(() => {
                 const timezone = state.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
-                const dateString = new Date().toLocaleString("en-US", { weekday: 'long', timeZone: timezone });
-                const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-                const day = days.indexOf(dateString);
+                let now = new Date();
+                if (timezone) {
+                  try {
+                    const str = now.toLocaleString('en-US', { timeZone: timezone });
+                    now = new Date(str);
+                  } catch (e) {}
+                }
+                const ts = state.timeSettings || { morning: { start: 8, end: 12 }, afternoon: { start: 14, end: 18 }, night: { start: 20, end: 24 } };
+                if (now.getHours() < ts.morning.start) {
+                  now.setDate(now.getDate() - 1);
+                }
+                const day = now.getDay();
                 
                 const dailyGoal = state.useSameDailyProgressGoalEveryDay ?? true 
                   ? (state.dailyProgressGoal ?? 8) 
