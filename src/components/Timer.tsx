@@ -321,7 +321,7 @@ export const Timer = React.memo<TimerProps>(({
     };
   }, [isActive, endTime, handleComplete, setIsActive, setEndTime, setTimeLeft]);
 
-  const canPip = 'documentPictureInPicture' in window;
+  const canPip = 'documentPictureInPicture' in window && window.self === window.top;
   const isPWA = window.matchMedia('(display-mode: standalone)').matches;
   const isDesktop = !('ontouchstart' in window);
 

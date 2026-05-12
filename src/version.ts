@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v5.13.17';
+export const APP_VERSION = 'v5.13.18';
 export const LAST_UPDATE_DATE = '2026-05-12';
-export const LAST_UPDATE_TIME = '14:15:00';
+export const LAST_UPDATE_TIME = '14:30:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,15 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v5.13.18',
+    date: '2026-05-12',
+    time: '14:30:00',
+    title: 'Timer PIP Context Fix',
+    items: [
+      { category: 'Bugfix', description: 'Fixed an error where the Picture-in-Picture window would fail to open in iframe contexts. The button is now hidden when the app is embedded, directing users to open it in a new tab or install as a PWA first.' }
+    ]
+  },
   {
     version: 'v5.13.17',
     date: '2026-05-12',
