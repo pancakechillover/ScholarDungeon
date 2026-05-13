@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v6.0.2';
-export const LAST_UPDATE_DATE = '2026-05-12';
-export const LAST_UPDATE_TIME = '22:33:00';
+export const APP_VERSION = 'v6.0.6';
+export const LAST_UPDATE_DATE = '2026-05-13';
+export const LAST_UPDATE_TIME = '10:05:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,44 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v6.0.6',
+    date: '2026-05-13',
+    time: '10:05:00',
+    title: 'Global Cloud Unbind Synchronization',
+    items: [
+      { category: 'Bug Fix', description: 'Resolved a critical race condition where secondary tabs would continue syncing with a dropped secret code. Added immediate cancellation triggers across all tabs via activeSyncRequestRef incrementation on state clear.' },
+      { category: 'Bug Fix', description: 'Synchronized the Cloud Sync Modal input field with backend state to prevent re-authentication with stale codes in secondary windows.' }
+    ]
+  },
+  {
+    version: 'v6.0.5',
+    date: '2026-05-13',
+    time: '10:00:00',
+    title: 'Enhanced Sync Error Messaging',
+    items: [
+      { category: 'UX', description: 'Improved sync failure transparency by mapping raw errors to specific "Reason" and "Solution" blocks in the Cloud Sync Modal. Added support for Network, Rate-limit (429), Not Found (404), and Server configuration error types with dedicated icons and mystical themes.' }
+    ]
+  },
+  {
+    version: 'v6.0.4',
+    date: '2026-05-13',
+    time: '01:10:00',
+    title: 'Ghost Push & Sync Drift Fixed',
+    items: [
+      { category: 'Bug Fix', description: 'Completely scrubbed secretCode and provider profiles from memory upon Unbind Local via deep delete. Added cross-tab storage syncing so unbinding in one tab safely terminates sync polling loops in all other concurrent tabs.' },
+      { category: 'Bug Fix', description: 'Corrected push notification system to officially /unsubscribe background channels immediately upon manual unbind.' }
+    ]
+  },
+  {
+    version: 'v6.0.3',
+    date: '2026-05-12',
+    time: '23:09:00',
+    title: 'PIP Responsive Controls',
+    items: [
+      { category: 'UI', description: 'Automatically hide timer controls (Reset, Play/Pause, Skip) in the PIP window when resized below a certain height threshold for a cleaner minimal timer view.' }
+    ]
+  },
   {
     version: 'v6.0.2',
     date: '2026-05-12',

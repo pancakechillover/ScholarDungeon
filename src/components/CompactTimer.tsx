@@ -139,7 +139,7 @@ export const CompactTimer: React.FC<CompactTimerProps> = ({
       </div>
 
       {/* Controls */}
-      <div className="flex items-center space-x-6 mt-8">
+      <div className="flex items-center space-x-6 mt-8 [@media(max-height:250px)]:hidden">
         <button
           onClick={resetTimer}
           className="p-3 bg-slate-900 text-slate-400 hover:text-white rounded-full border border-slate-800 transition-all"

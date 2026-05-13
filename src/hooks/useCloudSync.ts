@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { AppState } from '../types';
 import { GoogleDriveAPI } from '../lib/googleDriveApi';
 
@@ -48,6 +48,13 @@ export function useCloudSync(
       state: restState
     };
   }, []);
+
+  // Invalidate any ongoing requests when provider/code is cleared (Cross-tab safety)
+  useEffect(() => {
+    if (!state.secretCode && !state.syncProvider && !state.googleDriveTokens && !state.webdavSettings) {
+      activeSyncRequestRef.current++;
+    }
+  }, [state.secretCode, state.syncProvider, state.googleDriveTokens, state.webdavSettings]);
 
   const logSyncEvent = useCallback((
     type: 'login' | 'force_sync' | 'local_to_cloud' | 'cloud_to_local' | 'cancel_login' | 'unbind_local' | 'delete_cloud', 
@@ -807,15 +814,25 @@ export function useCloudSync(
     setIsSyncing(false);
     setIsVerifying(false);
     
-    setState(prev => ({ 
-      ...prev, 
-      secretCode: undefined,
-      syncProvider: undefined,
-      googleDriveTokens: undefined,
-      googleDriveFileId: undefined,
-      webdavSettings: undefined
-    }));
-  }, [setState, state.secretCode, state.syncProvider, logSyncEvent]);
+    if (state.secretCode && state.pushEnabled) {
+      fetch('/api/push/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ secretCode: state.secretCode, subscription: null })
+      }).catch(err => console.debug("Push cancel skipped or failed:", err));
+    }
+
+    setState(prev => {
+      const newState = { ...prev };
+      delete newState.secretCode;
+      delete newState.syncProvider;
+      delete newState.googleDriveTokens;
+      delete newState.googleDriveFileId;
+      delete newState.webdavSettings;
+      newState.pushEnabled = false;
+      return newState;
+    });
+  }, [setState, state.secretCode, state.syncProvider, state.pushEnabled, logSyncEvent]);
 
   const deleteCloudData = useCallback(async () => {
     if (!state.secretCode) return;

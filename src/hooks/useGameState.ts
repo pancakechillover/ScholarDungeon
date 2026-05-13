@@ -357,6 +357,35 @@ export function useGameState() {
     return [];
   });
 
+  // Cross-tab Synchronization
+  useEffect(() => {
+    const handleStorage = (e: StorageEvent) => {
+      if (!e.newValue) return;
+      try {
+        if (e.key === STORAGE_KEY) {
+          const parsed = JSON.parse(e.newValue);
+          setState(prev => ({ 
+            ...prev, 
+            ...parsed, 
+            secretCode: parsed.secretCode,
+            syncProvider: parsed.syncProvider,
+            googleDriveTokens: parsed.googleDriveTokens,
+            webdavSettings: parsed.webdavSettings,
+            pushEnabled: parsed.pushEnabled // also ensure push flag matches
+          }));
+        } else if (e.key === STORAGE_KEY + '_dungeons') {
+          setDungeons(JSON.parse(e.newValue));
+        } else if (e.key === STORAGE_KEY + '_major_dungeons') {
+          setMajorDungeons(JSON.parse(e.newValue));
+        }
+      } catch (err) {
+        console.error("Failed to sync state from other tab:", err);
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, []);
+
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }, [state]);

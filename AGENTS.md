@@ -23,8 +23,8 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v6.0.2
-- **Last Update Date:** 2026-05-12
+- **Current Version:** v6.0.6
+- **Last Update Date:** 2026-05-13
 
 ## Dark Themes Definition
 The following themes are considered "Dark Themes" and form the baseline for vibrant visual effects and high-contrast glowing elements:
@@ -50,6 +50,18 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 ## Task History
 
+- **v6.0.6 (2026-05-13):** Global Cloud Unbind Synchronization.
+  - *Bug Fix:* Resolved a critical race condition where secondary tabs would continue syncing with a dropped secret code. Added immediate cancellation triggers across all tabs via `activeSyncRequestRef` incrementation on state clear. Synchronized the Cloud Sync Modal input field with backend state to prevent re-authentication with stale codes in concurrent windows.
+  - *Bug Fix:* Fixed a linter error in `useCloudSync` by correctly importing React hooks.
+
+- **v6.0.5 (2026-05-13):** Enhanced Sync Error Messaging.
+  - *UX:* Improved sync failure transparency by mapping raw errors to specific "Reason" and "Solution" blocks in the Cloud Sync Modal. Added support for Network, Rate-limit (429), Not Found (404), and Server configuration error types with dedicated icons and mystical themes.
+
+- **v6.0.4 (2026-05-13):** Cloud Sync Multi-tab Drift & Ghost Push Fix.
+  - *Bug Fix:* Completely scrubbed `secretCode` and provider profiles from memory upon `Unbind Local` via deep delete. Added cross-tab storage syncing so unbinding in one tab safely terminates sync polling loops in all other concurrent tabs. Corrected push notification system to officially `/unsubscribe` background channels immediately upon manual unbind.
+
+- **v6.0.3 (2026-05-12):** PIP Responsive Controls.
+  - *UI:* Automatically hide timer controls (Reset, Play/Pause, Skip) in the PIP window when resized below a certain height threshold for a cleaner minimal timer view.
 - **v6.0.2 (2026-05-12):** PIP Dimensions & Theme Alignment.
   - *UI:* Reduced default PIP window dimensions to 220x300 for a more compact footprint.
   - *UI:* Synchronized the PIP window theme with the main application, including dynamic background and accent color updates.

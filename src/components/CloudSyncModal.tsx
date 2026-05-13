@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Cloud, Key, X, AlertTriangle, Check, Loader2, Database, Sparkles, HelpCircle, Unlink, Info, Eye, EyeOff, Copy, RefreshCw, Trash2, History, UploadCloud, DownloadCloud, Search, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
+import { Cloud, Key, X, AlertTriangle, Check, Loader2, Database, Sparkles, HelpCircle, Unlink, Info, Eye, EyeOff, Copy, RefreshCw, Trash2, History, UploadCloud, DownloadCloud, Search, CheckCircle2, XCircle, AlertCircle, WifiOff, ShieldAlert, ZapOff } from 'lucide-react';
 import { getDeviceType } from '../lib/utils';
 
 interface CloudSyncModalProps {
@@ -75,6 +75,12 @@ export function CloudSyncModal({
   const [timeLeft, setTimeLeft] = useState(60);
 
   const prevSyncingRef = useRef(isSyncing);
+
+  useEffect(() => {
+    if (secretCode !== undefined) {
+      setInputCode(secretCode || '');
+    }
+  }, [secretCode]);
 
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout>;
@@ -161,6 +167,112 @@ export function CloudSyncModal({
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
+
+  // Error Enhancement Helper
+  const getEnhancedError = (err: string | null): { 
+    title: string; 
+    reason: string; 
+    solution: string; 
+    icon: React.ReactNode; 
+    color: string;
+    bg: string;
+    border: string;
+  } | null => {
+    if (!err) return null;
+
+    const lowerErr = err.toLowerCase();
+    
+    // 1. Network / Offline
+    if (lowerErr.includes('network unavailable') || lowerErr.includes('failed to fetch') || lowerErr.includes('load failed')) {
+      return {
+        title: 'Network Severed',
+        reason: 'The connection to the Astral Archives has been lost. Your device cannot reach the void.',
+        solution: 'Check your internet connection or verify if your local firewall is blocking the archives.',
+        icon: <WifiOff size={20} />,
+        color: 'text-amber-400',
+        bg: 'bg-amber-500/10',
+        border: 'border-amber-500/20'
+      };
+    }
+
+    // 2. Rate Limiting (429)
+    if (lowerErr.includes('429') || lowerErr.includes('overtaxed') || lowerErr.includes('cooling down')) {
+      return {
+        title: 'Archives Overtaxed',
+        reason: 'The archives are receiving too many inscriptions at once and need to stabilize.',
+        solution: 'Wait for the cooldown timer on the screen to reach zero before attempting again.',
+        icon: <Loader2 className="animate-spin" size={20} />,
+        color: 'text-indigo-400',
+        bg: 'bg-indigo-500/10',
+        border: 'border-indigo-500/20'
+      };
+    }
+
+    // 3. Not Found (404)
+    if (lowerErr.includes('not found') || lowerErr.includes('404')) {
+      return {
+        title: 'Scroll Not Found',
+        reason: 'The secret code or file you provided does not exist in the cloud ledger.',
+        solution: 'Verify your Secret Code. If this is a new setup, try "Initialize Archive" instead.',
+        icon: <Search size={20} />,
+        color: 'text-rose-400',
+        bg: 'bg-rose-500/10',
+        border: 'border-rose-500/20'
+      };
+    }
+
+    // 4. Server Config / Redis Down
+    if (lowerErr.includes('not configured') || lowerErr.includes('redis')) {
+      return {
+        title: 'Void Unstable',
+        reason: 'The Astral server is currently undergoing maintenance or is incorrectly configured.',
+        solution: 'Retry in a few moments. If persistent, contact the dungeon master (developer).',
+        icon: <ZapOff size={20} />,
+        color: 'text-rose-500',
+        bg: 'bg-rose-500/10',
+        border: 'border-rose-500/20'
+      };
+    }
+
+    // 5. Google Drive specific
+    if (lowerErr.includes('google') || lowerErr.includes('drive')) {
+      return {
+        title: 'Celestial Guard Error',
+        reason: 'Google Drive rejected the archive request. This usually means tokens expired.',
+        solution: 'Try logging out and back in with Google to refresh your celestial permissions.',
+        icon: <ShieldAlert size={20} />,
+        color: 'text-blue-400',
+        bg: 'bg-blue-500/10',
+        border: 'border-blue-500/20'
+      };
+    }
+
+    // 6. Generic Proxy / WebDAV error
+    if (lowerErr.includes('webdav') || lowerErr.includes('proxy')) {
+      return {
+        title: 'Bridge Expansion Error',
+        reason: 'The bridge to your private WebDAV storage failed to respond correctly.',
+        solution: 'Verify your WebDAV URL. Ensure it starts with https:// and the credentials are valid.',
+        icon: <Database size={20} />,
+        color: 'text-indigo-400',
+        bg: 'bg-indigo-500/10',
+        border: 'border-indigo-500/20'
+      };
+    }
+
+    // Default
+    return {
+      title: 'Unknown Phenomenon',
+      reason: err || 'An unexpected anomaly occurred during the synchronization process.',
+      solution: 'Try reloading the application or checking the sync history for technical logs.',
+      icon: <AlertTriangle size={20} />,
+      color: 'text-rose-400',
+      bg: 'bg-rose-500/10',
+      border: 'border-rose-500/20'
+    };
+  };
+
+  const enhancedErr = getEnhancedError(syncError);
 
   if (!isOpen) return null;
 
@@ -488,13 +600,19 @@ export function CloudSyncModal({
                       <h3 className="text-xl font-black text-rose-300 uppercase tracking-widest">
                         Sync Interrupted
                       </h3>
-                      <p className="text-slate-400 text-sm leading-relaxed">
-                        The connection to the Astral Archives timed out. 
-                      </p>
-                      {syncError && (
-                        <div className="mt-2 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-xs font-mono break-all line-clamp-3">
-                          {syncError}
+                      {enhancedErr ? (
+                        <div className={`p-4 ${enhancedErr.bg} border ${enhancedErr.border} rounded-2xl text-left space-y-2 mt-4`}>
+                          <div className={`flex items-center gap-2 font-bold text-xs ${enhancedErr.color}`}>
+                            {enhancedErr.icon}
+                            {enhancedErr.title}
+                          </div>
+                          <p className="text-[11px] text-slate-400">{enhancedErr.reason}</p>
+                          <p className="text-[11px] text-indigo-400 font-medium italic">Hint: {enhancedErr.solution}</p>
                         </div>
+                      ) : (
+                        <p className="text-slate-400 text-sm leading-relaxed">
+                          The connection to the Astral Archives timed out. 
+                        </p>
                       )}
                     </div>
                     <div className="flex flex-col w-full gap-3 px-4">
@@ -737,10 +855,24 @@ export function CloudSyncModal({
                   )}
                 </div>
 
-                {syncError && (
-                  <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm flex items-start gap-2">
-                    <AlertTriangle size={16} className="shrink-0 mt-0.5" />
-                    <p>{syncError}</p>
+                {enhancedErr && (
+                  <div className={`p-4 ${enhancedErr.bg} border ${enhancedErr.border} rounded-2xl space-y-3 shadow-inner`}>
+                    <div className={`flex items-center gap-2 font-black uppercase tracking-widest text-[11px] ${enhancedErr.color}`}>
+                      {enhancedErr.icon}
+                      {enhancedErr.title}
+                    </div>
+                    
+                    <div className="space-y-2">
+                       <p className="text-xs text-slate-300 leading-relaxed">
+                        <span className="text-slate-500 font-bold mr-1">Reason:</span>
+                        {enhancedErr.reason}
+                       </p>
+                       <div className="h-px bg-slate-800/50 w-full" />
+                       <p className="text-xs text-indigo-300/80 leading-relaxed italic">
+                        <span className="text-slate-500 font-bold not-italic mr-1">Solution:</span>
+                        {enhancedErr.solution}
+                       </p>
+                    </div>
                   </div>
                 )}
 
