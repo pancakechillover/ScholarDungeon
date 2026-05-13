@@ -848,6 +848,9 @@ function App() {
           toggleTimer={toggleTimerPip}
           resetTimer={resetTimerPip}
           skipSession={skipSessionPip}
+          timerSkipVictoryMode={state.timerSkipVictoryMode}
+          requireFocusConfirmation={state.requireFocusConfirmation}
+          lastCompletionRewards={state.lastCompletionRewards}
         />,
         pipWindow.document.body
       )}
@@ -866,12 +869,11 @@ function App() {
           isSidebarCollapsed ? "justify-center" : "justify-between"
         )}>
           <div className="flex items-center space-x-3">
-            <div className={cn(
-              "flex items-center justify-center shrink-0",
-              isSidebarCollapsed ? "p-1" : "w-9 h-9 bg-indigo-600 rounded-xl shadow-lg shadow-indigo-500/20"
-            )}>
-              <AppIcon size={isSidebarCollapsed ? 32 : 24} className={isSidebarCollapsed ? "text-indigo-400" : "text-[#ffffff]"} />
-            </div>
+            {!isSidebarCollapsed && (
+              <div className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20 shrink-0">
+                <AppIcon size={24} className="text-[#ffffff]" />
+              </div>
+            )}
             {!isSidebarCollapsed && (
               <motion.span 
                 initial={{ opacity: 0, x: -10 }}
@@ -1468,8 +1470,10 @@ function NavItem({ active, onClick, icon, label, collapsed, showDot }: { active:
       onClick={onClick}
       title={collapsed ? label : undefined}
       className={cn(
-        "w-full flex items-center p-3 rounded-xl transition-all group relative",
-        collapsed ? "justify-center" : "space-x-3",
+        "flex items-center transition-all group relative rounded-xl",
+        collapsed 
+          ? "w-12 h-12 justify-center mx-auto" 
+          : "w-full p-3 space-x-3",
         active 
           ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" 
           : "text-slate-500 hover:bg-slate-800 hover:text-slate-200"
@@ -1482,9 +1486,13 @@ function NavItem({ active, onClick, icon, label, collapsed, showDot }: { active:
         )}
       </div>
       {!collapsed && (
-        <span className="font-bold text-sm tracking-wide whitespace-nowrap overflow-hidden">
+        <motion.span 
+          initial={{ opacity: 0, x: -10 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="font-bold text-sm tracking-wide whitespace-nowrap overflow-hidden"
+        >
           {label}
-        </span>
+        </motion.span>
       )}
     </button>
   );

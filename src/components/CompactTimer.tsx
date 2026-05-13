@@ -1,6 +1,6 @@
 import React from 'react';
-import { motion } from 'motion/react';
-import { Sword, Coffee, Play, Pause, RotateCcw, SkipForward } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Sword, Coffee, Play, Pause, RotateCcw, SkipForward, Trophy, Zap, Coins } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { Dungeon } from '../types';
 
@@ -14,6 +14,9 @@ interface CompactTimerProps {
   toggleTimer: () => void;
   resetTimer: () => void;
   skipSession: () => void;
+  timerSkipVictoryMode?: 'none' | 'auto_pick_highest' | 'skip_rewards' | 'defer_to_chest';
+  requireFocusConfirmation?: boolean;
+  lastCompletionRewards?: any | null;
 }
 
 export const CompactTimer: React.FC<CompactTimerProps> = ({
@@ -25,11 +28,16 @@ export const CompactTimer: React.FC<CompactTimerProps> = ({
   duration,
   toggleTimer,
   resetTimer,
-  skipSession
+  skipSession,
+  timerSkipVictoryMode,
+  requireFocusConfirmation,
+  lastCompletionRewards
 }) => {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [displayTime, setDisplayTime] = React.useState(timeLeft);
   const [dimensions, setDimensions] = React.useState({ width: 0, height: 0 });
+  const [showRewardSummary, setShowRewardSummary] = React.useState(false);
+  const [showFocusPrompt, setShowFocusPrompt] = React.useState(false);
 
   React.useEffect(() => {
     const updateDimensions = () => {
@@ -48,6 +56,29 @@ export const CompactTimer: React.FC<CompactTimerProps> = ({
   React.useEffect(() => {
     setDisplayTime(timeLeft);
   }, [timeLeft]); // Sync when main thread ticks or prop changes
+
+  // Handle Reward Summary Transient State
+  React.useEffect(() => {
+    if (lastCompletionRewards && timerSkipVictoryMode === 'none' && !showFocusPrompt) {
+      setShowRewardSummary(true);
+      const timer = setTimeout(() => setShowRewardSummary(false), 5000); // Show for 5 seconds
+      return () => clearTimeout(timer);
+    } else {
+      setShowRewardSummary(false);
+    }
+  }, [lastCompletionRewards, timerSkipVictoryMode, showFocusPrompt]);
+
+  // Handle Focus Prompt State
+  React.useEffect(() => {
+    // Determine if we the most recently finished thing was a rest session
+    // In our state logic, isResting flips to false when rest is done.
+    // If requireFocusConfirmation is true, isActive will be false.
+    if (requireFocusConfirmation && !isActive && !isResting && displayTime === duration * 60 && displayTime > 0) {
+      setShowFocusPrompt(true);
+    } else {
+      setShowFocusPrompt(false);
+    }
+  }, [requireFocusConfirmation, isActive, isResting, displayTime, duration]);
 
   React.useEffect(() => {
     if (!isActive || !endTime) return;
@@ -75,12 +106,62 @@ export const CompactTimer: React.FC<CompactTimerProps> = ({
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const xpReward = lastCompletionRewards?.rewards?.find((r: any) => r.type === 'xp')?.amount;
+  const coinReward = lastCompletionRewards?.rewards?.find((r: any) => r.type === 'coins')?.amount;
+
   return (
     <div ref={containerRef} className={cn(
-      "flex flex-col items-center justify-start h-[100dvh] w-[100dvw] bg-slate-950 text-white font-sans overflow-hidden select-none",
+      "flex flex-col items-center justify-start h-[100dvh] w-[100dvw] bg-slate-950 text-white font-sans overflow-hidden select-none relative",
       isCondensed ? "p-3" : "p-6"
     )}>
-      {/* Session Progress */}
+      <AnimatePresence>
+        {showRewardSummary && !showFocusPrompt && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.1, y: 10 }}
+            className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/90 backdrop-blur-md p-4 text-center"
+          >
+            <Trophy className="text-amber-400 mb-2" size={isCondensed ? 24 : 32} />
+            <h4 className="text-sm font-black uppercase tracking-widest text-white mb-3">Victory!</h4>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2 bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20">
+                <Zap size={14} className="text-emerald-400" />
+                <span className="text-xs font-black text-white">+{xpReward || 0} XP</span>
+              </div>
+              <div className="flex items-center gap-2 bg-amber-500/10 px-3 py-1.5 rounded-lg border border-amber-500/20">
+                <Coins size={14} className="text-amber-400" />
+                <span className="text-xs font-black text-white">+{coinReward || 0} Gold</span>
+              </div>
+            </div>
+            <p className="text-[10px] text-slate-500 mt-4 italic">Rewards saved to main window</p>
+          </motion.div>
+        )}
+
+        {showFocusPrompt && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.1 }}
+            className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-slate-950 p-4 text-center space-y-4"
+          >
+            <div className="w-12 h-12 bg-indigo-500/20 rounded-full flex items-center justify-center text-indigo-400">
+               <RotateCcw size={24} />
+            </div>
+            <div className="space-y-1">
+              <h4 className="text-sm font-black text-white uppercase tracking-wider">Rest Over!</h4>
+              <p className="text-[10px] text-slate-500">Ready to start Focus?</p>
+            </div>
+            <button
+              onClick={toggleTimer}
+              className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-black uppercase tracking-widest text-[10px] transition-all shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2"
+            >
+              <Play size={12} fill="currentColor" />
+              Start Focus
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
       <div className={cn("w-full space-y-1", isCondensed ? "mb-2" : "mb-6")}>
         <div className="flex justify-between items-end px-1">
           <div className="flex flex-col">

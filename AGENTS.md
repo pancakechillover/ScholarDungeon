@@ -23,7 +23,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v6.0.16
+- **Current Version:** v6.0.19
 - **Last Update Date:** 2026-05-13
 
 ## Dark Themes Definition
@@ -49,6 +49,17 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v6.0.19 (2026-05-13):** PIP Window Interactive Logic.
+  - *UI:* Implemented a non-modal reward summary (XP and Gold) in the Always-on-top (PIP) window that triggers when a focus session ends if "Show Screen" is enabled.
+  - *UX:* Integrated a "Start Focus" prompt in the PIP window that appears after rest ends if "Manual Focus Start" is active, allowing full session control from the compact view.
+
+- **v6.0.18 (2026-05-13):** Sidebar Branding Collapse Logic.
+  - *UI:* Hid the branding `AppIcon` when the sidebar is collapsed for a cleaner, strictly minimal vertical bar.
+
+- **v6.0.17 (2026-05-13):** Sidebar Collapsed Symmetry.
+  - *UI:* Forced sidebar navigation buttons to maintain a perfect square aspect ratio (`w-12 h-12`) when collapsed for a cleaner, centered icon-only layout.
+  - *UI:* Added smooth entry animations for sidebar labels when expanding.
 
 - **v6.0.16 (2026-05-13):** PIP Adaptive "Mini" Layout.
   - *UI:* Implemented a condensed layout for the Always-on-top (PIP) window that activates at small dimensions (<240px height or <180px width).
