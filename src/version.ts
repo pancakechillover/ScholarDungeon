@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v6.0.15';
+export const APP_VERSION = 'v6.0.16';
 export const LAST_UPDATE_DATE = '2026-05-13';
-export const LAST_UPDATE_TIME = '10:45:00';
+export const LAST_UPDATE_TIME = '10:55:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,16 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v6.0.16',
+    date: '2026-05-13',
+    time: '10:55:00',
+    title: 'PIP Adaptive "Mini" Layout',
+    items: [
+      { category: 'UI', description: 'Implemented a condensed layout for Always-on-top (PIP) window triggering at small sizes.' },
+      { category: 'UX', description: 'Moved controls to the right and reduced typography scales for better compact visibility.' }
+    ]
+  },
   {
     version: 'v6.0.15',
     date: '2026-05-13',
