@@ -26,6 +26,7 @@ interface TimerProps {
   pushEnabled?: boolean;
   onTogglePip?: () => void;
   requireFocusConfirmation?: boolean;
+  pipWindow?: Window | null;
   // External Config
   focusDuration: number;
   restDuration: number;
@@ -75,6 +76,7 @@ export const Timer = React.memo<TimerProps>(({
   pushEnabled,
   onTogglePip,
   requireFocusConfirmation = false,
+  pipWindow,
   focusDuration,
   restDuration,
   enableRest,
@@ -106,6 +108,27 @@ export const Timer = React.memo<TimerProps>(({
       setShowFocusPrompt(false);
     }
   }, [isActive]);
+
+  // Maximize PIP window when showing rewards in PIP, and restore when closed
+  const [pipBounds, setPipBounds] = useState<{w: number, h: number} | null>(null);
+  useEffect(() => {
+    if (showRewards && pipWindow && pipWindow.resizeTo) {
+      if (!pipBounds) setPipBounds({ w: pipWindow.outerWidth, h: pipWindow.outerHeight });
+      try {
+        pipWindow.moveTo(0, 0);
+        pipWindow.resizeTo(window.screen.availWidth, window.screen.availHeight);
+      } catch (e) {
+        console.warn('Could not resize PIP window', e);
+      }
+    } else if (!showRewards && pipWindow && pipBounds && pipWindow.resizeTo) {
+      try {
+        pipWindow.resizeTo(pipBounds.w, pipBounds.h);
+        setPipBounds(null);
+      } catch (e) {
+        console.warn('Could not restore PIP window size', e);
+      }
+    }
+  }, [showRewards, pipWindow]);
 
   // Push Notification Scheduling
   useEffect(() => {
@@ -836,7 +859,7 @@ export const Timer = React.memo<TimerProps>(({
           </div>
           )}
         </AnimatePresence>,
-        document.body
+        pipWindow ? pipWindow.document.body : document.body
       )}
 
       {typeof document !== 'undefined' && createPortal(

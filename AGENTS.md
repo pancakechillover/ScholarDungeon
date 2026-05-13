@@ -23,7 +23,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v6.0.26
+- **Current Version:** v6.0.28
 - **Last Update Date:** 2026-05-13
 
 ## Dark Themes Definition
@@ -49,6 +49,13 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v6.0.28 (2026-05-13):** PIP Window Victory Screen Behaviors.
+  - *UI:* PIP Window responsive adjustments for the non-modal reward summary, ensuring content is cleanly visible in ultra-compact view.
+  - *UX:* When "Show Victory Screen" is active, PIP window intelligently maximizes to full screen to display the native reward selection choices, and restores its layout after picking.
+
+- **v6.0.27 (2026-05-13):** Reward Chest Session Metadata.
+  - *UX:* Pending Reward Chest items now display their completion timestamp and the exact target objective/dungeon they stem from to provide better session context.
 
 - **v6.0.26 (2026-05-13):** PIP Window Interactive Logic.
   - *UI:* Implemented a non-modal reward summary (XP and Gold) in the Always-on-top (PIP) window that triggers when a focus session ends if "Show Screen" is enabled.

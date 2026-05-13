@@ -86,6 +86,7 @@ interface ExploreViewProps {
   bulkDeleteSessions: (data: { startTime: string, endTime: string }) => void;
   setPipVictorySummary: (val: { xp: number, coins: number, ts: number } | null) => void;
   togglePip: () => void;
+  pipWindow?: Window | null;
   canPip: boolean;
   isPWA: boolean;
   isDesktop: boolean;
@@ -146,6 +147,7 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
   bulkDeleteSessions,
   setPipVictorySummary,
   togglePip,
+  pipWindow,
   canPip,
   isPWA,
   isDesktop,
@@ -388,6 +390,7 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
                     }}
                     setShowCoinRain={setShowCoinRain}
                     isFullscreen={isFullscreenExplore}
+                    pipWindow={pipWindow}
                     secretCode={state.secretCode}
                     pushEnabled={state.pushEnabled}
                     onTogglePip={togglePip}
@@ -490,6 +493,7 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
                       }}
                       setShowCoinRain={setShowCoinRain}
                       isFullscreen={isFullscreenExplore}
+                      pipWindow={pipWindow}
                       secretCode={state.secretCode}
                       pushEnabled={state.pushEnabled}
                       onTogglePip={togglePip}
@@ -751,6 +755,9 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
       {showChestModal && state.pendingRewardChest && (
         <RewardChestModal
           chest={state.pendingRewardChest}
+          getDungeonName={(dlId) => {
+             return dungeons.find(d => d.id === dlId)?.name || 'Free Study';
+          }}
           onSelect={(reward, sessionId) => {
             if (reward) {
               selectReward(reward, sessionId);

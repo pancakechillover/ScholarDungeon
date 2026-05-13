@@ -84,11 +84,11 @@ export const CompactTimer: React.FC<CompactTimerProps> = ({
   React.useEffect(() => {
     // We only trigger this transient overlay if:
     // 1. It's a Major or Quest completion (lastCompletionRewards) OR it's a standard focus completion (pipVictorySummary)
-    // 2. AND 'Skip Victory Screen' mode allows us to interrupt or requires UI ('none')
+    // 2. AND 'Skip Victory Screen' mode allows us to interrupt or requires UI ('none' -> wait, NO, user wants it when NOT 'none')
     const hasData = !!(lastCompletionRewards || (pipVictorySummary && pipVictorySummary.ts > Date.now() - 5000));
     
     // We do NOT block it if showFocusPrompt is false. If showFocusPrompt is true, they overlay.
-    if (hasData && (!timerSkipVictoryMode || timerSkipVictoryMode === 'none') && !showFocusPrompt) {
+    if (hasData && timerSkipVictoryMode && timerSkipVictoryMode !== 'none' && !showFocusPrompt) {
       setShowRewardSummary(true);
       const timer = setTimeout(() => setShowRewardSummary(false), 5000); // Show for 5 seconds
       return () => clearTimeout(timer);

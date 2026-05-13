@@ -1178,6 +1178,7 @@ function App() {
                  bulkDeleteSessions={bulkDeleteSessions}
                  setPipVictorySummary={setPipVictorySummary}
                  togglePip={togglePip}
+                 pipWindow={pipWindow}
                  canPip={canPip}
                  isPWA={isPWA}
                  isDesktop={isDesktop}

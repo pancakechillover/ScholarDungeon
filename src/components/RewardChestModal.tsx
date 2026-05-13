@@ -3,18 +3,20 @@ import { motion, AnimatePresence } from 'motion/react';
 import { RewardCard, StudySession, Rarity } from '../types';
 import { cn } from '../lib/utils';
 import { triggerSimpleConfetti } from '../lib/effects';
-import { X, Sparkles, Trophy, Zap, Coins, Clock, Target } from 'lucide-react';
+import { X, Sparkles, Trophy, Zap, Coins, Clock, Target, Calendar } from 'lucide-react';
 import { TreasureChestIcon } from './icons/TreasureChestIcon';
 import { createPortal } from 'react-dom';
 import { useScrollLock } from '../hooks/useScrollLock';
+import { format } from 'date-fns';
 
 interface RewardChestModalProps {
   chest: { session: StudySession; choices: RewardCard[] }[];
   onSelect: (reward: RewardCard | null, sessionId: string) => void;
   onClose: () => void;
+  getDungeonName: (id: string) => string;
 }
 
-export const RewardChestModal: React.FC<RewardChestModalProps> = ({ chest, onSelect, onClose }) => {
+export const RewardChestModal: React.FC<RewardChestModalProps> = ({ chest, onSelect, onClose, getDungeonName }) => {
   useScrollLock(true);
   
   const getRarityValue = (r: Rarity) => {
@@ -92,10 +94,12 @@ export const RewardChestModal: React.FC<RewardChestModalProps> = ({ chest, onSel
                        <Trophy size={20} />
                     </div>
                     <div>
-                      <h4 className={cn("font-bold", item.session.isCrit ? "text-amber-400" : "text-white")}>
-                        {item.session.isCrit ? 'Critical Victory' : 'Victory Sequence'}
+                      <h4 className={cn("font-bold flex items-center gap-2", item.session.isCrit ? "text-amber-400" : "text-white")}>
+                        {getDungeonName(item.session.dungeonId)}
+                        {item.session.isCrit && <span className="px-1.5 py-0.5 rounded text-[10px] bg-amber-500/20 text-amber-400 font-bold tracking-widest uppercase">Critical</span>}
                       </h4>
-                      <div className="flex gap-4 text-xs text-slate-400 mt-1">
+                      <div className="flex flex-wrap gap-4 text-xs text-slate-400 mt-1">
+                        <span className="flex items-center gap-1"><Calendar size={12} className="text-slate-400" /> {format(new Date(item.session.timestamp), 'MM/dd HH:mm')}</span>
                         <span className="flex items-center gap-1"><Zap size={12} className="text-emerald-400" /> +{item.session.xpEarned} XP</span>
                         <span className="flex items-center gap-1"><Coins size={12} className="text-amber-400" /> +{item.session.coinsEarned} Gold</span>
                         <span className="flex items-center gap-1"><Clock size={12} className="text-indigo-400" /> {item.session.duration}m</span>

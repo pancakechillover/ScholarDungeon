@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v6.0.26';
+export const APP_VERSION = 'v6.0.28';
 export const LAST_UPDATE_DATE = '2026-05-13';
-export const LAST_UPDATE_TIME = '12:05:00';
+export const LAST_UPDATE_TIME = '12:26:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,25 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v6.0.28',
+    date: '2026-05-13',
+    time: '12:26:00',
+    title: 'PIP Window Victory Screen Behaviors',
+    items: [
+      { category: 'UI', description: 'PIP Window responsive adjustments for the non-modal reward summary, ensuring content is cleanly visible in ultra-compact view.' },
+      { category: 'UX', description: 'When "Show Victory Screen" is active, PIP window intelligently maximizes to full screen to display the native reward selection choices, and restores its layout after picking.' }
+    ]
+  },
+  {
+    version: 'v6.0.27',
+    date: '2026-05-13',
+    time: '12:15:00',
+    title: 'Reward Chest Session Metadata',
+    items: [
+      { category: 'UX', description: 'Reward Chest items now cleanly display their completion timestamp and the name of the objective/dungeon they stem from.' }
+    ]
+  },
   {
     version: 'v6.0.26',
     date: '2026-05-13',
