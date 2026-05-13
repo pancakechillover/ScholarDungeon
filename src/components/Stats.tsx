@@ -612,7 +612,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
         {/* Render mood icon if available */}
         {Icon && (
           <g transform={`translate(-7, -7)`}>
-            <Icon size={14} color="currentColor" className={moodObj.color} />
+            <Icon size={14} className={moodObj.color} />
           </g>
         )}
       </g>
@@ -977,9 +977,9 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
                   {state.showOtherInActivityLog !== false && (
                     <Bar dataKey="Other" stackId="a" fill="#64748b" radius={[4, 4, 0, 0]} />
                   )}
-                  {/* Mood Icon Layer - Unstacked transparent bar equal to total height to anchor the labels */}
-                  <Bar dataKey="total" fill="transparent" isAnimationActive={false}>
-                    <LabelList dataKey="total" content={renderMoodIcon} />
+                  {/* Mood Icon Layer - Stacked with 0 height to stay at the top */}
+                  <Bar dataKey="moodHeight" stackId="a" fill="transparent" isAnimationActive={false}>
+                    <LabelList content={renderMoodIcon} />
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
