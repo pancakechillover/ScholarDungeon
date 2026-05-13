@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { AppState } from '../../types';
-import { Wrench, Package, Coins, Zap, Trophy, Flame, Sparkles, Bell, RefreshCw, Trash2, Key, Eye, Palette } from 'lucide-react';
+import { Wrench, Package, Coins, Zap, Trophy, Flame, Sparkles, Bell, RefreshCw, Trash2, Key, Eye, Palette, Clock } from 'lucide-react';
 import { DevResourceControl } from './DevResourceControl';
 import { cn } from '../../lib/utils';
 import { ConfirmModal } from '../ConfirmModal';
@@ -10,12 +10,14 @@ interface DeveloperSettingsProps {
   state: AppState;
   setState: React.Dispatch<React.SetStateAction<AppState>>;
   addXP: (amount: number) => void;
+  getNow: () => Date;
 }
 
 export const DeveloperSettings: React.FC<DeveloperSettingsProps> = ({
   state,
   setState,
-  addXP
+  addXP,
+  getNow
 }) => {
   const [devPassword, setDevPassword] = useState('');
   const [isDevUnlocked, setIsDevUnlocked] = useState(state.devModeEnabled || false);
@@ -651,6 +653,81 @@ export const DeveloperSettings: React.FC<DeveloperSettingsProps> = ({
             <p className="text-[10px] text-slate-500 italic">
               This will schedule a task with 0 delay and immediately trigger the /api/push/check endpoint.
             </p>
+          </div>
+
+          {/* Section: Time Manipulation */}
+          <div className="space-y-6 pt-6 border-t border-slate-800">
+            <div className="flex items-center gap-2.5 text-rose-400 mb-6 pb-2 border-b border-slate-800/50">
+              <Clock size={20} />
+              <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Time Manipulation</h4>
+            </div>
+            
+            <div className="flex items-center justify-between p-4 bg-slate-800/50 border border-slate-700 rounded-2xl">
+              <div className="space-y-1">
+                <p className="text-sm font-bold text-white">Enable Custom Time</p>
+                <p className="text-[10px] text-slate-500">Override the system clock. Useful for testing resets and daily events.</p>
+              </div>
+              <button
+                onClick={() => setState(prev => ({ ...prev, customTimeEnabled: !prev.customTimeEnabled }))}
+                className={cn(
+                  "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
+                  state.customTimeEnabled ? "bg-indigo-600" : "bg-slate-700"
+                )}
+              >
+                <span className={cn(
+                  "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+                  state.customTimeEnabled ? "translate-x-6" : "translate-x-1"
+                )} />
+              </button>
+            </div>
+
+            {state.customTimeEnabled && (
+              <div className="space-y-4 p-4 bg-slate-800/50 border border-slate-700 rounded-2xl">
+                 <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-500 uppercase">Set Simulated Time</label>
+                  <input 
+                    type="datetime-local" 
+                    value={(() => {
+                      const now = getNow();
+                      const offset = now.getTimezoneOffset();
+                      const localNow = new Date(now.getTime() - offset * 60 * 1000);
+                      return localNow.toISOString().slice(0, 16);
+                    })()}
+                    onChange={e => {
+                      if (!e.target.value) return;
+                      const selected = new Date(e.target.value);
+                      const realNow = new Date();
+                      const newOffset = selected.getTime() - realNow.getTime();
+                      setState(prev => ({ ...prev, customTimeOffset: newOffset }));
+                    }}
+                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-white text-sm"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => {
+                       const currentOffset = state.customTimeOffset || 0;
+                       setState(prev => ({ ...prev, customTimeOffset: currentOffset + 24 * 60 * 60 * 1000 }));
+                    }}
+                    className="py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold transition-all"
+                  >
+                    +1 Day
+                  </button>
+                  <button
+                    onClick={() => {
+                       const currentOffset = state.customTimeOffset || 0;
+                       setState(prev => ({ ...prev, customTimeOffset: currentOffset - 24 * 60 * 60 * 1000 }));
+                    }}
+                    className="py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold transition-all"
+                  >
+                    -1 Day
+                  </button>
+                </div>
+                <p className="text-[10px] text-amber-500/80 italic text-center">
+                  Current simulated time: {getNow().toLocaleString()}
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Section 4: UI Debugging */}

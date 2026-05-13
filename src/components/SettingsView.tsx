@@ -8,6 +8,7 @@ interface SettingsViewProps {
   setState: React.Dispatch<React.SetStateAction<AppState>>;
   resetLootPool: () => void;
   addXP: (amount: number) => void;
+  getNow: () => Date;
   activeSection: 'general' | 'timer' | 'rewards' | 'shop' | 'gacha' | 'dev' | 'levelRewards' | 'about' | 'level' | 'merchant' | 'cloud';
   setActiveSection: (section: 'general' | 'timer' | 'rewards' | 'shop' | 'gacha' | 'dev' | 'levelRewards' | 'about' | 'level' | 'merchant' | 'cloud') => void;
   onTabChange?: (tab: any) => void;
@@ -22,6 +23,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   setState,
   resetLootPool,
   addXP,
+  getNow,
   activeSection,
   setActiveSection,
   onTabChange,
@@ -49,6 +51,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         onUpdateGacha={(pools: any) => setState(prev => ({ ...prev, gachaPools: pools }))}
         onResetRewards={resetLootPool}
         addXP={addXP}
+        getNow={getNow}
         activeSection={activeSection}
         setActiveSection={setActiveSection}
         onTabChange={onTabChange}

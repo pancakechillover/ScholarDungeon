@@ -178,27 +178,31 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent | TouchEvent) => {
       const target = e.target as Element;
+      
+      // 1. Handle Heatmap popover dismissal
       if (!target.closest('.heatmap-cell-container')) {
-        if (selectedHeatmapDate) {
-          setSelectedHeatmapDate(null);
-        }
+        setSelectedHeatmapDate(null);
       }
       
+      // 2. Handle Recharts tooltips dismissal (Daily/Weekly Activity)
+      // Check if we are interacting with a tooltip itself or a data point
       const inTooltip = !!target.closest('.recharts-tooltip-wrapper');
-      const inBar = !!target.closest('.recharts-bar-rectangle');
-      const inDot = !!target.closest('.recharts-dot') || !!target.closest('.recharts-active-dot');
-      const inChartWrapper = !!target.closest('.recharts-wrapper');
+      const isDataPoint = !!target.closest('.recharts-bar-rectangle') || 
+                          !!target.closest('.recharts-dot') || 
+                          !!target.closest('.recharts-active-dot') ||
+                          !!target.closest('.recharts-sector');
       
-      if (!inTooltip && (!inChartWrapper || (!inBar && !inDot))) {
-         setChartKeys({
-           daily: Date.now() + Math.random(),
-           weeklyBar: Date.now() + Math.random(),
-           weeklyLine: Date.now() + Math.random()
-         });
+      // If we clicked on "blank area" (not a tooltip and not a data point), reset chart keys
+      if (!inTooltip && !isDataPoint) {
+        setChartKeys(prev => ({
+          daily: Date.now() + Math.random(),
+          weeklyBar: Date.now() + Math.random(),
+          weeklyLine: Date.now() + Math.random()
+        }));
       }
     };
     document.addEventListener('mousedown', handleOutsideClick);
-    document.addEventListener('touchstart', handleOutsideClick);
+    document.addEventListener('touchstart', handleOutsideClick, { passive: true });
 
     const handleJump = (e: any) => {
       setDailyDate(new Date(e.detail));

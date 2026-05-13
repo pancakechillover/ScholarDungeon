@@ -315,7 +315,8 @@ function App() {
     bulkDeleteSessions,
     selectReward,
     resetLootPool,
-    setActivePool
+    setActivePool,
+    getNow
   } = useGameState();
 
   const {
@@ -1266,6 +1267,7 @@ function App() {
                 setState={setState}
                 resetLootPool={resetLootPool}
                 addXP={addXP}
+                getNow={getNow}
                 activeSection={activeSettingsSection}
                 setActiveSection={setActiveSettingsSection}
                 onTabChange={setActiveTab}

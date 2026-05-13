@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v6.0.6';
+export const APP_VERSION = 'v6.0.9';
 export const LAST_UPDATE_DATE = '2026-05-13';
-export const LAST_UPDATE_TIME = '10:05:00';
+export const LAST_UPDATE_TIME = '10:20:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,36 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v6.0.9',
+    date: '2026-05-13',
+    time: '10:20:00',
+    title: 'Stats Tooltip Dismissal Fix',
+    items: [
+      { category: 'Bug Fix', description: 'Re-engineered the global click listener in Stats.tsx to reliably dismiss chart tooltips and heatmap popovers when clicking any blank area.' }
+    ]
+  },
+  {
+    version: 'v6.0.8',
+    date: '2026-05-13',
+    time: '10:15:00',
+    title: 'Custom Time Mocking & Talent Enforcement',
+    items: [
+      { category: 'Feature', description: 'Added Time Manipulation to Developer Mode, allowing users to enable custom simulated time and set offsets (+/- days or specific dates) for testing resets and daily events.' },
+      { category: 'Feature', description: 'Talent unlocking now strictly requires prerequisites (sequential locking).' },
+      { category: 'UI', description: 'Improved visual feedback for failed talent unlocks with theme-synchronized floating bubbles.' }
+    ]
+  },
+  {
+    version: 'v6.0.7',
+    date: '2026-05-13',
+    time: '10:10:00',
+    title: 'Talent Prerequisite Enforcement',
+    items: [
+      { category: 'Feature', description: 'Enforced sequential talent unlocking (e.g., Tier 1 must precede Tier 2).' },
+      { category: 'UX', description: 'Added a mystical floating bubble notification when attempting to bypass prerequisites, which dismisses automatically upon clicking anywhere else.' }
+    ]
+  },
   {
     version: 'v6.0.6',
     date: '2026-05-13',

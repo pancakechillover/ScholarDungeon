@@ -23,7 +23,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v6.0.6
+- **Current Version:** v6.0.9
 - **Last Update Date:** 2026-05-13
 
 ## Dark Themes Definition
@@ -49,6 +49,19 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v6.0.9 (2026-05-13):** Stats Tooltip Dismissal Fix.
+  - *Bug Fix:* Re-engineered the global click listener in `Stats.tsx` to reliably dismiss chart tooltips and heatmap popovers when clicking any blank area or non-data UI element.
+
+- **v6.0.8 (2026-05-13):** Custom Time Mocking & Talent Enforcement.
+  - *Feature:* Added Time Manipulation to Developer Mode, allowing users to enable custom simulated time and set offsets (+/- days or specific dates) for testing.
+  - *Feature:* Talent unlocking now strictly requires prerequisites (sequential locking).
+  - *UI:* Improved visual feedback for failed talent unlocks with theme-synchronized floating bubbles.
+
+- **v6.0.7 (2026-05-13):** Talent Prerequisite Enforcement & Visual Feedback.
+  - *Feature:* Enforced sequential talent unlocking (e.g., Tier 1 must precede Tier 2).
+  - *UX:* Added a mystical floating bubble notification when attempting to bypass prerequisites, which dismisses automatically upon clicking anywhere else.
+  - *UI:* The bubble dynamically displays the name of the missing predecessor and matches the branch's unique theme colors.
 
 - **v6.0.6 (2026-05-13):** Global Cloud Unbind Synchronization.
   - *Bug Fix:* Resolved a critical race condition where secondary tabs would continue syncing with a dropped secret code. Added immediate cancellation triggers across all tabs via `activeSyncRequestRef` incrementation on state clear. Synchronized the Cloud Sync Modal input field with backend state to prevent re-authentication with stale codes in concurrent windows.

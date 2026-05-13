@@ -261,6 +261,9 @@ export interface AppState {
   dailyProgressGoalConfig?: Record<number, number>;
   useSameDailyProgressGoalEveryDay?: boolean;
   dailyProgressGoal?: number;
+  // Custom Time Mocking
+  customTimeEnabled?: boolean;
+  customTimeOffset?: number; // Difference in milliseconds (SimulatedTime - RealTime)
 }
 
 export interface StudySession {

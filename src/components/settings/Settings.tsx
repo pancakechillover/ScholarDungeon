@@ -139,6 +139,7 @@ export interface SettingsProps {
   onUpdateGacha: (gacha: GachaPool[]) => void;
   onResetRewards?: () => void;
   addXP: (amount: number) => void;
+  getNow: () => Date;
   activeSection: string;
   setActiveSection: (sec: string) => void;
   onTabChange?: (tab: any) => void;
@@ -159,6 +160,7 @@ export const Settings = React.memo<SettingsProps & { onOpenAstralArchives?: () =
   onUpdateGacha,
   onResetRewards,
   addXP,
+  getNow,
   activeSection,
   setActiveSection,
   onTabChange,
@@ -362,7 +364,7 @@ export const Settings = React.memo<SettingsProps & { onOpenAstralArchives?: () =
           <GachaSettings pools={gachaPools} onUpdate={onUpdateGacha} />
         )}
         {activeSection === 'dev' && (
-          <DeveloperSettings state={state} setState={setState} addXP={addXP} />
+          <DeveloperSettings state={state} setState={setState} addXP={addXP} getNow={getNow} />
         )}
 
         {activeSection === 'about' && (

@@ -398,6 +398,15 @@ export function useGameState() {
     localStorage.setItem(STORAGE_KEY + '_major_dungeons', JSON.stringify(majorDungeons));
   }, [majorDungeons]);
 
+  // Unified Time Helper
+  const getNow = useCallback(() => {
+    const realNow = new Date();
+    if (state.customTimeEnabled && state.customTimeOffset) {
+      return new Date(realNow.getTime() + state.customTimeOffset);
+    }
+    return realNow;
+  }, [state.customTimeEnabled, state.customTimeOffset]);
+
   useEffect(() => {
     const currentDeviceType = getDeviceType();
     if (state.deviceType !== currentDeviceType) {
@@ -417,7 +426,7 @@ export function useGameState() {
     if (!state.autoTheme) return;
 
     const updateTheme = () => {
-      let now = new Date();
+      let now = getNow();
       
       // Apply timezone offset if custom timezone is set
       if (state.timezone) {
@@ -459,7 +468,7 @@ export function useGameState() {
 
   // Daily Reset Logic
   useEffect(() => {
-    const now = new Date();
+    const now = getNow();
     const ts = state.timeSettings || {
       morning: { start: 8, end: 12 },
       afternoon: { start: 14, end: 18 },
@@ -560,7 +569,7 @@ export function useGameState() {
           name: customReward.type === 'text' ? (customReward.rewardText || 'Custom Reward') : `${customReward.amount} ${customReward.type}`,
           rarity: 'common',
           source: 'LevelUp',
-          timestamp: new Date().toISOString(),
+          timestamp: getNow().toISOString(),
           type: customReward.type === 'text' ? 'text' : (customReward.type === 'coins' ? 'coins' : 'item'),
           redeemed: true
         });
@@ -575,7 +584,7 @@ export function useGameState() {
             name: `${defaultReward.amount} ${defaultReward.type}`,
             rarity: 'common',
             source: 'LevelUp',
-            timestamp: new Date().toISOString(),
+            timestamp: getNow().toISOString(),
             type: defaultReward.type === 'coins' ? 'coins' : 'item',
             redeemed: true
           });
@@ -622,7 +631,7 @@ export function useGameState() {
       const newItem: RewardHistoryItem = {
         ...reward,
         id: Math.random().toString(36).substr(2, 9),
-        timestamp: new Date().toISOString(),
+        timestamp: getNow().toISOString(),
         redeemed: reward.type !== 'item' && reward.type !== 'text'
       };
 
@@ -695,7 +704,7 @@ export function useGameState() {
             }
           }));
         }
-        return updatedMajors.map(m => m.id === id ? { ...m, status: 'completed', completedAt: new Date().toISOString() } : m);
+        return updatedMajors.map(m => m.id === id ? { ...m, status: 'completed', completedAt: getNow().toISOString() } : m);
       }
 
       return updatedMajors;
@@ -703,7 +712,7 @@ export function useGameState() {
   }, [dungeons, addCoins, addXP, addRewardToHistory]);
 
   const completeSession = useCallback((dungeonId: string | null, duration: number, focusDuration?: number, restDuration?: number) => {
-    const now = new Date();
+    const now = getNow();
     const todayStr = format(now, 'yyyy-MM-dd');
     
     // Calculate rewards
@@ -839,7 +848,7 @@ export function useGameState() {
         const updatedQuests = newState.quests.map(q => {
           let currentQuest = q;
           if (q.type === 'daily_sessions' && newState.dailyProgressGoalConfig) {
-             const day = new Date().getDay();
+             const day = getNow().getDay();
              const goal = newState.dailyProgressGoalConfig[day];
              if (goal !== undefined && goal !== q.target) {
                 currentQuest = { ...q, target: goal };
@@ -908,7 +917,7 @@ export function useGameState() {
                     questId: q.id,
                     title: q.title,
                     type: q.type,
-                    timestamp: new Date().toISOString(),
+                    timestamp: getNow().toISOString(),
                     rewards: q.rewards || [q.reward],
                     isAchievement: q.isAchievement,
                     talentRequired: q.talentRequired
@@ -938,7 +947,7 @@ export function useGameState() {
                           (r.itemName || 'Item'),
                     rarity: q.isAchievement ? 'epic' : 'rare',
                     source: 'Explore',
-                    timestamp: new Date().toISOString(),
+                    timestamp: getNow().toISOString(),
                     type: r.type === 'text' ? 'text' : (r.type === 'coins' ? 'coins' : (r.type === 'xp' ? 'xp' : 'item')),
                     amount: r.amount,
                     redeemed: r.type !== 'item' && r.type !== 'text'
@@ -1041,13 +1050,13 @@ export function useGameState() {
                         }
                       }));
                     }
-                    return prevMajors.map(m => m.id === d.parentId ? { ...m, status: 'completed', completedAt: new Date().toISOString() } : m);
+                    return prevMajors.map(m => m.id === d.parentId ? { ...m, status: 'completed', completedAt: getNow().toISOString() } : m);
                   }
                   return prevMajors;
                 });
               }
 
-              return { ...d, completedSessions: newCompleted, status: 'completed' as const, completedAt: new Date().toISOString() };
+              return { ...d, completedSessions: newCompleted, status: 'completed' as const, completedAt: getNow().toISOString() };
             }
             return { ...d, completedSessions: newCompleted };
           }
@@ -1138,13 +1147,13 @@ export function useGameState() {
                 }
               }));
             }
-            return prevMajors.map(m => m.id === d.parentId ? { ...m, status: 'completed', completedAt: new Date().toISOString() } : m);
+            return prevMajors.map(m => m.id === d.parentId ? { ...m, status: 'completed', completedAt: getNow().toISOString() } : m);
           }
           return prevMajors;
         });
       }
 
-      updatedDungeons[dungeonIndex] = { ...d, status: 'completed', completedAt: new Date().toISOString() };
+      updatedDungeons[dungeonIndex] = { ...d, status: 'completed', completedAt: getNow().toISOString() };
       return updatedDungeons;
     });
   }, [addXP, addCoins, addRewardToHistory]);
@@ -1407,7 +1416,7 @@ export function useGameState() {
                if (d.id === updates.dungeonId) {
                   const newCount = d.completedSessions + 1;
                   const isCompleted = newCount >= d.totalSessions;
-                  return { ...d, completedSessions: newCount, status: isCompleted ? 'completed' : 'active', completedAt: isCompleted ? new Date().toISOString() : undefined };
+                  return { ...d, completedSessions: newCount, status: isCompleted ? 'completed' : 'active', completedAt: isCompleted ? getNow().toISOString() : undefined };
                }
                return d;
             });
@@ -1459,7 +1468,7 @@ export function useGameState() {
         questId: quest.id,
         title: quest.title,
         type: quest.type,
-        timestamp: new Date().toISOString(),
+        timestamp: getNow().toISOString(),
         rewards: quest.rewards || [quest.reward],
         isAchievement: quest.isAchievement,
         talentRequired: quest.talentRequired
@@ -1476,7 +1485,7 @@ export function useGameState() {
                 (reward.itemName || 'Item'),
           rarity: quest.isAchievement ? 'epic' : 'rare',
           source: 'Explore',
-          timestamp: new Date().toISOString(),
+          timestamp: getNow().toISOString(),
           type: reward.type === 'text' ? 'text' : (reward.type === 'coins' ? 'coins' : (reward.type === 'xp' ? 'xp' : 'item')),
           amount: reward.amount,
           redeemed: reward.type !== 'item' && reward.type !== 'text'
@@ -1536,7 +1545,7 @@ export function useGameState() {
           questId: quest.id,
           title: quest.title,
           type: quest.type,
-          timestamp: new Date().toISOString(),
+          timestamp: getNow().toISOString(),
           rewards: quest.rewards || [quest.reward],
           isAchievement: quest.isAchievement,
           talentRequired: quest.talentRequired
@@ -1553,7 +1562,7 @@ export function useGameState() {
                   (reward.itemName || 'Item'),
             rarity: quest.isAchievement ? 'epic' : 'rare',
             source: 'Explore',
-            timestamp: new Date().toISOString(),
+            timestamp: getNow().toISOString(),
             type: reward.type === 'text' ? 'text' : (reward.type === 'coins' ? 'coins' : (reward.type === 'xp' ? 'xp' : 'item')),
             amount: reward.amount,
             redeemed: reward.type !== 'item' && reward.type !== 'text'
@@ -1582,7 +1591,7 @@ export function useGameState() {
 
       newState.bulkClaimResult = {
         items: claimedItems,
-        timestamp: new Date().toISOString()
+        timestamp: getNow().toISOString()
       };
 
       return newState;
@@ -1628,7 +1637,7 @@ export function useGameState() {
         name: item.name,
         rarity: 'rare',
         source: 'Shop',
-        timestamp: new Date().toISOString(),
+        timestamp: getNow().toISOString(),
         type: 'item',
         redeemed: false
       };
@@ -1656,7 +1665,7 @@ export function useGameState() {
       ...prev,
       rewardPool: (prev.rewardPool || []).map(card => 
         card.id === reward.id 
-          ? { ...card, claimHistory: [...(card.claimHistory || []), new Date().toISOString()] }
+          ? { ...card, claimHistory: [...(card.claimHistory || []), getNow().toISOString()] }
           : card
       )
     }));
@@ -1853,6 +1862,7 @@ export function useGameState() {
     saveDungeonHistory,
     dungeonHistory,
     bulkCreateSessions,
-    bulkDeleteSessions
+    bulkDeleteSessions,
+    getNow
   };
 }

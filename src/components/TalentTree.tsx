@@ -44,6 +44,15 @@ export const TalentTree = React.memo<TalentTreeProps>(({
     return localStorage.getItem('scholar_dungeon_talents_collapsed') === 'true';
   });
   const [shakingId, setShakingId] = useState<string | null>(null);
+  const [prereqErrorId, setPrereqErrorId] = useState<string | null>(null);
+
+  // Close prerequisite error on click anywhere else
+  React.useEffect(() => {
+    if (!prereqErrorId) return;
+    const handleGlobalClick = () => setPrereqErrorId(null);
+    window.addEventListener('click', handleGlobalClick);
+    return () => window.removeEventListener('click', handleGlobalClick);
+  }, [prereqErrorId]);
 
   const toggleCollapse = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -58,25 +67,35 @@ export const TalentTree = React.memo<TalentTreeProps>(({
     { id: 'C', name: 'Fate Dice', color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30', accent: 'bg-emerald-500' },
   ];
 
+  const getPrereq = (talent: Talent) => {
+    if (talent.tier > 1) {
+      return talents.find(t => t.branch === talent.branch && t.tier === talent.tier - 1);
+    }
+    return null;
+  };
+
   const canUnlock = (talent: Talent) => {
     if (unlockedIds.includes(talent.id)) return false;
     
     // Check previous tier in same branch
-    if (talent.tier > 1) {
-      const prevTier = talents.find(t => t.branch === talent.branch && t.tier === talent.tier - 1);
-      if (prevTier && !unlockedIds.includes(prevTier.id)) return false;
-    }
+    const prevTier = getPrereq(talent);
+    if (prevTier && !unlockedIds.includes(prevTier.id)) return false;
     
     return true;
   };
 
-  const handleUnlockAttempt = (talent: Talent) => {
+  const handleUnlockAttempt = (e: React.MouseEvent, talent: Talent) => {
+    e.stopPropagation(); // Prevent immediate closing of prereq bubble if we just triggered it
+
     if (unlockedIds.includes(talent.id)) {
       onToggle(talent.id);
       return;
     }
 
-    if (!canUnlock(talent)) return;
+    if (!canUnlock(talent)) {
+      setPrereqErrorId(talent.id);
+      return;
+    }
 
     if (points < talent.cost) {
       setShakingId(talent.id);
@@ -198,8 +217,35 @@ export const TalentTree = React.memo<TalentTreeProps>(({
                             ? isActive ? cn("bg-slate-800", branch.border.replace('border-', 'border-').replace('/30', '')) : "bg-slate-900 border-slate-600"
                             : (unlockable && points >= talent.cost) ? "bg-slate-900 border-slate-700 hover:border-slate-400" : "bg-slate-950 border-slate-800 opacity-60"
                         )}
-                        onClick={() => handleUnlockAttempt(talent)}
+                        onClick={(e) => handleUnlockAttempt(e, talent)}
                       >
+                        {/* Prerequisite Error Bubble */}
+                        <AnimatePresence>
+                          {prereqErrorId === talent.id && (
+                            <motion.div
+                              initial={{ opacity: 0, y: 10, scale: 0.8 }}
+                              animate={{ opacity: 1, y: 0, scale: 1 }}
+                              exit={{ opacity: 0, scale: 0.8 }}
+                              className="absolute -top-12 left-1/2 -translate-x-1/2 z-[100] whitespace-nowrap"
+                            >
+                              <div className={cn(
+                                "px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-2xl border flex items-center gap-2 pointer-events-auto",
+                                branch.bg,
+                                branch.border.replace('/30', '/60'),
+                                branch.color
+                              )}>
+                                <Lock size={12} />
+                                Unlock {getPrereq(talent)?.name || 'Previous'} First
+                                <div className={cn(
+                                  "absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 rotate-45 border-r border-b",
+                                  branch.bg,
+                                  branch.border.replace('/30', '/60')
+                                )} />
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+
                         {isCollapsed ? (
                           <div className={cn(
                             "transition-colors relative",
