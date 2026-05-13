@@ -84,6 +84,7 @@ interface ExploreViewProps {
   deleteSession: (id: string) => void;
   bulkCreateSessions: (data: { count: number, objectiveId: string, startTime: string, endTime: string }) => void;
   bulkDeleteSessions: (data: { startTime: string, endTime: string }) => void;
+  setPipVictorySummary: (val: { xp: number, coins: number, ts: number } | null) => void;
   togglePip: () => void;
   canPip: boolean;
   isPWA: boolean;
@@ -143,6 +144,7 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
   deleteSession,
   bulkCreateSessions,
   bulkDeleteSessions,
+  setPipVictorySummary,
   togglePip,
   canPip,
   isPWA,
@@ -351,6 +353,15 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
                       if (result && state.secretCode) {
                         syncToCloud(true, undefined, 'Manual');
                       }
+                      
+                      if (result) {
+                        setPipVictorySummary({
+                          xp: result.xpEarned,
+                          coins: result.coinsEarned,
+                          ts: Date.now()
+                        });
+                      }
+                      
                       return result;
                     }}
                     onRestComplete={() => {
@@ -444,6 +455,15 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
                         if (result && state.secretCode) {
                           syncToCloud(true, undefined, 'Manual');
                         }
+                        
+                        if (result) {
+                          setPipVictorySummary({
+                            xp: result.xpEarned,
+                            coins: result.coinsEarned,
+                            ts: Date.now()
+                          });
+                        }
+
                         return result;
                       }}
                       onRestComplete={() => {

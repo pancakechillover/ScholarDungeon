@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v6.0.23';
+export const APP_VERSION = 'v6.0.26';
 export const LAST_UPDATE_DATE = '2026-05-13';
-export const LAST_UPDATE_TIME = '11:35:00';
+export const LAST_UPDATE_TIME = '12:05:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,35 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v6.0.26',
+    date: '2026-05-13',
+    time: '12:05:00',
+    title: 'PIP Window Interactive Logic',
+    items: [
+      { category: 'UI', description: 'Implemented a non-modal reward summary (XP and Gold) in the Always-on-top (PIP) window that triggers when a focus session ends if "Show Screen" is enabled.' },
+      { category: 'UX', description: 'Integrated a "Start Focus" prompt in the PIP window that appears after rest ends if "Manual Focus Start" is active, allowing full session control from the compact view.' }
+    ]
+  },
+  {
+    version: 'v6.0.25',
+    date: '2026-05-13',
+    time: '11:48:00',
+    title: 'Chart Layout Refinement',
+    items: [
+      { category: 'Bug Fix', description: 'Adjusted chart margins to provide more breathing room for the X-axis labels, preventing them from being clipped by the container boundaries.' }
+    ]
+  },
+  {
+    version: 'v6.0.24',
+    date: '2026-05-13',
+    time: '11:45:00',
+    title: 'Chart X-Axis Label & Style Fix',
+    items: [
+      { category: 'Bug Fix', description: 'Fixed an issue where "MON" (Monday) label was missing from chart axes by forcing interval={0} and adding chart margins.' },
+      { category: 'UI', description: 'Standardized chart X-axis labels to uppercase (e.g. MON, TUE) for better consistency and visibility.' }
+    ]
+  },
   {
     version: 'v6.0.23',
     date: '2026-05-13',

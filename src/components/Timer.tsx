@@ -101,6 +101,12 @@ export const Timer = React.memo<TimerProps>(({
 
   // Sync to localStorage moved to App.tsx or handled via state setters passed down
 
+  useEffect(() => {
+    if (isActive) {
+      setShowFocusPrompt(false);
+    }
+  }, [isActive]);
+
   // Push Notification Scheduling
   useEffect(() => {
     if (!pushEnabled || !secretCode) return;

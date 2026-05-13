@@ -113,6 +113,8 @@ function App() {
     return saved ? parseInt(saved, 10) : 25 * 60;
   });
 
+  const [pipVictorySummary, setPipVictorySummary] = useState<{ xp: number, coins: number, ts: number } | null>(null);
+
   const [loopTarget, setLoopTarget] = useState(() => parseInt(localStorage.getItem('timer_loopTarget') || '0', 10));
   const [loopCount, setLoopCount] = useState(() => parseInt(localStorage.getItem('timer_loopCount') || '0', 10));
 
@@ -851,6 +853,7 @@ function App() {
           timerSkipVictoryMode={state.timerSkipVictoryMode}
           requireFocusConfirmation={state.requireFocusConfirmation}
           lastCompletionRewards={state.lastCompletionRewards}
+          pipVictorySummary={pipVictorySummary}
         />,
         pipWindow.document.body
       )}
@@ -1173,6 +1176,7 @@ function App() {
                  deleteSession={deleteSession}
                  bulkCreateSessions={bulkCreateSessions}
                  bulkDeleteSessions={bulkDeleteSessions}
+                 setPipVictorySummary={setPipVictorySummary}
                  togglePip={togglePip}
                  canPip={canPip}
                  isPWA={isPWA}

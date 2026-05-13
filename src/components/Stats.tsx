@@ -536,7 +536,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
       });
       const total = counts.Morning + counts.Afternoon + counts.Night + counts.Other;
       return {
-        name: format(date, 'EEE'),
+        name: format(date, 'EEE').toUpperCase(),
         fullDate: format(date, 'EEE, MMM d, yyyy'),
         Morning: counts.Morning,
         Afternoon: counts.Afternoon,
@@ -962,8 +962,8 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
           <div className="space-y-8">
             <div className="h-40 min-h-[160px]">
               <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
-                <BarChart data={weeklyData} margin={{ top: 35, right: 0, left: 0, bottom: 0 }} onClick={(state) => handleChartClick(state, 'weeklyBar')} style={{ outline: 'none' }}>
-                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10 }} />
+                <BarChart data={weeklyData} margin={{ top: 35, right: 10, left: 10, bottom: 20 }} onClick={(state) => handleChartClick(state, 'weeklyBar')} style={{ outline: 'none' }}>
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} interval={0} tick={{ fill: '#64748b', fontSize: 10 }} />
                   <Tooltip 
                     key={chartKeys.weeklyBar}
                     trigger="click"
@@ -992,9 +992,9 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
               </div>
               <div className="h-32 min-h-[128px]">
                 <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
-                  <LineChart data={weeklyData} onClick={(state) => handleChartClick(state, 'weeklyLine')} style={{ outline: 'none' }}>
+                  <LineChart data={weeklyData} margin={{ top: 10, right: 10, left: 10, bottom: 20 }} onClick={(state) => handleChartClick(state, 'weeklyLine')} style={{ outline: 'none' }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10 }} />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} interval={0} tick={{ fill: '#64748b', fontSize: 10 }} />
                     <YAxis hide domain={[0, 5]} />
                     <Tooltip 
                       key={chartKeys.weeklyLine}

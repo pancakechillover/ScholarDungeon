@@ -17,6 +17,7 @@ interface CompactTimerProps {
   timerSkipVictoryMode?: 'none' | 'auto_pick_highest' | 'skip_rewards' | 'defer_to_chest';
   requireFocusConfirmation?: boolean;
   lastCompletionRewards?: any | null;
+  pipVictorySummary?: { xp: number, coins: number, ts: number } | null;
 }
 
 const PIP_STYLE = `
@@ -67,7 +68,8 @@ export const CompactTimer: React.FC<CompactTimerProps> = ({
   skipSession,
   timerSkipVictoryMode,
   requireFocusConfirmation,
-  lastCompletionRewards
+  lastCompletionRewards,
+  pipVictorySummary
 }) => {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [displayTime, setDisplayTime] = React.useState(timeLeft);
@@ -80,14 +82,20 @@ export const CompactTimer: React.FC<CompactTimerProps> = ({
 
   // Handle Reward Summary Transient State
   React.useEffect(() => {
-    if (lastCompletionRewards && timerSkipVictoryMode === 'none' && !showFocusPrompt) {
+    // We only trigger this transient overlay if:
+    // 1. It's a Major or Quest completion (lastCompletionRewards) OR it's a standard focus completion (pipVictorySummary)
+    // 2. AND 'Skip Victory Screen' mode allows us to interrupt or requires UI ('none')
+    const hasData = !!(lastCompletionRewards || (pipVictorySummary && pipVictorySummary.ts > Date.now() - 5000));
+    
+    // We do NOT block it if showFocusPrompt is false. If showFocusPrompt is true, they overlay.
+    if (hasData && (!timerSkipVictoryMode || timerSkipVictoryMode === 'none') && !showFocusPrompt) {
       setShowRewardSummary(true);
       const timer = setTimeout(() => setShowRewardSummary(false), 5000); // Show for 5 seconds
       return () => clearTimeout(timer);
     } else {
       setShowRewardSummary(false);
     }
-  }, [lastCompletionRewards, timerSkipVictoryMode, showFocusPrompt]);
+  }, [lastCompletionRewards, pipVictorySummary, timerSkipVictoryMode, showFocusPrompt]);
 
   // Handle Focus Prompt State
   React.useEffect(() => {
@@ -127,8 +135,8 @@ export const CompactTimer: React.FC<CompactTimerProps> = ({
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const xpReward = lastCompletionRewards?.rewards?.find((r: any) => r.type === 'xp')?.amount;
-  const coinReward = lastCompletionRewards?.rewards?.find((r: any) => r.type === 'coins')?.amount;
+  const xpReward = lastCompletionRewards?.rewards?.find((r: any) => r.type === 'xp')?.amount || pipVictorySummary?.xp;
+  const coinReward = lastCompletionRewards?.rewards?.find((r: any) => r.type === 'coins')?.amount || pipVictorySummary?.coins;
 
   return (
     <div ref={containerRef} className="pip-container flex flex-col items-center justify-start h-[100dvh] w-[100dvw] bg-slate-950 text-white font-sans overflow-hidden select-none relative">

@@ -23,7 +23,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v6.0.23
+- **Current Version:** v6.0.26
 - **Last Update Date:** 2026-05-13
 
 ## Dark Themes Definition
@@ -49,6 +49,17 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v6.0.26 (2026-05-13):** PIP Window Interactive Logic.
+  - *UI:* Implemented a non-modal reward summary (XP and Gold) in the Always-on-top (PIP) window that triggers when a focus session ends if "Show Screen" is enabled.
+  - *UX:* Integrated a "Start Focus" prompt in the PIP window that appears after rest ends if "Manual Focus Start" is active, allowing full session control from the compact view.
+
+- **v6.0.25 (2026-05-13):** Chart Layout Refinement.
+  - *Bug Fix:* Adjusted Weekly Activity chart margins in the Record interface to provide more vertical space for X-axis labels, preventing them from being obscured or clipped by the parent container.
+
+- **v6.0.24 (2026-05-13):** Chart X-Axis Label Fix.
+  - *Bug Fix:* Fixed an issue where the "MON" (Monday) label was missing from the Efficiency Trend line chart and other activity charts by forcing Recharts to show all x-axis ticks (`interval={0}`) and adding consistent margins to prevent clipping.
+  - *UI:* Standardized x-axis labels to uppercase (e.g. MON, TUE) across all weekly charts for better visibility and a more premium technical aesthetic.
 
 - **v6.0.23 (2026-05-13):** PIP Portal CSS Performance & Cleanup.
   - *Performance:* Re-engineered the PIP layout responsiveness to utilize pure CSS media queries, completely eliminating the React render lag and screen flickering during window resizing.
