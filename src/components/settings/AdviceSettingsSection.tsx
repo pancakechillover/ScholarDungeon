@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Calculator, Target, Zap, Clock, Coins, Ticket, Sparkles, BookOpen, AlertTriangle } from 'lucide-react';
+import { Calculator, Target, Zap, Clock, Coins, Ticket, Sparkles, BookOpen, AlertTriangle, Key, Settings as SettingsIcon, Bot, Send, RefreshCw, Cpu } from 'lucide-react';
 import { AppState } from '../../types';
 import { cn, getXPForLevel } from '../../lib/utils';
 import { TALENTS } from '../../constants';
+import { getSageAdvice } from '../../services/sageService';
 
 interface AdviceSettingsProps {
   state: AppState;
+  setState: React.Dispatch<React.SetStateAction<AppState>>;
 }
 
-export const AdviceSettingsSection: React.FC<AdviceSettingsProps> = ({ state }) => {
+export const AdviceSettingsSection: React.FC<AdviceSettingsProps> = ({ state, setState }) => {
   const [activeTab, setActiveTab] = useState<'basically' | 'sage'>('basically');
 
   // Basic Calculator State
@@ -172,7 +174,6 @@ export const AdviceSettingsSection: React.FC<AdviceSettingsProps> = ({ state }) 
         >
           <BookOpen size={16} />
           From Sage's
-          <span className="absolute -top-1 -right-1 bg-amber-500 text-black text-[8px] font-black px-1.5 py-0.5 rounded-bl-lg transform rotate-12">WIP</span>
         </button>
       </div>
 
@@ -398,19 +399,239 @@ export const AdviceSettingsSection: React.FC<AdviceSettingsProps> = ({ state }) 
         )}
 
         {activeTab === 'sage' && (
-          <motion.div
-            key="sage"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="flex flex-col items-center justify-center py-20 text-center"
-          >
-            <BookOpen className="text-emerald-500 mb-6 opacity-50" size={64} />
-            <h4 className="text-2xl font-black text-white uppercase tracking-widest mb-4">From Sage's</h4>
-            <p className="text-slate-400 max-w-md">The ancient sages are compiling deeper strategies regarding probability manipulation, optimal level scaling, and economy balancing. Check back later.</p>
-          </motion.div>
+          <SageInterface state={state} setState={setState} />
         )}
       </AnimatePresence>
     </div>
+  );
+};
+
+interface SageInterfaceProps {
+  state: AppState;
+  setState: React.Dispatch<React.SetStateAction<AppState>>;
+}
+
+const SageInterface: React.FC<SageInterfaceProps> = ({ state, setState }) => {
+  const [showConfig, setShowConfig] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [userInput, setUserInput] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+
+  const history = state.sageChatHistory || [];
+
+  React.useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [history, loading]);
+
+  const handleSend = async (customPrompt?: string) => {
+    const prompt = customPrompt || userInput;
+    if (!prompt.trim() && !customPrompt) return;
+
+    setLoading(true);
+    setError(null);
+    setUserInput('');
+
+    // Add user message to state
+    const userMsg = { role: 'user' as const, content: prompt, timestamp: Date.now() };
+    setState(prev => ({
+      ...prev,
+      sageChatHistory: [...(prev.sageChatHistory || []), userMsg]
+    }));
+
+    try {
+      const res = await getSageAdvice({ 
+        state, 
+        prompt, 
+        history: history.map(h => ({ role: h.role, content: h.content })) 
+      });
+      
+      const assistantMsg = { role: 'assistant' as const, content: res, timestamp: Date.now() };
+      setState(prev => ({
+        ...prev,
+        sageChatHistory: [...(prev.sageChatHistory || []), assistantMsg]
+      }));
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateSageConfig = (key: keyof AppState, value: any) => {
+    setState(prev => ({ ...prev, [key]: value }));
+  };
+
+  const clearHistory = () => {
+    setState(prev => ({ ...prev, sageChatHistory: [] }));
+  };
+
+  return (
+    <motion.div
+      key="sage"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      className="space-y-6"
+    >
+      <div className="flex justify-between items-center bg-emerald-500/10 border border-emerald-500/20 p-6 rounded-3xl">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-emerald-500/20 rounded-2xl border border-emerald-500/30">
+             <Bot className="text-emerald-400" size={24} />
+          </div>
+          <div>
+            <h4 className="text-lg font-black text-white uppercase tracking-widest leading-none mb-2">The Emerald Sage</h4>
+            <p className="text-xs text-emerald-400/70 font-medium">An AI mentor fueled by your reflections.</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={clearHistory}
+            className="p-2 bg-slate-800 text-slate-400 border border-slate-700 rounded-xl hover:text-red-400 transition-colors"
+            title="Clear History"
+          >
+            <RefreshCw size={18} />
+          </button>
+          <button 
+            onClick={() => setShowConfig(!showConfig)}
+            className={cn(
+              "p-2 rounded-xl border transition-all",
+              showConfig ? "bg-white text-black border-white" : "bg-slate-800 text-slate-400 border-slate-700 hover:border-emerald-500/50"
+            )}
+          >
+            <SettingsIcon size={20} />
+          </button>
+        </div>
+      </div>
+
+      <AnimatePresence>
+        {showConfig && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="bg-slate-900/40 border border-slate-800 p-6 rounded-3xl space-y-6">
+               <h5 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-4 flex items-center gap-2">
+                 <Cpu size={12} /> AI Oracle Configuration
+               </h5>
+               
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                 <div className="space-y-2">
+                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Provider</label>
+                   <select 
+                     value={state.sageApiProvider || 'google'}
+                     onChange={(e) => updateSageConfig('sageApiProvider', e.target.value)}
+                     className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-emerald-500 outline-none transition-all text-sm font-bold"
+                   >
+                     <option value="google">Google Gemini (Recommended)</option>
+                     <option value="openai">OpenAI / Compatible</option>
+                   </select>
+                 </div>
+                 
+                 <div className="space-y-2">
+                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Model Name</label>
+                   <input 
+                     type="text"
+                     placeholder={state.sageApiProvider === 'openai' ? "gpt-4o-mini" : "gemini-3-flash-preview"}
+                     value={state.sageModelName || ''}
+                     onChange={(e) => updateSageConfig('sageModelName', e.target.value)}
+                     className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-emerald-500 outline-none transition-all text-sm font-mono"
+                   />
+                 </div>
+               </div>
+
+               <div className="space-y-2">
+                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
+                   <Key size={10} /> API Key
+                 </label>
+                 <input 
+                   type="password"
+                   placeholder="Your secret key..."
+                   value={state.sageApiKey || ''}
+                   onChange={(e) => updateSageConfig('sageApiKey', e.target.value)}
+                   className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-emerald-500 outline-none transition-all text-sm font-mono"
+                 />
+                 <p className="text-[9px] text-slate-500 ml-1">Key is stored locally. The platform's internal key is used by default for Google Gemini.</p>
+               </div>
+
+               {state.sageApiProvider === 'openai' && (
+                 <div className="space-y-2">
+                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Custom Base URL (Optional)</label>
+                   <input 
+                     type="text"
+                     placeholder="https://api.openai.com/v1"
+                     value={state.sageApiUrl || ''}
+                     onChange={(e) => updateSageConfig('sageApiUrl', e.target.value)}
+                     className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-emerald-500 outline-none transition-all text-sm font-mono"
+                   />
+                 </div>
+               )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="flex flex-col bg-slate-950/50 rounded-3xl border border-slate-800 overflow-hidden min-h-[500px]">
+        <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar max-h-[600px]">
+          {history.length === 0 && !loading && (
+            <div className="h-full flex flex-col items-center justify-center text-center space-y-6 py-12">
+               <Bot size={48} className="text-emerald-500/20" />
+               <p className="text-slate-500 text-sm max-w-xs font-medium">The Sage awaits your question. Consult the scrolls to begin your path to enlightenment.</p>
+               <div className="flex flex-wrap gap-2 justify-center">
+                 <button onClick={() => handleSend("Analyze my trends.")} className="px-4 py-2 bg-slate-900 border border-slate-800 text-slate-400 rounded-xl text-xs hover:border-emerald-500/50 hover:text-white transition-all font-bold">"Analyze my trends"</button>
+                 <button onClick={() => handleSend("Identify my weaknesses.")} className="px-4 py-2 bg-slate-900 border border-slate-800 text-slate-400 rounded-xl text-xs hover:border-emerald-500/50 hover:text-white transition-all font-bold">"Identify weaknesses"</button>
+               </div>
+            </div>
+          )}
+
+          {history.map((msg, idx) => (
+            <div key={idx} className={cn("flex flex-col", msg.role === 'user' ? "items-end" : "items-start")}>
+              <div className={cn(
+                "max-w-[90%] p-4 rounded-2xl text-sm font-medium leading-relaxed",
+                msg.role === 'user' 
+                  ? "bg-indigo-600/10 border border-indigo-500/20 text-indigo-200 rounded-tr-none" 
+                  : "bg-slate-900/80 border border-emerald-500/10 text-slate-300 rounded-tl-none font-serif italic"
+              )}>
+                <div className="prose prose-invert prose-emerald prose-sm max-w-none">
+                  <p className="whitespace-pre-wrap">{msg.content}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {loading && (
+            <div className="flex items-center gap-2 text-emerald-400/60 font-serif italic text-xs ml-2">
+              <RefreshCw className="animate-spin" size={14} /> The Sage is pondering...
+            </div>
+          )}
+          
+          {error && <div className="text-red-400 text-xs font-bold p-4 bg-red-500/10 rounded-xl border border-red-500/20">{error}</div>}
+        </div>
+
+        <div className="p-4 bg-slate-900 border-t border-slate-800">
+           <div className="relative group">
+              <input 
+                type="text"
+                value={userInput}
+                onChange={(e) => setUserInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                placeholder="Message the Sage..."
+                className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-5 py-4 pr-16 text-slate-200 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-600"
+              />
+              <button 
+                onClick={() => handleSend()}
+                disabled={loading || !userInput.trim()}
+                className="absolute right-2 top-2 bottom-2 w-12 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl transition-all flex items-center justify-center"
+              >
+                <Send size={18} />
+              </button>
+           </div>
+        </div>
+      </div>
+    </motion.div>
   );
 };

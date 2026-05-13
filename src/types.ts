@@ -266,6 +266,12 @@ export interface AppState {
   // Custom Time Mocking
   customTimeEnabled?: boolean;
   customTimeOffset?: number; // Difference in milliseconds (SimulatedTime - RealTime)
+  // Sage AI
+  sageApiProvider?: 'google' | 'openai';
+  sageApiKey?: string;
+  sageApiUrl?: string; 
+  sageModelName?: string;
+  sageChatHistory?: { role: 'user' | 'assistant'; content: string; timestamp: number }[];
 }
 
 export interface StudySession {

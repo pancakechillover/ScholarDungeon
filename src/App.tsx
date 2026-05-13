@@ -1114,6 +1114,7 @@ function App() {
             {activeTab === 'dashboard' && (
               <DashboardView 
                 state={state}
+                setState={setState}
                 currentDungeon={currentDungeon || null}
                 setActiveTab={setActiveTab}
                 setShowDailySummary={setShowDailySummary}

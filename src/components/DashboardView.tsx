@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
+import { createPortal } from 'react-dom';
 import { 
   Sword, 
   ChevronRight, 
@@ -11,13 +12,21 @@ import {
   Compass,
   Package,
   Clock,
-  Target
+  Target,
+  Bot,
+  Sparkles,
+  RefreshCw,
+  Send,
+  X
 } from 'lucide-react';
 import { AppState, Dungeon } from '../types';
 import { playSound } from '../lib/sound';
+import { getSageAdvice } from '../services/sageService';
+import { cn } from '../lib/utils';
 
 interface DashboardViewProps {
   state: AppState;
+  setState: React.Dispatch<React.SetStateAction<AppState>>;
   currentDungeon: Dungeon | null;
   setActiveTab: (tab: any) => void;
   setShowDailySummary: (show: boolean) => void;
@@ -27,12 +36,14 @@ interface DashboardViewProps {
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
   state,
+  setState,
   currentDungeon,
   setActiveTab,
   setShowDailySummary,
   openGuideBook,
   saveDailyLog
 }) => {
+  const [showSageConsult, setShowSageConsult] = React.useState(false);
   const settlementPeriod = useMemo(() => {
     const ts = state.timeSettings || {
       morning: { start: 8, end: 12 },
@@ -251,8 +262,205 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </button>
             </div>
           </div>
+
+          {/* Sage Quick Consult Card */}
+          <div className="bg-emerald-950/20 rounded-3xl border border-emerald-500/20 p-6 relative overflow-hidden group">
+            <Bot className="absolute -bottom-6 -right-6 text-emerald-500/10 w-24 h-24 group-hover:scale-110 transition-transform" />
+            <div className="relative z-10">
+              <div className="flex items-center gap-2 mb-2">
+                <Sparkles size={16} className="text-emerald-400" />
+                <h3 className="text-xs font-black text-emerald-400 uppercase tracking-widest">Oracle's Insight</h3>
+              </div>
+              <p className="text-[11px] text-emerald-300/60 mb-4 font-medium italic">Seek guidance from the Emerald Sage based on your journey.</p>
+              <button 
+                 onClick={() => setShowSageConsult(true)}
+                 className="w-full py-2 bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border border-emerald-500/30 flex items-center justify-center gap-2"
+              >
+                Assemble Council
+              </button>
+            </div>
+          </div>
         </div>
       </div>
+
+      {showSageConsult && createPortal(
+         <SageConsultModal 
+           state={state} 
+           setState={setState}
+           onClose={() => setShowSageConsult(false)} 
+         />,
+         document.body
+      )}
     </motion.div>
+  );
+};
+
+interface SageConsultModalProps {
+  state: AppState;
+  setState: React.Dispatch<React.SetStateAction<AppState>>;
+  onClose: () => void;
+}
+
+const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, onClose }) => {
+  const [loading, setLoading] = React.useState(false);
+  const [userInput, setUserInput] = React.useState('');
+  const [error, setError] = React.useState<string | null>(null);
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+
+  const history = state.sageChatHistory || [];
+
+  React.useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [history, loading]);
+
+  const handleSend = async (customPrompt?: string) => {
+    const prompt = customPrompt || userInput;
+    if (!prompt.trim() && !customPrompt) return;
+
+    setLoading(true);
+    setError(null);
+    setUserInput('');
+
+    // Add user message to state
+    const userMsg = { role: 'user' as const, content: prompt, timestamp: Date.now() };
+    setState(prev => ({
+      ...prev,
+      sageChatHistory: [...(prev.sageChatHistory || []), userMsg]
+    }));
+
+    try {
+      const res = await getSageAdvice({ 
+        state, 
+        prompt, 
+        history: history.map(h => ({ role: h.role, content: h.content })) 
+      });
+      
+      const assistantMsg = { role: 'assistant' as const, content: res, timestamp: Date.now() };
+      setState(prev => ({
+        ...prev,
+        sageChatHistory: [...(prev.sageChatHistory || []), assistantMsg]
+      }));
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const clearHistory = () => {
+    setState(prev => ({ ...prev, sageChatHistory: [] }));
+  };
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        className="bg-slate-900 w-full max-w-2xl rounded-[2.5rem] border border-emerald-500/30 overflow-hidden shadow-2xl shadow-emerald-500/10 flex flex-col h-[85vh]"
+      >
+        <div className="p-6 border-b border-slate-800 flex justify-between items-center bg-emerald-500/5">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-emerald-500/20 rounded-xl">
+               <Bot className="text-emerald-400" size={20} />
+            </div>
+            <div>
+               <h3 className="text-lg font-black text-white uppercase tracking-widest leading-none mb-1">Sage's Council</h3>
+               <span className="text-[10px] font-bold text-emerald-400/60 uppercase tracking-tighter">Illuminating the Path</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={clearHistory}
+              title="Clear scrolls"
+              className="p-2 text-slate-500 hover:text-red-400 transition-colors"
+            >
+              <RefreshCw size={18} />
+            </button>
+            <button onClick={onClose} className="p-2 text-slate-500 hover:text-white transition-colors">
+              <X size={20} />
+            </button>
+          </div>
+        </div>
+
+        <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar space-y-6">
+          {history.length === 0 && !loading && (
+            <div className="h-full flex flex-col items-center justify-center text-center space-y-8 py-10">
+               <div className="relative">
+                 <div className="w-24 h-24 bg-emerald-500/10 rounded-full flex items-center justify-center border border-emerald-500/20 animate-pulse" />
+                 <Bot className="absolute inset-0 m-auto text-emerald-500/40" size={40} />
+               </div>
+               <div>
+                 <h4 className="text-white font-black uppercase tracking-widest mb-3">Begin the Consultation</h4>
+                 <p className="text-sm text-slate-400 max-w-xs leading-relaxed">The Oracle is ready to evaluate your scrolls. Speak, and the path shall be revealed.</p>
+               </div>
+               <div className="grid grid-cols-1 gap-3 w-full max-w-xs">
+                 <button onClick={() => handleSend("Sage, analyze my recent journey.")} className="py-2.5 px-4 bg-slate-800/50 border border-slate-700 hover:border-emerald-500/50 text-slate-300 hover:text-white rounded-xl text-xs font-bold transition-all">"Analyze my recent journey."</button>
+                 <button onClick={() => handleSend("Give me a mystical challenge for today.")} className="py-2.5 px-4 bg-slate-800/50 border border-slate-700 hover:border-emerald-500/50 text-slate-300 hover:text-white rounded-xl text-xs font-bold transition-all">"Give me a mystical challenge."</button>
+               </div>
+            </div>
+          )}
+
+          {history.map((msg, idx) => (
+            <div key={idx} className={cn("flex flex-col", msg.role === 'user' ? "items-end" : "items-start")}>
+              <div className={cn(
+                "max-w-[85%] p-4 rounded-2xl text-sm font-medium leading-relaxed shadow-lg",
+                msg.role === 'user' 
+                  ? "bg-indigo-600/20 border border-indigo-500/30 text-indigo-100 rounded-tr-none" 
+                  : "bg-slate-800/80 border border-emerald-500/20 text-slate-200 rounded-tl-none font-serif italic"
+              )}>
+                {msg.role === 'assistant' ? (
+                  <div className="prose prose-invert prose-emerald prose-sm max-w-none">
+                    <p className="whitespace-pre-wrap">{msg.content}</p>
+                  </div>
+                ) : (
+                  msg.content
+                )}
+              </div>
+              <span className="text-[9px] font-bold text-slate-600 mt-1 uppercase tracking-widest px-2">
+                {msg.role === 'user' ? 'Scholar' : 'Emerald Sage'} • {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </span>
+            </div>
+          ))}
+
+          {loading && (
+            <div className="flex flex-col items-start">
+              <div className="bg-slate-800/40 border border-emerald-500/20 p-4 rounded-2xl rounded-tl-none flex items-center gap-3">
+                 <RefreshCw className="animate-spin text-emerald-400" size={16} />
+                 <span className="text-xs font-serif italic text-emerald-400/70">The Sage is consulting the scrolls...</span>
+              </div>
+            </div>
+          )}
+
+          {error && (
+            <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400 text-xs font-bold font-mono">
+              {error}
+            </div>
+          )}
+        </div>
+
+        <div className="p-6 bg-slate-900 border-t border-slate-800">
+           <div className="relative group">
+              <input 
+                type="text"
+                value={userInput}
+                onChange={(e) => setUserInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                placeholder="Ask the Sage..."
+                className="w-full bg-slate-950 border-2 border-slate-800 rounded-2xl px-6 py-4 pr-16 text-slate-200 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-600 font-medium"
+              />
+              <button 
+                onClick={() => handleSend()}
+                disabled={loading || !userInput.trim()}
+                className="absolute right-2 top-2 bottom-2 w-12 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 text-white rounded-xl transition-all flex items-center justify-center p-0"
+              >
+                <Send size={18} />
+              </button>
+           </div>
+        </div>
+      </motion.div>
+    </div>
   );
 };

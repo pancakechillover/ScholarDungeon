@@ -23,7 +23,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v6.0.30
+- **Current Version:** v6.0.32
 - **Last Update Date:** 2026-05-13
 
 ## Dark Themes Definition
@@ -49,6 +49,19 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v6.0.32 (2026-05-13):** Sage AI Chat Persistence & Structure.
+  - *Feature:* Implemented persistent chat history for the Emerald Sage, allowing users to continue past conversations.
+  - *Logic:* Enhanced the Sage's AI engine to support multi-turn dialogues and context-aware responses.
+  - *Logic:* Optimized the Sage's output with structural guidelines (Revelation, Observations, Path Forward, Encouragement) for clearer guidance.
+  - *UI:* Balanced the chat interface across both Settings and Dashboard views with consistent back-and-forth styling.
+
+- **v6.0.31 (2026-05-13):** The Emerald Sage AI Integration.
+  - *Feature:* Fully implemented "From Sage's" (The Emerald Sage) module. 
+  - *Feature:* Integrated Gemini and OpenAI/Compatible APIs with local key storage for personalized AI coaching.
+  - *UI:* Added a "Sage's Council" consultation modal in the Sanctum (Dashboard) for direct access to AI insights.
+  - *Logic:* SAGE now analyzes historical records, efficiency trends, daily moods, and written reflections to provide tailored learning advice.
+  - *UI:* Polished the AI configuration interface with provider selection, custom endpoints, and theme-synchronized response displays.
 
 - **v6.0.30 (2026-05-13):** Advice & Calculators Layout Polish.
   - *UI:* Completely redesigned the "Advice & Calculators" layout into a clean Bento Grid configuration with floating styles, gradients, and hover effects.

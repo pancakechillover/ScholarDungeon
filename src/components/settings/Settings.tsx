@@ -365,7 +365,7 @@ export const Settings = React.memo<SettingsProps & { onOpenAstralArchives?: () =
           <GachaSettings pools={gachaPools} onUpdate={onUpdateGacha} />
         )}
         {activeSection === 'advice' && (
-          <AdviceSettingsSection state={state} />
+          <AdviceSettingsSection state={state} setState={setState} />
         )}
         
         {activeSection === 'dev' && (

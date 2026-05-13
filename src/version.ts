@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v6.0.30';
+export const APP_VERSION = 'v6.0.32';
 export const LAST_UPDATE_DATE = '2026-05-13';
-export const LAST_UPDATE_TIME = '12:55:00';
+export const LAST_UPDATE_TIME = '15:20:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,29 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v6.0.32',
+    date: '2026-05-13',
+    time: '15:20:00',
+    title: 'Sage AI Chat Persistence & Structure',
+    items: [
+      { category: 'Feature', description: 'Implemented persistent chat history for the Emerald Sage, allowing multi-turn dialogues.' },
+      { category: 'Logic', description: 'Optimized Sage output with specific structural guidelines for clearer guidance.' },
+      { category: 'UI', description: 'Synchronized chat interfaces across Settings and Dashboard modals.' }
+    ]
+  },
+  {
+    version: 'v6.0.31',
+    date: '2026-05-13',
+    time: '15:05:00',
+    title: 'The Emerald Sage AI Integration',
+    items: [
+      { category: 'Feature', description: 'Fully implemented "From Sage\'s" (The Emerald Sage) module for personalized AI coaching.' },
+      { category: 'Feature', description: 'Integrated Gemini and OpenAI/Compatible APIs with local key storage for secure advisory.' },
+      { category: 'UI', description: 'Added a "Sage\'s Council" consultation modal in the Sanctum (Dashboard) for direct access to AI insights.' },
+      { category: 'Logic', description: 'SAGE now analyzes historical records, efficiency trends, daily moods, and written reflections.' }
+    ]
+  },
   {
     version: 'v6.0.30',
     date: '2026-05-13',
