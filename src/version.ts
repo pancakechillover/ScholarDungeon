@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v6.0.20';
+export const APP_VERSION = 'v6.0.21';
 export const LAST_UPDATE_DATE = '2026-05-13';
-export const LAST_UPDATE_TIME = '11:20:00';
+export const LAST_UPDATE_TIME = '11:22:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,15 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v6.0.21',
+    date: '2026-05-13',
+    time: '11:22:00',
+    title: 'PIP Portal Resize Observer Fix',
+    items: [
+      { category: 'Bug Fix', description: 'Replaced window.innerWidth with a ResizeObserver in the CompactTimer to correctly track dimensions when rendered inside the separate Document context of a Picture-in-Picture window.' }
+    ]
+  },
   {
     version: 'v6.0.20',
     date: '2026-05-13',

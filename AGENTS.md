@@ -23,7 +23,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v6.0.20
+- **Current Version:** v6.0.21
 - **Last Update Date:** 2026-05-13
 
 ## Dark Themes Definition
@@ -49,6 +49,9 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v6.0.21 (2026-05-13):** PIP Portal Resize Observer Fix.
+  - *Bug Fix:* Replaced `window.innerWidth` with a React `ResizeObserver` on the `CompactTimer` container. This ensures the app correctly identifies resizing events when rendered inside a disconnected Picture-in-Picture window portal, properly triggering the condensed "Mini" layout.
 
 - **v6.0.20 (2026-05-13):** Safe Export Integrity Fix.
   - *Security:* Updated Safe Export logic to thoroughly scrub all cloud sync metadata, including Redis/Google/WebDAV unlock statuses, connection strings, and auto-sync preferences. This ensures that manual backups shared between users or devices do not carry sensitive credentials or unintended feature unlocks.

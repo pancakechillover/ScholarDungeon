@@ -35,20 +35,29 @@ export const CompactTimer: React.FC<CompactTimerProps> = ({
 }) => {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [displayTime, setDisplayTime] = React.useState(timeLeft);
-  const [dimensions, setDimensions] = React.useState({ width: 0, height: 0 });
+  const [dimensions, setDimensions] = React.useState({ width: 500, height: 500 });
   const [showRewardSummary, setShowRewardSummary] = React.useState(false);
   const [showFocusPrompt, setShowFocusPrompt] = React.useState(false);
 
   React.useEffect(() => {
-    const updateDimensions = () => {
-      setDimensions({
-        width: window.innerWidth,
-        height: window.innerHeight
-      });
-    };
-    updateDimensions();
-    window.addEventListener('resize', updateDimensions);
-    return () => window.removeEventListener('resize', updateDimensions);
+    if (!containerRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setDimensions({
+          width: entry.contentRect.width,
+          height: entry.contentRect.height
+        });
+      }
+    });
+    observer.observe(containerRef.current);
+    
+    // Initial sizes
+    setDimensions({
+      width: containerRef.current.clientWidth,
+      height: containerRef.current.clientHeight
+    });
+
+    return () => observer.disconnect();
   }, []);
 
   const isCondensed = dimensions.height < 240 || dimensions.width < 180;
