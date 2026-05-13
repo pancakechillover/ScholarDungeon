@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v6.0.21';
+export const APP_VERSION = 'v6.0.23';
 export const LAST_UPDATE_DATE = '2026-05-13';
-export const LAST_UPDATE_TIME = '11:22:00';
+export const LAST_UPDATE_TIME = '11:35:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,25 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v6.0.23',
+    date: '2026-05-13',
+    time: '11:35:00',
+    title: 'PIP Portal CSS Performance & Cleanup',
+    items: [
+      { category: 'Performance', description: 'Re-engineered the PIP layout responsiveness to utilize pure CSS media queries, completely eliminating the React render lag and screen flickering during window resizing.' },
+      { category: 'UI', description: 'Removed the redundant session progress section to further declutter and prioritize the timer display.' }
+    ]
+  },
+  {
+    version: 'v6.0.22',
+    date: '2026-05-13',
+    time: '11:25:00',
+    title: 'Chart Mood Icon Display',
+    items: [
+      { category: 'UI', description: 'Reconfigured the Weekly Activity bar chart to reliably display daily mood icons above the bars by anchoring them to the total column height instead of a zero-height stack segment.' }
+    ]
+  },
   {
     version: 'v6.0.21',
     date: '2026-05-13',

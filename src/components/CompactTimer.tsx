@@ -19,6 +19,42 @@ interface CompactTimerProps {
   lastCompletionRewards?: any | null;
 }
 
+const PIP_STYLE = `
+  .pip-container { padding: 1.5rem; }
+  .pip-dungeon-mb { margin-bottom: 1.5rem; }
+  .pip-icon svg { width: 14px; height: 14px; }
+  .pip-title { font-size: 0.75rem; }
+  .pip-stats { font-size: 10px; }
+  .pip-bar { height: 0.375rem; }
+  .pip-countdown-container { flex-direction: column; padding: 0; }
+  .pip-time { font-size: 3.75rem; }
+  .pip-status { font-size: 0.75rem; margin-top: 0.5rem; }
+  .pip-status svg { width: 14px; height: 14px; }
+  .pip-status-short { display: none; }
+  .pip-status-long { display: block; }
+  .pip-controls-condensed { display: none; }
+  .pip-controls-standard { display: flex; }
+  .pip-overlay-icon svg { width: 32px; height: 32px; }
+
+  @media (max-width: 180px), (max-height: 240px) {
+    .pip-container { padding: 0.75rem; }
+    .pip-dungeon-mb { margin-bottom: 0.75rem; }
+    .pip-icon svg { width: 10px; height: 10px; }
+    .pip-title { font-size: 10px; }
+    .pip-stats { font-size: 8px; }
+    .pip-bar { height: 0.25rem; }
+    .pip-countdown-container { flex-direction: row; justify-content: space-between; padding-left: 0.5rem; padding-right: 0.5rem; }
+    .pip-time { font-size: 2.25rem; }
+    .pip-status { font-size: 8px; margin-top: 0.125rem; }
+    .pip-status svg { width: 10px; height: 10px; }
+    .pip-status-short { display: block; }
+    .pip-status-long { display: none; }
+    .pip-controls-condensed { display: flex; }
+    .pip-controls-standard { display: none; }
+    .pip-overlay-icon svg { width: 24px; height: 24px; }
+  }
+`;
+
 export const CompactTimer: React.FC<CompactTimerProps> = ({
   timeLeft,
   endTime,
@@ -35,32 +71,8 @@ export const CompactTimer: React.FC<CompactTimerProps> = ({
 }) => {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [displayTime, setDisplayTime] = React.useState(timeLeft);
-  const [dimensions, setDimensions] = React.useState({ width: 500, height: 500 });
   const [showRewardSummary, setShowRewardSummary] = React.useState(false);
   const [showFocusPrompt, setShowFocusPrompt] = React.useState(false);
-
-  React.useEffect(() => {
-    if (!containerRef.current) return;
-    const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        setDimensions({
-          width: entry.contentRect.width,
-          height: entry.contentRect.height
-        });
-      }
-    });
-    observer.observe(containerRef.current);
-    
-    // Initial sizes
-    setDimensions({
-      width: containerRef.current.clientWidth,
-      height: containerRef.current.clientHeight
-    });
-
-    return () => observer.disconnect();
-  }, []);
-
-  const isCondensed = dimensions.height < 240 || dimensions.width < 180;
 
   React.useEffect(() => {
     setDisplayTime(timeLeft);
@@ -119,10 +131,8 @@ export const CompactTimer: React.FC<CompactTimerProps> = ({
   const coinReward = lastCompletionRewards?.rewards?.find((r: any) => r.type === 'coins')?.amount;
 
   return (
-    <div ref={containerRef} className={cn(
-      "flex flex-col items-center justify-start h-[100dvh] w-[100dvw] bg-slate-950 text-white font-sans overflow-hidden select-none relative",
-      isCondensed ? "p-3" : "p-6"
-    )}>
+    <div ref={containerRef} className="pip-container flex flex-col items-center justify-start h-[100dvh] w-[100dvw] bg-slate-950 text-white font-sans overflow-hidden select-none relative">
+      <style>{PIP_STYLE}</style>
       <AnimatePresence>
         {showRewardSummary && !showFocusPrompt && (
           <motion.div
@@ -131,7 +141,9 @@ export const CompactTimer: React.FC<CompactTimerProps> = ({
             exit={{ opacity: 0, scale: 1.1, y: 10 }}
             className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/90 backdrop-blur-md p-4 text-center"
           >
-            <Trophy className="text-amber-400 mb-2" size={isCondensed ? 24 : 32} />
+            <div className="pip-overlay-icon text-amber-400 mb-2">
+              <Trophy />
+            </div>
             <h4 className="text-sm font-black uppercase tracking-widest text-white mb-3">Victory!</h4>
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2 bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20">
@@ -143,7 +155,7 @@ export const CompactTimer: React.FC<CompactTimerProps> = ({
                 <span className="text-xs font-black text-white">+{coinReward || 0} Gold</span>
               </div>
             </div>
-            <p className="text-[10px] text-slate-500 mt-4 italic">Rewards saved to main window</p>
+            <p className="text-[10px] text-slate-500 mt-4 italic">Rewards saved</p>
           </motion.div>
         )}
 
@@ -171,45 +183,22 @@ export const CompactTimer: React.FC<CompactTimerProps> = ({
           </motion.div>
         )}
       </AnimatePresence>
-      <div className={cn("w-full space-y-1", isCondensed ? "mb-2" : "mb-6")}>
-        <div className="flex justify-between items-end px-1">
-          <div className="flex flex-col">
-            {!isCondensed && (
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] leading-none mb-1">Current Session</span>
-            )}
-            <span className={cn("font-black truncate tracking-tight", isCondensed ? "text-[10px]" : "text-xs")}>
-              {isResting ? 'Recovery' : 'Exploration'} Target: {duration}m
-            </span>
-          </div>
-          <span className={cn("font-black text-indigo-400 tabular-nums shrink-0", isCondensed ? "text-[8px]" : "text-[10px]")}>
-            {Math.floor(Math.min(100, ((duration * 60 - displayTime) / (duration * 60)) * 100))}%
-          </span>
-        </div>
-        <div className={cn("w-full bg-slate-900 rounded-full overflow-hidden border border-slate-800", isCondensed ? "h-1" : "h-2")}>
-          <motion.div 
-            initial={false}
-            animate={{ width: `${Math.min(100, ((duration * 60 - displayTime) / (duration * 60)) * 100)}%` }}
-            className={cn(
-              "h-full transition-colors duration-500",
-              isResting ? "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" : "bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]"
-            )}
-          />
-        </div>
-      </div>
 
       {/* Dungeon Progress */}
       {currentDungeon && (
-        <div className={cn("w-full space-y-1", isCondensed ? "mb-3" : "mb-6")}>
+        <div className="w-full space-y-1 pip-dungeon-mb">
           <div className="flex justify-between items-center px-1">
             <div className="flex items-center gap-1.5 overflow-hidden">
-              <Sword size={isCondensed ? 10 : 14} className="text-indigo-400 shrink-0" />
-              <span className={cn("font-black truncate tracking-tight", isCondensed ? "text-[10px]" : "text-xs")}>{currentDungeon.name}</span>
+              <div className="pip-icon text-indigo-400 shrink-0">
+                <Sword />
+              </div>
+              <span className="pip-title font-black truncate tracking-tight">{currentDungeon.name}</span>
             </div>
-            <span className={cn("font-black text-slate-500 tabular-nums shrink-0", isCondensed ? "text-[8px]" : "text-[10px]")}>
+            <span className="pip-stats font-black text-slate-500 tabular-nums shrink-0">
               {currentDungeon.completedSessions}/{currentDungeon.totalSessions}
             </span>
           </div>
-          <div className={cn("w-full bg-slate-900 rounded-full overflow-hidden border border-slate-800", isCondensed ? "h-1" : "h-1.5")}>
+          <div className="pip-bar w-full bg-slate-900 rounded-full overflow-hidden border border-slate-800">
             <motion.div 
               initial={false}
               animate={{ width: `${(currentDungeon.completedSessions / currentDungeon.totalSessions) * 100}%` }}
@@ -220,18 +209,14 @@ export const CompactTimer: React.FC<CompactTimerProps> = ({
       )}
 
       {/* Countdown Module */}
-      <div className={cn("relative flex items-center w-full", isCondensed ? "flex-row justify-between px-2" : "flex-col")}>
+      <div className="pip-countdown-container relative flex items-center w-full">
         <div className="flex flex-col items-center">
-          <div className={cn(
-            "font-black font-mono tracking-tighter tabular-nums text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.1)]",
-            isCondensed ? "text-4xl" : "text-6xl"
-          )}>
+          <div className="pip-time font-black font-mono tracking-tighter tabular-nums text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.1)]">
             {formatTime(displayTime)}
           </div>
           
           <div className={cn(
-              "font-bold uppercase tracking-widest flex items-center gap-1",
-              isCondensed ? "text-[8px] mt-0.5" : "text-xs mt-2",
+              "pip-status font-bold uppercase tracking-widest flex items-center gap-1",
               isResting ? "text-emerald-500" : "text-indigo-400"
             )}>
             {(() => {
@@ -252,27 +237,29 @@ export const CompactTimer: React.FC<CompactTimerProps> = ({
                       delay: 0,
                       repeatDelay: repeatDelay
                     }}
-                    className="inline-block mr-1"
+                    className="inline-block mr-1 pip-status-icon"
                   >
-                    {isResting ? <Coffee size={isCondensed ? 10 : 14} /> : <Sword size={isCondensed ? 10 : 14} />}
+                    {isResting ? <Coffee size={14} /> : <Sword size={14} />}
                   </motion.span>
-                  {!isCondensed && charArray.map((char, i) => (
-                    <motion.span
-                      key={i}
-                      animate={isActive ? { y: [0, -8, 0] } : { y: 0 }}
-                      transition={{
-                        duration: animationDuration,
-                        repeat: isActive ? Infinity : 0,
-                        ease: "easeInOut",
-                        delay: (i + 1) * animationDuration,
-                        repeatDelay: repeatDelay
-                      }}
-                      className="inline-block flex-shrink-0 whitespace-pre"
-                    >
-                      {char}
-                    </motion.span>
-                  ))}
-                  {isCondensed && <span>{statusText.replace('...', '')}</span>}
+                  <span className="pip-status-long flex">
+                    {charArray.map((char, i) => (
+                      <motion.span
+                        key={i}
+                        animate={isActive ? { y: [0, -8, 0] } : { y: 0 }}
+                        transition={{
+                          duration: animationDuration,
+                          repeat: isActive ? Infinity : 0,
+                          ease: "easeInOut",
+                          delay: (i + 1) * animationDuration,
+                          repeatDelay: repeatDelay
+                        }}
+                        className="inline-block flex-shrink-0 whitespace-pre"
+                      >
+                        {char}
+                      </motion.span>
+                    ))}
+                  </span>
+                  <span className="pip-status-short">{statusText.replace('...', '')}</span>
                 </>
               );
             })()}
@@ -280,69 +267,65 @@ export const CompactTimer: React.FC<CompactTimerProps> = ({
         </div>
 
         {/* Controls (Condensed Mode - Right Side) */}
-        {isCondensed && (
-          <div className="flex flex-col gap-2">
-            <div className="flex gap-2">
-              <button
-                onClick={resetTimer}
-                className="p-1.5 bg-slate-900 text-slate-400 hover:text-white rounded-lg border border-slate-800 transition-all"
-                title="Reset"
-              >
-                <RotateCcw size={14} />
-              </button>
-              <button
-                onClick={skipSession}
-                className="p-1.5 bg-slate-900 text-slate-400 hover:text-white rounded-lg border border-slate-800 transition-all"
-                title="Skip"
-              >
-                <SkipForward size={14} />
-              </button>
-            </div>
+        <div className="pip-controls-condensed flex-col gap-2 w-16">
+          <div className="flex gap-2">
             <button
-              onClick={toggleTimer}
-              className={cn(
-                "h-8 w-full rounded-lg flex items-center justify-center transition-all bg-indigo-600 text-white",
-                isActive 
-                  ? (isResting ? "bg-emerald-600/20 border border-emerald-500/50 text-emerald-400" : "bg-indigo-600/20 border border-indigo-500/50 text-indigo-400") 
-                  : (isResting ? "bg-emerald-600" : "bg-indigo-600")
-              )}
+              onClick={resetTimer}
+              className="p-1.5 w-full flex justify-center bg-slate-900 text-slate-400 hover:text-white rounded-lg border border-slate-800 transition-all"
+              title="Reset"
             >
-              {isActive ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" />}
+              <RotateCcw size={14} />
+            </button>
+            <button
+              onClick={skipSession}
+              className="p-1.5 w-full flex justify-center bg-slate-900 text-slate-400 hover:text-white rounded-lg border border-slate-800 transition-all"
+              title="Skip"
+            >
+              <SkipForward size={14} />
             </button>
           </div>
-        )}
-      </div>
-
-      {/* Controls (Standard Mode - Bottom) */}
-      {!isCondensed && (
-        <div className="flex items-center space-x-6 mt-8">
-          <button
-            onClick={resetTimer}
-            className="p-3 bg-slate-900 text-slate-400 hover:text-white rounded-full border border-slate-800 transition-all"
-            title="Reset Timer"
-          >
-            <RotateCcw size={20} />
-          </button>
           <button
             onClick={toggleTimer}
             className={cn(
-              "w-16 h-16 rounded-full flex items-center justify-center transition-all shadow-2xl shrink-0 outline-none",
+              "h-8 w-full rounded-lg flex items-center justify-center transition-all bg-indigo-600 text-white",
               isActive 
-                ? (isResting ? "bg-slate-900 text-emerald-500 border-2 border-emerald-500" : "bg-slate-900 text-indigo-500 border-2 border-indigo-500") 
-                : (isResting ? "bg-emerald-600 text-white hover:bg-emerald-500" : "bg-indigo-600 text-white hover:bg-indigo-500")
+                ? (isResting ? "bg-emerald-600/20 border border-emerald-500/50 text-emerald-400" : "bg-indigo-600/20 border border-indigo-500/50 text-indigo-400") 
+                : (isResting ? "bg-emerald-600" : "bg-indigo-600")
             )}
           >
-            {isActive ? <Pause size={28} fill="currentColor" /> : <Play size={28} fill="currentColor" className="ml-1" />}
-          </button>
-          <button
-            onClick={skipSession}
-            className="p-3 bg-slate-900 text-slate-400 hover:text-white rounded-full border border-slate-800 transition-all"
-            title="Skip Session"
-          >
-            <SkipForward size={20} />
+            {isActive ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" />}
           </button>
         </div>
-      )}
+      </div>
+
+      {/* Controls (Standard Mode - Bottom) */}
+      <div className="pip-controls-standard items-center space-x-6 mt-8">
+        <button
+          onClick={resetTimer}
+          className="p-3 bg-slate-900 text-slate-400 hover:text-white rounded-full border border-slate-800 transition-all"
+          title="Reset Timer"
+        >
+          <RotateCcw size={20} />
+        </button>
+        <button
+          onClick={toggleTimer}
+          className={cn(
+            "w-16 h-16 rounded-full flex items-center justify-center transition-all shadow-2xl shrink-0 outline-none",
+            isActive 
+              ? (isResting ? "bg-slate-900 text-emerald-500 border-2 border-emerald-500" : "bg-slate-900 text-indigo-500 border-2 border-indigo-500") 
+              : (isResting ? "bg-emerald-600 text-white hover:bg-emerald-500" : "bg-indigo-600 text-white hover:bg-indigo-500")
+          )}
+        >
+          {isActive ? <Pause size={28} fill="currentColor" /> : <Play size={28} fill="currentColor" className="ml-1" />}
+        </button>
+        <button
+          onClick={skipSession}
+          className="p-3 bg-slate-900 text-slate-400 hover:text-white rounded-full border border-slate-800 transition-all"
+          title="Skip Session"
+        >
+          <SkipForward size={20} />
+        </button>
+      </div>
 
     </div>
   );
