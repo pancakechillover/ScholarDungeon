@@ -327,31 +327,40 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
     };
 
     if (!includeSensitiveData) {
-      // Remove sync passwords and nicknames
+      // Remove sync passwords, nicknames, and unlock statuses
       const { 
         secretCode, 
         webdavSettings, 
         googleDriveTokens, 
+        googleDriveFileId,
+        isRedisUnlocked,
+        isGoogleDriveUnlocked,
+        syncProvider,
         deviceNickname, 
+        deviceCode,
         syncHistory,
+        pushEnabled,
+        pushSubscription,
         ...safeState 
       } = dataToExport;
-
-      // Also clean up nested passwords if they exist
-      const safeWebdav = webdavSettings ? { ...webdavSettings } : undefined;
-      if (safeWebdav) delete safeWebdav.password;
 
       dataToExport = {
         ...safeState,
         deviceNickname: undefined,
+        deviceCode: undefined,
         secretCode: undefined,
         googleDriveTokens: undefined,
-        webdavSettings: safeWebdav,
-        syncHistory: (syncHistory || []).map((h: any) => ({
-          ...h,
-          deviceNickname: undefined,
-          code: '[REDACTED]'
-        }))
+        googleDriveFileId: undefined,
+        isRedisUnlocked: false,
+        isGoogleDriveUnlocked: false,
+        syncProvider: undefined,
+        webdavSettings: undefined,
+        pushEnabled: false,
+        pushSubscription: null,
+        syncHistory: [],
+        autoSyncMode: 'manual',
+        autoSyncDebounceSeconds: 10,
+        autoSyncIntervalMinutes: 1
       };
 
       // Also clean up fullLocalStorage if it's being used as the main source of truth
@@ -360,6 +369,7 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
         const keysToRemove = [
           'scholars_dungeon_sync_code',
           'scholars_dungeon_device_nickname',
+          'scholars_dungeon_device_code',
           'scholars_dungeon_webdav_password'
         ];
         keysToRemove.forEach(k => delete safeLocal[k]);
@@ -370,8 +380,19 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
             const parsed = JSON.parse(safeLocal['scholars_dungeon_state']);
             delete parsed.secretCode;
             delete parsed.deviceNickname;
-            delete parsed.webdavSettings?.password;
+            delete parsed.deviceCode;
+            delete parsed.webdavSettings;
             delete parsed.googleDriveTokens;
+            delete parsed.googleDriveFileId;
+            parsed.isRedisUnlocked = false;
+            parsed.isGoogleDriveUnlocked = false;
+            parsed.syncProvider = undefined;
+            parsed.pushEnabled = false;
+            parsed.pushSubscription = null;
+            parsed.syncHistory = [];
+            parsed.autoSyncMode = 'manual';
+            parsed.autoSyncDebounceSeconds = 10;
+            parsed.autoSyncIntervalMinutes = 1;
             safeLocal['scholars_dungeon_state'] = JSON.stringify(parsed);
           } catch (e) {}
         }

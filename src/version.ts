@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v6.0.19';
+export const APP_VERSION = 'v6.0.20';
 export const LAST_UPDATE_DATE = '2026-05-13';
-export const LAST_UPDATE_TIME = '11:15:00';
+export const LAST_UPDATE_TIME = '11:20:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,15 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v6.0.20',
+    date: '2026-05-13',
+    time: '11:20:00',
+    title: 'Safe Export Integrity Fix',
+    items: [
+      { category: 'Security', description: 'Updated Safe Export to thoroughly scrub cloud sync unlock statuses, Redis settings, and auto-sync preferences to prevent data leakage during manual migration.' }
+    ]
+  },
   {
     version: 'v6.0.19',
     date: '2026-05-13',
