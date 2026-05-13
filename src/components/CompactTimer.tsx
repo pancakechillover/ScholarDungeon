@@ -61,7 +61,32 @@ export const CompactTimer: React.FC<CompactTimerProps> = ({
   };
 
   return (
-    <div ref={containerRef} className="flex flex-col items-center justify-center h-[100dvh] w-[100dvw] bg-slate-950 p-6 text-white font-sans overflow-hidden select-none">
+    <div ref={containerRef} className="flex flex-col items-center justify-start h-[100dvh] w-[100dvw] bg-slate-950 p-6 text-white font-sans overflow-hidden select-none">
+      {/* Session Progress */}
+      <div className="w-full mb-6 space-y-2">
+        <div className="flex justify-between items-end px-1">
+          <div className="flex flex-col">
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] leading-none mb-1">Current Session</span>
+            <span className="text-xs font-black truncate tracking-tight">
+              {isResting ? 'Recovery' : 'Exploration'} Target: {duration}m
+            </span>
+          </div>
+          <span className="text-[10px] font-black text-indigo-400 tabular-nums shrink-0">
+            {Math.floor(Math.min(100, ((duration * 60 - displayTime) / (duration * 60)) * 100))}%
+          </span>
+        </div>
+        <div className="w-full h-2 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+          <motion.div 
+            initial={false}
+            animate={{ width: `${Math.min(100, ((duration * 60 - displayTime) / (duration * 60)) * 100)}%` }}
+            className={cn(
+              "h-full transition-colors duration-500",
+              isResting ? "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" : "bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]"
+            )}
+          />
+        </div>
+      </div>
+
       {/* Dungeon Progress */}
       {currentDungeon && (
         <div className="w-full mb-6 space-y-2">

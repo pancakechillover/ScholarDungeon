@@ -74,6 +74,8 @@ export interface RewardHistoryItem {
   amount?: number;
   itemType?: 'double_xp' | 'double_coin' | 'talent_shard' | 'death_defying_medal' | 'xp_bonus_percent' | 'coin_bonus_percent';
   redeemed: boolean;
+  sessionGoal?: number; 
+  sessionDuration?: number;
 }
 
 export interface LevelReward {

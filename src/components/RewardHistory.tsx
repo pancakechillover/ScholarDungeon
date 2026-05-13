@@ -246,6 +246,7 @@ export const RewardHistory: React.FC<RewardHistoryProps> = ({ history, onToggleR
                 <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] w-16">Icon</th>
                 <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Reward</th>
                 <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] hidden md:table-cell w-24 text-center">Rarity</th>
+                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] hidden sm:table-cell w-40 text-center">Session Info</th>
                 <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] hidden sm:table-cell w-32">Source</th>
                 <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] w-40 text-center">Date</th>
                 <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center w-32">Status</th>
@@ -339,6 +340,24 @@ export const RewardHistory: React.FC<RewardHistoryProps> = ({ history, onToggleR
                       )}>
                         {item.rarity}
                       </span>
+                    </td>
+                    <td className="px-6 py-4 hidden sm:table-cell">
+                      {item.sessionDuration !== undefined ? (
+                        <div className="flex flex-col items-center gap-1">
+                          <div className="flex items-center gap-1.5 text-indigo-400">
+                            <Clock size={12} />
+                            <span className="text-[10px] font-black uppercase tracking-tight">{item.sessionDuration}m Clear</span>
+                          </div>
+                          {item.sessionGoal !== undefined && (
+                            <div className="flex items-center gap-1.5 text-slate-500">
+                              <Trophy size={11} />
+                              <span className="text-[9px] font-bold uppercase tracking-tight">{item.sessionGoal}m Goal</span>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="text-center text-[10px] text-slate-600 italic">No Session</div>
+                      )}
                     </td>
                     <td className="px-6 py-4 hidden sm:table-cell">
                       <div className="flex items-center gap-1.5 text-slate-500">

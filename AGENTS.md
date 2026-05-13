@@ -23,7 +23,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v6.0.9
+- **Current Version:** v6.0.15
 - **Last Update Date:** 2026-05-13
 
 ## Dark Themes Definition
@@ -49,6 +49,27 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v6.0.15 (2026-05-13):** PIP Session Goal & Progress.
+  - *UI:* Added a session-specific progress bar and target duration display to the top of the Always-on-top (PIP) window.
+  - *UX:* Users can now monitor their current focus or rest session completion percentage directly from the compact view.
+
+- **v6.0.14 (2026-05-13):** Splash Screen UX Improvement.
+  - *UX:* Repositioned the version number in the opening animation to be more prominently visible in the central content area.
+
+- **v6.0.13 (2026-05-13):** Sidebar Branding Alignment.
+  - *UI:* Replaced the generic sword icon in the sidebar title with the custom `AppIcon` for consistent branding.
+  - *UX:* The icon is now visible even when the sidebar is collapsed, providing better visual context.
+
+- **v6.0.12 (2026-05-13):** Splash Screen Logo Refinement.
+  - *UI:* Removed the outer frame and backdrop from the logo in the opening animation for a cleaner, more focused arrival experience.
+
+- **v6.0.11 (2026-05-13):** Session Metadata in Reward Chest & Vault.
+  - *UX:* Reward Chests (Victory Modal and Pending Chests) now display the duration and goal of the completed session.
+  - *UI:* The Reward Vault (VAULT) table now includes a "Session Info" column, showing the session context (Duration and Goal) for each earned treasure.
+
+- **v6.0.10 (2026-05-13):** Merchant Shop Categorization.
+  - *UX:* Reclassified items purchased from the Merchant Shop as "Custom" rewards in the Vault (VAULT). These items now appear in the "Custom" tab, allowing users to manually check them off as redeemed.
 
 - **v6.0.9 (2026-05-13):** Stats Tooltip Dismissal Fix.
   - *Bug Fix:* Re-engineered the global click listener in `Stats.tsx` to reliably dismiss chart tooltips and heatmap popovers when clicking any blank area or non-data UI element.

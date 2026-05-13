@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v6.0.9';
+export const APP_VERSION = 'v6.0.15';
 export const LAST_UPDATE_DATE = '2026-05-13';
-export const LAST_UPDATE_TIME = '10:20:00';
+export const LAST_UPDATE_TIME = '10:45:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,63 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v6.0.15',
+    date: '2026-05-13',
+    time: '10:45:00',
+    title: 'PIP Session Goal & Progress',
+    items: [
+      { category: 'UI', description: 'Added session progress bar and target duration to the top of the Always-on-top (PIP) window.' },
+      { category: 'UX', description: 'Real-time completion percentage tracking in compact view.' }
+    ]
+  },
+  {
+    version: 'v6.0.14',
+    date: '2026-05-13',
+    time: '10:42:00',
+    title: 'Splash Screen UX Improvement',
+    items: [
+      { category: 'UX', description: 'Repositioned the version number in the opening animation to be more prominently visible.' }
+    ]
+  },
+  {
+    version: 'v6.0.13',
+    date: '2026-05-13',
+    time: '10:40:00',
+    title: 'Sidebar Branding Alignment',
+    items: [
+      { category: 'UI', description: 'Replaced generic sidebar sword icon with custom AppIcon for consistent branding.' },
+      { category: 'UX', description: 'Ensured logo visibility in both expanded and collapsed sidebar states.' }
+    ]
+  },
+  {
+    version: 'v6.0.12',
+    date: '2026-05-13',
+    time: '10:35:00',
+    title: 'Splash Screen Logo Refinement',
+    items: [
+      { category: 'UI', description: 'Removed the outer frame and backdrop from the logo in the opening animation for a cleaner, more focused arrival experience.' }
+    ]
+  },
+  {
+    version: 'v6.0.11',
+    date: '2026-05-13',
+    time: '10:30:00',
+    title: 'Session Metadata in Reward Chest & Vault',
+    items: [
+      { category: 'UX', description: 'Reward Chests (Victory Modal and Pending Chests) now display the duration and goal of the completed session.' },
+      { category: 'UI', description: 'The Reward Vault (VAULT) table now includes a "Session Info" column, showing the session context (Duration and Goal) for each earned treasure.' }
+    ]
+  },
+  {
+    version: 'v6.0.10',
+    date: '2026-05-13',
+    time: '10:25:00',
+    title: 'Merchant Shop Categorization',
+    items: [
+      { category: 'UX', description: 'Reclassified items purchased from the Merchant Shop as "Custom" rewards in the Vault, enabling manual redemption/tracking.' }
+    ]
+  },
   {
     version: 'v6.0.9',
     date: '2026-05-13',

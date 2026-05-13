@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { RewardCard, StudySession, Rarity } from '../types';
 import { cn } from '../lib/utils';
 import { triggerSimpleConfetti } from '../lib/effects';
-import { X, Sparkles, Trophy, Zap, Coins } from 'lucide-react';
+import { X, Sparkles, Trophy, Zap, Coins, Clock, Target } from 'lucide-react';
 import { TreasureChestIcon } from './icons/TreasureChestIcon';
 import { createPortal } from 'react-dom';
 import { useScrollLock } from '../hooks/useScrollLock';
@@ -98,6 +98,8 @@ export const RewardChestModal: React.FC<RewardChestModalProps> = ({ chest, onSel
                       <div className="flex gap-4 text-xs text-slate-400 mt-1">
                         <span className="flex items-center gap-1"><Zap size={12} className="text-emerald-400" /> +{item.session.xpEarned} XP</span>
                         <span className="flex items-center gap-1"><Coins size={12} className="text-amber-400" /> +{item.session.coinsEarned} Gold</span>
+                        <span className="flex items-center gap-1"><Clock size={12} className="text-indigo-400" /> {item.session.duration}m</span>
+                        <span className="flex items-center gap-1"><Target size={12} className="text-rose-400" /> {item.session.focusDuration || '??'}m Goal</span>
                       </div>
                     </div>
                   </div>

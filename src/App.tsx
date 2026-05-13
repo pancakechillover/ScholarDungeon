@@ -23,6 +23,7 @@ import {
   Flame,
   Scroll
 } from 'lucide-react';
+import { AppIcon } from './components/icons/AppIcon';
 import { DailySummaryModal } from './components/DailySummaryModal';
 import { CoinRain } from './components/CoinRain';
 import { DashboardView } from './components/DashboardView';
@@ -865,11 +866,12 @@ function App() {
           isSidebarCollapsed ? "justify-center" : "justify-between"
         )}>
           <div className="flex items-center space-x-3">
-            {!isSidebarCollapsed && (
-              <div className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20 shrink-0">
-                <Sword className="text-[#ffffff]" size={20} />
-              </div>
-            )}
+            <div className={cn(
+              "flex items-center justify-center shrink-0",
+              isSidebarCollapsed ? "p-1" : "w-9 h-9 bg-indigo-600 rounded-xl shadow-lg shadow-indigo-500/20"
+            )}>
+              <AppIcon size={isSidebarCollapsed ? 32 : 24} className={isSidebarCollapsed ? "text-indigo-400" : "text-[#ffffff]"} />
+            </div>
             {!isSidebarCollapsed && (
               <motion.span 
                 initial={{ opacity: 0, x: -10 }}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { Sword, Play, Pause, RotateCcw, SkipForward, Trophy, Coins, Zap, Scroll, Flame, Settings2, RefreshCw, Coffee, Maximize, Sparkles } from 'lucide-react';
+import { Sword, Play, Pause, RotateCcw, SkipForward, Trophy, Coins, Zap, Scroll, Flame, Settings2, RefreshCw, Coffee, Maximize, Sparkles, Clock } from 'lucide-react';
 import { TreasureChestIcon } from './icons/TreasureChestIcon';
 import { RewardCard, StudySession, Dungeon } from '../types';
 import { cn } from '../lib/utils';
@@ -549,6 +549,28 @@ export const Timer = React.memo<TimerProps>(({
                       : "Dungeon room cleared. Claim your rewards."}
                   </motion.p>
                 </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row justify-center gap-3 md:gap-6 lg:gap-8 px-4">
+                <motion.div 
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.55 }}
+                  className="flex flex-col items-center justify-center bg-slate-900/50 backdrop-blur-md px-6 py-2 rounded-xl border border-indigo-500/20"
+                >
+                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Session Intel</p>
+                  <div className="flex items-center gap-3 text-white">
+                    <div className="flex items-center gap-1">
+                      <Clock size={14} className="text-indigo-400" />
+                      <span className="text-sm font-black">{showRewards.session.duration}m</span>
+                    </div>
+                    <div className="w-[1px] h-3 bg-slate-700" />
+                    <div className="flex items-center gap-1">
+                      <Trophy size={14} className="text-amber-400" />
+                      <span className="text-sm font-black">{showRewards.session.focusDuration || '??'}m Goal</span>
+                    </div>
+                  </div>
+                </motion.div>
               </div>
 
               <div className="flex flex-col sm:flex-row justify-center gap-3 md:gap-6 lg:gap-8 px-4">

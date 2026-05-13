@@ -638,6 +638,11 @@ export function useGameState() {
       let newState = { ...prev, rewardHistory: [newItem, ...prev.rewardHistory] };
 
       if (linkToSessionId) {
+        const session = prev.history.find(s => s.id === linkToSessionId);
+        if (session) {
+          newItem.sessionGoal = session.focusDuration;
+          newItem.sessionDuration = session.duration;
+        }
         newState.history = newState.history.map(s => 
           s.id === linkToSessionId ? { ...s, rewardName: reward.name } : s
         );
@@ -1638,7 +1643,7 @@ export function useGameState() {
         rarity: 'rare',
         source: 'Shop',
         timestamp: getNow().toISOString(),
-        type: 'item',
+        type: 'text',
         redeemed: false
       };
 

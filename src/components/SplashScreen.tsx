@@ -34,8 +34,8 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="relative"
         >
-          <div className="p-4 bg-slate-900/50 rounded-[40px] border border-indigo-500/30 backdrop-blur-sm mb-6 flex items-center justify-center">
-            <AppIcon size={64} className="text-indigo-400" />
+          <div className="mb-10 flex items-center justify-center">
+            <AppIcon size={80} className="text-indigo-400" />
           </div>
         </motion.div>
 
@@ -57,17 +57,18 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
           <p className="text-slate-400 mt-4 text-sm tracking-widest uppercase font-medium">
             Forge Your Legend
           </p>
+
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.2 }}
+            className="mt-8 text-slate-600 text-[10px] font-bold tracking-[0.2em] uppercase"
+          >
+            Version {APP_VERSION.replace('v', '')}
+          </motion.div>
         </motion.div>
       </div>
 
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.5 }}
-        className="absolute bottom-12 text-slate-600 text-[10px] font-bold tracking-[0.2em] uppercase"
-      >
-        Version {APP_VERSION.replace('v', '')}
-      </motion.div>
     </motion.div>
   );
 }
