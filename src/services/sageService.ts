@@ -9,10 +9,20 @@ export interface SageAdviceRequest {
 }
 
 export async function getSageAdvice({ state, prompt, history = [] }: SageAdviceRequest): Promise<string> {
-  const provider = state.sageApiProvider || 'google';
-  const apiKey = state.sageApiKey || process.env.GEMINI_API_KEY;
-  const baseUrl = state.sageApiUrl;
-  const model = state.sageModelName || (provider === 'google' ? 'gemini-3-flash-preview' : 'gpt-4o-mini');
+  let provider = state.sageApiProvider || 'google';
+  let apiKey = state.sageApiKey || process.env.GEMINI_API_KEY;
+  let baseUrl = state.sageApiUrl;
+  let model = state.sageModelName || (provider === 'google' ? 'gemini-3-flash-preview' : 'gpt-4o-mini');
+
+  if (state.activeSageModelId && state.sageModels) {
+    const activeModel = state.sageModels.find(m => m.id === state.activeSageModelId);
+    if (activeModel) {
+      provider = activeModel.provider;
+      apiKey = activeModel.apiKey || process.env.GEMINI_API_KEY;
+      baseUrl = activeModel.apiUrl;
+      model = activeModel.modelName;
+    }
+  }
 
   if (!apiKey && provider === 'openai') {
     throw new Error("Missing Sage API Key for OpenAI. Please configure it in Advice Settings.");

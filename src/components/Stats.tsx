@@ -176,7 +176,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
   };
 
   useEffect(() => {
-    const handleOutsideClick = (e: MouseEvent | TouchEvent) => {
+    const handleOutsideInteraction = (e: MouseEvent | TouchEvent) => {
       const target = e.target as Element;
       
       // 1. Handle Heatmap popover dismissal
@@ -185,15 +185,18 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
       }
       
       // 2. Handle Recharts tooltips dismissal (Daily/Weekly Activity)
-      // Check if we are interacting with a tooltip itself or a data point
-      const inTooltip = !!target.closest('.recharts-tooltip-wrapper');
+      const inTooltip = !!target.closest('.recharts-tooltip-wrapper') || !!target.closest('.recharts-tooltip-portal');
       const isDataPoint = !!target.closest('.recharts-bar-rectangle') || 
                           !!target.closest('.recharts-dot') || 
                           !!target.closest('.recharts-active-dot') ||
-                          !!target.closest('.recharts-sector');
+                          !!target.closest('.recharts-sector') ||
+                          !!target.closest('.recharts-rectangle');
       
-      // If we clicked on "blank area" (not a tooltip and not a data point), reset chart keys
-      if (!inTooltip && !isDataPoint) {
+      const isChart = !!target.closest('.recharts-wrapper') || !!target.closest('.recharts-responsive-container');
+      
+      // If we clicked on truly "blank area" or outside the chart context entirely, reset chart keys
+      // This forces the tooltips to unmount and disappear.
+      if (!inTooltip && (!isChart || (isChart && !isDataPoint))) {
         setChartKeys(prev => ({
           daily: Date.now() + Math.random(),
           weeklyBar: Date.now() + Math.random(),
@@ -201,8 +204,12 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
         }));
       }
     };
-    document.addEventListener('mousedown', handleOutsideClick);
-    document.addEventListener('touchstart', handleOutsideClick, { passive: true });
+
+    // Use click and touchstart for better compatibility and dismissal response
+    // Using capture: true to ensure we catch events even if they are stopped by chart internals
+    document.addEventListener('click', handleOutsideInteraction, { capture: true });
+    // touchstart is used for immediate dismissal on mobile
+    document.addEventListener('touchstart', handleOutsideInteraction, { passive: true, capture: true });
 
     const handleJump = (e: any) => {
       setDailyDate(new Date(e.detail));
@@ -217,8 +224,8 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
     window.addEventListener('statsNavJump', handleJump);
 
     return () => {
-      document.removeEventListener('mousedown', handleOutsideClick);
-      document.removeEventListener('touchstart', handleOutsideClick);
+      document.removeEventListener('click', handleOutsideInteraction, { capture: true });
+      document.removeEventListener('touchstart', handleOutsideInteraction, { capture: true });
       window.removeEventListener('statsNavJump', handleJump);
     };
   }, [selectedHeatmapDate]);
@@ -620,7 +627,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
   };
 
   return (
-    <div className="p-6 space-y-8">
+    <div className="p-6 space-y-8" onClick={() => {}} style={{ cursor: 'auto' }}>
       <PageHeader 
         title="Record"
         description="Your journey through the dungeon"
@@ -1108,11 +1115,12 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
               <div
                 key={i}
                 className="relative heatmap-cell-container"
-                onClick={() => setSelectedHeatmapDate(selectedHeatmapDate === date.getTime() ? null : date.getTime())}
               >
-                <div
+                <button
+                  type="button"
+                  onClick={() => setSelectedHeatmapDate(selectedHeatmapDate === date.getTime() ? null : date.getTime())}
                   className={cn(
-                    "rounded-sm transition-colors aspect-square w-full cursor-pointer hover:ring-2 hover:ring-indigo-500/50",
+                    "rounded-sm transition-colors aspect-square w-full cursor-pointer hover:ring-2 hover:ring-indigo-500/50 outline-none",
                     selectedHeatmapDate === date.getTime() ? "ring-2 ring-indigo-400 scale-110 z-10 relative" : "",
                     getIntensity(date)
                   )}

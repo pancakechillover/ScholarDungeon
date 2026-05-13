@@ -138,6 +138,21 @@ export interface ReflectionTemplate {
   exampleContent?: string;
 }
 
+export interface SageModelConfig {
+  id: string;
+  name: string;
+  provider: 'google' | 'openai';
+  apiKey?: string;
+  apiUrl?: string;
+  modelName: string;
+}
+
+export interface SagePromptConfig {
+  id: string;
+  title: string;
+  prompt: string;
+}
+
 export interface AppState {
   level: number;
   xp: number;
@@ -271,6 +286,9 @@ export interface AppState {
   sageApiKey?: string;
   sageApiUrl?: string; 
   sageModelName?: string;
+  sageModels?: SageModelConfig[];
+  activeSageModelId?: string;
+  sagePrompts?: SagePromptConfig[];
   sageChatHistory?: { role: 'user' | 'assistant'; content: string; timestamp: number }[];
 }
 

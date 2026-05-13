@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Calculator, Target, Zap, Clock, Coins, Ticket, Sparkles, BookOpen, AlertTriangle, Key, Settings as SettingsIcon, Bot, Send, RefreshCw, Cpu } from 'lucide-react';
-import { AppState } from '../../types';
+import { Calculator, Target, Zap, Clock, Coins, Ticket, Sparkles, BookOpen, AlertTriangle, Key, Settings as SettingsIcon, Bot, Send, RefreshCw, Cpu, Plus, Edit2, Trash2 } from 'lucide-react';
+import { AppState, SageModelConfig, SagePromptConfig } from '../../types';
 import { cn, getXPForLevel } from '../../lib/utils';
 import { TALENTS } from '../../constants';
 import { getSageAdvice } from '../../services/sageService';
@@ -406,6 +406,137 @@ export const AdviceSettingsSection: React.FC<AdviceSettingsProps> = ({ state, se
   );
 };
 
+const SageConfigManager: React.FC<{ state: AppState, setState: React.Dispatch<React.SetStateAction<AppState>> }> = ({ state, setState }) => {
+  const [activeTab, setActiveTab] = useState<'models' | 'prompts'>('models');
+  
+  const models = state.sageModels || [];
+  const prompts = state.sagePrompts || [];
+
+  const [editingModel, setEditingModel] = useState<SageModelConfig | null>(null);
+  const [editingPrompt, setEditingPrompt] = useState<SagePromptConfig | null>(null);
+
+  const saveModel = () => {
+    if (!editingModel) return;
+    let newModels = [...models];
+    if (editingModel.id === 'new') {
+      newModels.push({ ...editingModel, id: Date.now().toString() });
+    } else {
+      newModels = newModels.map(m => m.id === editingModel.id ? editingModel : m);
+    }
+    setState(prev => ({ ...prev, sageModels: newModels, activeSageModelId: prev.activeSageModelId || newModels[0]?.id }));
+    setEditingModel(null);
+  };
+
+  const savePrompt = () => {
+    if (!editingPrompt) return;
+    let newPrompts = [...prompts];
+    if (editingPrompt.id === 'new') {
+      newPrompts.push({ ...editingPrompt, id: Date.now().toString() });
+    } else {
+      newPrompts = newPrompts.map(p => p.id === editingPrompt.id ? editingPrompt : p);
+    }
+    setState(prev => ({ ...prev, sagePrompts: newPrompts }));
+    setEditingPrompt(null);
+  };
+
+  return (
+    <div className="bg-slate-900/40 border border-slate-800 rounded-3xl overflow-hidden">
+      <div className="flex border-b border-slate-800">
+        <button onClick={() => setActiveTab('models')} className={cn("flex-1 py-3 text-xs font-black uppercase tracking-widest transition-colors", activeTab === 'models' ? "bg-emerald-500/10 text-emerald-400 border-b-2 border-emerald-500" : "text-slate-500 hover:text-slate-300")}>AI Models</button>
+        <button onClick={() => setActiveTab('prompts')} className={cn("flex-1 py-3 text-xs font-black uppercase tracking-widest transition-colors", activeTab === 'prompts' ? "bg-emerald-500/10 text-emerald-400 border-b-2 border-emerald-500" : "text-slate-500 hover:text-slate-300")}>Saved Prompts</button>
+      </div>
+
+      <div className="p-6">
+        {activeTab === 'models' && (
+          <div className="space-y-4">
+            {editingModel ? (
+              <div className="space-y-4 bg-slate-950 p-4 rounded-2xl border border-slate-800">
+                <input type="text" placeholder="Profile Name (e.g. GPT-4o)" value={editingModel.name} onChange={(e) => setEditingModel({...editingModel, name: e.target.value})} className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-white text-sm" />
+                <select value={editingModel.provider} onChange={(e) => setEditingModel({...editingModel, provider: e.target.value as any})} className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-white text-sm">
+                  <option value="google">Google Gemini</option>
+                  <option value="openai">OpenAI / Compatible</option>
+                </select>
+                <input type="text" placeholder="Model Name (e.g. gemini-1.5-flash)" value={editingModel.modelName} onChange={(e) => setEditingModel({...editingModel, modelName: e.target.value})} className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-white text-sm" />
+                <input type="password" placeholder="API Key" value={editingModel.apiKey || ''} onChange={(e) => setEditingModel({...editingModel, apiKey: e.target.value})} className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-white text-sm" />
+                {editingModel.provider === 'openai' && (
+                  <input type="text" placeholder="Custom Base URL (optional)" value={editingModel.apiUrl || ''} onChange={(e) => setEditingModel({...editingModel, apiUrl: e.target.value})} className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-white text-sm" />
+                )}
+                <div className="flex gap-2">
+                  <button onClick={saveModel} className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition-all">Save Profile</button>
+                  <button onClick={() => setEditingModel(null)} className="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold transition-all">Cancel</button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Active Model</label>
+                  <select 
+                    value={state.activeSageModelId || ''} 
+                    onChange={(e) => setState(prev => ({ ...prev, activeSageModelId: e.target.value }))}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-emerald-500 outline-none transition-all text-sm font-bold"
+                  >
+                    {!models.length && <option value="">Default Legacy Config</option>}
+                    {models.map(m => (
+                      <option key={m.id} value={m.id}>{m.name} ({m.modelName})</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  {models.map(m => (
+                     <div key={m.id} className="flex items-center justify-between p-3 bg-slate-800/30 border border-slate-800 rounded-xl">
+                       <span className="text-sm font-medium text-slate-300">{m.name}</span>
+                       <div className="flex gap-2">
+                         <button onClick={() => setEditingModel(m)} className="p-1.5 text-slate-400 hover:text-white transition-colors"><Edit2 size={14} /></button>
+                         <button onClick={() => setState(prev => ({ ...prev, sageModels: prev.sageModels?.filter(x => x.id !== m.id) }))} className="p-1.5 text-slate-400 hover:text-red-400 transition-colors"><Trash2 size={14} /></button>
+                       </div>
+                     </div>
+                  ))}
+                </div>
+                <button onClick={() => setEditingModel({ id: 'new', name: '', provider: 'google', modelName: '' })} className="w-full py-3 bg-slate-800 border border-slate-700 border-dashed hover:border-emerald-500 hover:text-emerald-400 text-slate-400 rounded-xl text-xs font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2">
+                  <Plus size={14} /> Add Model Profile
+                </button>
+              </>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'prompts' && (
+          <div className="space-y-4">
+            {editingPrompt ? (
+              <div className="space-y-4 bg-slate-950 p-4 rounded-2xl border border-slate-800">
+                <input type="text" placeholder="Prompt Title (e.g. Scold Me)" value={editingPrompt.title} onChange={(e) => setEditingPrompt({...editingPrompt, title: e.target.value})} className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-white text-sm" />
+                <textarea placeholder="Enter custom prompt content..." value={editingPrompt.prompt} onChange={(e) => setEditingPrompt({...editingPrompt, prompt: e.target.value})} className="w-full h-32 bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-white text-sm resize-none custom-scrollbar" />
+                <div className="flex gap-2">
+                  <button onClick={savePrompt} className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition-all">Save Prompt</button>
+                  <button onClick={() => setEditingPrompt(null)} className="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold transition-all">Cancel</button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="space-y-2">
+                  {prompts.map(p => (
+                     <div key={p.id} className="flex items-center justify-between p-3 bg-slate-800/30 border border-slate-800 rounded-xl">
+                       <span className="text-sm font-medium text-slate-300">{p.title}</span>
+                       <div className="flex gap-2">
+                         <button onClick={() => setEditingPrompt(p)} className="p-1.5 text-slate-400 hover:text-white transition-colors"><Edit2 size={14} /></button>
+                         <button onClick={() => setState(prev => ({ ...prev, sagePrompts: prev.sagePrompts?.filter(x => x.id !== p.id) }))} className="p-1.5 text-slate-400 hover:text-red-400 transition-colors"><Trash2 size={14} /></button>
+                       </div>
+                     </div>
+                  ))}
+                  {prompts.length === 0 && <p className="text-center text-xs text-slate-500 py-4">No custom prompts saved.</p>}
+                </div>
+                <button onClick={() => setEditingPrompt({ id: 'new', title: '', prompt: '' })} className="w-full py-3 bg-slate-800 border border-slate-700 border-dashed hover:border-emerald-500 hover:text-emerald-400 text-slate-400 rounded-xl text-xs font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2">
+                  <Plus size={14} /> Add Custom Prompt
+                </button>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 interface SageInterfaceProps {
   state: AppState;
   setState: React.Dispatch<React.SetStateAction<AppState>>;
@@ -514,63 +645,7 @@ const SageInterface: React.FC<SageInterfaceProps> = ({ state, setState }) => {
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden"
           >
-            <div className="bg-slate-900/40 border border-slate-800 p-6 rounded-3xl space-y-6">
-               <h5 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-4 flex items-center gap-2">
-                 <Cpu size={12} /> AI Oracle Configuration
-               </h5>
-               
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                 <div className="space-y-2">
-                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Provider</label>
-                   <select 
-                     value={state.sageApiProvider || 'google'}
-                     onChange={(e) => updateSageConfig('sageApiProvider', e.target.value)}
-                     className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-emerald-500 outline-none transition-all text-sm font-bold"
-                   >
-                     <option value="google">Google Gemini (Recommended)</option>
-                     <option value="openai">OpenAI / Compatible</option>
-                   </select>
-                 </div>
-                 
-                 <div className="space-y-2">
-                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Model Name</label>
-                   <input 
-                     type="text"
-                     placeholder={state.sageApiProvider === 'openai' ? "gpt-4o-mini" : "gemini-3-flash-preview"}
-                     value={state.sageModelName || ''}
-                     onChange={(e) => updateSageConfig('sageModelName', e.target.value)}
-                     className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-emerald-500 outline-none transition-all text-sm font-mono"
-                   />
-                 </div>
-               </div>
-
-               <div className="space-y-2">
-                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
-                   <Key size={10} /> API Key
-                 </label>
-                 <input 
-                   type="password"
-                   placeholder="Your secret key..."
-                   value={state.sageApiKey || ''}
-                   onChange={(e) => updateSageConfig('sageApiKey', e.target.value)}
-                   className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-emerald-500 outline-none transition-all text-sm font-mono"
-                 />
-                 <p className="text-[9px] text-slate-500 ml-1">Key is stored locally. The platform's internal key is used by default for Google Gemini.</p>
-               </div>
-
-               {state.sageApiProvider === 'openai' && (
-                 <div className="space-y-2">
-                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Custom Base URL (Optional)</label>
-                   <input 
-                     type="text"
-                     placeholder="https://api.openai.com/v1"
-                     value={state.sageApiUrl || ''}
-                     onChange={(e) => updateSageConfig('sageApiUrl', e.target.value)}
-                     className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-emerald-500 outline-none transition-all text-sm font-mono"
-                   />
-                 </div>
-               )}
-            </div>
+            <SageConfigManager state={state} setState={setState} />
           </motion.div>
         )}
       </AnimatePresence>
@@ -581,9 +656,12 @@ const SageInterface: React.FC<SageInterfaceProps> = ({ state, setState }) => {
             <div className="h-full flex flex-col items-center justify-center text-center space-y-6 py-12">
                <Bot size={48} className="text-emerald-500/20" />
                <p className="text-slate-500 text-sm max-w-xs font-medium">The Sage awaits your question. Consult the scrolls to begin your path to enlightenment.</p>
-               <div className="flex flex-wrap gap-2 justify-center">
+               <div className="flex flex-wrap gap-2 justify-center max-w-lg">
                  <button onClick={() => handleSend("Analyze my trends.")} className="px-4 py-2 bg-slate-900 border border-slate-800 text-slate-400 rounded-xl text-xs hover:border-emerald-500/50 hover:text-white transition-all font-bold">"Analyze my trends"</button>
                  <button onClick={() => handleSend("Identify my weaknesses.")} className="px-4 py-2 bg-slate-900 border border-slate-800 text-slate-400 rounded-xl text-xs hover:border-emerald-500/50 hover:text-white transition-all font-bold">"Identify weaknesses"</button>
+                 {state.sagePrompts?.map(p => (
+                   <button key={p.id} onClick={() => handleSend(p.prompt)} className="px-4 py-2 bg-emerald-900/20 border border-emerald-500/20 text-emerald-300 rounded-xl text-xs hover:border-emerald-500/50 hover:text-white transition-all font-bold">{p.title}</button>
+                 ))}
                </div>
             </div>
           )}

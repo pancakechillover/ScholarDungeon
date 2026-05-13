@@ -62,7 +62,7 @@ export default defineConfig(({mode}) => {
     ],
     define: {
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-      'process.env.VAPID_PUBLIC_KEY': JSON.stringify(env.VAPID_PUBLIC_KEY || "BJgimrTgCLcXvp_P1leS8zy56ZKqfMueXM5iitrQyLMmA1swEho4wNXRovLGJdwP0mftM9-s-EkH_15PyiyM0aw"),
+      'process.env.VAPID_PUBLIC_KEY': JSON.stringify(env.VAPID_PUBLIC_KEY || "BJ8Pb6twxvV5B43gsnSi5uDbehVnQX2s4c5qJP4yBywPitfec3XtUuxig5d8iWFnSueH284uhMl2FpU1wSFKSGM"),
     },
     resolve: {
       alias: {

@@ -70,7 +70,7 @@ const getNextTalentLevel = (currentLvl: number, levelRewards?: any[]) => {
 
 function App() {
   const [appReady, setAppReady] = useState(false);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'explore' | 'dungeons' | 'talents' | 'shop' | 'stats' | 'settings' | 'vault'>('explore');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'explore' | 'dungeons' | 'talents' | 'shop' | 'stats' | 'settings' | 'vault'>('dashboard');
   const [pipWindow, setPipWindow] = useState<Window | null>(null);
 
   useEffect(() => {

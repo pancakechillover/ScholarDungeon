@@ -7,18 +7,19 @@ import webpush from "web-push";
 dotenv.config();
 
 // Configure Web Push
-const cleanKey = (key?: string) => key ? key.replace(/['"]/g, '').trim() : '';
+const cleanKey = (key?: string) => key ? key.replace(/[^a-zA-Z0-9_-]/g, '').trim() : '';
 
 const envPublic = cleanKey(process.env.VAPID_PUBLIC_KEY);
 const envPrivate = cleanKey(process.env.VAPID_PRIVATE_KEY);
-// Valid fallback keys
-const fallbackPublic = "BGgAf2N50RnZ_jZoA3oYm99t0uXIB_pitYBf-gqXH96NU2v1IV7YlW4M2qdO2XiNiBjgujFhP3-yPCP-vcnHf2c";
-const fallbackPrivate = "RB-8YFdylQhLuCKKM2YXVi4cX9ltvA6YsImsRMCFChc";
 
-// Only use environment keys if they look like real VAPID keys (at least 50+ chars)
-// This prevents placeholders like "SET_ME" from causing startup crashes
-const vapidPublicKey = (envPublic && envPublic.length > 50) ? envPublic : fallbackPublic;
-const vapidPrivateKey = (envPrivate && envPrivate.length > 20) ? envPrivate : fallbackPrivate;
+// Valid fallback keys (Generated via web-push, guaranteed to be 65 bytes public / 32 bytes private when decoded)
+const fallbackPublic = "BJ8Pb6twxvV5B43gsnSi5uDbehVnQX2s4c5qJP4yBywPitfec3XtUuxig5d8iWFnSueH284uhMl2FpU1wSFKSGM";
+const fallbackPrivate = "9002rSo2Hgz3P9MTR95Gh6BNST8QCqhCAAGXi5M3lz0";
+
+// Only use environment keys if they look like real VAPID keys (87-88 chars for public, 43-44 for private)
+// This prevents placeholders like "your_public_key_here" from causing startup crashes
+const vapidPublicKey = (envPublic && envPublic.length >= 87 && envPublic.length <= 88) ? envPublic : fallbackPublic;
+const vapidPrivateKey = (envPrivate && envPrivate.length >= 43 && envPrivate.length <= 44) ? envPrivate : fallbackPrivate;
 const vapidEmailInput = process.env.VAPID_EMAIL || "iz.karakarakarakan@gmail.com";
 const vapidSubject = vapidEmailInput.startsWith('http') || vapidEmailInput.startsWith('mailto:')
   ? vapidEmailInput

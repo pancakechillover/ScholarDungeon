@@ -23,7 +23,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v6.0.32
+- **Current Version:** v6.0.34
 - **Last Update Date:** 2026-05-13
 
 ## Dark Themes Definition
@@ -49,6 +49,22 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v6.0.34 (2026-05-13):** VAPID Integrity & Sync Refinement.
+  - *Bug Fix:* Resolved "Vapid public key should be 65 bytes long" error by generating fresh VAPID keys and implementing stricter validation in the backend.
+  - *Logic:* Synchronized VAPID fallback keys across server and client configurations for consistent push notification behavior.
+  - *Security:* Enhanced VAPID key sanitization to strip invalid characters from environment variables.
+
+- **v6.0.35 (2026-05-13):** IOS Interaction & Tooltip Refinement.
+  - *Bug Fix:* Resolved iOS double-click issue in the Record interface by optimizing event delegation and converting interactive heatmap elements to native buttons.
+  - *Bug Fix:* Fixed chart tooltip dismissal bug where detail bubbles would persist after clicking elsewhere; implemented a robust global intersection listener to reliably clear active chart states.
+
+- **v6.0.34 (2026-05-13):** VAPID Integrity & Sync Refinement.
+  - *Feature:* Implemented a full AI Model Management system in Advice Settings. Users can now save multiple model profiles (different providers, keys, model names, and base URLs) and switch between them.
+  - *Feature:* Added a Prompt Library allowing users to save custom prompts as "One-tap Consultation" buttons.
+  - *UI:* Repositioned the "Oracle's Insight" card in the Sanctum to be directly below the Welcome module.
+  - *Bug Fix:* Resolved a VAPID key validation error on server startup by implementing stricter key length checks and updating fallback keys.
+  - *UX:* Improved mobile responsiveness of consultation buttons.
 
 - **v6.0.32 (2026-05-13):** Sage AI Chat Persistence & Structure.
   - *Feature:* Implemented persistent chat history for the Emerald Sage, allowing users to continue past conversations.

@@ -117,8 +117,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       className="w-full p-6 lg:p-8 space-y-8"
     >
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-2 bg-slate-900 rounded-3xl border border-slate-800 p-8 relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-8 opacity-10">
+        <div className="md:col-span-2 flex flex-col space-y-6">
+          <div className="bg-slate-900 rounded-3xl border border-slate-800 p-8 relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-8 opacity-10">
             <Sword size={120} />
           </div>
           <h2 className="text-3xl font-bold text-slate-50 mb-2">
@@ -163,6 +164,27 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </button>
             </div>
           )}
+        </div>
+
+        {/* Sage Quick Consult Card */}
+        <div className="bg-emerald-950/20 rounded-3xl border border-emerald-500/20 p-6 relative overflow-hidden group">
+          <Bot className="absolute -bottom-6 right-8 text-emerald-500/10 w-32 h-32 group-hover:scale-110 transition-transform" />
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <Sparkles size={20} className="text-emerald-400" />
+                <h3 className="text-sm font-black text-emerald-400 uppercase tracking-widest">Oracle's Insight</h3>
+              </div>
+              <p className="text-sm text-emerald-300/60 font-medium italic">Seek guidance from the Emerald Sage based on your journey.</p>
+            </div>
+            <button 
+               onClick={() => setShowSageConsult(true)}
+               className="py-3 px-6 bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all border border-emerald-500/30 flex items-center justify-center gap-2 whitespace-nowrap"
+            >
+              Assemble Council
+            </button>
+          </div>
+        </div>
         </div>
 
         <div className="space-y-6">
@@ -259,24 +281,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </button>
               <button onClick={() => openGuideBook(5)} className="w-full flex items-center gap-3 p-3 rounded-xl bg-slate-950/50 hover:bg-slate-800 transition-colors border border-slate-800/50 text-xs text-slate-300">
                   <Zap size={16} className="text-indigo-400" /> Talent System Guide
-              </button>
-            </div>
-          </div>
-
-          {/* Sage Quick Consult Card */}
-          <div className="bg-emerald-950/20 rounded-3xl border border-emerald-500/20 p-6 relative overflow-hidden group">
-            <Bot className="absolute -bottom-6 -right-6 text-emerald-500/10 w-24 h-24 group-hover:scale-110 transition-transform" />
-            <div className="relative z-10">
-              <div className="flex items-center gap-2 mb-2">
-                <Sparkles size={16} className="text-emerald-400" />
-                <h3 className="text-xs font-black text-emerald-400 uppercase tracking-widest">Oracle's Insight</h3>
-              </div>
-              <p className="text-[11px] text-emerald-300/60 mb-4 font-medium italic">Seek guidance from the Emerald Sage based on your journey.</p>
-              <button 
-                 onClick={() => setShowSageConsult(true)}
-                 className="w-full py-2 bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border border-emerald-500/30 flex items-center justify-center gap-2"
-              >
-                Assemble Council
               </button>
             </div>
           </div>
@@ -396,9 +400,12 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
                  <h4 className="text-white font-black uppercase tracking-widest mb-3">Begin the Consultation</h4>
                  <p className="text-sm text-slate-400 max-w-xs leading-relaxed">The Oracle is ready to evaluate your scrolls. Speak, and the path shall be revealed.</p>
                </div>
-               <div className="grid grid-cols-1 gap-3 w-full max-w-xs">
-                 <button onClick={() => handleSend("Sage, analyze my recent journey.")} className="py-2.5 px-4 bg-slate-800/50 border border-slate-700 hover:border-emerald-500/50 text-slate-300 hover:text-white rounded-xl text-xs font-bold transition-all">"Analyze my recent journey."</button>
-                 <button onClick={() => handleSend("Give me a mystical challenge for today.")} className="py-2.5 px-4 bg-slate-800/50 border border-slate-700 hover:border-emerald-500/50 text-slate-300 hover:text-white rounded-xl text-xs font-bold transition-all">"Give me a mystical challenge."</button>
+               <div className="flex flex-col gap-3 w-full max-w-xs">
+                 <button onClick={() => handleSend("Sage, analyze my recent journey.")} className="py-2.5 px-4 bg-slate-800/50 border border-slate-700 hover:border-emerald-500/50 text-slate-300 hover:text-white rounded-xl text-xs font-bold transition-all text-left">"Analyze my recent journey."</button>
+                 <button onClick={() => handleSend("Give me a mystical challenge for today.")} className="py-2.5 px-4 bg-slate-800/50 border border-slate-700 hover:border-emerald-500/50 text-slate-300 hover:text-white rounded-xl text-xs font-bold transition-all text-left">"Give me a mystical challenge."</button>
+                 {state.sagePrompts?.map(p => (
+                   <button key={p.id} onClick={() => handleSend(p.prompt)} className="py-2.5 px-4 bg-emerald-900/20 border border-emerald-500/20 hover:border-emerald-500/50 text-emerald-300 hover:text-white rounded-xl text-xs font-bold transition-all text-left">{p.title}</button>
+                 ))}
                </div>
             </div>
           )}

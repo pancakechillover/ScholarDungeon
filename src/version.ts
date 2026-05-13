@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v6.0.32';
+export const APP_VERSION = 'v6.0.35';
 export const LAST_UPDATE_DATE = '2026-05-13';
-export const LAST_UPDATE_TIME = '15:20:00';
+export const LAST_UPDATE_TIME = '16:55:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,39 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v6.0.35',
+    date: '2026-05-13',
+    time: '16:55:00',
+    title: 'IOS Interaction & Tooltip Refinement',
+    items: [
+      { category: 'Bug Fix', description: 'Resolved iOS double-click issue in the Record interface.' },
+      { category: 'Bug Fix', description: 'Fixed chart tooltip persistence bug with improved global dismissal logic.' }
+    ]
+  },
+  {
+    version: 'v6.0.34',
+    date: '2026-05-13',
+    time: '16:50:00',
+    title: 'VAPID Integrity & Sync Refinement',
+    items: [
+      { category: 'Bug Fix', description: 'Resolved "Vapid public key should be 65 bytes long" error by generating fresh VAPID keys and implementing stricter validation in the backend.' },
+      { category: 'Logic', description: 'Synchronized VAPID fallback keys across server and client configurations for consistent push notification behavior.' },
+      { category: 'Security', description: 'Enhanced VAPID key sanitization to strip invalid characters from environment variables.' }
+    ]
+  },
+  {
+    version: 'v6.0.33',
+    date: '2026-05-13',
+    time: '16:40:00',
+    title: 'AI Model Management & Prompt Library',
+    items: [
+      { category: 'Feature', description: 'Implemented AI Model Management system for multiple provider profiles (Gemini, OpenAI).' },
+      { category: 'Feature', description: 'Added a Prompt Library for "One-tap Consultation" buttons.' },
+      { category: 'UI', description: 'Repositioned "Oracle\'s Insight" in the Sanctum to be below the Welcome module.' },
+      { category: 'Bug Fix', description: 'Fixed VAPID key validation error on server startup.' }
+    ]
+  },
   {
     version: 'v6.0.32',
     date: '2026-05-13',
