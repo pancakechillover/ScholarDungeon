@@ -35,6 +35,7 @@ import { RewardSettings } from './RewardSettings';
 import { ShopSettings } from './ShopSettings';
 import { GachaSettings } from './GachaSettings';
 import { DeveloperSettings } from './DeveloperSettings';
+import { AdviceSettingsSection } from './AdviceSettingsSection';
 
 import { CloudSettingsSection } from './CloudSettingsSection';
 
@@ -195,7 +196,7 @@ export const Settings = React.memo<SettingsProps & { onOpenAstralArchives?: () =
   return (
     <div className="p-6 space-y-8">
       <div className="flex flex-wrap items-center justify-center gap-1.5 p-1.5 bg-slate-900/80 backdrop-blur rounded-3xl w-full border border-slate-800">
-        {(['general', 'timer', 'level', 'merchant', 'cloud', 'dev', 'about'] as const).map(tab => {
+        {(['general', 'timer', 'level', 'merchant', 'advice', 'cloud', 'dev', 'about'] as const).map(tab => {
           return (
             <button
               key={tab}
@@ -207,7 +208,7 @@ export const Settings = React.memo<SettingsProps & { onOpenAstralArchives?: () =
                   : "text-slate-500 hover:text-slate-300 hover:bg-slate-800/30"
               )}
             >
-              {tab === 'dev' ? 'Developer' : tab === 'level' ? 'Level' : tab === 'merchant' ? 'Merchant' : tab === 'about' ? 'About' : tab === 'cloud' ? 'Cloud' : tab}
+              {tab === 'dev' ? 'Developer' : tab === 'level' ? 'Level' : tab === 'merchant' ? 'Merchant' : tab === 'about' ? 'About' : tab === 'cloud' ? 'Cloud' : tab === 'advice' ? 'Advice' : tab}
             </button>
           );
         })}
@@ -363,6 +364,10 @@ export const Settings = React.memo<SettingsProps & { onOpenAstralArchives?: () =
         {(activeSection === 'gacha' as any) && (
           <GachaSettings pools={gachaPools} onUpdate={onUpdateGacha} />
         )}
+        {activeSection === 'advice' && (
+          <AdviceSettingsSection state={state} />
+        )}
+        
         {activeSection === 'dev' && (
           <DeveloperSettings state={state} setState={setState} addXP={addXP} getNow={getNow} />
         )}

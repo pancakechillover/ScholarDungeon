@@ -36,6 +36,11 @@ const PIP_STYLE = `
   .pip-controls-condensed { display: none; }
   .pip-controls-standard { display: flex; }
   .pip-overlay-icon svg { width: 32px; height: 32px; }
+  .pip-overlay-title { font-size: 0.875rem; margin-bottom: 0.75rem; }
+  .pip-overlay-box { padding-left: 0.75rem; padding-right: 0.75rem; padding-top: 0.375rem; padding-bottom: 0.375rem; gap: 0.5rem; }
+  .pip-overlay-text { font-size: 0.75rem; }
+  .pip-overlay-gap { gap: 0.5rem; }
+  .pip-overlay-footer { font-size: 10px; margin-top: 1rem; }
 
   @media (max-width: 180px), (max-height: 240px) {
     .pip-container { padding: 0.75rem; }
@@ -52,7 +57,12 @@ const PIP_STYLE = `
     .pip-status-long { display: none; }
     .pip-controls-condensed { display: flex; }
     .pip-controls-standard { display: none; }
-    .pip-overlay-icon svg { width: 24px; height: 24px; }
+    .pip-overlay-icon svg { width: 16px; height: 16px; margin-bottom: 0.25rem; }
+    .pip-overlay-title { font-size: 10px; margin-bottom: 0.25rem; }
+    .pip-overlay-box { padding-left: 0.5rem; padding-right: 0.5rem; padding-top: 0.25rem; padding-bottom: 0.25rem; gap: 0.25rem; }
+    .pip-overlay-text { font-size: 10px; }
+    .pip-overlay-gap { gap: 0.25rem; }
+    .pip-overlay-footer { display: none; }
   }
 `;
 
@@ -152,18 +162,18 @@ export const CompactTimer: React.FC<CompactTimerProps> = ({
             <div className="pip-overlay-icon text-amber-400 mb-2">
               <Trophy />
             </div>
-            <h4 className="text-sm font-black uppercase tracking-widest text-white mb-3">Victory!</h4>
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2 bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20">
-                <Zap size={14} className="text-emerald-400" />
-                <span className="text-xs font-black text-white">+{xpReward || 0} XP</span>
+            <h4 className="pip-overlay-title font-black uppercase tracking-widest text-white">Victory!</h4>
+            <div className="flex flex-col pip-overlay-gap w-full max-w-[160px]">
+              <div className="flex items-center pip-overlay-box bg-emerald-500/10 rounded-lg border border-emerald-500/20 justify-center">
+                <Zap className="text-emerald-400 w-[14px] h-[14px]" />
+                <span className="pip-overlay-text font-black text-white">+{xpReward || 0} XP</span>
               </div>
-              <div className="flex items-center gap-2 bg-amber-500/10 px-3 py-1.5 rounded-lg border border-amber-500/20">
-                <Coins size={14} className="text-amber-400" />
-                <span className="text-xs font-black text-white">+{coinReward || 0} Gold</span>
+              <div className="flex items-center pip-overlay-box bg-amber-500/10 rounded-lg border border-amber-500/20 justify-center">
+                <Coins className="text-amber-400 w-[14px] h-[14px]" />
+                <span className="pip-overlay-text font-black text-white">+{coinReward || 0} Gold</span>
               </div>
             </div>
-            <p className="text-[10px] text-slate-500 mt-4 italic">Rewards saved</p>
+            <p className="pip-overlay-footer text-slate-500 italic">Rewards saved</p>
           </motion.div>
         )}
 

@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v6.0.28';
+export const APP_VERSION = 'v6.0.30';
 export const LAST_UPDATE_DATE = '2026-05-13';
-export const LAST_UPDATE_TIME = '12:26:00';
+export const LAST_UPDATE_TIME = '12:55:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,27 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v6.0.30',
+    date: '2026-05-13',
+    time: '12:55:00',
+    title: 'Advice & Calculators Layout Polish',
+    items: [
+      { category: 'UI', description: 'Completely redesigned the "Advice & Calculators" layout into a clean Bento Grid configuration with floating styles, gradients, and hover effects.' },
+      { category: 'UI', description: 'Bound the General Advice font colors to theme-aware indigo classes, adapting optimally across dark and light themes.' }
+    ]
+  },
+  {
+    version: 'v6.0.29',
+    date: '2026-05-13',
+    time: '12:45:00',
+    title: 'Sage Advice & Income Calculators',
+    items: [
+      { category: 'Feature', description: 'Added a new Advice module in Settings allowing users to calculate their anticipated XP, Gold, and Talent Shard yields per session based on custom input and active talents.' },
+      { category: 'Tool', description: 'Interactive calculators now estimate the exact number of sessions and days required to afford Shop items, Gacha/Ichiban Kuji pulls, and next 3 level-up milestones.' },
+      { category: 'UI', description: 'Implemented the "Basically" tab with interactive sliders and data visualizations for deep balance checking, preparing the "From Sage\'s" module for future complex game theory.' }
+    ]
+  },
   {
     version: 'v6.0.28',
     date: '2026-05-13',

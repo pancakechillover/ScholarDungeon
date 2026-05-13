@@ -23,7 +23,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v6.0.28
+- **Current Version:** v6.0.30
 - **Last Update Date:** 2026-05-13
 
 ## Dark Themes Definition
@@ -49,6 +49,15 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v6.0.30 (2026-05-13):** Advice & Calculators Layout Polish.
+  - *UI:* Completely redesigned the "Advice & Calculators" layout into a clean Bento Grid configuration with floating styles, gradients, and hover effects.
+  - *UI:* Bound the General Advice font colors to theme-aware indigo classes, adapting optimally across dark and light themes.
+
+- **v6.0.29 (2026-05-13):** Sage Advice & Income Calculators.
+  - *Feature:* Added a new Advice module in Settings allowing users to calculate their anticipated XP, Gold, and Talent Shard yields per session based on custom input and active talents.
+  - *UI:* Implemented the "Basically" tab with interactive inputs and data visualizations for deep balance checking, plus stubs for a future "From Sage's" theorycrafting module.
+  - *Tool:* Built complex live calculators that estimate the exact sequence of sessions and days required to acquire shop items, gacha/ichiban pulls, and the next 3 level-up milestones.
 
 - **v6.0.28 (2026-05-13):** PIP Window Victory Screen Behaviors.
   - *UI:* PIP Window responsive adjustments for the non-modal reward summary, ensuring content is cleanly visible in ultra-compact view.
