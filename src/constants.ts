@@ -183,3 +183,12 @@ export const INITIAL_GACHA: GachaPool[] = [
     ]
   }
 ];
+
+export const DEFAULT_SAGE_PROMPTS = [
+  { id: 'prompt_welcome', title: '初次见面', prompt: 'Sage，请向我介绍一下这个“学者密室（Scholar\'s Dungeon）”程序。它的核心玩法、收益机制以及我该如何在这里开始我的成长旅程？' },
+  { id: 'prompt_balance', title: '平衡建议', prompt: '请根据我目前的等级、金币获取频率和商店物品价格，建议我该如何设置我的游戏平衡？比如每次 Focus Session 的 XP 与 Gold 奖励应该如何分配才最公平且有驱动力？' },
+  { id: 'prompt_week', title: '周度分析', prompt: '请调取我过去 7 天的学习记录，分析我的专注力高峰时段、情绪状态与产出的正相关性。请用直观的数据观察总结出我这一周的整体表现。' },
+  { id: 'prompt_month', title: '月度复盘', prompt: '我想对过去一个月进行深度回想。请分析我的月度进步曲线，我是否在某个领域停滞了？基于我的成长速度，给我下个月制定三个具体的“阶梯型目标”。' },
+  { id: 'prompt_1', title: '效率改进', prompt: '请分析我最近的学习效率趋势，并给出三个切实可行的改进建议。' },
+  { id: 'prompt_3', title: '寻求鼓励', prompt: '我最近有点疲惫，请给我一些鼓励和动力。' }
+];

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Calculator, Target, Zap, Clock, Coins, Ticket, Sparkles, BookOpen, AlertTriangle, Key, Settings as SettingsIcon, Bot, Send, RefreshCw, Cpu, Plus, Edit2, Trash2 } from 'lucide-react';
+import { Calculator, Target, Zap, Clock, Coins, Ticket, Sparkles, BookOpen, AlertTriangle, Key, Settings as SettingsIcon, Bot, Send, RefreshCw, Cpu, Plus, Edit2, Trash2, Copy, Quote, Library, Check } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import { AppState, SageModelConfig, SagePromptConfig } from '../../types';
 import { cn, getXPForLevel } from '../../lib/utils';
-import { TALENTS } from '../../constants';
+import { TALENTS, DEFAULT_SAGE_PROMPTS } from '../../constants';
 import { getSageAdvice } from '../../services/sageService';
 
 interface AdviceSettingsProps {
@@ -407,13 +408,19 @@ export const AdviceSettingsSection: React.FC<AdviceSettingsProps> = ({ state, se
 };
 
 const SageConfigManager: React.FC<{ state: AppState, setState: React.Dispatch<React.SetStateAction<AppState>> }> = ({ state, setState }) => {
-  const [activeTab, setActiveTab] = useState<'models' | 'prompts'>('models');
+  const [activeTab, setActiveTab] = useState<'models' | 'prompts' | 'personality'>('models');
   
   const models = state.sageModels || [];
   const prompts = state.sagePrompts || [];
+  const personalityType = state.sagePersonality || 'sage';
+  const personalityPrompts = state.sagePersonalityPrompts || {};
 
   const [editingModel, setEditingModel] = useState<SageModelConfig | null>(null);
   const [editingPrompt, setEditingPrompt] = useState<SagePromptConfig | null>(null);
+
+  const defaultSagePrompt = `You are "The Sage", an ancient and wise mentor who lives within "The Scholar's Sanctum". \nAnalyze the user's progress and provide deeply personal, mystical, yet strictly structured advice. \nUse metaphors related to "Sanctums", "Dungeons", and "Ancient Artifacts".`;
+
+  const defaultFriendPrompt = `You are a supportive, down-to-earth study buddy and friend. \nAnalyze the user's progress and provide practical, encouraging advice without complex game-like metaphors or mystical language. \nSpeak naturally and focus on their real-life well-being and study habits.`;
 
   const saveModel = () => {
     if (!editingModel) return;
@@ -439,14 +446,76 @@ const SageConfigManager: React.FC<{ state: AppState, setState: React.Dispatch<Re
     setEditingPrompt(null);
   };
 
+  const updatePersonalityPrompt = (type: string, value: string) => {
+    setState(prev => ({
+      ...prev,
+      sagePersonalityPrompts: {
+        ...(prev.sagePersonalityPrompts || {}),
+        [type]: value
+      }
+    }));
+  };
+
   return (
     <div className="bg-slate-900/40 border border-slate-800 rounded-3xl overflow-hidden">
       <div className="flex border-b border-slate-800">
-        <button onClick={() => setActiveTab('models')} className={cn("flex-1 py-3 text-xs font-black uppercase tracking-widest transition-colors", activeTab === 'models' ? "bg-emerald-500/10 text-emerald-400 border-b-2 border-emerald-500" : "text-slate-500 hover:text-slate-300")}>AI Models</button>
-        <button onClick={() => setActiveTab('prompts')} className={cn("flex-1 py-3 text-xs font-black uppercase tracking-widest transition-colors", activeTab === 'prompts' ? "bg-emerald-500/10 text-emerald-400 border-b-2 border-emerald-500" : "text-slate-500 hover:text-slate-300")}>Saved Prompts</button>
+        <button onClick={() => setActiveTab('models')} className={cn("flex-1 py-3 text-[10px] font-black uppercase tracking-widest transition-colors", activeTab === 'models' ? "bg-emerald-500/10 text-emerald-400 border-b-2 border-emerald-500" : "text-slate-500 hover:text-slate-300")}>Models</button>
+        <button onClick={() => setActiveTab('personality')} className={cn("flex-1 py-3 text-[10px] font-black uppercase tracking-widest transition-colors", activeTab === 'personality' ? "bg-emerald-500/10 text-emerald-400 border-b-2 border-emerald-500" : "text-slate-500 hover:text-slate-300")}>Identity</button>
+        <button onClick={() => setActiveTab('prompts')} className={cn("flex-1 py-3 text-[10px] font-black uppercase tracking-widest transition-colors", activeTab === 'prompts' ? "bg-emerald-500/10 text-emerald-400 border-b-2 border-emerald-500" : "text-slate-500 hover:text-slate-300")}>Prompts</button>
       </div>
 
       <div className="p-6">
+        {activeTab === 'personality' && (
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">AI Personality</label>
+              <div className="grid grid-cols-3 gap-2">
+                {(['sage', 'friend', 'custom'] as const).map(type => (
+                  <button
+                    key={type}
+                    onClick={() => setState(prev => ({ ...prev, sagePersonality: type }))}
+                    className={cn(
+                      "py-2 px-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border",
+                      personalityType === type 
+                        ? "bg-emerald-600 border-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]" 
+                        : "bg-slate-950 border-slate-800 text-slate-500 hover:border-slate-700"
+                    )}
+                  >
+                    {type}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">
+                    {personalityType === 'custom' ? 'Custom Character Prompt' : `${personalityType.toUpperCase()} Prompt (Customizable)`}
+                  </label>
+                  {personalityPrompts[personalityType] && (
+                    <button 
+                      onClick={() => updatePersonalityPrompt(personalityType, '')}
+                      className="text-[9px] font-bold text-rose-400 uppercase hover:text-rose-300 transition-colors"
+                    >
+                      Reset to Default
+                    </button>
+                  )}
+                </div>
+                <textarea
+                  value={personalityPrompts[personalityType] || (personalityType === 'friend' ? defaultFriendPrompt : (personalityType === 'sage' ? defaultSagePrompt : ''))}
+                  onChange={(e) => updatePersonalityPrompt(personalityType, e.target.value)}
+                  placeholder={personalityType === 'custom' ? "Enter your custom AI personality instructions..." : ""}
+                  className="w-full h-40 bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-slate-300 text-xs font-medium focus:border-emerald-500 outline-none transition-all resize-none custom-scrollbar leading-relaxed"
+                />
+                <p className="text-[9px] text-slate-500 italic px-1">
+                  This prompt defines how the AI behaves. You can modify the defaults or create a completely new one under "Custom".
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {activeTab === 'models' && (
           <div className="space-y-4">
             {editingModel ? (
@@ -513,20 +582,49 @@ const SageConfigManager: React.FC<{ state: AppState, setState: React.Dispatch<Re
               </div>
             ) : (
               <>
+                <div className="flex justify-between items-center px-1">
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Library</label>
+                  <button 
+                    onClick={() => {
+                      if (window.confirm("Restore all default prompts? This will not delete your custom ones but will re-add defaults if they are missing.")) {
+                        setState(prev => {
+                          const existingIds = (prev.sagePrompts || []).map(p => p.id);
+                          const toAdd = DEFAULT_SAGE_PROMPTS.filter((p) => !existingIds.includes(p.id));
+                          return { ...prev, sagePrompts: [...(prev.sagePrompts || []), ...toAdd] };
+                        });
+                      }
+                    }}
+                    className="text-[9px] font-bold text-emerald-400 uppercase hover:text-emerald-300 transition-colors"
+                  >
+                    Restore Defaults
+                  </button>
+                </div>
                 <div className="space-y-2">
                   {prompts.map(p => (
-                     <div key={p.id} className="flex items-center justify-between p-3 bg-slate-800/30 border border-slate-800 rounded-xl">
-                       <span className="text-sm font-medium text-slate-300">{p.title}</span>
-                       <div className="flex gap-2">
-                         <button onClick={() => setEditingPrompt(p)} className="p-1.5 text-slate-400 hover:text-white transition-colors"><Edit2 size={14} /></button>
-                         <button onClick={() => setState(prev => ({ ...prev, sagePrompts: prev.sagePrompts?.filter(x => x.id !== p.id) }))} className="p-1.5 text-slate-400 hover:text-red-400 transition-colors"><Trash2 size={14} /></button>
+                     <div key={p.id} className="group p-3 bg-slate-800/30 border border-slate-800 rounded-xl hover:border-emerald-500/30 transition-colors">
+                       <div className="flex items-center justify-between mb-1">
+                         <span className="text-sm font-bold text-slate-200">{p.title}</span>
+                         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                           <button onClick={() => setEditingPrompt(p)} className="p-1 px-2 text-[10px] font-bold text-slate-400 hover:text-white transition-colors flex items-center gap-1"><Edit2 size={10} /> Edit</button>
+                           <button 
+                             onClick={() => {
+                               if (window.confirm("Delete this prompt?")) {
+                                 setState(prev => ({ ...prev, sagePrompts: prev.sagePrompts?.filter(x => x.id !== p.id) }));
+                               }
+                             }} 
+                             className="p-1 px-2 text-[10px] font-bold text-slate-400 hover:text-red-400 transition-colors flex items-center gap-1"
+                           >
+                             <Trash2 size={10} /> Delete
+                           </button>
+                         </div>
                        </div>
+                       <p className="text-[10px] text-slate-500 line-clamp-1 italic">{p.prompt}</p>
                      </div>
                   ))}
-                  {prompts.length === 0 && <p className="text-center text-xs text-slate-500 py-4">No custom prompts saved.</p>}
+                  {prompts.length === 0 && <p className="text-center text-xs text-slate-500 py-4 italic">No prompts in your library yet.</p>}
                 </div>
                 <button onClick={() => setEditingPrompt({ id: 'new', title: '', prompt: '' })} className="w-full py-3 bg-slate-800 border border-slate-700 border-dashed hover:border-emerald-500 hover:text-emerald-400 text-slate-400 rounded-xl text-xs font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2">
-                  <Plus size={14} /> Add Custom Prompt
+                  <Plus size={14} /> Create New Prompt
                 </button>
               </>
             )}
@@ -547,7 +645,10 @@ const SageInterface: React.FC<SageInterfaceProps> = ({ state, setState }) => {
   const [loading, setLoading] = useState(false);
   const [userInput, setUserInput] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [showPromptSelector, setShowPromptSelector] = useState(false);
   const scrollRef = React.useRef<HTMLDivElement>(null);
+  const inputRef = React.useRef<HTMLInputElement>(null);
 
   const history = state.sageChatHistory || [];
 
@@ -597,6 +698,19 @@ const SageInterface: React.FC<SageInterfaceProps> = ({ state, setState }) => {
 
   const clearHistory = () => {
     setState(prev => ({ ...prev, sageChatHistory: [] }));
+  };
+
+  const handleCopy = (text: string, id: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const handleQuote = (text: string) => {
+    // Basic quoting: prepend as markdown quote
+    const lines = text.split('\n').map(l => `> ${l}`).join('\n');
+    setUserInput(lines + '\n\n' + userInput);
+    if (inputRef.current) inputRef.current.focus();
   };
 
   return (
@@ -667,15 +781,36 @@ const SageInterface: React.FC<SageInterfaceProps> = ({ state, setState }) => {
           )}
 
           {history.map((msg, idx) => (
-            <div key={idx} className={cn("flex flex-col", msg.role === 'user' ? "items-end" : "items-start")}>
+            <div key={idx} className={cn("flex flex-col group", msg.role === 'user' ? "items-end" : "items-start")}>
               <div className={cn(
-                "max-w-[90%] p-4 rounded-2xl text-sm font-medium leading-relaxed",
+                "max-w-[90%] p-4 rounded-2xl text-sm font-medium leading-relaxed relative",
                 msg.role === 'user' 
                   ? "bg-indigo-600/10 border border-indigo-500/20 text-indigo-200 rounded-tr-none" 
                   : "bg-slate-900/80 border border-emerald-500/10 text-slate-300 rounded-tl-none font-serif italic"
               )}>
                 <div className="prose prose-invert prose-emerald prose-sm max-w-none">
-                  <p className="whitespace-pre-wrap">{msg.content}</p>
+                  <ReactMarkdown>{msg.content}</ReactMarkdown>
+                </div>
+
+                {/* Message Actions */}
+                <div className={cn(
+                  "absolute bottom-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2 px-2 py-1 bg-slate-950/80 border border-slate-800 rounded-lg shadow-xl",
+                  msg.role === 'user' ? "right-full mr-2" : "left-full ml-2"
+                )}>
+                  <button 
+                    onClick={() => handleCopy(msg.content, `${idx}`)}
+                    className="p-1 hover:text-emerald-400 text-slate-500 transition-colors"
+                    title="Copy"
+                  >
+                    {copiedId === `${idx}` ? <Check size={12} /> : <Copy size={12} />}
+                  </button>
+                  <button 
+                    onClick={() => handleQuote(msg.content)}
+                    className="p-1 hover:text-emerald-400 text-slate-500 transition-colors"
+                    title="Quote"
+                  >
+                    <Quote size={12} />
+                  </button>
                 </div>
               </div>
             </div>
@@ -690,23 +825,85 @@ const SageInterface: React.FC<SageInterfaceProps> = ({ state, setState }) => {
           {error && <div className="text-red-400 text-xs font-bold p-4 bg-red-500/10 rounded-xl border border-red-500/20">{error}</div>}
         </div>
 
-        <div className="p-4 bg-slate-900 border-t border-slate-800">
-           <div className="relative group">
-              <input 
-                type="text"
-                value={userInput}
-                onChange={(e) => setUserInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                placeholder="Message the Sage..."
-                className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-5 py-4 pr-16 text-slate-200 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-600"
-              />
-              <button 
-                onClick={() => handleSend()}
-                disabled={loading || !userInput.trim()}
-                className="absolute right-2 top-2 bottom-2 w-12 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl transition-all flex items-center justify-center"
+        <div className="p-4 bg-slate-900 border-t border-slate-800 relative">
+           <AnimatePresence>
+            {showPromptSelector && (
+              <motion.div
+                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                className="absolute bottom-full left-4 mb-2 w-64 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-2 z-20 overflow-hidden"
               >
-                <Send size={18} />
+                <div className="text-[10px] font-black text-emerald-500/50 uppercase tracking-widest px-3 py-2 border-b border-slate-800/50 mb-1 flex justify-between items-center">
+                  <span>Prompt Library</span>
+                  {(!state.sagePrompts || state.sagePrompts.length === 0) && (
+                    <button 
+                      onClick={() => {
+                        import('../../constants').then(({ DEFAULT_SAGE_PROMPTS }) => {
+                          setState(prev => ({ ...prev, sagePrompts: DEFAULT_SAGE_PROMPTS }));
+                        });
+                      }}
+                      className="text-[9px] font-bold text-emerald-400 hover:text-emerald-300 transition-colors"
+                    >
+                      Load Defaults
+                    </button>
+                  )}
+                </div>
+                <div className="max-h-60 overflow-y-auto custom-scrollbar">
+                  {state.sagePrompts && state.sagePrompts.length > 0 ? (
+                    state.sagePrompts.map(p => (
+                      <button
+                        key={p.id}
+                        onClick={() => {
+                          setUserInput(p.prompt + (userInput ? '\n\n' + userInput : ''));
+                          setShowPromptSelector(false);
+                          inputRef.current?.focus();
+                        }}
+                        className="w-full text-left p-3 hover:bg-emerald-500/10 rounded-xl transition-colors group"
+                      >
+                        <div className="text-xs font-bold text-slate-200 group-hover:text-emerald-400">{p.title}</div>
+                        <div className="text-[10px] text-slate-500 line-clamp-1 mt-0.5">{p.prompt}</div>
+                      </button>
+                    ))
+                  ) : (
+                    <div className="p-6 text-center">
+                       <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Library is empty</p>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+           </AnimatePresence>
+
+           <div className="flex gap-2">
+              <button 
+                onClick={() => setShowPromptSelector(!showPromptSelector)}
+                className={cn(
+                  "flex-shrink-0 w-12 h-14 rounded-2xl border transition-all flex items-center justify-center",
+                  showPromptSelector ? "bg-emerald-600 border-emerald-500 text-white" : "bg-slate-950 border-slate-800 text-slate-500 hover:border-emerald-500/50 hover:text-emerald-400"
+                )}
+                title="Select Prompt"
+              >
+                <Library size={20} />
               </button>
+              <div className="relative flex-1 group">
+                <input 
+                  ref={inputRef}
+                  type="text"
+                  value={userInput}
+                  onChange={(e) => setUserInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                  placeholder="Message the Sage..."
+                  className="w-full h-14 bg-slate-950 border border-slate-800 rounded-2xl px-5 text-slate-200 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-600"
+                />
+                <button 
+                  onClick={() => handleSend()}
+                  disabled={loading || !userInput.trim()}
+                  className="absolute right-2 top-2 bottom-2 w-12 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl transition-all flex items-center justify-center"
+                >
+                  <Send size={18} />
+                </button>
+              </div>
            </div>
         </div>
       </div>

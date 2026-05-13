@@ -23,7 +23,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v6.0.34
+- **Current Version:** v6.0.42
 - **Last Update Date:** 2026-05-13
 
 ## Dark Themes Definition
@@ -50,10 +50,35 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 ## Task History
 
-- **v6.0.34 (2026-05-13):** VAPID Integrity & Sync Refinement.
-  - *Bug Fix:* Resolved "Vapid public key should be 65 bytes long" error by generating fresh VAPID keys and implementing stricter validation in the backend.
-  - *Logic:* Synchronized VAPID fallback keys across server and client configurations for consistent push notification behavior.
-  - *Security:* Enhanced VAPID key sanitization to strip invalid characters from environment variables.
+- **v6.0.42 (2026-05-13):** Dev Tooling Background Refinement.
+  - *UI:* Updated the Quest Board CSS Debugger to use solid backgrounds and headers, eliminating transparency for a more technical and focused interface.
+  - *UI:* Refined the backgrounds of the control panels and action buttons within the debugger to use solid slate and neutral tones.
+
+- **v6.0.41 (2026-05-13):** Prompt Library Integrity & Migration Fix.
+  - *Logic:* Improved the data migration engine to ensure default mystical prompts are automatically merged into user libraries.
+  - *UX:* Added a "Load Defaults" emergency trigger inside the Sage Library popover for empty collections.
+
+- **v6.0.40 (2026-05-13):** AI Global Context & Advanced Analysis.
+  - *Logic:* Significantly expanded the data context sent to the Emerald Sage AI. It now perceives complete application state including Active Quests, Reward Yields (XP/Gold), Timer configurations, and up to 30 days of detailed performance logs.
+  - *Feature:* Injected 4 new specialized default prompts into the Prompt Library: "App Intro", "Balance Guide", "Weekly Analysis", and "Monthly Review".
+  - *UX:* Improved AI analysis precision by providing multi-dimensional user data for more accurate time-to-level estimates and mood-productivity correlation.
+
+- **v6.0.39 (2026-05-13):** Dev Tooling UI Polish.
+  - *UI:* Optimized the "Quest Board CSS Debugger" interface with better readability, theme-aware backgrounds, and polished variable editor cards.
+  - *UX:* Added "Copy Variable" functionality and improved the color picking experience in the debugger.
+
+- **v6.0.38 (2026-05-13):** Sage AI Chat Enhancements.
+  - *Feature:* Added a Prompt Library selector (Library icon) to the left of the chat input, with 6 pre-configured mystical prompts for quick consultation.
+  - *Feature:* Implemented a Prompt Manager in Sage Settings, allowing users to create, edit, or delete prompts, with a "Restore Defaults" option.
+  - *Feature:* Implemented "Copy" and "Quote" message actions. The Quote feature prepends the selected message as a Markdown quote to the input field.
+  - *UI:* Improved the chat input area in both the Settings and Dashboard Consult modal with a more balanced layout.
+
+- **v6.0.37 (2026-05-13):** AI Output Markdown Rendering.
+
+- **v6.0.36 (2026-05-13):** AI Personality Selector & Customizable Prompts.
+  - *Feature:* Implemented an "AI Personality Selector" in Advice Settings, allowing users to choose between preset identities ("SAGE" and "FRIEND") or define a "CUSTOM" personality.
+  - *Feature:* Added a "Identity" manager in Sage configuration where users can modify the base character prompts for any personality.
+  - *Logic:* SAGE personality retains mystical game-like metaphors; FRIEND personality uses supportive, life-oriented, and natural language.
 
 - **v6.0.35 (2026-05-13):** IOS Interaction & Tooltip Refinement.
   - *Bug Fix:* Resolved iOS double-click issue in the Record interface by optimizing event delegation and converting interactive heatmap elements to native buttons.

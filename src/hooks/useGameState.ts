@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { AppState, Dungeon, StudySession, Talent, RewardCard, MajorDungeon, RewardHistoryItem, DungeonReward, Quest } from '../types';
-import { TALENTS, INITIAL_REWARD_POOL, INITIAL_GACHA, DEFAULT_QUESTS } from '../constants';
+import { TALENTS, INITIAL_REWARD_POOL, INITIAL_GACHA, DEFAULT_QUESTS, DEFAULT_SAGE_PROMPTS } from '../constants';
 import { format, isSameDay, parseISO, differenceInDays } from 'date-fns';
 
 import { getXPForLevel, getDefaultRewardForLevel, getDeviceType, getDeviceCode } from '../lib/utils';
@@ -126,7 +126,8 @@ export function useGameState() {
         }
       ],
       activeGachaPoolId: 'standard_gacha',
-      activeIchibanPoolId: 'ichiban_1'
+      activeIchibanPoolId: 'ichiban_1',
+      sagePrompts: DEFAULT_SAGE_PROMPTS
     };
 
     if (saved) {
@@ -270,6 +271,19 @@ export function useGameState() {
         if (parsed.timerBannerCompactMode === undefined) parsed.timerBannerCompactMode = false;
         if (parsed.timerSkipVictoryMode === undefined) parsed.timerSkipVictoryMode = 'none';
         if (parsed.timerBannerShortcuts === undefined) parsed.timerBannerShortcuts = ['pomodoro', 'short_break', 'long_break'];
+        
+        // Migration: Sage Prompts - Merge missing defaults
+        if (!parsed.sagePrompts) {
+          parsed.sagePrompts = DEFAULT_SAGE_PROMPTS;
+        } else {
+          // If they have prompts, ensure they have the new defaults added by ID
+          const existingIds = new Set(parsed.sagePrompts.map((p: any) => p.id));
+          DEFAULT_SAGE_PROMPTS.forEach(def => {
+            if (!existingIds.has(def.id)) {
+              parsed.sagePrompts.push(def);
+            }
+          });
+        }
 
         // Migration: Fix gacha pools (weights to rarities, and color/rarityValue sync)
         if (parsed.gachaPools) {

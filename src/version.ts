@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v6.0.35';
+export const APP_VERSION = 'v6.0.42';
 export const LAST_UPDATE_DATE = '2026-05-13';
-export const LAST_UPDATE_TIME = '16:55:00';
+export const LAST_UPDATE_TIME = '23:35:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,80 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v6.0.42',
+    date: '2026-05-13',
+    time: '23:35:00',
+    title: 'Dev Tooling Background Refinement',
+    items: [
+      { category: 'UI', description: 'Updated Quest Board CSS Debugger to use solid backgrounds and headers for improved readability.' },
+      { category: 'UI', description: 'Refined action button backgrounds in the developer utility panel to align with solid theme standards.' }
+    ]
+  },
+  {
+    version: 'v6.0.41',
+    date: '2026-05-13',
+    time: '23:30:00',
+    title: 'Prompt Library Integrity & Migration Fix',
+    items: [
+      { category: 'Logic', description: 'Improved the data migration engine to ensure default mystical prompts are automatically merged into user libraries.' },
+      { category: 'UX', description: 'Added a "Load Defaults" emergency trigger inside the Sage Library popover for empty collections.' }
+    ]
+  },
+  {
+    version: 'v6.0.40',
+    date: '2026-05-13',
+    time: '23:20:00',
+    title: 'AI Global Context & Advanced Analysis',
+    items: [
+      { category: 'Logic', description: 'Enhanced Sage AI with access to full application parameters (Quests, Gold/XP rates, Timer settings, 30-day history).' },
+      { category: 'Feature', description: 'Expanded Prompt Library with specialized analysis prompts (App Intro, Game Balance, Week/Month Analysis).' }
+    ]
+  },
+  {
+    version: 'v6.0.39',
+    date: '2026-05-13',
+    time: '23:25:00',
+    title: 'Dev Tooling UI Polish',
+    items: [
+      { category: 'UI', description: 'Optimized Quest Board CSS Debugger with theme-aligned backgrounds and refined typography.' },
+      { category: 'UX', description: 'Redesigned variable editor cards with shortcut copy buttons and larger color swatches.' },
+      { category: 'Visual', description: 'Applied backdrop-blur and glassmorphism effects to the debugger control panel.' }
+    ]
+  },
+  {
+    version: 'v6.0.38',
+    date: '2026-05-13',
+    time: '23:15:00',
+    title: 'Sage AI Chat Enhancements',
+    items: [
+      { category: 'Feature', description: 'Added a Prompt Library selector (Library icon) to the left of the chat input, with 6 pre-configured mystical prompts for quick consultation.' },
+      { category: 'Feature', description: 'Implemented a Prompt Manager in Sage Settings, allowing users to create, edit, or delete prompts, with a "Restore Defaults" option for safety.' },
+      { category: 'Feature', description: 'Implemented "Copy" and "Quote" message actions (Quote prepends message as Markdown quote to input).' },
+      { category: 'UI', description: 'Improved the chat input area in both Settings and Dashboard modals with better alignment and staggered animations.' }
+    ]
+  },
+  {
+    version: 'v6.0.37',
+    date: '2026-05-13',
+    time: '23:10:00',
+    title: 'AI Output Markdown Rendering',
+    items: [
+      { category: 'Feature', description: 'Implemented Markdown rendering for AI chat outputs using react-markdown.' },
+      { category: 'UI', description: 'Enhanced chat bubble typography with tailwindcss/typography (prose) support.' }
+    ]
+  },
+  {
+    version: 'v6.0.36',
+    date: '2026-05-13',
+    time: '17:00:00',
+    title: 'AI Personality Selector & Customizable Prompts',
+    items: [
+      { category: 'Feature', description: 'Implemented AI Personality Selector (Sage, Friend, Custom).' },
+      { category: 'Feature', description: 'Added Identity manager to modify base character prompts.' },
+      { category: 'Logic', description: 'Updated Sage service to respect chosen personality prompts.' }
+    ]
+  },
   {
     version: 'v6.0.35',
     date: '2026-05-13',

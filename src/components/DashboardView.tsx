@@ -17,8 +17,13 @@ import {
   Sparkles,
   RefreshCw,
   Send,
-  X
+  X,
+  Copy,
+  Quote,
+  Library,
+  Check
 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import { AppState, Dungeon } from '../types';
 import { playSound } from '../lib/sound';
 import { getSageAdvice } from '../services/sageService';
@@ -309,7 +314,10 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
   const [loading, setLoading] = React.useState(false);
   const [userInput, setUserInput] = React.useState('');
   const [error, setError] = React.useState<string | null>(null);
+  const [copiedId, setCopiedId] = React.useState<string | null>(null);
+  const [showPromptSelector, setShowPromptSelector] = React.useState(false);
   const scrollRef = React.useRef<HTMLDivElement>(null);
+  const inputRef = React.useRef<HTMLInputElement>(null);
 
   const history = state.sageChatHistory || [];
 
@@ -355,6 +363,18 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
 
   const clearHistory = () => {
     setState(prev => ({ ...prev, sageChatHistory: [] }));
+  };
+
+  const handleCopy = (text: string, id: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const handleQuote = (text: string) => {
+    const lines = text.split('\n').map(l => `> ${l}`).join('\n');
+    setUserInput(lines + '\n\n' + userInput);
+    if (inputRef.current) inputRef.current.focus();
   };
 
   return (
@@ -411,20 +431,41 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
           )}
 
           {history.map((msg, idx) => (
-            <div key={idx} className={cn("flex flex-col", msg.role === 'user' ? "items-end" : "items-start")}>
+            <div key={idx} className={cn("flex flex-col group", msg.role === 'user' ? "items-end" : "items-start")}>
               <div className={cn(
-                "max-w-[85%] p-4 rounded-2xl text-sm font-medium leading-relaxed shadow-lg",
+                "max-w-[85%] p-4 rounded-2xl text-sm font-medium leading-relaxed shadow-lg relative",
                 msg.role === 'user' 
                   ? "bg-indigo-600/20 border border-indigo-500/30 text-indigo-100 rounded-tr-none" 
                   : "bg-slate-800/80 border border-emerald-500/20 text-slate-200 rounded-tl-none font-serif italic"
               )}>
                 {msg.role === 'assistant' ? (
                   <div className="prose prose-invert prose-emerald prose-sm max-w-none">
-                    <p className="whitespace-pre-wrap">{msg.content}</p>
+                    <ReactMarkdown>{msg.content}</ReactMarkdown>
                   </div>
                 ) : (
                   msg.content
                 )}
+
+                {/* Message Actions */}
+                <div className={cn(
+                  "absolute bottom-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2 px-2 py-1 bg-slate-950/80 border border-slate-800 rounded-lg shadow-xl",
+                  msg.role === 'user' ? "right-full mr-2" : "left-full ml-2"
+                )}>
+                  <button 
+                    onClick={() => handleCopy(msg.content, `${idx}`)}
+                    className="p-1 hover:text-emerald-400 text-slate-500 transition-colors"
+                    title="Copy"
+                  >
+                    {copiedId === `${idx}` ? <Check size={12} /> : <Copy size={12} />}
+                  </button>
+                  <button 
+                    onClick={() => handleQuote(msg.content)}
+                    className="p-1 hover:text-emerald-400 text-slate-500 transition-colors"
+                    title="Quote"
+                  >
+                    <Quote size={12} />
+                  </button>
+                </div>
               </div>
               <span className="text-[9px] font-bold text-slate-600 mt-1 uppercase tracking-widest px-2">
                 {msg.role === 'user' ? 'Scholar' : 'Emerald Sage'} • {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -448,23 +489,85 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
           )}
         </div>
 
-        <div className="p-6 bg-slate-900 border-t border-slate-800">
-           <div className="relative group">
-              <input 
-                type="text"
-                value={userInput}
-                onChange={(e) => setUserInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                placeholder="Ask the Sage..."
-                className="w-full bg-slate-950 border-2 border-slate-800 rounded-2xl px-6 py-4 pr-16 text-slate-200 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-600 font-medium"
-              />
-              <button 
-                onClick={() => handleSend()}
-                disabled={loading || !userInput.trim()}
-                className="absolute right-2 top-2 bottom-2 w-12 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 text-white rounded-xl transition-all flex items-center justify-center p-0"
+        <div className="p-6 bg-slate-900 border-t border-slate-800 relative">
+           <AnimatePresence>
+            {showPromptSelector && (
+              <motion.div
+                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                className="absolute bottom-full left-6 mb-4 w-72 bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl p-2 z-50 overflow-hidden"
               >
-                <Send size={18} />
+                <div className="text-[10px] font-black text-emerald-500/50 uppercase tracking-widest px-4 py-3 border-b border-slate-800/50 mb-1 flex justify-between items-center">
+                  <span>Prompt Library</span>
+                  {(!state.sagePrompts || state.sagePrompts.length === 0) && (
+                    <button 
+                      onClick={() => {
+                        import('../constants').then(({ DEFAULT_SAGE_PROMPTS }) => {
+                          setState(prev => ({ ...prev, sagePrompts: DEFAULT_SAGE_PROMPTS }));
+                        });
+                      }}
+                      className="text-[9px] font-bold text-emerald-400 hover:text-emerald-300 transition-colors"
+                    >
+                      Load Defaults
+                    </button>
+                  )}
+                </div>
+                <div className="max-h-64 overflow-y-auto custom-scrollbar">
+                  {state.sagePrompts && state.sagePrompts.length > 0 ? (
+                    state.sagePrompts.map(p => (
+                      <button
+                        key={p.id}
+                        onClick={() => {
+                          setUserInput(p.prompt + (userInput ? '\n\n' + userInput : ''));
+                          setShowPromptSelector(false);
+                          inputRef.current?.focus();
+                        }}
+                        className="w-full text-left p-4 hover:bg-emerald-500/10 rounded-[1.25rem] transition-colors group"
+                      >
+                        <div className="text-xs font-bold text-slate-200 group-hover:text-emerald-400">{p.title}</div>
+                        <div className="text-[10px] text-slate-500 line-clamp-2 mt-1">{p.prompt}</div>
+                      </button>
+                    ))
+                  ) : (
+                    <div className="p-8 text-center">
+                      <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Library is empty</p>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+           </AnimatePresence>
+
+           <div className="flex gap-3">
+              <button 
+                onClick={() => setShowPromptSelector(!showPromptSelector)}
+                className={cn(
+                  "flex-shrink-0 w-14 h-14 rounded-2xl border-2 transition-all flex items-center justify-center",
+                  showPromptSelector ? "bg-emerald-600 border-emerald-500 text-white" : "bg-slate-950 border-slate-800 text-slate-500 hover:border-emerald-500/50 hover:text-emerald-400"
+                )}
+                title="Select Prompt"
+              >
+                <Library size={22} />
               </button>
+              <div className="relative flex-1 group">
+                <input 
+                  ref={inputRef}
+                  type="text"
+                  value={userInput}
+                  onChange={(e) => setUserInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                  placeholder="Ask the Sage..."
+                  className="w-full h-14 bg-slate-950 border-2 border-slate-800 rounded-2xl px-6 pr-16 text-slate-200 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-600 font-medium"
+                />
+                <button 
+                  onClick={() => handleSend()}
+                  disabled={loading || !userInput.trim()}
+                  className="absolute right-2 top-2 bottom-2 w-12 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 text-white rounded-xl transition-all flex items-center justify-center p-0"
+                >
+                  <Send size={18} />
+                </button>
+              </div>
            </div>
         </div>
       </motion.div>

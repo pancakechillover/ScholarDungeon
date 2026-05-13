@@ -29,9 +29,11 @@ export async function getSageAdvice({ state, prompt, history = [] }: SageAdviceR
   }
 
   // Gather user context for the prompt
-  const recentLogs = Object.entries(state.dailyLogs || {})
-    .sort((a, b) => b[0].localeCompare(a[0]))
-    .slice(0, 5) // Last 5 days
+  const sortedLogs = Object.entries(state.dailyLogs || {})
+    .sort((a, b) => b[0].localeCompare(a[0]));
+
+  const recentLogs = sortedLogs
+    .slice(0, 30) // Up to 30 days for monthly analysis
     .map(([date, log]) => ({
       date,
       mood: log.mood,
@@ -39,22 +41,57 @@ export async function getSageAdvice({ state, prompt, history = [] }: SageAdviceR
       reflection: log.reflection
     }));
 
-  const systemPrompt = `You are "The Sage", an ancient and wise mentor who lives within "The Scholar's Sanctum". 
-Analyze the user's progress and provide deeply personal, mystical, yet strictly structured advice.
+  const questsData = (state.quests || []).map(q => ({
+    title: q.title,
+    progress: `${q.progress}/${q.target}`,
+    reward: q.reward?.amount,
+    rarity: q.completed ? 'COMPLETED' : 'ACTIVE'
+  }));
+
+  const timerConfig = {
+    xpYield: state.devBaseXP || 50,
+    goldYield: state.devBaseCoins || 10,
+    xpMode: state.devXpMode,
+    coinMode: state.devCoinMode
+  };
+
+  const personalityType = state.sagePersonality || 'sage';
+  const customPrompts = state.sagePersonalityPrompts || {};
+  
+  const defaultSagePrompt = `You are "The Sage", an ancient and wise mentor who lives within "The Scholar's Sanctum". 
+Analyze the user's progress and provide deeply personal, mystical, yet strictly structured advice. 
+Use metaphors related to "Sanctums", "Dungeons", and "Ancient Artifacts".`;
+
+  const defaultFriendPrompt = `You are a supportive, down-to-earth study buddy and friend. 
+Analyze the user's progress and provide practical, encouraging advice without complex game-like metaphors or mystical language. 
+Speak naturally and focus on their real-life well-being and study habits.`;
+
+  let personalityPrompt = personalityType === 'friend' ? defaultFriendPrompt : defaultSagePrompt;
+  if (personalityType === 'custom' && customPrompts['custom']) {
+    personalityPrompt = customPrompts['custom'];
+  } else if (customPrompts[personalityType]) {
+    personalityPrompt = customPrompts[personalityType];
+  }
+
+  const systemPrompt = `${personalityPrompt}
 
 Current User Status:
 - Level: ${state.level}
+- Gold: ${state.coins}
+- XP: ${state.xp}
 - Total Sessions: ${(state.history || []).length}
 - Current Streak: ${state.streak}
-- Recent Logs: ${JSON.stringify(recentLogs)}
+- Balance Settings (Rewards): ${JSON.stringify(timerConfig)}
+- Active Quests: ${JSON.stringify(questsData)}
+- Recent Logs (Last 30 Days): ${JSON.stringify(recentLogs)}
 
 ### RESPONSE STRUCTURE GUIDELINES:
-1. **The Revelation**: A poetic opening sentence summarizing their current state.
+1. **The Revelation**: A poetic opening sentence (or warm greeting) summarizing their current state.
 2. **Observations**: A bulleted list of 2-3 specific insights based on their data (efficiency, mood, or trends).
 3. **The Path Forward**: 2 actionable steps for their next study session.
-4. **Mystic Encouragement**: A short closing blessing.
+4. **Encouragement**: A short closing blessing or friendly sign-off.
 
-Keep your tone wise, encouraging, and mystical. Use metaphors related to "Sanctums", "Dungeons", and "Ancient Artifacts". Use Bold text for emphasis.`;
+Keep your tone consistent with the chosen personality. Use Bold text for emphasis.`;
 
   try {
     if (provider === 'google') {

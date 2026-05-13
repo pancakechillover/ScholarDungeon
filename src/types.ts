@@ -290,6 +290,8 @@ export interface AppState {
   activeSageModelId?: string;
   sagePrompts?: SagePromptConfig[];
   sageChatHistory?: { role: 'user' | 'assistant'; content: string; timestamp: number }[];
+  sagePersonality?: 'sage' | 'friend' | 'custom';
+  sagePersonalityPrompts?: Record<string, string>;
 }
 
 export interface StudySession {

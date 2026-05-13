@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, CheckCircle2, Clock, Target, Coins, Zap, Gift, Square, CheckSquare, Copy, Pin } from 'lucide-react';
+import { X, CheckCircle2, Clock, Target, Coins, Zap, Gift, Square, CheckSquare, Copy, Pin, Plus } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 interface QuestBoardCssDebuggerProps {
@@ -131,20 +131,26 @@ export const QuestBoardCssDebugger: React.FC<QuestBoardCssDebuggerProps> = ({ on
   const [realisticMode, setRealisticMode] = useState(false);
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] bg-slate-950/95 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4">
-      <div className="bg-slate-900 border border-slate-700 rounded-3xl w-full h-full max-w-none flex flex-col shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 z-[9999] bg-slate-950 flex items-center justify-center p-2 sm:p-4">
+      <div className="bg-slate-900 border border-slate-700/50 rounded-[2rem] w-full h-full max-w-none flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
         {/* Header */}
-        <div className="p-3 border-b border-slate-800 flex justify-between items-center bg-slate-800/50 shrink-0">
-          <div className="flex items-center gap-4">
-            <h2 className="text-sm sm:text-xl font-bold text-white tracking-widest uppercase">Quest Board CSS Debugger</h2>
-            <div className="hidden sm:flex items-center bg-slate-950 rounded-lg p-1">
+        <div className="p-4 border-b border-white/5 flex justify-between items-center bg-slate-800 shrink-0">
+          <div className="flex items-center gap-6">
+            <div className="flex flex-col">
+              <h2 className="text-xs font-black text-indigo-400 tracking-[0.3em] uppercase mb-0.5">Development Utility</h2>
+              <h3 className="text-sm sm:text-xl font-black text-white tracking-tight uppercase">Quest Board CSS Debugger</h3>
+            </div>
+            
+            <div className="hidden lg:flex items-center bg-black/40 rounded-2xl p-1 border border-white/5 shadow-inner">
               {THEMES.map(t => (
                 <button
                   key={t.id}
                   onClick={() => setActiveThemeId(t.id)}
                   className={cn(
-                    "px-3 py-1.5 rounded-md text-xs font-bold transition-all",
-                    activeThemeId === t.id ? "bg-indigo-600 text-white" : "text-slate-400 hover:text-slate-200"
+                    "px-4 py-2 rounded-xl text-[10px] font-black tracking-widest uppercase transition-all",
+                    activeThemeId === t.id 
+                      ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20" 
+                      : "text-slate-500 hover:text-slate-200"
                   )}
                 >
                   {t.name}
@@ -152,40 +158,43 @@ export const QuestBoardCssDebugger: React.FC<QuestBoardCssDebuggerProps> = ({ on
               ))}
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <button 
               onClick={() => setRealisticMode(!realisticMode)}
               className={cn(
-                "hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border",
+                "hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border",
                 realisticMode 
-                  ? "bg-indigo-600 border-indigo-500 text-white" 
-                  : "bg-slate-800 border-slate-700 text-slate-400 hover:text-slate-200"
+                  ? "bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-600/20" 
+                  : "bg-slate-800 border-white/10 text-slate-400 hover:text-slate-200"
               )}
             >
               Realistic Mode
             </button>
             <button 
               onClick={handleExport}
-              className="flex items-center gap-2 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-xs font-bold transition-colors text-white"
+              className="flex items-center gap-2 px-5 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all text-white shadow-lg shadow-emerald-600/20 active:scale-95"
             >
-              <Copy size={16} />
-              {copied ? 'Copied' : 'Export'}
+              <Copy size={14} />
+              {copied ? 'Copied' : 'Export CSS'}
             </button>
-            <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors bg-slate-800 hover:bg-slate-700 p-2 rounded-full">
+            <div className="w-[1px] h-8 bg-white/10 mx-1 hidden sm:block" />
+            <button onClick={onClose} className="text-slate-400 hover:text-white transition-all bg-slate-800 hover:bg-slate-700 p-2.5 rounded-2xl border border-white/5">
               <X size={20} />
             </button>
           </div>
         </div>
 
-        {/* Mobile theme selector */}
-        <div className="sm:hidden flex items-center bg-slate-950 p-2 overflow-x-auto shrink-0 border-b border-slate-800">
+        {/* Mobile/Small theme selector */}
+        <div className="lg:hidden flex items-center bg-black/20 p-2 overflow-x-auto shrink-0 border-b border-white/5 gap-1 custom-scrollbar">
           {THEMES.map(t => (
             <button
               key={t.id}
               onClick={() => setActiveThemeId(t.id)}
               className={cn(
-                "px-3 py-1.5 rounded-md text-xs font-bold transition-all whitespace-nowrap",
-                activeThemeId === t.id ? "bg-indigo-600 text-white" : "text-slate-400 hover:text-slate-200"
+                "px-4 py-2 rounded-xl text-[9px] font-black tracking-widest uppercase transition-all whitespace-nowrap",
+                activeThemeId === t.id 
+                  ? "bg-indigo-600 text-white shadow-lg" 
+                  : "text-slate-500 hover:text-slate-300"
               )}
             >
               {t.name}
@@ -343,66 +352,90 @@ export const QuestBoardCssDebugger: React.FC<QuestBoardCssDebuggerProps> = ({ on
           </div>
 
           {/* Bottom Control Section */}
-          <div className="flex-1 p-4 sm:p-6 overflow-y-auto bg-slate-950">
-            <div className="flex items-center justify-between mb-6">
+          <div className="flex-1 p-6 sm:p-10 overflow-y-auto bg-slate-950 custom-scrollbar">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10 pb-6 border-b border-white/5">
               <div>
-                <h3 className="text-lg font-bold text-white">Color Palette Adjustments</h3>
-                <p className="text-xs text-slate-400 mt-1">Select a color below to override the variable for <strong className="text-indigo-400">{activeTheme.name}</strong>.</p>
+                <h3 className="text-xl font-black text-white tracking-tight uppercase">Color Palette Overrides</h3>
+                <p className="text-xs text-slate-500 mt-2 font-medium max-w-md">
+                  Modify the CSS variables for the <strong className="text-indigo-400 uppercase tracking-widest">{activeTheme.name}</strong> theme level. These settings are applied via <code className="text-rose-400 font-mono text-[10px]">!important</code> in the live preview.
+                </p>
               </div>
               <button 
                 onClick={() => {
-                  setColorOverrides(prev => ({ ...prev, [activeThemeId]: {} }));
+                  if (confirm(`Reset all colors for ${activeTheme.name}?`)) {
+                    setColorOverrides(prev => ({ ...prev, [activeThemeId]: {} }));
+                  }
                 }}
-                className="px-4 py-2 bg-red-600/20 text-red-400 hover:bg-red-600/30 rounded-lg text-sm font-bold transition-colors"
+                className="px-6 py-2.5 bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border border-rose-500/20 active:scale-95 shrink-0"
               >
-                Reset Theme Colors
+                Reset {activeTheme.name}
               </button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
               {CSS_VARIABLES.map(variable => {
                 const val = currentVars[variable.name] || '';
                 return (
-                  <div key={variable.name} className="flex flex-col p-3 bg-slate-900 border border-slate-800 rounded-xl relative overflow-hidden group">
-                    <span className="text-xs font-bold text-slate-300 mb-2 truncate pr-6" title={variable.name}>{variable.label} <span className="text-slate-600 font-mono text-[10px]">({variable.name})</span></span>
-                    <div className="flex items-center gap-2">
+                  <div key={variable.name} className="flex flex-col p-4 bg-slate-900 border border-white/5 rounded-[1.5rem] relative overflow-hidden group hover:bg-slate-800 hover:border-indigo-500/30 transition-all shadow-lg">
+                    <div className="flex items-center justify-between mb-3 w-full">
+                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest truncate max-w-[70%]">{variable.label}</span>
+                      <button 
+                        onClick={() => {
+                          navigator.clipboard.writeText(variable.name);
+                        }}
+                        className="p-1.5 bg-slate-800 hover:bg-indigo-500/20 text-slate-500 hover:text-indigo-400 rounded-lg transition-all"
+                        title="Copy variable name"
+                      >
+                        <Copy size={10} />
+                      </button>
+                    </div>
+                    
+                    <div className="flex items-center gap-3">
                       {/* Native Color Picker */}
-                      <div className="relative w-10 h-10 rounded-lg overflow-hidden shrink-0 border border-slate-700 shadow-inner group">
+                      <div className="relative w-12 h-12 rounded-2xl overflow-hidden shrink-0 border-2 border-white/5 shadow-2xl group cursor-pointer transition-transform active:scale-90">
                         <input 
                           type="color" 
                           value={val.startsWith('#') && (val.length === 7 || val.length === 9) ? val.slice(0,7) : '#000000'}
                           onChange={(e) => handleColorChange(variable.name, e.target.value)}
-                          className="absolute inset-[-10px] w-20 h-20 opacity-0 cursor-pointer"
+                          className="absolute inset-[-20px] w-[200%] h-[200%] opacity-0 cursor-pointer z-10"
                         />
                         <div 
-                          className="w-full h-full pointer-events-none" 
-                          style={{ backgroundColor: val || 'transparent' }} 
+                          className="w-full h-full pointer-events-none transition-transform group-hover:scale-110" 
+                          style={{ backgroundColor: val || 'rgba(255,255,255,0.05)' }} 
                         />
                         {!val && (
                           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                            <div className="w-12 h-0.5 bg-red-500/50 -rotate-45" />
+                            <Plus size={14} className="text-white/20" />
                           </div>
+                        )}
+                        {val && (
+                          <div className="absolute inset-0 ring-1 ring-inset ring-white/20 rounded-2xl pointer-events-none" />
                         )}
                       </div>
                       
                       {/* Text Input for HEX/RGBA */}
-                      <input 
-                        type="text" 
-                        value={val}
-                        onChange={(e) => handleColorChange(variable.name, e.target.value)}
-                        placeholder="e.g. #ffffff or rgba(...)"
-                        className="flex-1 bg-slate-950 border border-slate-800 text-slate-200 text-xs font-mono px-3 py-2 rounded-lg focus:outline-none focus:border-indigo-500 transition-colors w-full min-w-0"
-                      />
-                      
-                      {val && (
-                        <button 
-                          onClick={() => handleClearColor(variable.name)}
-                          className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-slate-800 rounded-lg transition-colors shrink-0 absolute top-2 right-2"
-                          title="Clear Color"
-                        >
-                          <X size={14} />
-                        </button>
-                      )}
+                      <div className="flex-1 relative">
+                        <input 
+                          type="text" 
+                          value={val}
+                          onChange={(e) => handleColorChange(variable.name, e.target.value)}
+                          placeholder="Default"
+                          className="w-full bg-black border border-white/10 text-indigo-200 text-[11px] font-mono px-3 py-3 rounded-xl focus:outline-none focus:ring-1 focus:ring-indigo-500/50 transition-all placeholder:text-slate-700"
+                        />
+                        {val && (
+                          <button 
+                            onClick={() => handleClearColor(variable.name)}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-500 hover:text-rose-400 hover:bg-rose-400/10 rounded-lg transition-all"
+                            title="Clear"
+                          >
+                            <X size={12} />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="mt-3 text-[9px] font-mono text-slate-600 truncate opacity-0 group-hover:opacity-100 transition-opacity">
+                      {variable.name}
                     </div>
                   </div>
                 );
