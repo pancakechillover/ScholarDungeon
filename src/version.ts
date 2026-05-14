@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v6.3.17';
+export const APP_VERSION = 'v6.3.19';
 export const LAST_UPDATE_DATE = '2026-05-14';
-export const LAST_UPDATE_TIME = '13:09:00';
+export const LAST_UPDATE_TIME = '13:17:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,24 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v6.3.19',
+    date: '2026-05-14',
+    time: '13:17:00',
+    title: 'iOS Touch & Tooltip Refinement',
+    items: [
+      { category: 'Bug Fix', description: 'Fixed tooltip dismissal and unresponsiveness on mobile devices by securely deferring DOM mutations during the event capture phase.' }
+    ]
+  },
+  {
+    version: 'v6.3.18',
+    date: '2026-05-14',
+    time: '13:13:00',
+    title: 'Immersive Reflection',
+    items: [
+      { category: 'Feature', description: 'Added a fullscreen edit mode for daily reflections, providing a distraction-free writing experience.' }
+    ]
+  },
   {
     version: 'v6.3.17',
     date: '2026-05-14',

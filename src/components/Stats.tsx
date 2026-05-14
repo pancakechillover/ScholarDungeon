@@ -1,4 +1,5 @@
 import React, { useState, useRef, useMemo, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   format, eachDayOfInterval, isSameDay, 
   startOfWeek, endOfWeek, subDays, addDays, subWeeks, addWeeks,
@@ -8,7 +9,7 @@ import {
 import { StudySession, AppState, RewardHistoryItem } from '../types';
 import { cn } from '../lib/utils';
 import { 
-  BarChart2, Zap, Coins, ChevronLeft, ChevronRight, Calendar, Star, StarHalf, Edit2, Save, X, Eye, EyeOff, LineChart as LineChartIcon, Trophy, Sword, Heart
+  BarChart2, Zap, Coins, ChevronLeft, ChevronRight, Calendar, Star, StarHalf, Edit2, Save, X, Eye, EyeOff, LineChart as LineChartIcon, Trophy, Sword, Heart, Maximize2, Minimize2
 } from 'lucide-react';
 import { MOOD_OPTIONS, DEFAULT_ENABLED_MOODS } from '../constants';
 
@@ -176,15 +177,13 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
   };
 
   useEffect(() => {
+    let dismissalTimeout: any = null;
+
     const handleOutsideInteraction = (e: MouseEvent | TouchEvent) => {
       const target = e.target as Element;
       
-      // 1. Handle Heatmap popover dismissal
-      if (!target.closest('.heatmap-cell-container')) {
-        setSelectedHeatmapDate(null);
-      }
-      
-      // 2. Handle Recharts tooltips dismissal (Daily/Weekly Activity)
+      // Compute targeting synchronously before any event propagation completes
+      const inHeatmap = !!target.closest('.heatmap-cell-container');
       const inTooltip = !!target.closest('.recharts-tooltip-wrapper') || !!target.closest('.recharts-tooltip-portal');
       const isDataPoint = !!target.closest('.recharts-bar-rectangle') || 
                           !!target.closest('.recharts-dot') || 
@@ -194,20 +193,42 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
       
       const isChart = !!target.closest('.recharts-wrapper') || !!target.closest('.recharts-responsive-container');
       
-      // If we clicked on truly "blank area" or outside the chart context entirely, reset chart keys
-      // This forces the tooltips to unmount and disappear.
-      if (!inTooltip && (!isChart || (isChart && !isDataPoint))) {
-        setChartKeys(prev => ({
-          daily: Date.now() + Math.random(),
-          weeklyBar: Date.now() + Math.random(),
-          weeklyLine: Date.now() + Math.random()
-        }));
-      }
+      if (dismissalTimeout) clearTimeout(dismissalTimeout);
+
+      // Defer state updates (and DOM unmounts) until AFTER native events finish propagating.
+      // This prevents the "iOS double tap" issue where mutating DOM during capture phase cancels clicks.
+      dismissalTimeout = setTimeout(() => {
+        // 1. Handle Heatmap popover dismissal safely
+        if (!inHeatmap && selectedHeatmapDate !== null) {
+          setSelectedHeatmapDate(null);
+        }
+        
+        // 2. Handle Recharts tooltips dismissal
+        let isAnyTooltipVisible = false;
+        const tooltips = document.querySelectorAll('.recharts-tooltip-wrapper');
+        tooltips.forEach(t => {
+          const style = window.getComputedStyle(t);
+          if (style.visibility === 'visible' && style.opacity !== '0' && style.display !== 'none') {
+            isAnyTooltipVisible = true;
+          }
+        });
+
+        // Only force tooltip unmount if one is actually open AND we clicked outside it.
+        // Prevents endless remounting on every empty click.
+        if (isAnyTooltipVisible && !inTooltip && (!isChart || (isChart && !isDataPoint))) {
+          setChartKeys(prev => ({
+            daily: Date.now() + Math.random(),
+            weeklyBar: Date.now() + Math.random(),
+            weeklyLine: Date.now() + Math.random()
+          }));
+        }
+      }, 50);
     };
 
-    // Use click and touchstart for better compatibility and dismissal response
-    // Using capture: true to ensure we catch events even if they are stopped by chart internals
+    // Use click and touchstart for better compatibility and dismissal response.
+    // passive: true so we don't block scrolling. capture: true to catch events early before they get swallowed.
     document.addEventListener('click', handleOutsideInteraction, { capture: true });
+    document.addEventListener('touchstart', handleOutsideInteraction, { passive: true, capture: true });
 
     const handleJump = (e: any) => {
       setDailyDate(new Date(e.detail));
@@ -222,7 +243,9 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
     window.addEventListener('statsNavJump', handleJump);
 
     return () => {
+      if (dismissalTimeout) clearTimeout(dismissalTimeout);
       document.removeEventListener('click', handleOutsideInteraction, { capture: true });
+      document.removeEventListener('touchstart', handleOutsideInteraction, { capture: true });
       window.removeEventListener('statsNavJump', handleJump);
     };
   }, [selectedHeatmapDate]);
@@ -268,6 +291,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
   const [heatmapDate, setHeatmapDate] = useState(getInitialPeakDate());
 
   const [isEditingLog, setIsEditingLog] = useState(false);
+  const [isFullscreenEdit, setIsFullscreenEdit] = useState(false);
   const [editRating, setEditRating] = useState(0);
   const [editReflection, setEditReflection] = useState('');
   const [editMood, setEditMood] = useState<string | undefined>();
@@ -811,12 +835,21 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
                   </div>
                 </div>
                 <div className={cn("grid gap-4", isMarkdownPreview ? "grid-cols-1" : "grid-cols-1")}>
-                  <textarea
-                    value={editReflection}
-                    onChange={(e) => setEditReflection(e.target.value)}
-                    className="w-full h-32 bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 transition-all resize-none"
-                    placeholder="Reflect on your day..."
-                  />
+                  <div className="relative">
+                    <textarea
+                      value={editReflection}
+                      onChange={(e) => setEditReflection(e.target.value)}
+                      className="w-full h-32 bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 transition-all resize-none custom-scrollbar"
+                      placeholder="Reflect on your day..."
+                    />
+                    <button
+                      onClick={() => setIsFullscreenEdit(true)}
+                      className="absolute top-2 right-2 p-1.5 bg-slate-800 text-slate-400 hover:text-white rounded-lg transition-colors border border-slate-700 hover:border-slate-600"
+                      title="Fullscreen Edit"
+                    >
+                      <Maximize2 size={14} />
+                    </button>
+                  </div>
                   {isMarkdownPreview && editReflection && (
                     <div className="p-3 bg-slate-900/50 border border-slate-800 rounded-xl overflow-y-auto max-h-32 custom-scrollbar">
                       <div className="prose prose-invert prose-sm max-w-none prose-p:text-slate-300 prose-headings:text-slate-100 prose-strong:text-slate-200 prose-li:text-slate-300">
@@ -1138,6 +1171,77 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
         </div>
 
       </div>
+      
+      {isFullscreenEdit && createPortal(
+        <div className="fixed inset-0 z-[100] flex flex-col bg-slate-950/90 backdrop-blur-sm animate-in fade-in duration-200 p-4 sm:p-8">
+          <div className="flex-1 flex flex-col max-w-5xl mx-auto w-full bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden relative">
+            <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-10">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-indigo-500/20 text-indigo-400 rounded-xl">
+                  <Edit2 size={18} />
+                </div>
+                <h3 className="font-black text-white uppercase tracking-tighter italic pr-1">Immersive Reflection</h3>
+              </div>
+              <button 
+                onClick={() => setIsFullscreenEdit(false)}
+                className="p-2 text-slate-400 hover:text-white bg-slate-800/50 hover:bg-slate-800 rounded-xl transition-colors"
+              >
+                <Minimize2 size={18} />
+              </button>
+            </div>
+            
+            <div className="flex-1 p-6 flex flex-col lg:flex-row gap-6 overflow-hidden">
+              <div className="flex-1 flex flex-col h-full min-h-0">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-widest pl-1">Drafting</span>
+                </div>
+                <textarea
+                  value={editReflection}
+                  onChange={(e) => setEditReflection(e.target.value)}
+                  className="flex-1 w-full bg-slate-950 border border-slate-800 rounded-2xl p-6 text-sm sm:text-base text-slate-200 focus:outline-none focus:border-indigo-500 transition-all resize-none custom-scrollbar shadow-inner"
+                  placeholder="The deepest insights often arrive in absolute silence. Reflect on your journey..."
+                  autoFocus
+                />
+              </div>
+
+              {isMarkdownPreview && editReflection && (
+                <div className="flex-1 flex flex-col h-full min-h-0 border-t lg:border-t-0 pt-6 lg:pt-0 lg:border-l border-slate-800 lg:pl-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-bold text-slate-500 uppercase tracking-widest pl-1">Live Preview</span>
+                  </div>
+                  <div className="flex-1 p-6 bg-slate-950 border border-slate-800 rounded-2xl overflow-y-auto custom-scrollbar shadow-inner">
+                    <div className="prose prose-invert max-w-none prose-p:text-slate-300 prose-headings:text-slate-100 prose-strong:text-slate-200 prose-li:text-slate-300 prose-blockquote:border-indigo-500 prose-blockquote:bg-indigo-500/5 prose-blockquote:px-4 prose-blockquote:py-1">
+                      <Markdown>{editReflection}</Markdown>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            <div className="p-4 border-t border-slate-800 bg-slate-900/50 backdrop-blur-md flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => setIsMarkdownPreview(!isMarkdownPreview)}
+                  className={cn("flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all", isMarkdownPreview ? "bg-indigo-500/20 text-indigo-400 border border-indigo-500/30" : "bg-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-700")}
+                >
+                  {isMarkdownPreview ? <EyeOff size={14} /> : <Eye size={14} />}
+                  <span>Preview</span>
+                </button>
+              </div>
+              
+              <button 
+                onClick={() => {
+                  setIsFullscreenEdit(false);
+                }}
+                className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold transition-all shadow-lg shadow-indigo-900/20 hover:shadow-indigo-500/20"
+              >
+                <span>Done</span>
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 });
