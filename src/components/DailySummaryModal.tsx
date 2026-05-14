@@ -37,6 +37,7 @@ import { MOOD_OPTIONS, DEFAULT_ENABLED_MOODS } from '../constants';
 
 import { createPortal } from 'react-dom';
 import { useScrollLock } from '../hooks/useScrollLock';
+import { ImmersiveReflectionModal } from './ImmersiveReflectionModal';
 
 interface DailySummaryModalProps {
   state: AppState;
@@ -153,58 +154,7 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
     }
   }, [state.dailyLogs, today.dateString]);
 
-  const applyFormat = (format: 'bold' | 'italic' | 'underline' | 'indent') => {
-    const textarea = immersiveTextAreaRef.current;
-    if (!textarea) return;
-
-    if (format === 'indent') {
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
-      if (start === undefined || end === undefined) return;
-
-      const lines = reflection.split('\n');
-      // basic fallback if we want to indent selected lines
-      // but simpler: just prepend '- '
-      const newText = reflection.substring(0, start) + '- ' + reflection.substring(end);
-      setReflection(newText);
-      setTimeout(() => {
-        textarea.focus();
-        textarea.setSelectionRange(start + 2, start + 2);
-      }, 0);
-      return;
-    }
-
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    if (start === undefined || end === undefined) return;
-    
-    // if no text is selected, just append empty tags at cursor
-    const selectedText = reflection.substring(start, end);
-    let replacement = '';
-    let offset = 0;
-
-    if (format === 'bold') {
-      replacement = `**${selectedText}**`;
-      offset = selectedText.length ? 4 : 2;
-    } else if (format === 'italic') {
-      replacement = `*${selectedText}*`;
-      offset = selectedText.length ? 2 : 1;
-    } else if (format === 'underline') {
-      replacement = `<u>${selectedText}</u>`;
-      offset = selectedText.length ? 7 : 3;
-    }
-
-    const newText = reflection.substring(0, start) + replacement + reflection.substring(end);
-    setReflection(newText);
-
-    setTimeout(() => {
-      textarea.focus();
-      textarea.setSelectionRange(
-        selectedText ? start : start + offset, 
-        selectedText ? start + replacement.length : start + offset
-      );
-    }, 0);
-  };
+  // End applyFormat
 
   const renderTemplateControls = () => (
     <div className="relative flex items-center gap-0 h-[26px]">
@@ -773,98 +723,23 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
     </motion.div>
   );
 
-  const immersiveContent = (
-    <AnimatePresence>
-      {isImmersiveMode && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[10000] bg-slate-950 flex flex-col m-0 p-0"
-        >
-          <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/50">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest italic pr-1">Immersive Reflection</h3>
-                <span className="hidden sm:inline-block text-[10px] font-bold text-indigo-400/80 bg-indigo-500/10 px-1.5 py-0.5 rounded border border-indigo-500/20 tracking-wider">
-                  {today.dateString}
-                </span>
-              </div>
-              
-              {/* Format Controls */}
-              <div className="hidden sm:flex items-center gap-1 border-l border-slate-700 pl-4">
-                <button onClick={() => applyFormat('bold')} className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors" title="Bold">
-                  <strong className="font-serif">B</strong>
-                </button>
-                <button onClick={() => applyFormat('italic')} className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors italic" title="Italic">
-                  <em className="font-serif">I</em>
-                </button>
-                <button onClick={() => applyFormat('underline')} className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors underline" title="Underline">
-                  <span className="font-serif">U</span>
-                </button>
-                <button onClick={() => applyFormat('indent')} className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors" title="Indent / List">
-                  <Indent size={14} />
-                </button>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-3">
-              <div className="hidden sm:block">
-                {renderTemplateControls()}
-              </div>
-              <button
-                onClick={() => setIsMarkdownEnabled(!isMarkdownEnabled)}
-                className={cn(
-                  "flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all",
-                  isMarkdownEnabled 
-                    ? "bg-indigo-500/20 text-indigo-400 border border-indigo-500/30" 
-                    : "bg-slate-800 text-slate-500 border border-slate-700"
-                )}
-              >
-                {isMarkdownEnabled ? <Eye size={14} /> : <EyeOff size={14} />}
-                <span>Markdown {isMarkdownEnabled ? 'On' : 'Off'}</span>
-              </button>
-              <button 
-                onClick={() => setIsImmersiveMode(false)} 
-                className="p-2 text-slate-500 hover:text-white rounded-xl hover:bg-slate-800 transition-colors"
-                title="Exit Immersive Mode"
-              >
-                <Minimize2 size={20} />
-              </button>
-            </div>
-          </div>
-          <div className={cn("flex-1 flex overflow-hidden", isMarkdownEnabled ? "flex-col md:flex-row" : "flex-col")}>
-            <textarea
-              ref={immersiveTextAreaRef}
-              className="flex-1 p-6 sm:p-8 bg-slate-950 text-slate-200 text-base md:text-lg leading-relaxed focus:outline-none resize-none border-r border-slate-800/50 custom-scrollbar"
-              placeholder="Write your reflection..."
-              value={reflection}
-              onChange={(e) => setReflection(e.target.value)}
-              autoFocus
-            />
-            {isMarkdownEnabled && (
-              <div className="flex-1 p-6 sm:p-8 overflow-y-auto bg-slate-950/50 custom-scrollbar">
-                {reflection ? (
-                  <div className="prose prose-invert max-w-none prose-p:text-slate-300 prose-headings:text-slate-100 prose-strong:text-slate-200">
-                    <Markdown>{reflection}</Markdown>
-                  </div>
-                ) : (
-                  <p className="text-slate-600 italic lg:text-lg">Preview will appear here...</p>
-                )}
-              </div>
-            )}
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
-
-  return createPortal(
+  return (
     <>
-      {modalContent}
-      {immersiveContent}
-    </>, 
-    document.body
+      <ImmersiveReflectionModal
+        isOpen={isImmersiveMode}
+        onClose={() => setIsImmersiveMode(false)}
+        dateString={today.dateString}
+        reflection={reflection}
+        setReflection={setReflection}
+        isMarkdownEnabled={isMarkdownEnabled}
+        setIsMarkdownEnabled={setIsMarkdownEnabled}
+        renderTemplateControls={renderTemplateControls}
+      />
+      {createPortal(
+        modalContent, 
+        document.body
+      )}
+    </>
   );
 };
 

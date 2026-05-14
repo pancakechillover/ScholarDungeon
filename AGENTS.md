@@ -23,7 +23,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v6.3.19
+- **Current Version:** v6.4.0
 - **Last Update Date:** 2026-05-14
 
 ## Dark Themes Definition
@@ -50,11 +50,18 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 ## Task History
 
-- **v6.3.19 (2026-05-14):** iOS Touch & Tooltip Refinement.
-  - *Bug Fix:* Fixed tooltip dismissal and unresponsiveness on mobile devices by securely deferring DOM mutations during the event capture phase.
+- **v6.4.0 (2026-05-14):** Version 6.4.0 Milestone Update.
+  - *Milestone:* Upgraded system version to 6.4.0.
 
-- **v6.3.18 (2026-05-14):** Immersive Reflection.
-  - *Feature:* Added a fullscreen modal for drafting daily reflections in the Record view to provide a distraction-free writing environment.
+- **v6.3.20 (2026-05-14):** Immersive Reflection Unification.
+  - *Architecture:* Extracted the Immersive Reflection modal into a shared component to ensure parity between the Record dashboard and the End of Day summary screen.
+
+- **v6.3.19 (2026-05-14):** iOS Touch & Tooltip Refinement.
+  - *Bug Fix:* Fixed tooltip dismissal and unresponsiveness on mobile devices by securely deferring DOM mutations during the event capture phase and using stateless callbacks.
+  - *Bug Fix:* Fixed heatmap popovers not dismissing when clicking outside.
+
+- **v6.3.18 (2026-05-14):** Immersive Reflection Shared Modal.
+  - *Feature:* Extracted the "End of the Day" Immersive Reflection module into a shared modal and integrated it into the Record/Stats view for a consistent distraction-free writing experience.
 
 - **v6.3.17 (2026-05-14):** iOS Touch Interaction Bug Fix.
   - *Bug Fix:* Resolved double-tap requirement for navigation and interactions on iOS touch devices by optimising event handling in the Stats interface.

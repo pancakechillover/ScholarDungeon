@@ -9,17 +9,20 @@ import {
 import { StudySession, AppState, RewardHistoryItem } from '../types';
 import { cn } from '../lib/utils';
 import { 
-  BarChart2, Zap, Coins, ChevronLeft, ChevronRight, Calendar, Star, StarHalf, Edit2, Save, X, Eye, EyeOff, LineChart as LineChartIcon, Trophy, Sword, Heart, Maximize2, Minimize2
+  BarChart2, Zap, Coins, ChevronLeft, ChevronRight, Calendar, Star, StarHalf, Edit2, Save, X, Eye, EyeOff, LineChart as LineChartIcon, Trophy, Sword, Heart, Maximize2, Minimize2, LayoutTemplate, File, FileText
 } from 'lucide-react';
 import { MOOD_OPTIONS, DEFAULT_ENABLED_MOODS } from '../constants';
 
+import { motion, AnimatePresence } from 'motion/react';
 import { PageHeader } from './PageHeader';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, Legend, LineChart, Line, CartesianGrid, LabelList } from 'recharts';
 import Markdown from 'react-markdown';
+import { ImmersiveReflectionModal } from './ImmersiveReflectionModal';
 
 interface StatsProps {
   state: AppState;
   saveDailyLog: (date: string, rating: number, reflection: string, mood?: string) => void;
+  onUpdateState?: (updates: Partial<AppState>) => void;
 }
 
 const SharedPopoverContent = ({
@@ -122,7 +125,7 @@ const CustomDailyTooltip = ({ active, payload, label }: any) => {
 };
 
 
-export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
+export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateState }) => {
   const history = state.history;
   const dailyLogs = state.dailyLogs || {};
   
@@ -159,6 +162,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
   const [heatmapMode, setHeatmapMode] = useState<'30days' | 'month' | 'year'>('30days');
   const [heatmapMetric, setHeatmapMetric] = useState<'time' | 'efficiency'>('time');
   const [selectedHeatmapDate, setSelectedHeatmapDate] = useState<number | null>(null);
+
   const [chartKeys, setChartKeys] = useState({
     daily: Date.now(),
     weeklyBar: Date.now() + 1,
@@ -195,32 +199,24 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
       
       if (dismissalTimeout) clearTimeout(dismissalTimeout);
 
-      // Defer state updates (and DOM unmounts) until AFTER native events finish propagating.
+      // Defer state updates (and DOM mutations) until AFTER native events finish propagating.
       // This prevents the "iOS double tap" issue where mutating DOM during capture phase cancels clicks.
       dismissalTimeout = setTimeout(() => {
         // 1. Handle Heatmap popover dismissal safely
-        if (!inHeatmap && selectedHeatmapDate !== null) {
-          setSelectedHeatmapDate(null);
+        // Using callback form ensures we always have the freshest state, ignoring closure staleness.
+        if (!inHeatmap) {
+          setSelectedHeatmapDate(prev => prev !== null ? null : prev);
         }
         
         // 2. Handle Recharts tooltips dismissal
-        let isAnyTooltipVisible = false;
-        const tooltips = document.querySelectorAll('.recharts-tooltip-wrapper');
-        tooltips.forEach(t => {
-          const style = window.getComputedStyle(t);
-          if (style.visibility === 'visible' && style.opacity !== '0' && style.display !== 'none') {
-            isAnyTooltipVisible = true;
-          }
-        });
-
-        // Only force tooltip unmount if one is actually open AND we clicked outside it.
-        // Prevents endless remounting on every empty click.
-        if (isAnyTooltipVisible && !inTooltip && (!isChart || (isChart && !isDataPoint))) {
-          setChartKeys(prev => ({
-            daily: Date.now() + Math.random(),
-            weeklyBar: Date.now() + Math.random(),
-            weeklyLine: Date.now() + Math.random()
-          }));
+        // Instead of unmounting the whole chart (which causes the iOS double-tap bug), 
+        // we safely hide the tooltip wrapper using DOM manipulation if clicked completely outside.
+        if (!inTooltip && (!isChart || (isChart && !isDataPoint))) {
+          const tooltips = document.querySelectorAll('.recharts-tooltip-wrapper');
+          tooltips.forEach(t => {
+            (t as HTMLElement).style.visibility = 'hidden';
+            (t as HTMLElement).style.opacity = '0';
+          });
         }
       }, 50);
     };
@@ -248,7 +244,9 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
       document.removeEventListener('touchstart', handleOutsideInteraction, { capture: true });
       window.removeEventListener('statsNavJump', handleJump);
     };
-  }, [selectedHeatmapDate]);
+  }, []);
+
+
 
   const renderHeatmapPopover = (date: Date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
@@ -296,6 +294,179 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
   const [editReflection, setEditReflection] = useState('');
   const [editMood, setEditMood] = useState<string | undefined>();
   const [isMarkdownPreview, setIsMarkdownPreview] = useState(true);
+
+  const [showTemplates, setShowTemplates] = useState(false);
+  const [templateMode, setTemplateMode] = useState<'empty' | 'example'>('empty');
+  const [templateToDelete, setTemplateToDelete] = useState<string | null>(null);
+  const [isSavingTemplate, setIsSavingTemplate] = useState(false);
+  const [newTemplateName, setNewTemplateName] = useState('');
+
+  const renderTemplateControls = () => (
+    <div className="relative flex items-center gap-0 h-[26px]">
+      <button
+        onClick={() => setShowTemplates(!showTemplates)}
+        className={cn(
+          "flex items-center justify-center gap-1.5 h-full px-2 rounded-l-lg text-[10px] font-bold uppercase tracking-wider transition-all border-r-0",
+          showTemplates 
+            ? "bg-indigo-500/20 text-indigo-400 border border-indigo-500/30" 
+            : "bg-slate-800 text-slate-500 border border-slate-700 hover:bg-slate-700"
+        )}
+      >
+        <LayoutTemplate size={12} />
+        <span>Templates</span>
+      </button>
+      <button
+        onClick={() => setTemplateMode('empty')}
+        className={cn(
+          "flex items-center gap-1.5 h-full px-2 border border-slate-700 border-l-0 transition-colors text-[10px] font-bold uppercase tracking-wider",
+          templateMode === 'empty' 
+            ? "bg-indigo-500/20 text-indigo-400" 
+            : "bg-slate-800 text-slate-500 hover:bg-slate-700 hover:text-white"
+        )}
+        title="Blank Template Mode: Load and save templates without examples"
+      >
+        <File size={12} />
+        <span>Blank</span>
+      </button>
+      <button
+        onClick={() => setTemplateMode('example')}
+        className={cn(
+          "flex items-center gap-1.5 h-full px-2 border border-slate-700 border-l-0 rounded-r-lg transition-colors text-[10px] font-bold uppercase tracking-wider",
+          templateMode === 'example' 
+            ? "bg-indigo-500/20 text-indigo-400" 
+            : "bg-slate-800 text-slate-500 hover:bg-slate-700 hover:text-white"
+        )}
+        title="Example Template Mode: Load and save templates with examples"
+      >
+        <FileText size={12} />
+        <span>Example</span>
+      </button>
+
+      {/* Templates Dropdown */}
+      <AnimatePresence>
+        {showTemplates && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="absolute left-0 sm:right-auto top-full mt-2 w-64 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl z-50 overflow-hidden"
+          >
+            <div className="p-2 space-y-1 max-h-48 overflow-y-auto custom-scrollbar">
+              {state.reflectionTemplates?.map((template) => (
+                <div key={template.id} className="group relative">
+                  {templateToDelete === template.id ? (
+                    <div className="flex items-center justify-between w-full px-3 py-2 bg-rose-500/10 rounded-xl">
+                      <span className="text-xs text-rose-400 font-medium">Delete {template.name}?</span>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => {
+                            if (onUpdateState) {
+                              onUpdateState({
+                                reflectionTemplates: state.reflectionTemplates?.filter(t => t.id !== template.id)
+                              });
+                            }
+                            setTemplateToDelete(null);
+                          }}
+                          className="px-2 py-1 bg-rose-500/20 text-rose-400 rounded hover:bg-rose-500/30 text-[10px] font-bold"
+                        >
+                          Yes
+                        </button>
+                        <button
+                          onClick={() => setTemplateToDelete(null)}
+                          className="px-2 py-1 bg-slate-800 text-slate-400 rounded hover:bg-slate-700 text-[10px] font-bold"
+                        >
+                          No
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => {
+                          if (templateMode === 'example' && template.exampleContent) {
+                            setEditReflection(template.exampleContent);
+                          } else {
+                            setEditReflection(template.content);
+                          }
+                          setShowTemplates(false);
+                        }}
+                        className="w-full text-left px-3 py-2 rounded-xl text-xs text-slate-300 hover:bg-slate-800 transition-colors pr-8"
+                      >
+                        {template.name}
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setTemplateToDelete(template.id);
+                        }}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-slate-500 hover:text-rose-400 hover:bg-slate-700 rounded-lg transition-all"
+                        title="Delete Template"
+                      >
+                        <X size={12} />
+                      </button>
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+            <div className="p-2 border-t border-slate-800 bg-slate-950/50">
+              {isSavingTemplate ? (
+                <div className="flex items-center gap-2">
+                  <input
+                    autoFocus
+                    value={newTemplateName}
+                    onChange={(e) => setNewTemplateName(e.target.value)}
+                    placeholder="Template name..."
+                    className="flex-1 min-w-0 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && newTemplateName.trim()) {
+                        if (onUpdateState) {
+                          const templates = [...(state.reflectionTemplates || [])];
+                          const existingIndex = templates.findIndex(t => t.name.toLowerCase() === newTemplateName.trim().toLowerCase());
+                          
+                          if (existingIndex >= 0) {
+                            if (templateMode === 'example') {
+                              templates[existingIndex] = { ...templates[existingIndex], exampleContent: editReflection };
+                            } else {
+                              templates[existingIndex] = { ...templates[existingIndex], content: editReflection };
+                            }
+                          } else {
+                            templates.push({
+                              id: `user-${Date.now()}`,
+                              name: newTemplateName.trim(),
+                              content: templateMode === 'empty' ? editReflection : '',
+                              exampleContent: templateMode === 'example' ? editReflection : ''
+                            });
+                          }
+                          
+                          onUpdateState({ reflectionTemplates: templates });
+                        }
+                        setNewTemplateName('');
+                        setIsSavingTemplate(false);
+                      } else if (e.key === 'Escape') {
+                        setIsSavingTemplate(false);
+                      }
+                    }}
+                  />
+                </div>
+              ) : (
+                <button
+                  onClick={() => {
+                    if (!editReflection.trim()) return;
+                    setIsSavingTemplate(true);
+                  }}
+                  className="w-full flex items-center justify-center gap-1.5 px-3 py-2 bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 hover:text-indigo-300 rounded-xl text-xs font-bold transition-all"
+                >
+                  <Save size={12} />
+                  <span>Save as {templateMode === 'example' ? 'Example' : 'Blank'}</span>
+                </button>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
 
   const dailyDateStr = format(dailyDate, 'yyyy-MM-dd');
   const currentLog = dailyLogs[dailyDateStr];
@@ -753,14 +924,19 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
                 </button>
               ) : (
                 <div className="flex items-center gap-2">
+                  <div className="relative flex items-center gap-0 h-[26px]">
+                    {renderTemplateControls()}
+                  </div>
+                  
                   <button 
                     onClick={() => setIsMarkdownPreview(!isMarkdownPreview)}
                     className={cn(
-                      "p-1.5 rounded-lg transition-all",
-                      isMarkdownPreview ? "text-indigo-400 bg-indigo-500/10" : "text-slate-500 hover:text-slate-200"
+                      "flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all",
+                      isMarkdownPreview ? "bg-indigo-500/20 text-indigo-400 border border-indigo-500/30" : "bg-slate-800 text-slate-500 border border-slate-700"
                     )}
                   >
-                    {isMarkdownPreview ? <Eye size={14} /> : <EyeOff size={14} />}
+                    {isMarkdownPreview ? <Eye size={12} /> : <EyeOff size={12} />}
+                    <span>MD</span>
                   </button>
                   <button 
                     onClick={saveLog}
@@ -1172,76 +1348,16 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
 
       </div>
       
-      {isFullscreenEdit && createPortal(
-        <div className="fixed inset-0 z-[100] flex flex-col bg-slate-950/90 backdrop-blur-sm animate-in fade-in duration-200 p-4 sm:p-8">
-          <div className="flex-1 flex flex-col max-w-5xl mx-auto w-full bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden relative">
-            <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-10">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-indigo-500/20 text-indigo-400 rounded-xl">
-                  <Edit2 size={18} />
-                </div>
-                <h3 className="font-black text-white uppercase tracking-tighter italic pr-1">Immersive Reflection</h3>
-              </div>
-              <button 
-                onClick={() => setIsFullscreenEdit(false)}
-                className="p-2 text-slate-400 hover:text-white bg-slate-800/50 hover:bg-slate-800 rounded-xl transition-colors"
-              >
-                <Minimize2 size={18} />
-              </button>
-            </div>
-            
-            <div className="flex-1 p-6 flex flex-col lg:flex-row gap-6 overflow-hidden">
-              <div className="flex-1 flex flex-col h-full min-h-0">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-widest pl-1">Drafting</span>
-                </div>
-                <textarea
-                  value={editReflection}
-                  onChange={(e) => setEditReflection(e.target.value)}
-                  className="flex-1 w-full bg-slate-950 border border-slate-800 rounded-2xl p-6 text-sm sm:text-base text-slate-200 focus:outline-none focus:border-indigo-500 transition-all resize-none custom-scrollbar shadow-inner"
-                  placeholder="The deepest insights often arrive in absolute silence. Reflect on your journey..."
-                  autoFocus
-                />
-              </div>
-
-              {isMarkdownPreview && editReflection && (
-                <div className="flex-1 flex flex-col h-full min-h-0 border-t lg:border-t-0 pt-6 lg:pt-0 lg:border-l border-slate-800 lg:pl-6">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-widest pl-1">Live Preview</span>
-                  </div>
-                  <div className="flex-1 p-6 bg-slate-950 border border-slate-800 rounded-2xl overflow-y-auto custom-scrollbar shadow-inner">
-                    <div className="prose prose-invert max-w-none prose-p:text-slate-300 prose-headings:text-slate-100 prose-strong:text-slate-200 prose-li:text-slate-300 prose-blockquote:border-indigo-500 prose-blockquote:bg-indigo-500/5 prose-blockquote:px-4 prose-blockquote:py-1">
-                      <Markdown>{editReflection}</Markdown>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-            
-            <div className="p-4 border-t border-slate-800 bg-slate-900/50 backdrop-blur-md flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <button 
-                  onClick={() => setIsMarkdownPreview(!isMarkdownPreview)}
-                  className={cn("flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all", isMarkdownPreview ? "bg-indigo-500/20 text-indigo-400 border border-indigo-500/30" : "bg-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-700")}
-                >
-                  {isMarkdownPreview ? <EyeOff size={14} /> : <Eye size={14} />}
-                  <span>Preview</span>
-                </button>
-              </div>
-              
-              <button 
-                onClick={() => {
-                  setIsFullscreenEdit(false);
-                }}
-                className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold transition-all shadow-lg shadow-indigo-900/20 hover:shadow-indigo-500/20"
-              >
-                <span>Done</span>
-              </button>
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
+      <ImmersiveReflectionModal
+        isOpen={isFullscreenEdit}
+        onClose={() => setIsFullscreenEdit(false)}
+        dateString={format(dailyDate, 'MMM d, yyyy')}
+        reflection={editReflection}
+        setReflection={setEditReflection}
+        isMarkdownEnabled={isMarkdownPreview}
+        setIsMarkdownEnabled={setIsMarkdownPreview}
+        renderTemplateControls={renderTemplateControls}
+      />
     </div>
   );
 });

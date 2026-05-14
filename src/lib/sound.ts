@@ -1,6 +1,7 @@
 // Simple Web Audio API sound generator for UI interactions
 
 let audioCtx: AudioContext | null = null;
+let pageTurnAudio: HTMLAudioElement | null = null;
 
 export const initAudio = () => {
   if (!audioCtx) {
@@ -8,6 +9,10 @@ export const initAudio = () => {
   }
   if (audioCtx.state === 'suspended') {
     audioCtx.resume();
+  }
+  
+  if (!pageTurnAudio) {
+    pageTurnAudio = new Audio('/page-flip.mp3');
   }
 };
 
@@ -17,17 +22,20 @@ export const playSound = (type: SoundType, volume: number = 0.5, enabled: boolea
   if (!enabled || volume <= 0) return;
   
   initAudio();
+
+  if (type === 'pageTurn') {
+    if (pageTurnAudio) {
+      pageTurnAudio.currentTime = 0;
+      pageTurnAudio.volume = Math.max(0, Math.min(1, volume));
+      pageTurnAudio.play().catch(e => console.error('Audio play failed:', e));
+    }
+    return;
+  }
+
   if (!audioCtx) return;
 
   // Master volume
   const v = Math.max(0, Math.min(1, volume));
-
-  if (type === 'pageTurn') {
-    const audio = new Audio('/page-flip.mp3');
-    audio.volume = v;
-    audio.play().catch(e => console.error('Audio play failed:', e));
-    return;
-  }
 
   const t = audioCtx.currentTime;
   const osc = audioCtx.createOscillator();
@@ -37,7 +45,6 @@ export const playSound = (type: SoundType, volume: number = 0.5, enabled: boolea
   gain.connect(audioCtx.destination);
 
   switch (type) {
-
     case 'click':
       osc.type = 'sine';
       osc.frequency.setValueAtTime(600, t);

@@ -6,9 +6,10 @@ import { AppState } from '../types';
 interface StatsViewProps {
   state: AppState;
   saveDailyLog: (date: string, rating: number, reflection: string, mood?: string) => void;
+  onUpdateState?: (updates: Partial<AppState>) => void;
 }
 
-export const StatsView: React.FC<StatsViewProps> = ({ state, saveDailyLog }) => {
+export const StatsView: React.FC<StatsViewProps> = ({ state, saveDailyLog, onUpdateState }) => {
   return (
     <motion.div
       key="stats"
@@ -17,7 +18,7 @@ export const StatsView: React.FC<StatsViewProps> = ({ state, saveDailyLog }) => 
       exit={{ opacity: 0, y: -20 }}
       className="w-full"
     >
-      <Stats state={state} saveDailyLog={saveDailyLog} />
+      <Stats state={state} saveDailyLog={saveDailyLog} onUpdateState={onUpdateState} />
     </motion.div>
   );
 };

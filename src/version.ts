@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v6.3.19';
+export const APP_VERSION = 'v6.4.0';
 export const LAST_UPDATE_DATE = '2026-05-14';
-export const LAST_UPDATE_TIME = '13:17:00';
+export const LAST_UPDATE_TIME = '14:30:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,24 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v6.4.0',
+    date: '2026-05-14',
+    time: '14:30:00',
+    title: 'Version 6.4.0 Milestone',
+    items: [
+      { category: 'Milestone', description: 'Upgraded system version to 6.4.0.' }
+    ]
+  },
+  {
+    version: 'v6.3.20',
+    date: '2026-05-14',
+    time: '13:28:00',
+    title: 'Immersive Reflection Unification',
+    items: [
+      { category: 'Architecture', description: 'Extracted the Immersive Reflection modal into a shared component to ensure parity between the Record dashboard and the End of Day summary screen.' }
+    ]
+  },
   {
     version: 'v6.3.19',
     date: '2026-05-14',

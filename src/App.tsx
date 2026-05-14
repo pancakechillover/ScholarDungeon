@@ -1272,7 +1272,11 @@ function App() {
             )}
 
             {activeTab === 'stats' && (
-              <StatsView state={state} saveDailyLog={saveDailyLog} />
+              <StatsView 
+                state={state} 
+                saveDailyLog={saveDailyLog} 
+                onUpdateState={(update) => setState(s => ({ ...s, ...update }))}
+              />
             )}
 
             {activeTab === 'settings' && (
