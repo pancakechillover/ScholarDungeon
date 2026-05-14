@@ -23,7 +23,7 @@ html {
 
 @layer base {
   :root {
-    overscroll-behavior: none;
+    overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
   }
 
@@ -47,7 +47,7 @@ html {
     width: 100%;
     overflow-x: clip;
     -webkit-overflow-scrolling: touch;
-    overscroll-behavior-y: none;
+    overscroll-behavior-y: auto;
   }
   
   /* Custom Scrollbar - Global */

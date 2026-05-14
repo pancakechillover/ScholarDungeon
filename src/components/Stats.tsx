@@ -6,7 +6,7 @@ import {
   startOfMonth, endOfMonth, startOfYear, endOfYear, addMonths, subMonths, addYears, subYears,
   parseISO, isWithinInterval
 } from 'date-fns';
-import { StudySession, AppState, RewardHistoryItem } from '../types';
+import { StudySession, AppState, RewardHistoryItem, Dungeon, MajorDungeon } from '../types';
 import { cn } from '../lib/utils';
 import { 
   BarChart2, Zap, Coins, ChevronLeft, ChevronRight, Calendar, Star, StarHalf, Edit2, Save, X, Eye, EyeOff, LineChart as LineChartIcon, Trophy, Sword, Heart, Maximize2, Minimize2, LayoutTemplate, File, FileText
@@ -18,11 +18,16 @@ import { PageHeader } from './PageHeader';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, Legend, LineChart, Line, CartesianGrid, LabelList } from 'recharts';
 import Markdown from 'react-markdown';
 import { ImmersiveReflectionModal } from './ImmersiveReflectionModal';
+import { DailySessionsModal } from './DailySessionsModal';
 
 interface StatsProps {
   state: AppState;
   saveDailyLog: (date: string, rating: number, reflection: string, mood?: string) => void;
   onUpdateState?: (updates: Partial<AppState>) => void;
+  updateSession?: (id: string, updates: Partial<StudySession>) => void;
+  deleteSession?: (id: string) => void;
+  dungeons?: Dungeon[];
+  majorDungeons?: MajorDungeon[];
 }
 
 const SharedPopoverContent = ({
@@ -37,6 +42,7 @@ const SharedPopoverContent = ({
   efficiency,
   mood,
   dateTimestamp,
+  period
 }: any) => {
   const moodObj = mood ? MOOD_OPTIONS.find(m => m.id === mood) : null;
   const MoodIcon = moodObj ? moodObj.icon : null;
@@ -71,14 +77,22 @@ const SharedPopoverContent = ({
         )}
 
         {dateTimestamp && (
-          <button 
-            type="button"
-            style={{ pointerEvents: 'auto' }}
-            onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new CustomEvent('statsNavJump', { detail: dateTimestamp })); }}
-            className="w-full mt-4 pt-2 border-t border-slate-800/50 text-indigo-400 hover:text-indigo-300 font-medium text-center transition-colors hover:bg-slate-800/30 rounded px-2 pb-1"
-          >
-            View Daily Record
-          </button>
+          <div className="mt-4 pt-2 border-t border-slate-800/50 space-y-2">
+            <button 
+              type="button"
+              style={{ pointerEvents: 'auto' }}
+              onClick={(e) => { 
+                e.stopPropagation(); 
+                window.dispatchEvent(new CustomEvent('statsShowDailySessionsModal', { 
+                  detail: { timestamp: dateTimestamp, period: period || 'total' }
+                })); 
+              }}
+              className="w-full text-emerald-400 hover:text-emerald-300 font-medium text-center transition-colors hover:bg-slate-800/30 rounded px-2 py-1 flex items-center justify-center gap-1.5"
+            >
+              <LayoutTemplate size={12} />
+              <span>Show Daily Sessions</span>
+            </button>
+          </div>
         )}
       </div>
     </div>
@@ -108,16 +122,34 @@ const CustomWeeklyTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-const CustomDailyTooltip = ({ active, payload, label }: any) => {
+const CustomDailyTooltip = ({ active, payload, label, dateTimestamp }: any) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
-      <div className="bg-slate-900/95 backdrop-blur-md border border-slate-700/50 shadow-xl shadow-indigo-500/10 rounded-xl p-3 z-50 pointer-events-none min-w-[120px]">
+      <div className="bg-slate-900/95 backdrop-blur-md border border-slate-700/50 shadow-xl shadow-indigo-500/10 rounded-xl p-3 z-50 min-w-[120px]">
         <p className="text-slate-50 font-bold mb-1.5 pb-1.5 border-b border-slate-800/50">{label}</p>
-        <div className="flex justify-between gap-4 text-xs">
+        <div className="flex justify-between gap-4 text-xs mb-3">
           <span className="text-slate-400">Sessions</span>
           <span className="text-indigo-400 font-bold">{data.sessions}</span>
         </div>
+        {dateTimestamp && (
+          <div className="flex flex-col gap-1.5 pt-1.5 border-t border-slate-800/50">
+            <button 
+              type="button"
+              style={{ pointerEvents: 'auto' }}
+              onClick={(e) => { 
+                e.stopPropagation(); 
+                window.dispatchEvent(new CustomEvent('statsShowDailySessionsModal', { 
+                  detail: { timestamp: dateTimestamp, period: data.periodKey } 
+                })); 
+              }}
+              className="w-full text-emerald-400 hover:text-emerald-300 font-bold text-[10px] uppercase tracking-wider text-center transition-colors hover:bg-slate-800/30 rounded py-1 flex items-center justify-center gap-1"
+            >
+              <LayoutTemplate size={10} />
+              Sessions
+            </button>
+          </div>
+        )}
       </div>
     );
   }
@@ -125,9 +157,11 @@ const CustomDailyTooltip = ({ active, payload, label }: any) => {
 };
 
 
-export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateState }) => {
+export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateState, updateSession, deleteSession, dungeons = [], majorDungeons = [] }) => {
   const history = state.history;
   const dailyLogs = state.dailyLogs || {};
+  const [showDailySessionsDate, setShowDailySessionsDate] = useState<Date | null>(null);
+  const [showDailySessionsPeriod, setShowDailySessionsPeriod] = useState<string | undefined>();
   
   const getInitialPeakDate = () => {
     const ts = state.timeSettings || {
@@ -180,13 +214,36 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
     }));
   };
 
+  const [isEditingLog, setIsEditingLog] = useState(false);
+  const [isFullscreenEdit, setIsFullscreenEdit] = useState(false);
+  const [editRating, setEditRating] = useState(0);
+  const [editReflection, setEditReflection] = useState('');
+  const [editMood, setEditMood] = useState<string | undefined>();
+  const [isMarkdownPreview, setIsMarkdownPreview] = useState(true);
+
+  // Refs for auto-save on unmount and stale closures in effects
+  const editRatingRef = useRef(editRating);
+  const editReflectionRef = useRef(editReflection);
+  const editMoodRef = useRef(editMood);
+  const isEditingLogRef = useRef(isEditingLog);
+  const dailyDateRef = useRef(dailyDate);
+  const saveDailyLogRef = useRef(saveDailyLog);
+
+  useEffect(() => {
+    editRatingRef.current = editRating;
+    editReflectionRef.current = editReflection;
+    editMoodRef.current = editMood;
+    isEditingLogRef.current = isEditingLog;
+    dailyDateRef.current = dailyDate;
+    saveDailyLogRef.current = saveDailyLog;
+  }, [editRating, editReflection, editMood, isEditingLog, dailyDate, saveDailyLog]);
+
   useEffect(() => {
     let dismissalTimeout: any = null;
 
     const handleOutsideInteraction = (e: MouseEvent | TouchEvent) => {
       const target = e.target as Element;
       
-      // Compute targeting synchronously before any event propagation completes
       const inHeatmap = !!target.closest('.heatmap-cell-container');
       const inTooltip = !!target.closest('.recharts-tooltip-wrapper') || !!target.closest('.recharts-tooltip-portal');
       const isDataPoint = !!target.closest('.recharts-bar-rectangle') || 
@@ -199,18 +256,11 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
       
       if (dismissalTimeout) clearTimeout(dismissalTimeout);
 
-      // Defer state updates (and DOM mutations) until AFTER native events finish propagating.
-      // This prevents the "iOS double tap" issue where mutating DOM during capture phase cancels clicks.
       dismissalTimeout = setTimeout(() => {
-        // 1. Handle Heatmap popover dismissal safely
-        // Using callback form ensures we always have the freshest state, ignoring closure staleness.
         if (!inHeatmap) {
           setSelectedHeatmapDate(prev => prev !== null ? null : prev);
         }
         
-        // 2. Handle Recharts tooltips dismissal
-        // Instead of unmounting the whole chart (which causes the iOS double-tap bug), 
-        // we safely hide the tooltip wrapper using DOM manipulation if clicked completely outside.
         if (!inTooltip && (!isChart || (isChart && !isDataPoint))) {
           const tooltips = document.querySelectorAll('.recharts-tooltip-wrapper');
           tooltips.forEach(t => {
@@ -221,12 +271,15 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
       }, 50);
     };
 
-    // Use click and touchstart for better compatibility and dismissal response.
-    // passive: true so we don't block scrolling. capture: true to catch events early before they get swallowed.
     document.addEventListener('click', handleOutsideInteraction, { capture: true });
     document.addEventListener('touchstart', handleOutsideInteraction, { passive: true, capture: true });
 
     const handleJump = (e: any) => {
+      // Use refs to avoid stale closure in effect
+      if (isEditingLogRef.current) {
+        saveDailyLogRef.current(format(dailyDateRef.current, 'yyyy-MM-dd'), editRatingRef.current, editReflectionRef.current, editMoodRef.current);
+        setIsEditingLog(false);
+      }
       setDailyDate(new Date(e.detail));
       setSelectedHeatmapDate(null);
       setChartKeys({
@@ -236,17 +289,29 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
       });
       document.getElementById('daily-activity-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     };
+
+    const handleShowSessions = (e: any) => {
+      const { timestamp, period } = typeof e.detail === 'object' ? e.detail : { timestamp: e.detail, period: undefined };
+      setShowDailySessionsDate(new Date(timestamp));
+      setShowDailySessionsPeriod(period);
+    };
+
     window.addEventListener('statsNavJump', handleJump);
+    window.addEventListener('statsShowDailySessionsModal', handleShowSessions);
 
     return () => {
       if (dismissalTimeout) clearTimeout(dismissalTimeout);
       document.removeEventListener('click', handleOutsideInteraction, { capture: true });
       document.removeEventListener('touchstart', handleOutsideInteraction, { capture: true });
       window.removeEventListener('statsNavJump', handleJump);
+      window.removeEventListener('statsShowDailySessionsModal', handleShowSessions);
+      
+      // AUTO-SAVE ON UNMOUNT (e.g. switching views)
+      if (isEditingLogRef.current) {
+        saveDailyLogRef.current(format(dailyDateRef.current, 'yyyy-MM-dd'), editRatingRef.current, editReflectionRef.current, editMoodRef.current);
+      }
     };
   }, []);
-
-
 
   const renderHeatmapPopover = (date: Date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
@@ -287,13 +352,6 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
     );
   };
   const [heatmapDate, setHeatmapDate] = useState(getInitialPeakDate());
-
-  const [isEditingLog, setIsEditingLog] = useState(false);
-  const [isFullscreenEdit, setIsFullscreenEdit] = useState(false);
-  const [editRating, setEditRating] = useState(0);
-  const [editReflection, setEditReflection] = useState('');
-  const [editMood, setEditMood] = useState<string | undefined>();
-  const [isMarkdownPreview, setIsMarkdownPreview] = useState(true);
 
   const [showTemplates, setShowTemplates] = useState(false);
   const [templateMode, setTemplateMode] = useState<'empty' | 'example'>('empty');
@@ -467,6 +525,14 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
       </AnimatePresence>
     </div>
   );
+
+  const handleDailyDateChange = (newDate: Date) => {
+    if (isEditingLog) {
+      saveDailyLog(dailyDateStr, editRating, editReflection, editMood);
+      setIsEditingLog(false);
+    }
+    setDailyDate(newDate);
+  };
 
   const dailyDateStr = format(dailyDate, 'yyyy-MM-dd');
   const currentLog = dailyLogs[dailyDateStr];
@@ -671,10 +737,10 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
     });
 
     return [
-      { name: `Morning (${ts.morning.start}-${ts.morning.end})`, sessions: dailyCounts.Morning, fill: '#fde047' },
-      { name: `Afternoon (${ts.afternoon.start}-${ts.afternoon.end})`, sessions: dailyCounts.Afternoon, fill: '#f97316' },
-      { name: `Night (${ts.night.start}-${ts.night.end})`, sessions: dailyCounts.Night, fill: '#6366f1' },
-      ...(state.showOtherInActivityLog !== false ? [{ name: 'Other', sessions: dailyCounts.Other, fill: '#64748b' }] : [])
+      { name: `Morning (${ts.morning.start}-${ts.morning.end})`, sessions: dailyCounts.Morning, fill: '#fde047', periodKey: 'Morning' },
+      { name: `Afternoon (${ts.afternoon.start}-${ts.afternoon.end})`, sessions: dailyCounts.Afternoon, fill: '#f97316', periodKey: 'Afternoon' },
+      { name: `Night (${ts.night.start}-${ts.night.end})`, sessions: dailyCounts.Night, fill: '#6366f1', periodKey: 'Night' },
+      ...(state.showOtherInActivityLog !== false ? [{ name: 'Other', sessions: dailyCounts.Other, fill: '#64748b', periodKey: 'Other' }] : [])
     ];
   }, [dailyDate, getSessionsForDate, ts, state.showOtherInActivityLog]);
 
@@ -832,12 +898,12 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         
-        {/* Daily Activity */}
+        {/* Daily */}
         <div id="daily-activity-section" className="bg-slate-900 p-6 rounded-3xl border border-slate-800 flex flex-col space-y-6">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-bold text-slate-100">Daily Activity</h3>
+            <h3 className="text-lg font-bold text-slate-100">Daily</h3>
             <div className="flex items-center gap-2 bg-slate-800/50 rounded-lg p-1">
-              <button onClick={() => setDailyDate(subDays(dailyDate, 1))} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-slate-200"><ChevronLeft size={16} /></button>
+              <button onClick={() => handleDailyDateChange(subDays(dailyDate, 1))} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-slate-200"><ChevronLeft size={16} /></button>
               <div className="relative flex items-center justify-center">
                 <button 
                   onClick={() => dailyInputRef.current?.showPicker()}
@@ -850,12 +916,12 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
                   ref={dailyInputRef}
                   className="absolute bottom-0 left-1/2 -translate-x-1/2 opacity-0 pointer-events-none w-1 h-1" 
                   value={format(dailyDate, 'yyyy-MM-dd')}
-                  onChange={(e) => e.target.value && setDailyDate(parseISO(e.target.value))}
+                  onChange={(e) => e.target.value && handleDailyDateChange(parseISO(e.target.value))}
                 />
               </div>
-              <button onClick={() => setDailyDate(addDays(dailyDate, 1))} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-slate-200"><ChevronRight size={16} /></button>
+              <button onClick={() => handleDailyDateChange(addDays(dailyDate, 1))} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-slate-200"><ChevronRight size={16} /></button>
               <button 
-                onClick={() => setDailyDate(new Date())}
+                onClick={() => handleDailyDateChange(new Date())}
                 className="px-2 py-1 text-[10px] font-black uppercase tracking-widest text-indigo-400 hover:text-white transition-colors"
               >
                 Today
@@ -890,14 +956,14 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
 
           <div className="h-48 min-h-[192px]">
             <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
-              <BarChart data={dailyData} onClick={(state) => handleChartClick(state, 'daily')} style={{ outline: 'none' }}>
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10 }} />
+              <BarChart data={dailyData} onClick={(state) => handleChartClick(state, 'daily')} style={{ outline: 'none', touchAction: 'pan-y' }}>
+                <XAxis dataKey="name" axisLine={false} tickLine={false} interval={0} tick={{ fill: '#64748b', fontSize: 10 }} />
                 <Tooltip 
                   key={chartKeys.daily}
                   trigger="click"
-                  content={<CustomDailyTooltip />}
+                  content={<CustomDailyTooltip dateTimestamp={dailyDate.getTime()} />}
                   cursor={{ fill: 'rgba(100, 116, 139, 0.2)' }}
-                  wrapperStyle={{ zIndex: 100 }}
+                  wrapperStyle={{ zIndex: 100, pointerEvents: 'auto' }}
                 />
                 <Bar dataKey="sessions" radius={[4, 4, 0, 0]}>
                   {dailyData.map((entry, index) => (
@@ -945,8 +1011,9 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
                     <Save size={14} />
                   </button>
                   <button 
-                    onClick={() => setIsEditingLog(false)}
+                    onClick={saveLog}
                     className="p-1.5 text-rose-400 hover:bg-rose-500/10 rounded-lg transition-all"
+                    title="Finish and Auto-save"
                   >
                     <X size={14} />
                   </button>
@@ -1088,11 +1155,11 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
           </div>
         </div>
 
-        {/* Weekly Activity */}
+        {/* Weekly */}
         <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800 flex flex-col space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <h3 className="text-lg font-bold text-slate-100">Weekly Activity</h3>
+              <h3 className="text-lg font-bold text-slate-100">Weekly</h3>
               <div className="flex bg-slate-800/50 p-1 rounded-lg">
                 <button
                   onClick={() => setWeeklyMode('calendar')}
@@ -1175,14 +1242,14 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
           <div className="space-y-8">
             <div className="h-40 min-h-[160px]">
               <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
-                <BarChart data={weeklyData} margin={{ top: 35, right: 10, left: 10, bottom: 20 }} onClick={(state) => handleChartClick(state, 'weeklyBar')} style={{ outline: 'none' }}>
+                <BarChart data={weeklyData} margin={{ top: 35, right: 10, left: 10, bottom: 20 }} onClick={(state) => handleChartClick(state, 'weeklyBar')} style={{ outline: 'none', touchAction: 'pan-y' }}>
                   <XAxis dataKey="name" axisLine={false} tickLine={false} interval={0} tick={{ fill: '#64748b', fontSize: 10 }} />
                   <Tooltip 
                     key={chartKeys.weeklyBar}
                     trigger="click"
                     content={<CustomWeeklyTooltip />}
                     cursor={{ fill: 'rgba(100, 116, 139, 0.2)' }}
-                    wrapperStyle={{ zIndex: 100 }}
+                    wrapperStyle={{ zIndex: 100, pointerEvents: 'auto' }}
                   />
                   <Bar dataKey="Morning" stackId="a" fill="#fde047" />
                   <Bar dataKey="Afternoon" stackId="a" fill="#f97316" />
@@ -1205,7 +1272,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
               </div>
               <div className="h-32 min-h-[128px]">
                 <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
-                  <LineChart data={weeklyData} margin={{ top: 10, right: 10, left: 10, bottom: 20 }} onClick={(state) => handleChartClick(state, 'weeklyLine')} style={{ outline: 'none' }}>
+                  <LineChart data={weeklyData} margin={{ top: 10, right: 10, left: 10, bottom: 20 }} onClick={(state) => handleChartClick(state, 'weeklyLine')} style={{ outline: 'none', touchAction: 'pan-y' }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
                     <XAxis dataKey="name" axisLine={false} tickLine={false} interval={0} tick={{ fill: '#64748b', fontSize: 10 }} />
                     <YAxis hide domain={[0, 5]} />
@@ -1213,7 +1280,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
                       key={chartKeys.weeklyLine}
                       trigger="click"
                       content={<CustomWeeklyTooltip />}
-                      wrapperStyle={{ zIndex: 100 }}
+                      wrapperStyle={{ zIndex: 100, pointerEvents: 'auto' }}
                     />
                     <Line 
                       type="monotone" 
@@ -1358,6 +1425,25 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
         setIsMarkdownEnabled={setIsMarkdownPreview}
         renderTemplateControls={renderTemplateControls}
       />
+
+      {showDailySessionsDate && (
+        <DailySessionsModal 
+          isOpen={!!showDailySessionsDate}
+          onClose={() => {
+            setShowDailySessionsDate(null);
+            setShowDailySessionsPeriod(undefined);
+          }}
+          date={showDailySessionsDate}
+          history={processedHistory}
+          dungeons={dungeons}
+          majorDungeons={majorDungeons}
+          updateSession={updateSession || (() => {})}
+          deleteSession={deleteSession || (() => {})}
+          rewardPool={state.rewardPool || []}
+          timeSettings={state.timeSettings}
+          period={showDailySessionsPeriod}
+        />
+      )}
     </div>
   );
 });

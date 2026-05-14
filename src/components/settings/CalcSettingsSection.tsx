@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { Calculator, Zap, Clock, Coins, Ticket, Sparkles, Target, AlertTriangle } from 'lucide-react';
+import { Calculator, Zap, Clock, Coins, Ticket, Sparkles, Target, AlertTriangle, HelpCircle, Info, ChevronDown, Check } from 'lucide-react';
 import { AppState } from '../../types';
 import { cn, getXPForLevel } from '../../lib/utils';
+import { AnimatePresence } from 'motion/react';
 
 interface CalcSettingsProps {
   state: AppState;
@@ -14,6 +15,10 @@ export const CalcSettingsSection: React.FC<CalcSettingsProps> = ({ state, setSta
   const [focusInput, setFocusInput] = useState(25);
   const [restInput, setRestInput] = useState(5);
   const [sessionsPerDay, setSessionsPerDay] = useState(8);
+  const [showIncomeHelp, setShowIncomeHelp] = useState(false);
+  const [showProgressionHelp, setShowProgressionHelp] = useState(false);
+  const [showSpendingHelp, setShowSpendingHelp] = useState(false);
+  const [targetItemId, setTargetItemId] = useState<string | null>(null);
 
   const calculateSessionYield = () => {
     // Session Reward Settings logic
@@ -99,6 +104,11 @@ export const CalcSettingsSection: React.FC<CalcSettingsProps> = ({ state, setSta
     const shopSessions = sessionCoins > 0 ? Math.ceil(totalShopCost / sessionCoins) : 0;
     const shopDays = dailyCoins > 0 ? totalShopCost / dailyCoins : 0;
 
+    // Targeted Item
+    const targetItem = state.shopItems.find(i => i.id === targetItemId);
+    const targetSessionReq = targetItem && sessionCoins > 0 ? Math.ceil(targetItem.price / sessionCoins) : 0;
+    const targetDayReq = targetItem && dailyCoins > 0 ? targetItem.price / dailyCoins : 0;
+
     const gachaCost = state.gachaPools.find(p => p.type === 'gacha')?.cost || 0;
     const gachaSessions = sessionCoins > 0 && gachaCost > 0 ? Math.ceil(gachaCost / sessionCoins) : 0;
     const gachaPerDay = dailyCoins > 0 && gachaCost > 0 ? Math.floor(dailyCoins / gachaCost) : 0;
@@ -110,7 +120,8 @@ export const CalcSettingsSection: React.FC<CalcSettingsProps> = ({ state, setSta
     return {
       totalShopCost, shopSessions, shopDays,
       gachaCost, gachaSessions, gachaPerDay,
-      kujiCost, kujiSessions, kujiPerDay
+      kujiCost, kujiSessions, kujiPerDay,
+      targetItem, targetSessionReq, targetDayReq
     };
   };
 
@@ -149,7 +160,19 @@ export const CalcSettingsSection: React.FC<CalcSettingsProps> = ({ state, setSta
       className="space-y-8"
     >
       <div>
-        <h3 className="text-xl font-black uppercase tracking-widest text-white mb-2">Calculators</h3>
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-xl font-black uppercase tracking-widest text-white">Calculators</h3>
+          <button 
+            onClick={() => setShowIncomeHelp(!showIncomeHelp)}
+            className={cn(
+              "p-2 rounded-xl transition-all flex items-center gap-2",
+              showIncomeHelp ? "bg-indigo-500 text-white" : "bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200"
+            )}
+          >
+            <HelpCircle size={18} />
+            <span className="text-[10px] font-black uppercase tracking-widest hidden sm:block">Detailed Metrics</span>
+          </button>
+        </div>
         <p className="text-sm text-slate-400">Balance checking and optimization guides to help you tune your personal journey.</p>
       </div>
 
@@ -167,11 +190,22 @@ export const CalcSettingsSection: React.FC<CalcSettingsProps> = ({ state, setSta
       </div>
 
       {/* Input Config */}
-      <div className="bg-slate-900/40 p-6 rounded-3xl border border-slate-800 shadow-xl">
-        <h4 className="flex items-center gap-2 font-black text-white mb-6 uppercase tracking-widest text-sm">
-          <Clock className="text-indigo-400" size={18} />
-          Your Routine Profile
-        </h4>
+      <div className="bg-slate-900/40 p-6 rounded-3xl border border-slate-800 shadow-xl relative">
+        <div className="flex items-center justify-between mb-6">
+          <h4 className="flex items-center gap-2 font-black text-white uppercase tracking-widest text-sm">
+            <Clock className="text-indigo-400" size={18} />
+            Your Routine Profile
+          </h4>
+          <button 
+            onClick={() => setShowProgressionHelp(!showProgressionHelp)}
+            className={cn(
+              "p-1.5 rounded-lg transition-all",
+              showProgressionHelp ? "bg-indigo-500/20 text-indigo-400" : "text-slate-600 hover:text-slate-400"
+            )}
+          >
+            <HelpCircle size={14} />
+          </button>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="relative group">
             <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Focus Time (Min)</label>
@@ -214,11 +248,72 @@ export const CalcSettingsSection: React.FC<CalcSettingsProps> = ({ state, setSta
 
       {/* Calc 1: Yields */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-slate-900/40 p-6 rounded-3xl border border-slate-800 shadow-xl">
-          <h4 className="flex items-center gap-2 font-black text-white mb-6 uppercase tracking-widest text-sm">
-            <Zap className="text-emerald-400" size={18} />
-            Calculated Income
-          </h4>
+        <div className="bg-slate-900/40 p-6 rounded-3xl border border-slate-800 shadow-xl relative">
+          <div className="flex items-center justify-between mb-6">
+            <h4 className="flex items-center gap-2 font-black text-white uppercase tracking-widest text-sm">
+              <Zap className="text-emerald-400" size={18} />
+              Calculated Income
+            </h4>
+            <button 
+              onClick={() => setShowIncomeHelp(!showIncomeHelp)}
+              className={cn(
+                "p-2 rounded-xl transition-all",
+                showIncomeHelp ? "bg-indigo-500 text-white" : "bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200"
+              )}
+              title="Show calculation parameters"
+            >
+              <HelpCircle size={16} />
+            </button>
+          </div>
+
+          <AnimatePresence>
+            {showIncomeHelp && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden mb-6"
+              >
+                <div className="p-4 bg-indigo-500/5 rounded-2xl border border-indigo-500/10 space-y-3">
+                  <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-indigo-400 border-b border-indigo-500/10 pb-2">
+                    <Info size={12} />
+                    Current Multipliers & Constants
+                  </div>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                    <div className="flex justify-between items-center text-[11px]">
+                      <span className="text-slate-500 font-bold uppercase tracking-wider">Base XP</span>
+                      <span className="text-white font-mono">{state.devModeEnabled ? (state.devBaseXP ?? 100) : 100}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-[11px]">
+                      <span className="text-slate-500 font-bold uppercase tracking-wider">Base Gold</span>
+                      <span className="text-white font-mono">{state.devModeEnabled ? (state.devBaseCoins ?? 10) : 10}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-[11px]">
+                      <span className="text-slate-500 font-bold uppercase tracking-wider">Talent XP (A1)</span>
+                      <span className={cn("font-mono", state.activeTalents.includes('a1') ? "text-emerald-400" : "text-slate-600")}>
+                        {state.activeTalents.includes('a1') ? "x1.1" : "x1.0"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-[11px]">
+                      <span className="text-slate-500 font-bold uppercase tracking-wider">Talent Gold (B1)</span>
+                      <span className={cn("font-mono", state.activeTalents.includes('b1') ? "text-emerald-400" : "text-slate-600")}>
+                        {state.activeTalents.includes('b1') ? "+2" : "+0"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-[11px]">
+                      <span className="text-slate-500 font-bold uppercase tracking-wider">Crit Chance</span>
+                      <span className="text-white font-mono">{(state.devModeEnabled ? (state.devCritChance ?? 0.05) : 0.05) * 100}%</span>
+                    </div>
+                    <div className="flex justify-between items-center text-[11px]">
+                      <span className="text-slate-500 font-bold uppercase tracking-wider">Crit Multi</span>
+                      <span className="text-white font-mono">x{state.devModeEnabled ? (state.devCritMultiplier ?? 5) : 5}</span>
+                    </div>
+                  </div>
+                  <div className="text-[9px] text-indigo-300/40 italic mt-2">Values gathered from Developer Settings and Active Talents.</div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
           
           <div className="space-y-4">
             <div className="flex items-center justify-between p-4 bg-slate-800/30 rounded-2xl border border-slate-800 hover:border-slate-700 transition-colors group">
@@ -247,11 +342,47 @@ export const CalcSettingsSection: React.FC<CalcSettingsProps> = ({ state, setSta
         </div>
 
         {/* Calc 2: Level Progression */}
-        <div className="bg-slate-900/40 p-6 rounded-3xl border border-slate-800 shadow-xl">
-          <h4 className="flex items-center gap-2 font-black text-rose-400 mb-6 uppercase tracking-widest text-sm">
-            <Target size={18} />
-            Level Progression
-          </h4>
+        <div className="bg-slate-900/40 p-6 rounded-3xl border border-slate-800 shadow-xl relative">
+          <div className="flex items-center justify-between mb-6">
+            <h4 className="flex items-center gap-2 font-black text-rose-400 uppercase tracking-widest text-sm">
+              <Target size={18} />
+              Level Progression
+            </h4>
+            <button 
+              onClick={() => setShowProgressionHelp(!showProgressionHelp)}
+              className={cn(
+                "p-2 rounded-xl transition-all",
+                showProgressionHelp ? "bg-rose-500 text-white" : "bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200"
+              )}
+              title="Show estimation details"
+            >
+              <HelpCircle size={16} />
+            </button>
+          </div>
+
+          <AnimatePresence>
+            {showProgressionHelp && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden mb-6"
+              >
+                <div className="p-4 bg-rose-500/5 rounded-2xl border border-rose-500/10 space-y-3">
+                  <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-rose-400 border-b border-rose-500/10 pb-2">
+                    <Info size={12} />
+                    Progression Estimates
+                  </div>
+                  <div className="space-y-2 text-[11px] text-slate-400 leading-relaxed">
+                    <p>• <strong className="text-slate-200">Session XP:</strong> Calculated based on your <span className="text-indigo-400 font-bold">Base XP</span> and active <span className="text-emerald-400 font-bold">Talents</span>.</p>
+                    <p>• <strong className="text-slate-200">Remaining XP:</strong> Shows how much more you need to reach the next milestone, minus your current carry-over.</p>
+                    <p>• <strong className="text-slate-200">Daily Average:</strong> Based on your profile’s <span className="text-amber-400 font-bold">{sessionsPerDay}</span> sessions per day routine.</p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          
           <div className="space-y-3">
             {lvlStats.map((lvl, index) => (
               <div key={index} className="flex flex-col p-4 bg-slate-800/30 rounded-2xl border border-slate-800 hover:border-indigo-500/30 transition-all hover:-translate-y-0.5">
@@ -276,30 +407,94 @@ export const CalcSettingsSection: React.FC<CalcSettingsProps> = ({ state, setSta
 
       {/* Calc 3: Economy & Spending */}
       <div className="bg-slate-900/40 p-0 rounded-3xl border border-slate-800 shadow-xl overflow-hidden">
-        <div className="p-6 border-b border-slate-800 bg-slate-900/40">
+        <div className="p-6 border-b border-slate-800 bg-slate-900/40 flex items-center justify-between">
           <h4 className="flex items-center gap-2 font-black text-white uppercase tracking-widest text-sm">
             <Coins className="text-amber-400" size={18} />
             Economy & Purchasing Power
           </h4>
+          <button 
+            onClick={() => setShowSpendingHelp(!showSpendingHelp)}
+            className={cn(
+              "p-2 rounded-xl transition-all",
+              showSpendingHelp ? "bg-amber-500 text-white" : "bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200"
+            )}
+            title="Show economic breakdown"
+          >
+            <HelpCircle size={16} />
+          </button>
         </div>
+
+        <AnimatePresence>
+          {showSpendingHelp && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="overflow-hidden border-b border-slate-800"
+            >
+              <div className="p-6 bg-amber-500/5 space-y-4">
+                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-amber-500 border-b border-amber-500/10 pb-2">
+                  <Info size={12} />
+                  Shopping & Gacha Logic
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2 text-[11px] text-slate-400 leading-relaxed">
+                    <p><strong className="text-slate-200 underline decoration-amber-500/30">Fixed Shop:</strong> Calculates cost of all items with finite stock. Infinite items are excluded from "Total Buy" estimates.</p>
+                    <p><strong className="text-slate-200 underline decoration-amber-500/30">Target Goal:</strong> When a goal is set, all calculations in the Fixed Shop module switch to focus only on that specific item.</p>
+                  </div>
+                  <div className="space-y-2 text-[11px] text-slate-400 leading-relaxed">
+                    <p><strong className="text-slate-200 underline decoration-indigo-500/30">Gacha/Kuji:</strong> Uses the current pool costs to estimate how many sessions you need to farm per single pull.</p>
+                    <p><strong className="text-slate-200 underline decoration-indigo-500/30">Rate:</strong> The number of pulls you can afford daily based on your <span className="text-white font-mono">{yields.dailyCoins}G</span> income.</p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
         
         <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-800">
            {/* Fixed Shop */}
            <div className="p-6 bg-slate-800/10 hover:bg-slate-800/20 transition-colors">
-             <div className="flex items-center gap-2 text-slate-300 font-black uppercase tracking-widest text-xs mb-6">
-               <Coins className="text-amber-500" size={16} /> Fixed Shop
+             <div className="flex items-center justify-between gap-2 text-slate-300 font-black uppercase tracking-widest text-xs mb-6">
+               <div className="flex items-center gap-2">
+                 <Coins className="text-amber-500" size={16} /> Fixed Shop
+               </div>
+               {targetItemId && (
+                 <span className="text-[9px] bg-rose-500/20 text-rose-400 px-1.5 py-0.5 rounded border border-rose-500/30">Goal Active</span>
+               )}
              </div>
              
              <div className="mb-6">
-               <p className="text-[10px] text-slate-500 font-black tracking-widest uppercase mb-1">Total Shop Cost</p>
-               <div className="text-2xl font-mono font-black text-amber-400">{shopStats.totalShopCost}</div>
+               <p className="text-[10px] text-slate-500 font-black tracking-widest uppercase mb-1">
+                 {shopStats.targetItem ? `Target: ${shopStats.targetItem.name}` : 'Total Shop Cost'}
+               </p>
+               <div className={cn(
+                 "text-2xl font-mono font-black",
+                 shopStats.targetItem ? "text-rose-400" : "text-amber-400"
+               )}>
+                 {shopStats.targetItem ? shopStats.targetItem.price : shopStats.totalShopCost}
+               </div>
              </div>
 
              <div>
-               <p className="text-[10px] text-slate-500 font-black tracking-widest uppercase mb-2">To Buy Everything (No restocks)</p>
-               <div className="flex justify-between items-center bg-slate-950/50 rounded-xl p-3 border border-slate-800">
-                 <div className="text-white font-mono text-sm">{shopStats.shopSessions} <span className="text-[10px] font-sans text-slate-500 uppercase">sessions</span></div>
-                 <div className="text-emerald-400 font-mono font-bold text-sm bg-emerald-500/10 px-2 py-1 rounded border border-emerald-500/20">{shopStats.shopDays < 1 ? '< 1' : shopStats.shopDays.toFixed(1)} <span className="text-[10px] font-sans uppercase">days</span></div>
+               <p className="text-[10px] text-slate-500 font-black tracking-widest uppercase mb-2">
+                 {shopStats.targetItem ? 'Required to reach goal' : 'To Buy Everything (No restocks)'}
+               </p>
+               <div className={cn(
+                 "flex justify-between items-center rounded-xl p-3 border",
+                 shopStats.targetItem ? "bg-rose-500/5 border-rose-500/20" : "bg-slate-950/50 border-slate-800"
+               )}>
+                 <div className="text-white font-mono text-sm">
+                   {shopStats.targetItem ? shopStats.targetSessionReq : shopStats.shopSessions} <span className="text-[10px] font-sans text-slate-500 uppercase">sessions</span>
+                 </div>
+                 <div className={cn(
+                   "font-mono font-bold text-sm px-2 py-1 rounded border",
+                   shopStats.targetItem 
+                     ? "text-rose-400 bg-rose-500/10 border-rose-500/20" 
+                     : "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
+                 )}>
+                   {(shopStats.targetItem ? shopStats.targetDayReq : shopStats.shopDays) < 1 ? '< 1' : (shopStats.targetItem ? shopStats.targetDayReq : shopStats.shopDays).toFixed(1)} <span className="text-[10px] font-sans uppercase">days</span>
+                 </div>
                </div>
              </div>
            </div>
@@ -360,6 +555,56 @@ export const CalcSettingsSection: React.FC<CalcSettingsProps> = ({ state, setSta
                </div>
              )}
            </div>
+        </div>
+      </div>
+
+      {/* Targeted Item Selector */}
+      <div className="bg-slate-900/40 p-6 rounded-3xl border border-slate-800 shadow-xl relative overflow-hidden group">
+        <div className="flex items-center justify-between mb-6">
+          <h4 className="flex items-center gap-2 font-black text-white uppercase tracking-widest text-sm">
+            <Target className="text-rose-400" size={18} />
+            Set Current Goal
+          </h4>
+          <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest italic">Optional target</div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="relative">
+            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Target Product</label>
+            <div className="relative">
+              <select 
+                value={targetItemId || ''}
+                onChange={(e) => setTargetItemId(e.target.value || null)}
+                className="w-full bg-slate-950/80 border border-slate-700 text-slate-300 px-4 py-3 rounded-2xl focus:border-indigo-500 transition-all appearance-none cursor-pointer"
+              >
+                <option value="">None (Total Shop)</option>
+                <optgroup label="Shop Items">
+                  {state.shopItems.map(item => (
+                    <option key={item.id} value={item.id}>{item.name} ({item.price}G)</option>
+                  ))}
+                </optgroup>
+              </select>
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
+                <ChevronDown size={16} />
+              </div>
+            </div>
+          </div>
+
+          {targetItemId ? (
+            <div className="flex items-center gap-4 p-4 bg-rose-500/5 rounded-2xl border border-rose-500/10">
+              <div className="flex-1">
+                <div className="text-[10px] text-rose-400/60 font-black uppercase tracking-widest mb-1">Goal: {state.shopItems.find(i => i.id === targetItemId)?.name}</div>
+                <div className="flex justify-between items-center">
+                  <span className="text-white font-mono text-lg font-black">{shopStats.targetItem && yields.sessionCoins > 0 ? Math.ceil(state.shopItems.find(i => i.id === targetItemId)!.price / yields.sessionCoins) : 0} <span className="text-xs font-sans text-slate-500 font-bold">Sessions</span></span>
+                  <span className="text-rose-400 font-mono font-bold text-sm bg-rose-500/10 px-2 py-1 rounded-lg border border-rose-500/20">{(shopStats.targetItem && yields.dailyCoins > 0 ? state.shopItems.find(i => i.id === targetItemId)!.price / yields.dailyCoins : 0).toFixed(1)} Days</span>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center border-2 border-dashed border-slate-800 rounded-2xl p-4 opacity-50 grayscale">
+              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Select an item to see specific targets</p>
+            </div>
+          )}
         </div>
       </div>
     </motion.div>

@@ -23,6 +23,11 @@ export const playSound = (type: SoundType, volume: number = 0.5, enabled: boolea
   
   initAudio();
 
+  // Attempt to resume context if it's suspended (common in browsers until user gesture)
+  if (audioCtx && audioCtx.state === 'suspended') {
+    audioCtx.resume().catch(() => {});
+  }
+
   if (type === 'pageTurn') {
     if (pageTurnAudio) {
       pageTurnAudio.currentTime = 0;

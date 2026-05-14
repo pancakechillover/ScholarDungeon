@@ -71,6 +71,22 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
     });
   };
 
+  // Handle jump from Stats
+  React.useEffect(() => {
+    const handleJump = (e: any) => {
+      const timestamp = e.detail;
+      const dateStr = format(new Date(timestamp), 'yyyy-MM-dd');
+      setDateRange({ start: dateStr, end: dateStr });
+      setShowFilters(true);
+      setSearchTerm('');
+      setFilterDungeon('all');
+      setDurationRange({ min: '', max: '' });
+    };
+
+    window.addEventListener('recentSessionsJumpToDate', handleJump);
+    return () => window.removeEventListener('recentSessionsJumpToDate', handleJump);
+  }, []);
+
   const handleSort = (key: typeof sortConfig.key) => {
     setSortConfig(prev => ({
       key,
@@ -242,7 +258,7 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
   }, [filteredSessions, dungeons, majorDungeons]);
 
   return (
-    <div className="w-full space-y-6 mt-12 pb-20">
+    <div id="recent-sessions-anchor" className="w-full space-y-6 mt-12 pb-20">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-2">
         <h3 className="text-xl font-bold text-white flex items-center gap-2">
           <History className="text-indigo-400" />
@@ -742,7 +758,7 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
                     onChange={(e) => setEditingSession({ ...editingSession, timestamp: new Date(e.target.value).toISOString() })}
                     className="w-full bg-slate-800 border-none rounded-xl py-3 px-4 text-white focus:ring-2 focus:ring-indigo-500 outline-none"
                   />
-                  <p className="text-[10px] text-slate-500 mt-2 italic pr-1">Adjusting this helps the "Daily Activity" calculation in Record charts.</p>
+                  <p className="text-[10px] text-slate-500 mt-2 italic pr-1">Adjusting this helps the "Daily" calculation in Record charts.</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">

@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v6.4.0';
+export const APP_VERSION = 'v6.7.2';
 export const LAST_UPDATE_DATE = '2026-05-14';
-export const LAST_UPDATE_TIME = '14:30:00';
+export const LAST_UPDATE_TIME = '16:35:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,110 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v6.7.2',
+    date: '2026-05-14',
+    time: '16:35:00',
+    title: 'Interaction & Type Integrity',
+    items: [
+      { category: 'UX', description: 'Removed redundant "Daily Record" navigation button from chart tooltips to streamline interaction.' },
+      { category: 'Fix', description: 'Hardened StudySession type definitions and resolved linting warnings in the daily sessions component.' }
+    ]
+  },
+  {
+    version: 'v6.7.1',
+    date: '2026-05-14',
+    time: '16:32:00',
+    title: 'Chart Tooltip Optimization',
+    items: [
+      { category: 'UX', description: 'Removed redundant "Daily Record" navigation button from chart tooltips to streamline the interaction flow in the Record dashboard.' }
+    ]
+  },
+  {
+    version: 'v6.7.0',
+    date: '2026-05-14',
+    time: '16:30:00',
+    title: 'Period-Aware Sessions Modal',
+    items: [
+      { category: 'Feature', description: 'Daily chart segments now open sessions modal filtered by Morning/Afternoon/Night.' },
+      { category: 'UI', description: 'Added chronological sorting (Morning to Night) and period separators matching Recent Sessions CSS.' },
+      { category: 'Logic', description: 'Improved session retrieval using calculated daily boundaries (assignedDate) for consistency with charts.' }
+    ]
+  },
+  {
+    version: 'v6.6.1',
+    date: '2026-05-14',
+    time: '16:22:00',
+    title: 'Daily Sessions Modal Refinement',
+    items: [
+      { category: 'UI', description: 'Modified session action buttons to be permanently visible instead of hover-only for improved accessibility and touch support.' }
+    ]
+  },
+  {
+    version: 'v6.6.0',
+    date: '2026-05-14',
+    time: '16:15:00',
+    title: 'Daily Session Modal & UX Synchronization',
+    items: [
+      { category: 'Feature', description: 'Implemented "Daily Sessions Modal" in the Record (Stats) interface; inspect sessions without tab switching.' },
+      { category: 'UI', description: 'Modal design synchronized with Recent Sessions table CSS while providing localized editing and deletion.' },
+      { category: 'UX', description: 'Enhanced chart interaction flow to prevent loss of scroll position and context in the dashboard.' }
+    ]
+  },
+  {
+    version: 'v6.5.2',
+    date: '2026-05-14',
+    time: '15:55:00',
+    title: 'Touch & Navigation Refinement',
+    items: [
+      { category: 'Fix', description: 'Fixed navigation anchor bug: Clicking "view sessions record" in the Record chart now correctly scrolls to the target table.' },
+      { category: 'Fix', description: 'Fixed touch scrolling issues: Adjusted global overscroll behavior and Recharts tooltip pointer events to ensure smooth page sliding on mobile.' },
+      { category: 'UX', description: 'Refined tooltip interactivity: Improved button hitboxes and click detection for chart bubbles on touch devices.' }
+    ]
+  },
+  {
+    version: 'v6.5.1',
+    date: '2026-05-14',
+    time: '15:45:00',
+    title: 'Startup Performance Optimization',
+    items: [
+      { category: 'Perf', description: 'Eliminated the "white flash" on startup by implementing inline background styles and PWA splash screen sync.' },
+      { category: 'UX', description: 'Added auto-save to Daily Record reflections to prevent data loss when switching dates or closing the editor.' }
+    ]
+  },
+  {
+    version: 'v6.5.0',
+    date: '2026-05-14',
+    time: '15:35:00',
+    title: 'Interactive Navigation & Calculator Polish',
+    items: [
+      { category: 'UX', description: 'Implemented cross-section navigation: clicking a daily chart segment now jumps specifically to that day\'s filtered session list in the Record table.' },
+      { category: 'Feature', description: 'Enhanced calculators with detailed help tooltips and a master metric overview for better visibility into earning multipliers.' },
+      { category: 'UI', description: 'Optimized Dashboard layout: aligned Oracle\'s Insight module height with existing guides for a balanced wide-screen aesthetic.' },
+      { category: 'Bug Fix', description: 'Fixed audio context errors on mobile/iframes by implementing aggressive resume-on-gesture logic.' },
+      { category: 'Documentation', description: 'Created FEATURES.md to introduce the application\'s extensive mystical and technical capabilities.' }
+    ]
+  },
+  {
+    version: 'v6.4.2',
+    date: '2026-05-14',
+    time: '15:21:00',
+    title: 'Daily Record Auto-Save',
+    items: [
+      { category: 'UX', description: 'Implemented auto-save for reflections; switching dates or closing the editor now automatically persists changes.' }
+    ]
+  },
+  {
+    version: 'v6.4.1',
+    date: '2026-05-14',
+    time: '14:55:00',
+    title: 'Calculator Insights & Targeted Shop',
+    items: [
+      { category: 'Feature', description: 'Added a help button to the calculator to display all underlying multipliers and constant values.' },
+      { category: 'Feature', description: 'Implemented Targeted Shop Calculation: users can now select a specific item to calculate exact session and day requirements.' },
+      { category: 'UI', description: 'Moved the Goal selector to the bottom of the section and added help details to all modules.' }
+    ]
+  },
   {
     version: 'v6.4.0',
     date: '2026-05-14',

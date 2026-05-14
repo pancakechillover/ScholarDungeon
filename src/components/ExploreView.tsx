@@ -172,6 +172,34 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
     window.addEventListener('mousedown', handleGlobalClick);
     return () => window.removeEventListener('mousedown', handleGlobalClick);
   }, [activeTooltipId]);
+
+  // Handle jump to recent sessions from Stats
+  React.useEffect(() => {
+    const handleJump = (e: any) => {
+      const timestamp = e.detail;
+      // 1. If we are not in explore tab, go to explore first
+      if (activeTab !== 'explore') {
+        setActiveTab('explore');
+      }
+      
+      // 2. Clear fullscreen if active
+      if (isFullscreenExplore) {
+        setIsFullscreenExplore(false);
+      }
+
+      // 3. Defer scroll and date jump logic to allow tab/view switches to settle
+      setTimeout(() => {
+        const anchor = document.getElementById('recent-sessions-anchor');
+        if (anchor) {
+          anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        window.dispatchEvent(new CustomEvent('recentSessionsJumpToDate', { detail: timestamp }));
+      }, 200);
+    };
+
+    window.addEventListener('statsJumpToRecentSessions', handleJump);
+    return () => window.removeEventListener('statsJumpToRecentSessions', handleJump);
+  }, [activeTab, isFullscreenExplore, setActiveTab, setIsFullscreenExplore]);
   
   return (
     <motion.div

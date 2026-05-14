@@ -23,7 +23,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v6.4.0
+- **Current Version:** v6.7.2
 - **Last Update Date:** 2026-05-14
 
 ## Dark Themes Definition
@@ -49,6 +49,53 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v6.7.2 (2026-05-14):** Interaction & Type Integrity.
+  - *UX:* Removed redundant "Daily Record" navigation button from chart tooltips (Weekly and Daily view) to streamline interaction.
+  - *Logic:* Hardened `StudySession` type definitions and resolved linting warnings in the session management modules.
+
+- **v6.7.1 (2026-05-14):** Chart Tooltip Optimization.
+  - *UX:* Removed redundant "Daily Record" navigation button from chart tooltips (Weekly Activity and Daily Periods) to streamline the interaction flow and focus on session management within the Record dashboard.
+
+- **v6.7.0 (2026-05-14):** Period-Aware Sessions Modal & Data Integrity.
+  - *Feature:* Enhanced the "Daily Sessions Modal" to support time-of-day filtering. Clicking segments in the Daily Chart now opens the modal pre-filtered for Morning/Afternoon/Night.
+  - *Feature:* Implemented chronological sorting (Morning to Night) for session records within the modal.
+  - *UI:* Added period dividers and "Recent Sessions" style CSS separators for the Weekly view trigger.
+  - *Logic:* Integrated "cross-day" session detection using the configured day reset hour (e.g., 04:00 AM) to ensure data accuracy in the modal.
+
+- **v6.6.1 (2026-05-14):** Daily Sessions Modal Refinement.
+  - *UI:* Modified session action buttons (Edit/Delete) to be permanently visible instead of hover-only, improving accessibility and ease of use for touch-screen and desktop users alike.
+
+- **v6.6.0 (2026-05-14):** Daily Session Modal & UX Synchronization.
+  - *Feature:* Implemented "Daily Sessions Modal" in the Record (Stats) interface. Now, clicking "Sessions" or "Show Daily Sessions" in chart tooltips captures a local modal instead of navigating away to a different tab.
+  - *UI:* The newly added modal mirrors the `RecentSessions` table CSS for consistency while providing localized editing and deletion capabilities.
+  - *UX:* Improved chart interaction flow: users can now inspect and manage their session records without losing their current scroll position or context in the activity dashboard.
+
+- **v6.5.2 (2026-05-14):** Touch & Navigation Refinement.
+  - *Fix:* Resolved navigation anchor bug: Clicking "view sessions record" in the Record chart now correctly scrolls to the target table.
+  - *Fix:* Fixed touch scrolling issues: Adjusted global overscroll behavior and Recharts tooltip pointer events to ensure smooth page sliding on mobile.
+  - *UX:* Refined tooltip interactivity: Improved button hitboxes and click detection for chart bubbles on touch devices.
+
+- **v6.5.1 (2026-05-14):** Startup Performance Optimization.
+  - *Perf:* Eliminated the "white flash" on startup by implementing inline background styles directly in `index.html`.
+  - *UX:* Added auto-save logic to the Daily Record editor to prevent accidental data loss.
+  - *Fix:* Synchronized PWA manifest colors to ensure a seamless dark transition during app launch.
+
+- **v6.5.0 (2026-05-14):** Interactive Navigation & Calculator Polish.
+  - *Feature:* Enhanced calculators with detailed help tooltips and a master metric overview for better visibility into earning multipliers.
+  - *UI:* Optimized Dashboard layout: aligned Oracle's Insight module height with existing guides for a balanced wide-screen bento grid aesthetic.
+  - *UX:* Implemented cross-section navigation: clicking a daily chart segment now jumps specifically to that day's filtered session list in the Record table.
+  - *Bug Fix:* Fixed audio context errors on mobile/iframes by implementing aggressive resume-on-gesture logic.
+  - *Doc:* Created `FEATURES.md` to introduce the application's extensive mystical and technical capabilities.
+
+- **v6.4.2 (2026-05-14):** Daily Record Auto-Save.
+  - *UX:* Implemented auto-save for the Daily Record/Reflection editor in the Stats interface. Now, switching dates or clicking the "X" (Cancel) button will automatically persist current edits instead of discarding them.
+
+- **v6.4.1 (2026-05-14):** Calculator Insights & Targeted Shop.
+  - *Feature:* Added a help button (?) to the income calculator to reveal all active multipliers (Talents) and constants (Base XP/Gold) for transparency.
+  - *Feature:* Implemented "Targeted Goal" in the Fixed Shop calculator, allowing users to calculate the exact sessions and days needed for a single specific item.
+  - *UI:* Moved the Goal selector to the bottom of the calculator section for a cleaner layout.
+  - *UX:* Added context-aware help tooltips/drawers to Level Progression and Economy modules.
 
 - **v6.4.0 (2026-05-14):** Version 6.4.0 Milestone Update.
   - *Milestone:* Upgraded system version to 6.4.0.

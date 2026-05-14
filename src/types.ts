@@ -317,6 +317,8 @@ export interface StudySession {
   rewardName?: string;
   rewardIcon?: string;
   isCrit?: boolean;
+  period?: string;
+  assignedDateStr?: string;
   triggeredTalents?: {
     flowExperience?: { xp: number; coins: number };
     perfectTheory?: { xp: number; coins: number };

@@ -182,7 +182,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           )}
         </div>
 
-        <div className="bg-slate-900 rounded-3xl border border-slate-800 p-8 relative overflow-hidden group flex-1">
+        <div className="bg-slate-900 rounded-3xl border border-slate-800 p-8 relative overflow-hidden group flex-1 flex flex-col justify-center min-h-[140px]">
           <Bot className="absolute -bottom-6 right-8 text-indigo-500/20 w-32 h-32 group-hover:scale-110 transition-transform" />
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="flex-1">

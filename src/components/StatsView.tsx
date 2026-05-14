@@ -1,15 +1,27 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { Stats } from './Stats';
-import { AppState } from '../types';
+import { AppState, Dungeon, MajorDungeon, StudySession } from '../types';
 
 interface StatsViewProps {
   state: AppState;
   saveDailyLog: (date: string, rating: number, reflection: string, mood?: string) => void;
   onUpdateState?: (updates: Partial<AppState>) => void;
+  updateSession?: (id: string, updates: Partial<StudySession>) => void;
+  deleteSession?: (id: string) => void;
+  dungeons?: Dungeon[];
+  majorDungeons?: MajorDungeon[];
 }
 
-export const StatsView: React.FC<StatsViewProps> = ({ state, saveDailyLog, onUpdateState }) => {
+export const StatsView: React.FC<StatsViewProps> = ({ 
+  state, 
+  saveDailyLog, 
+  onUpdateState, 
+  updateSession, 
+  deleteSession,
+  dungeons,
+  majorDungeons
+}) => {
   return (
     <motion.div
       key="stats"
@@ -18,7 +30,15 @@ export const StatsView: React.FC<StatsViewProps> = ({ state, saveDailyLog, onUpd
       exit={{ opacity: 0, y: -20 }}
       className="w-full"
     >
-      <Stats state={state} saveDailyLog={saveDailyLog} onUpdateState={onUpdateState} />
+      <Stats 
+        state={state} 
+        saveDailyLog={saveDailyLog} 
+        onUpdateState={onUpdateState}
+        updateSession={updateSession}
+        deleteSession={deleteSession}
+        dungeons={dungeons}
+        majorDungeons={majorDungeons}
+      />
     </motion.div>
   );
 };

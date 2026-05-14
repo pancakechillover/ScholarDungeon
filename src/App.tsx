@@ -1276,6 +1276,10 @@ function App() {
                 state={state} 
                 saveDailyLog={saveDailyLog} 
                 onUpdateState={(update) => setState(s => ({ ...s, ...update }))}
+                updateSession={updateSession}
+                deleteSession={deleteSession}
+                dungeons={dungeons}
+                majorDungeons={majorDungeons}
               />
             )}
 
