@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Bot, Send, RefreshCw, Settings as SettingsIcon, Plus, Edit2, Trash2, Library, Check, Copy, Quote } from 'lucide-react';
+import { Bot, Send, RefreshCw, Settings as SettingsIcon, Plus, Edit2, Trash2, Library, Check, Copy, Quote, MessageSquare, PanelLeftClose, PanelLeftOpen, Download } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { AppState, SageModelConfig, SagePromptConfig } from '../../types';
 import { cn } from '../../lib/utils';
@@ -288,6 +288,28 @@ const SageConfigManager: React.FC<{ state: AppState, setState: React.Dispatch<Re
   );
 };
 
+const SageLoadingTimer = ({ startTime, isDarkTheme }: { startTime: number, isDarkTheme: boolean }) => {
+  const [elapsed, setElapsed] = React.useState(0);
+  
+  React.useEffect(() => {
+    const updateElapsed = () => setElapsed(Math.floor((Date.now() - startTime) / 1000));
+    updateElapsed();
+    const interval = setInterval(updateElapsed, 1000);
+    return () => clearInterval(interval);
+  }, [startTime]);
+
+  return (
+    <div className={cn("p-4 rounded-2xl rounded-tl-none flex items-center gap-3 border",
+      isDarkTheme ? "bg-slate-900/80 border-emerald-500/20" : "bg-emerald-50 border-emerald-200"
+    )}>
+       <RefreshCw className={cn("animate-spin", isDarkTheme ? "text-emerald-400" : "text-emerald-600")} size={16} />
+       <span className={cn("text-xs font-serif italic pr-1", isDarkTheme ? "text-emerald-400/70" : "text-emerald-700")}>
+         The Sage is consulting the scrolls... ({elapsed}s)
+       </span>
+    </div>
+  );
+};
+
 interface SageInterfaceProps {
   state: AppState;
   setState: React.Dispatch<React.SetStateAction<AppState>>;
@@ -296,15 +318,45 @@ interface SageInterfaceProps {
 const SageInterface: React.FC<SageInterfaceProps> = ({ state, setState }) => {
   const isDarkTheme = ['night', 'forest', 'ocean'].includes(state.theme || '');
   const [showConfig, setShowConfig] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const loading = !!state.sageIsLoading;
+  const loadingStartTime = state.sageLoadingStartTime || Date.now();
   const [userInput, setUserInput] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [showPromptSelector, setShowPromptSelector] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = React.useState(true);
+  const [editingConvoId, setEditingConvoId] = React.useState<string | null>(null);
+  const [editingTitle, setEditingTitle] = React.useState('');
   const scrollRef = React.useRef<HTMLDivElement>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
 
-  const history = state.sageChatHistory || [];
+  // Initialize conversations if empty, using legacy history if it exists
+  React.useEffect(() => {
+    if (!state.sageConversations || state.sageConversations.length === 0) {
+      const initialHistory = state.sageChatHistory || [];
+      const defaultConvo = {
+        id: Date.now().toString(),
+        title: initialHistory.length > 0 ? 'Previous Counsel' : 'New Consultation',
+        updatedAt: Date.now(),
+        messages: initialHistory
+      };
+      setState(prev => ({
+        ...prev,
+        sageConversations: [defaultConvo],
+        activeSageConversationId: defaultConvo.id
+      }));
+    } else if (!state.activeSageConversationId) {
+       setState(prev => ({
+        ...prev,
+        activeSageConversationId: prev.sageConversations?.[0]?.id
+      }));
+    }
+  }, []);
+
+  const conversations = state.sageConversations || [];
+  const activeConversationId = state.activeSageConversationId || conversations[0]?.id;
+  const activeConversation = conversations.find(c => c.id === activeConversationId);
+  const history = activeConversation?.messages || [];
 
   React.useEffect(() => {
     if (scrollRef.current) {
@@ -316,33 +368,83 @@ const SageInterface: React.FC<SageInterfaceProps> = ({ state, setState }) => {
     const prompt = customPrompt || userInput;
     if (!prompt.trim() && !customPrompt) return;
 
-    setLoading(true);
     setError(null);
     setUserInput('');
 
     // Add user message to state
     const userMsg = { role: 'user' as const, content: prompt, timestamp: Date.now() };
-    setState(prev => ({
-      ...prev,
-      sageChatHistory: [...(prev.sageChatHistory || []), userMsg]
-    }));
+    
+    // Auto-generate title if it's the first message
+    let newTitle = activeConversation?.title;
+    if (history.length === 0) {
+      newTitle = prompt.slice(0, 30) + (prompt.length > 30 ? '...' : '');
+    }
+
+    setState(prev => {
+      const convos = prev.sageConversations || [];
+      return {
+        ...prev,
+        sageConversations: convos.map(c => 
+          c.id === activeConversationId 
+            ? { ...c, messages: [...c.messages, userMsg], updatedAt: Date.now(), title: newTitle || c.title } 
+            : c
+        ),
+        sageIsLoading: true,
+        sageLoadingStartTime: Date.now()
+      };
+    });
 
     try {
-      const res = await getSageAdvice({ 
+      const getAdvicePromise = getSageAdvice({ 
         state, 
         prompt, 
         history: history.map(h => ({ role: h.role, content: h.content })) 
       });
+
+      const timeoutPromise = new Promise<string>((_, reject) => {
+        setTimeout(() => reject(new Error('TIMEOUT_ERROR')), 180 * 1000);
+      });
+
+      const res = await Promise.race([getAdvicePromise, timeoutPromise]);
       
       const assistantMsg = { role: 'assistant' as const, content: res, timestamp: Date.now() };
-      setState(prev => ({
-        ...prev,
-        sageChatHistory: [...(prev.sageChatHistory || []), assistantMsg]
-      }));
+      setState(prev => {
+        const convos = prev.sageConversations || [];
+        return {
+          ...prev,
+          sageConversations: convos.map(c => 
+            c.id === activeConversationId 
+              ? { ...c, messages: [...c.messages, assistantMsg], updatedAt: Date.now() } 
+              : c
+          ),
+          sageIsLoading: false,
+          sageLoadingStartTime: null
+        };
+      });
     } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setLoading(false);
+      if (e.message === 'TIMEOUT_ERROR') {
+        const assistantMsg = { role: 'assistant' as const, content: "*(The Sage pondered deeply for too long and lost the connection. Please try again.)*", timestamp: Date.now() };
+        setState(prev => {
+          const convos = prev.sageConversations || [];
+          return {
+            ...prev,
+            sageConversations: convos.map(c => 
+              c.id === activeConversationId 
+                ? { ...c, messages: [...c.messages, assistantMsg], updatedAt: Date.now() } 
+                : c
+            ),
+            sageIsLoading: false,
+            sageLoadingStartTime: null
+          };
+        });
+      } else {
+        setError(e.message);
+        setState(prev => ({
+          ...prev,
+          sageIsLoading: false,
+          sageLoadingStartTime: null
+        }));
+      }
     }
   };
 
@@ -359,8 +461,93 @@ const SageInterface: React.FC<SageInterfaceProps> = ({ state, setState }) => {
     if (inputRef.current) inputRef.current.focus();
   };
 
+  const handleExport = () => {
+    if (!activeConversation) return;
+    const blob = new Blob([JSON.stringify(activeConversation, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `sage_export_${activeConversation.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleNewConversation = () => {
+    const newConvo = {
+      id: Date.now().toString(),
+      title: 'New Consultation',
+      updatedAt: Date.now(),
+      messages: []
+    };
+    setState(prev => ({
+      ...prev,
+      sageConversations: [newConvo, ...(prev.sageConversations || [])],
+      activeSageConversationId: newConvo.id
+    }));
+    if (window.innerWidth < 768) setSidebarOpen(false);
+  };
+
+  const handleRenameConversation = (id: string, currentTitle: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingConvoId(id);
+    setEditingTitle(currentTitle);
+  };
+
+  const saveConversationTitle = (id: string) => {
+    if (editingTitle.trim()) {
+      setState(prev => {
+        const convos = prev.sageConversations || [];
+        return {
+          ...prev,
+          sageConversations: convos.map(c => 
+            c.id === id ? { ...c, title: editingTitle.trim() } : c
+          )
+        };
+      });
+    }
+    setEditingConvoId(null);
+    setEditingTitle('');
+  };
+
+  const handleDeleteConversation = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setState(prev => {
+      const remaining = (prev.sageConversations || []).filter(c => c.id !== id);
+      if (remaining.length === 0) {
+        const defaultConvo = {
+          id: Date.now().toString(),
+          title: 'New Consultation',
+          updatedAt: Date.now(),
+          messages: []
+        };
+        return {
+          ...prev,
+          sageConversations: [defaultConvo],
+          activeSageConversationId: defaultConvo.id
+        };
+      }
+      return {
+        ...prev,
+        sageConversations: remaining,
+        activeSageConversationId: id === prev.activeSageConversationId ? remaining[0].id : prev.activeSageConversationId
+      };
+    });
+  };
+
   const clearHistory = () => {
-    setState(prev => ({ ...prev, sageChatHistory: [] }));
+    if (confirm("Are you sure you want to clear this entire conversation?")) {
+      setState(prev => {
+        const convos = prev.sageConversations || [];
+        return {
+          ...prev,
+          sageConversations: convos.map(c => 
+            c.id === activeConversationId ? { ...c, messages: [] } : c
+          )
+        };
+      });
+    }
   };
 
   return (
@@ -412,8 +599,122 @@ const SageInterface: React.FC<SageInterfaceProps> = ({ state, setState }) => {
         )}
       </AnimatePresence>
 
-      <div className="flex flex-col bg-slate-950/50 rounded-3xl border border-slate-800 overflow-hidden min-h-[500px]">
-        <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar max-h-[600px]">
+      <div className={cn("flex flex-row rounded-3xl border overflow-hidden min-h-[500px] h-[600px]", isDarkTheme ? "bg-slate-950/50 border-slate-800" : "bg-white border-emerald-200")}>
+        
+        {/* Sidebar */}
+        <AnimatePresence initial={false}>
+          {sidebarOpen && (
+            <motion.div
+              initial={{ width: 0, opacity: 0 }}
+              animate={{ width: 260, opacity: 1 }}
+              exit={{ width: 0, opacity: 0 }}
+              className={cn(
+                "h-full border-r flex flex-col flex-shrink-0 z-10",
+                isDarkTheme ? "border-slate-800 bg-slate-900/50" : "border-emerald-200 bg-emerald-50"
+              )}
+            >
+              <div className={cn("p-4 border-b flex items-center justify-between", isDarkTheme ? "border-slate-800" : "border-emerald-200")}>
+                <span className={cn("text-xs font-black uppercase tracking-widest pl-2", isDarkTheme ? "text-slate-400" : "text-emerald-700")}>Consultations</span>
+                <button
+                  onClick={handleNewConversation}
+                  className={cn("p-1.5 rounded-lg transition-colors", isDarkTheme ? "bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20" : "bg-emerald-200 text-emerald-700 hover:bg-emerald-300")}
+                  title="New Consultation"
+                >
+                  <Plus size={16} />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-2">
+                {conversations.map(convo => (
+                  <div
+                    key={convo.id}
+                    onClick={() => {
+                      if (editingConvoId !== convo.id) {
+                        setState(prev => ({ ...prev, activeSageConversationId: convo.id }));
+                      }
+                    }}
+                    className={cn(
+                      "w-full text-left p-3 rounded-2xl transition-all group flex items-start gap-3",
+                      editingConvoId !== convo.id ? "cursor-pointer" : "",
+                      activeConversationId === convo.id
+                        ? (isDarkTheme ? "bg-emerald-500/15 border border-emerald-500/30" : "bg-emerald-200 border border-emerald-400")
+                        : (isDarkTheme ? "bg-slate-900 border border-transparent hover:border-slate-800" : "bg-emerald-100/50 border border-transparent hover:bg-emerald-100")
+                    )}
+                  >
+                    <MessageSquare size={16} className={cn("mt-0.5 flex-shrink-0", activeConversationId === convo.id ? (isDarkTheme ? "text-emerald-400" : "text-emerald-700") : (isDarkTheme ? "text-slate-500 group-hover:text-slate-400" : "text-emerald-600/70 group-hover:text-emerald-700"))} />
+                    <div className="flex-1 overflow-hidden">
+                      {editingConvoId === convo.id ? (
+                        <input
+                          autoFocus
+                          type="text"
+                          value={editingTitle}
+                          onChange={(e) => setEditingTitle(e.target.value)}
+                          onBlur={() => saveConversationTitle(convo.id)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') saveConversationTitle(convo.id);
+                            if (e.key === 'Escape') setEditingConvoId(null);
+                          }}
+                          className={cn("text-xs font-bold w-full bg-transparent outline-none border-b border-dashed", isDarkTheme ? "text-emerald-100 border-emerald-500/50" : "text-emerald-900 border-emerald-700")}
+                        />
+                      ) : (
+                        <div className={cn("text-xs font-bold line-clamp-1 break-all", activeConversationId === convo.id ? (isDarkTheme ? "text-emerald-100" : "text-emerald-900") : (isDarkTheme ? "text-slate-300 group-hover:text-slate-200" : "text-emerald-800 group-hover:text-emerald-950"))}>
+                          {convo.title}
+                        </div>
+                      )}
+                      <div className={cn("text-[10px] mt-1", isDarkTheme ? "text-slate-600" : "text-emerald-700/60")}>
+                        {new Date(convo.updatedAt).toLocaleDateString()}
+                      </div>
+                    </div>
+                    {editingConvoId !== convo.id && (
+                      <div className="flex flex-col gap-2 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity lg:opacity-100">
+                        <button
+                          onClick={(e) => handleRenameConversation(convo.id, convo.title, e)}
+                          className={cn("p-1", isDarkTheme ? "text-slate-500 hover:text-emerald-400" : "text-emerald-600/60 hover:text-emerald-800")}
+                          title="Rename"
+                        >
+                          <Edit2 size={12} />
+                        </button>
+                        {conversations.length > 1 && (
+                          <button
+                            onClick={(e) => handleDeleteConversation(convo.id, e)}
+                            className={cn("p-1 hover:text-red-400", isDarkTheme ? "text-slate-500" : "text-emerald-600/60")}
+                            title="Delete"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Main Chat */}
+        <div className={cn("flex-1 flex flex-col min-w-0 transition-colors", isDarkTheme ? "bg-slate-950/30" : "bg-white")}>
+          <div className={cn("p-3 border-b flex items-center justify-between", isDarkTheme ? "border-slate-800 bg-slate-900/50" : "border-emerald-200 bg-emerald-50/50")}>
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className={cn("p-2 ml-2 transition-colors rounded-xl", isDarkTheme ? "text-slate-400 hover:text-white bg-slate-800/80" : "text-emerald-700 hover:text-emerald-900 bg-emerald-200/50")}
+              title={sidebarOpen ? "Close Sidebar" : "Open Sidebar"}
+            >
+              {sidebarOpen ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
+            </button>
+            <div className={cn("text-xs font-black uppercase tracking-widest line-clamp-1 flex-1 text-center px-4", isDarkTheme ? "text-slate-400" : "text-emerald-800")}>
+              {activeConversation?.title || 'Illuminating the Path'}
+            </div>
+            <button 
+              onClick={handleExport}
+              title="Export Conversation"
+              className={cn("p-2 mr-2 transition-colors", isDarkTheme ? "text-slate-400 hover:text-indigo-400" : "text-emerald-600 hover:text-indigo-600")}
+              disabled={!activeConversation || activeConversation.messages.length === 0}
+            >
+              <Download size={18} />
+            </button>
+          </div>
+          
+          <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
           {history.length === 0 && !loading && (
             <div className="h-full flex flex-col items-center justify-center text-center space-y-8 py-10">
                <div className="relative">
@@ -484,12 +785,7 @@ const SageInterface: React.FC<SageInterfaceProps> = ({ state, setState }) => {
 
           {loading && (
             <div className="flex flex-col items-start pr-1">
-              <div className={cn("p-4 rounded-2xl rounded-tl-none flex items-center gap-3 border",
-                isDarkTheme ? "bg-slate-900/80 border-emerald-500/20" : "bg-emerald-50 border-emerald-200"
-              )}>
-                 <RefreshCw className={cn("animate-spin", isDarkTheme ? "text-emerald-400" : "text-emerald-600")} size={16} />
-                 <span className={cn("text-xs font-serif italic pr-1", isDarkTheme ? "text-emerald-400/70" : "text-emerald-700")}>The Sage is consulting the scrolls...</span>
-              </div>
+              <SageLoadingTimer startTime={loadingStartTime} isDarkTheme={isDarkTheme} />
             </div>
           )}
 
@@ -580,6 +876,7 @@ const SageInterface: React.FC<SageInterfaceProps> = ({ state, setState }) => {
                 </button>
               </div>
            </div>
+        </div>
         </div>
       </div>
     </motion.div>

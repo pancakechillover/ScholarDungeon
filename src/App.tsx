@@ -1123,6 +1123,10 @@ function App() {
                   setShowGuideBook(true);
                 }}
                 saveDailyLog={saveDailyLog}
+                navigateToSettings={(section) => {
+                  setActiveTab('settings');
+                  setActiveSettingsSection(section);
+                }}
               />
             )}
 

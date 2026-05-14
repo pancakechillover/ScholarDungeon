@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v6.3.7';
+export const APP_VERSION = 'v6.3.10';
 export const LAST_UPDATE_DATE = '2026-05-14';
-export const LAST_UPDATE_TIME = '10:45:00';
+export const LAST_UPDATE_TIME = '11:30:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,39 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v6.3.10',
+    date: '2026-05-14',
+    time: '11:30:00',
+    title: 'Sage UI Polish & Renaming',
+    items: [
+      { category: 'UI', description: 'Fully synchronized the new Sage Consultation sidebar with custom light/dark theme rules.' },
+      { category: 'Feature', description: 'You can now manually rename your saved consultation threads using the pencil icon in the sidebar.' }
+    ]
+  },
+  {
+    version: 'v6.3.9',
+    date: '2026-05-14',
+    time: '11:20:00',
+    title: 'Sage Conversations & Archives',
+    items: [
+      { category: 'Feature', description: 'Added a collapsible sidebar to the Sage AI interface to manage multiple conversation threads.' },
+      { category: 'Feature', description: 'You can now start new consultations and easily switch between past discussion topics.' },
+      { category: 'Feature', description: 'Added the ability to export and download individual Sage conversation scroll histories.' }
+    ]
+  },
+  {
+    version: 'v6.3.8',
+    date: '2026-05-14',
+    time: '11:15:00',
+    title: 'AI Timeout & Background Loading',
+    items: [
+      { category: 'Feature', description: 'Sage AI conversations now persist their loading state even if you switch tabs or close the modal.' },
+      { category: 'Feature', description: 'Added a live timer while the Sage consults the scrolls to track response duration.' },
+      { category: 'Feature', description: 'Implemented a 180-second timeout to prevent infinite hanging when APIs fail to respond.' },
+      { category: 'Feature', description: 'Added native support for viewing the deep thought processes (reasoning_content) of specific reasoning AI models.' }
+    ]
+  },
   {
     version: 'v6.3.7',
     date: '2026-05-14',

@@ -23,7 +23,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v6.3.7
+- **Current Version:** v6.3.10
 - **Last Update Date:** 2026-05-14
 
 ## Dark Themes Definition
@@ -49,6 +49,22 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v6.3.10 (2026-05-14):** Sage Interface Theme Polish.
+  - *UI:* Fully synchronized the Sage Consultation sidebar and main chat background with the user's selected light/dark theme rules.
+  - *Feature:* Added an inline edit functionality (pencil icon) in the sidebar to let users rename their saved chat history topics manually.
+
+- **v6.3.9 (2026-05-14):** Sage Conversations & Export Feature.
+  - *Feature:* Added a collapsible sidebar to the Sage AI chat interface allowing multiple conversations.
+  - *Feature:* Users can now easily switch between active and past AI consultations.
+  - *Feature:* Implemented specific conversation export functionality (JSON download) for the Sage's wisdom.
+  - *Logic:* Migrated legacy monotonic `sageChatHistory` string to structured multiple `sageConversations` supporting automatic title generation.
+
+- **v6.3.8 (2026-05-14):** AI Consulting Timeout & Loading Enhancements.
+  - *Feature:* Sage AI conversations now persist their loading state (background loading) even if the user switches tabs or closes the consultation modal.
+  - *Feature:* Added a live loading timer while the Sage consults the scrolls, letting users track exact wait times.
+  - *Feature:* Enforced an automatic 180-second timeout cancellation logic for API requests—returns a friendly message if the Sage takes too long instead of hanging endlessly.
+  - *Feature:* Native support for the `reasoning_content` field (DeepSeek's "Thought process", etc.); it automatically prepends the model's inner monologue as a markdown blockquote if the provider returns it.
 
 - **v6.3.7 (2026-05-14):** UI Clipping & Sage Theme Refinement.
   - *UI:* Applied `pr-1` padding to all italicized banner titles and empty states globally to prevent character clipping.

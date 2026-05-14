@@ -153,6 +153,13 @@ export interface SagePromptConfig {
   prompt: string;
 }
 
+export interface SageConversation {
+  id: string;
+  title: string;
+  updatedAt: number;
+  messages: { role: 'user' | 'assistant'; content: string; timestamp: number }[];
+}
+
 export interface AppState {
   level: number;
   xp: number;
@@ -290,6 +297,10 @@ export interface AppState {
   activeSageModelId?: string;
   sagePrompts?: SagePromptConfig[];
   sageChatHistory?: { role: 'user' | 'assistant'; content: string; timestamp: number }[];
+  sageConversations?: SageConversation[];
+  activeSageConversationId?: string;
+  sageIsLoading?: boolean;
+  sageLoadingStartTime?: number | null;
   sagePersonality?: 'sage' | 'friend' | 'custom';
   sagePersonalityPrompts?: Record<string, string>;
 }

@@ -133,7 +133,20 @@ Keep your tone consistent with the chosen personality. Use Bold text for emphasi
         model,
         messages,
       });
-      return response.choices[0].message.content || "The Sage remains silent...";
+      
+      const choice = response.choices[0].message;
+      let content = choice.content || "The Sage remains silent...";
+      const anyChoice = choice as any;
+      
+      // Support for DeepSeek and other models that return reasoning_content
+      if (anyChoice.reasoning_content) {
+        const pondered = anyChoice.reasoning_content.trim();
+        if (pondered) {
+          content = `> ***Thoughts...***\n> *${pondered.replace(/\n/g, '\n> ')}*\n\n---\n\n${content}`;
+        }
+      }
+
+      return content;
     }
   } catch (error: any) {
     console.error("Sage AI Error:", error);
