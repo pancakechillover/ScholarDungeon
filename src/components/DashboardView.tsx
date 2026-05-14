@@ -187,9 +187,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-3">
-                <div className="p-2 bg-indigo-500/10 rounded-xl">
-                    <Sparkles size={24} className="text-indigo-400" />
-                </div>
                 <h3 className="text-xl font-black text-white uppercase tracking-tighter italic pr-1">Oracle's Insight</h3>
               </div>
               <p className="text-sm text-slate-400 font-medium">Seek guidance from the Emerald Sage based on your journey.</p>

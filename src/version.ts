@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v6.3.15';
+export const APP_VERSION = 'v6.3.16';
 export const LAST_UPDATE_DATE = '2026-05-14';
-export const LAST_UPDATE_TIME = '12:50:00';
+export const LAST_UPDATE_TIME = '12:57:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,15 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v6.3.16',
+    date: '2026-05-14',
+    time: '12:57:00',
+    title: 'UI Decoupling: Oracle Insight Icon',
+    items: [
+      { category: 'UI', description: 'Removed the icon to the left of "Oracle\'s Insight" in the Dashboard for a cleaner layout.' }
+    ]
+  },
   {
     version: 'v6.3.15',
     date: '2026-05-14',
