@@ -208,8 +208,6 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
     // Use click and touchstart for better compatibility and dismissal response
     // Using capture: true to ensure we catch events even if they are stopped by chart internals
     document.addEventListener('click', handleOutsideInteraction, { capture: true });
-    // touchstart is used for immediate dismissal on mobile
-    document.addEventListener('touchstart', handleOutsideInteraction, { passive: true, capture: true });
 
     const handleJump = (e: any) => {
       setDailyDate(new Date(e.detail));
@@ -225,7 +223,6 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog }) => {
 
     return () => {
       document.removeEventListener('click', handleOutsideInteraction, { capture: true });
-      document.removeEventListener('touchstart', handleOutsideInteraction, { capture: true });
       window.removeEventListener('statsNavJump', handleJump);
     };
   }, [selectedHeatmapDate]);

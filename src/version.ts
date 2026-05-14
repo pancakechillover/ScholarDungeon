@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v6.3.16';
+export const APP_VERSION = 'v6.3.17';
 export const LAST_UPDATE_DATE = '2026-05-14';
-export const LAST_UPDATE_TIME = '12:57:00';
+export const LAST_UPDATE_TIME = '13:09:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,15 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v6.3.17',
+    date: '2026-05-14',
+    time: '13:09:00',
+    title: 'iOS Touch Interaction Bug Fix',
+    items: [
+      { category: 'Bug Fix', description: 'Resolved double-tap requirement for navigation and interactions on iOS touch devices by optimising event handling in the Stats interface.' }
+    ]
+  },
   {
     version: 'v6.3.16',
     date: '2026-05-14',
