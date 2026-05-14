@@ -23,7 +23,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v6.7.2
+- **Current Version:** v6.8.5
 - **Last Update Date:** 2026-05-14
 
 ## Dark Themes Definition
@@ -49,6 +49,30 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v6.8.6 (2026-05-14):** Audio Error Handling Refinement.
+  - *Bug Fix:* Improved audio playback error handling to silence expected browser autoplay policy errors.
+
+- **v6.8.5 (2026-05-14):**
+  - *UI:* Improved visibility of 'Pro Tip' headers in the Talent System guidebook page by updating text color to theme-aware variables.
+
+- **v6.8.4 (2026-05-14):** Talent System Navigation Fix.
+  - *Bug Fix:* Fixed Talent System button in dashboard to point to the correct guidebook page.
+
+- **v6.8.3 (2026-05-14):** Dashboard UI Polish.
+  - *UX:* Removed redundant "GUIDE" label from Guidebook buttons on the dashboard for a cleaner interface.
+
+- **v6.8.2 (2026-05-14):** Talent Color Polish.
+  - *UI:* Brightened Talent System blue colors for improved visibility in Night, Forest, and Ocean themes.
+
+- **v6.8.1 (2026-05-14):** Talent System Interaction Polish.
+  - *UI:* Updated Talent System icons and text to use theme-aware CSS variables, ensuring high visibility in all dark and light themes.
+
+- **v6.8.0 (2026-05-14):** Themed Wisdom & Interaction Polish.
+  - *Feature:* Overhauled Guidebook theming for NIGHT, FOREST, and OCEAN themes; implemented solid dark backgrounds and light mystical typography across all internal pages.
+  - *UX:* Modified Daily Sessions action buttons to be permanently visible, improving accessibility and consistency with Recent Sessions.
+  - *UI:* Removed redundant "Daily Record" navigation buttons from chart tooltips (Weekly and Daily view).
+  - *Visual:* Refined book cover and spine aesthetics to dynamically adapt to themes using CSS variables.
 
 - **v6.7.2 (2026-05-14):** Interaction & Type Integrity.
   - *UX:* Removed redundant "Daily Record" navigation button from chart tooltips (Weekly and Daily view) to streamline interaction.

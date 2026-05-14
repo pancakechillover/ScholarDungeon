@@ -32,7 +32,13 @@ export const playSound = (type: SoundType, volume: number = 0.5, enabled: boolea
     if (pageTurnAudio) {
       pageTurnAudio.currentTime = 0;
       pageTurnAudio.volume = Math.max(0, Math.min(1, volume));
-      pageTurnAudio.play().catch(e => console.error('Audio play failed:', e));
+      pageTurnAudio.play().catch(e => {
+        if (e.name === 'NotAllowedError') {
+          console.debug('Audio play blocked by browser policy');
+        } else {
+          console.error('Audio play failed:', e);
+        }
+      });
     }
     return;
   }

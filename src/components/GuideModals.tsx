@@ -82,7 +82,7 @@ export const GuideBookModal: React.FC<GuideBookModalProps> = ({
 
     // Page 1: Front Cover
     (
-      <div className="w-full h-full flex flex-col items-center justify-center text-center p-6 bg-[#5c4033] relative z-10 shadow-[inset_0_0_40px_rgba(0,0,0,0.8)] border-l flex-1 border-black/30">
+      <div className="w-full h-full flex flex-col items-center justify-center text-center p-6 bg-[var(--gb-cover)] relative z-10 shadow-[inset_0_0_40px_rgba(0,0,0,0.8)] border-l flex-1 border-black/30 transition-colors duration-300">
         <div className="absolute inset-3 border-2 border-dashed border-[#8b6b4a]/60 pointer-events-none" />
         <svg width="0" height="0" className="absolute">
           <defs>
@@ -104,315 +104,315 @@ export const GuideBookModal: React.FC<GuideBookModalProps> = ({
 
     // Page 2: Inside cover (Left page) - Introduction
     (
-      <div className="w-full h-full paper-texture p-4 sm:p-8 flex flex-col pb-12 sm:pb-16 relative shadow-[inset_-10px_0_20px_rgba(0,0,0,0.06)]">
-        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-black/10 to-transparent pointer-events-none" />
+      <div className="w-full h-full paper-texture p-4 sm:p-8 flex flex-col pb-12 sm:pb-16 relative shadow-[inset_-10px_0_20px_rgba(0,0,0,0.06)] transition-colors duration-300 overflow-y-auto hide-scrollbar">
+        <div className="absolute right-0 top-0 bottom-0 w-8 bg-[var(--gb-spine-l)] pointer-events-none" />
         
-        <h2 className="text-2xl sm:text-3xl font-bold font-serif text-[#3a2e22] border-b-2 border-[#8b6b4a]/30 pb-2 sm:pb-4 mb-4 sm:mb-6">Welcome, Seeker</h2>
+        <h2 className="text-2xl sm:text-3xl font-bold font-serif text-[var(--gb-title)] border-b-2 border-[var(--gb-border)] pb-2 sm:pb-4 mb-4 sm:mb-6 transition-colors duration-300">Welcome, Seeker</h2>
         
-        <p className="text-[#5c4033] text-sm md:text-base mb-2 sm:mb-4 leading-relaxed font-sans">
+        <p className="text-[var(--gb-body)] text-sm md:text-base mb-2 sm:mb-4 leading-relaxed font-sans transition-colors duration-300">
           Welcome to the Scholar's Sanctum! This platform is crafted to help you track your progress, build unshakeable habits, and reward your daily achievements. 
         </p>
-        <p className="text-[#5c4033] text-xs sm:text-sm md:text-base mb-3 sm:mb-3 sm:mb-6 leading-relaxed font-sans">
+        <p className="text-[var(--gb-body)] text-xs sm:text-sm md:text-base mb-3 sm:mb-3 sm:mb-6 leading-relaxed font-sans transition-colors duration-300">
           As you traverse this journey, we hope you find joy in the little progressions and satisfaction in unlocking your full potential. Enjoy the adventure!
         </p>
         
         <div className="text-center mt-8 space-y-1 sm:space-y-2 opacity-80">
-          <Compass className="w-8 h-8 mx-auto text-[#8b6b4a]" />
-          <p className="font-serif italic text-amber-900/60 font-bold border-t border-[#8b6b4a]/20 pt-2 inline-block">Best Wishes</p>
+          <Compass className="w-8 h-8 mx-auto text-[var(--gb-label)] transition-colors duration-300" />
+          <p className="font-serif italic text-[var(--gb-accent-text)] font-bold border-t border-[var(--gb-footer-border)] pt-2 inline-block transition-colors duration-300">Best Wishes</p>
         </div>
 
-        <p className="text-center font-serif text-[#8b6b4a] text-sm mt-auto pt-4 border-t border-[#8b6b4a]/20">Page 1</p>
+        <p className="text-center font-serif text-[var(--gb-label)] text-sm mt-auto pt-4 border-t border-[var(--gb-footer-border)] transition-colors duration-300">Page 1</p>
       </div>
     ),
 
     // Page 3: TOC (Right page)
     (
-      <div className="w-full h-full paper-texture p-4 sm:p-8 flex flex-col pb-12 sm:pb-16 relative shadow-[inset_10px_0_20px_rgba(0,0,0,0.06)]">
-        <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-black/10 to-transparent pointer-events-none" />
-          <h2 className="text-2xl sm:text-3xl font-bold font-serif text-[#3a2e22] border-b-2 border-[#8b6b4a]/30 pb-2 sm:pb-4 mb-4 sm:mb-6">Table of Contents</h2>
+      <div className="w-full h-full paper-texture p-4 sm:p-8 flex flex-col pb-12 sm:pb-16 relative shadow-[inset_10px_0_20px_rgba(0,0,0,0.06)] transition-colors duration-300 overflow-y-auto hide-scrollbar">
+        <div className="absolute left-0 top-0 bottom-0 w-8 bg-[var(--gb-spine-r)] pointer-events-none" />
+          <h2 className="text-2xl sm:text-3xl font-bold font-serif text-[var(--gb-title)] border-b-2 border-[var(--gb-border)] pb-2 sm:pb-4 mb-4 sm:mb-6 transition-colors duration-300">Table of Contents</h2>
         <div className="flex flex-col gap-2 sm:gap-4">
-          <button onClick={() => goToChapter(2)} className="flex items-center gap-2 sm:gap-4 group w-full p-2 hover:bg-[#8b6b4a]/10 rounded-xl transition-colors border border-transparent hover:border-[#8b6b4a]/20">
+          <button onClick={() => goToChapter(2)} className="flex items-center gap-2 sm:gap-4 group w-full p-2 hover:bg-[var(--gb-toc-btn-hover)] rounded-xl transition-colors border border-transparent hover:border-[var(--gb-border)]">
             <div className="p-2 bg-sky-100 rounded-lg text-sky-600 group-hover:scale-110 transition-transform shadow-sm"><Compass className="w-6 h-6" /></div>
             <div className="flex-1 text-left">
-              <span className="block font-bold text-[#3a2e22] text-xl font-serif">Sanctum Map</span>
-              <span className="block text-sm text-[#5c4033] font-sans">Navigate the Dungeon</span>
+              <span className="block font-bold text-[var(--gb-title)] text-xl font-serif">Sanctum Map</span>
+              <span className="block text-sm text-[var(--gb-body)] font-sans">Navigate the Dungeon</span>
             </div>
-            <span className="text-[#8b6b4a] text-sm sm:text-base font-serif italic">Pg 3</span>
+            <span className="text-[var(--gb-label)] text-sm sm:text-base font-serif italic">Pg 3</span>
           </button>
-          <button onClick={() => goToChapter(3)} className="flex items-center gap-2 sm:gap-4 group w-full p-2 hover:bg-[#8b6b4a]/10 rounded-xl transition-colors border border-transparent hover:border-[#8b6b4a]/20">
+          <button onClick={() => goToChapter(3)} className="flex items-center gap-2 sm:gap-4 group w-full p-2 hover:bg-[var(--gb-toc-btn-hover)] rounded-xl transition-colors border border-transparent hover:border-[var(--gb-border)]">
             <div className="p-2 bg-rose-100 rounded-lg text-rose-600 group-hover:scale-110 transition-transform shadow-sm"><Package className="w-6 h-6" /></div>
             <div className="flex-1 text-left">
-              <span className="block font-bold text-[#3a2e22] text-xl font-serif">Sanctum Items</span>
-              <span className="block text-sm text-[#5c4033] font-sans">Resources & Consumables</span>
+              <span className="block font-bold text-[var(--gb-title)] text-xl font-serif">Sanctum Items</span>
+              <span className="block text-sm text-[var(--gb-body)] font-sans">Resources & Consumables</span>
             </div>
-            <span className="text-[#8b6b4a] text-sm sm:text-base font-serif italic">Pg 5</span>
+            <span className="text-[var(--gb-label)] text-sm sm:text-base font-serif italic">Pg 5</span>
           </button>
-          <button onClick={() => goToChapter(6)} className="flex items-center gap-2 sm:gap-4 group w-full p-2 hover:bg-[#8b6b4a]/10 rounded-xl transition-colors border border-transparent hover:border-[#8b6b4a]/20">
+          <button onClick={() => goToChapter(6)} className="flex items-center gap-2 sm:gap-4 group w-full p-2 hover:bg-[var(--gb-toc-btn-hover)] rounded-xl transition-colors border border-transparent hover:border-[var(--gb-border)]">
             <div className="p-2 bg-amber-100 rounded-lg text-amber-600 group-hover:scale-110 transition-transform shadow-sm"><HandCoins className="w-6 h-6" /></div>
             <div className="flex-1 text-left">
-              <span className="block font-bold text-[#3a2e22] text-xl font-serif">Gold Coins</span>
-              <span className="block text-sm text-[#5c4033] font-sans">Economy & Wealth</span>
+              <span className="block font-bold text-[var(--gb-title)] text-xl font-serif">Gold Coins</span>
+              <span className="block text-sm text-[var(--gb-body)] font-sans">Economy & Wealth</span>
             </div>
-            <span className="text-[#8b6b4a] text-sm sm:text-base font-serif italic">Pg 9</span>
+            <span className="text-[var(--gb-label)] text-sm sm:text-base font-serif italic">Pg 9</span>
           </button>
-          <button onClick={() => goToChapter(4)} className="flex items-center gap-2 sm:gap-4 group w-full p-2 hover:bg-[#8b6b4a]/10 rounded-xl transition-colors border border-transparent hover:border-[#8b6b4a]/20">
+          <button onClick={() => goToChapter(4)} className="flex items-center gap-2 sm:gap-4 group w-full p-2 hover:bg-[var(--gb-toc-btn-hover)] rounded-xl transition-colors border border-transparent hover:border-[var(--gb-border)]">
             <div className="p-2 bg-emerald-100 rounded-lg text-emerald-600 group-hover:scale-110 transition-transform shadow-sm"><HandTarget className="w-6 h-6" /></div>
             <div className="flex-1 text-left">
-              <span className="block font-bold text-[#3a2e22] text-xl font-serif">XP <span className="font-sans">&</span> Leveling</span>
-              <span className="block text-sm text-[#5c4033] font-sans">Growth & Progression</span>
+              <span className="block font-bold text-[var(--gb-title)] text-xl font-serif">XP <span className="font-sans">&</span> Leveling</span>
+              <span className="block text-sm text-[var(--gb-body)] font-sans">Growth & Progression</span>
             </div>
-            <span className="text-[#8b6b4a] text-sm sm:text-base font-serif italic">Pg 11</span>
+            <span className="text-[var(--gb-label)] text-sm sm:text-base font-serif italic">Pg 11</span>
           </button>
-          <button onClick={() => goToChapter(5)} className="flex items-center gap-2 sm:gap-4 group w-full p-2 hover:bg-[#8b6b4a]/10 rounded-xl transition-colors border border-transparent hover:border-[#8b6b4a]/20">
-            <div className="p-2 bg-indigo-100 rounded-lg text-indigo-600 group-hover:scale-110 transition-transform shadow-sm"><Network className="w-6 h-6" /></div>
+          <button onClick={() => goToChapter(5)} className="flex items-center gap-2 sm:gap-4 group w-full p-2 hover:bg-[var(--gb-toc-btn-hover)] rounded-xl transition-colors border border-transparent hover:border-[var(--gb-border)]">
+            <div className="p-2 bg-[var(--gb-talent-bg)] rounded-lg text-[var(--gb-talent-color)] group-hover:scale-110 transition-transform shadow-sm"><Network className="w-6 h-6" /></div>
             <div className="flex-1 text-left">
-              <span className="block font-bold text-[#3a2e22] text-xl font-serif">Talent System</span>
-              <span className="block text-sm text-[#5c4033] font-sans">Unlocking Potential</span>
+              <span className="block font-bold text-[var(--gb-title)] text-xl font-serif">Talent System</span>
+              <span className="block text-sm text-[var(--gb-body)] font-sans">Unlocking Potential</span>
             </div>
-            <span className="text-[#8b6b4a] text-sm sm:text-base font-serif italic">Pg 13</span>
+            <span className="text-[var(--gb-label)] text-sm sm:text-base font-serif italic">Pg 13</span>
           </button>
         </div>
-        <p className="text-center font-serif text-[#8b6b4a] text-sm mt-auto pt-4 border-t border-[#8b6b4a]/20">Page 2</p>
+        <p className="text-center font-serif text-[var(--gb-label)] text-sm mt-auto pt-4 border-t border-[var(--gb-footer-border)] transition-colors duration-300">Page 2</p>
       </div>
     ),
 
     // Page 4: Map to the Sanctum (Left Page)
     (
-      <div className="w-full h-full paper-texture p-4 sm:p-8 flex flex-col pb-12 sm:pb-16 relative shadow-[inset_-10px_0_20px_rgba(0,0,0,0.06)]">
-        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-black/10 to-transparent pointer-events-none" />
-        <div className="flex items-center gap-2 sm:gap-3 border-b-2 border-[#8b6b4a]/30 pb-2 sm:pb-4 mb-4 sm:mb-6">
+      <div className="w-full h-full paper-texture p-4 sm:p-8 flex flex-col pb-12 sm:pb-16 relative shadow-[inset_-10px_0_20px_rgba(0,0,0,0.06)] transition-colors duration-300 overflow-y-auto hide-scrollbar">
+        <div className="absolute right-0 top-0 bottom-0 w-8 bg-[var(--gb-spine-l)] pointer-events-none" />
+        <div className="flex items-center gap-2 sm:gap-3 border-b-2 border-[var(--gb-border)] pb-2 sm:pb-4 mb-4 sm:mb-6 transition-colors duration-300">
           <Compass className="text-sky-600 w-7 h-7" />
-          <h2 className="text-2xl sm:text-3xl font-bold font-serif text-[#3a2e22]">Sanctum Map</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold font-serif text-[var(--gb-title)] transition-colors duration-300">Sanctum Map</h2>
         </div>
-        <p className="text-[#5c4033] text-xs sm:text-sm md:text-base mb-3 sm:mb-3 sm:mb-6 leading-relaxed font-sans">
+        <p className="text-[var(--gb-body)] text-xs sm:text-sm md:text-base mb-3 sm:mb-3 sm:mb-6 leading-relaxed font-sans transition-colors duration-300">
           The Scholar's Sanctum is a vast dungeon with many rooms. Familiarize yourself with these major halls to master your journey.
         </p>
         <div className="space-y-1 sm:space-y-2 sm:space-y-4">
           <button 
             onClick={() => { onClose(); onTabChange('dashboard'); }}
-            className="w-full flex items-start gap-2 sm:gap-4 p-3 rounded-xl bg-[#e8dac1]/20 hover:bg-[#d8c5a5]/30 border border-[#8b6b4a]/10 transition-all text-left group"
+            className="w-full flex items-start gap-2 sm:gap-4 p-3 rounded-xl bg-[var(--gb-card)] hover:bg-[var(--gb-card-hover)] border border-[var(--gb-border)] transition-all text-left group"
           >
-            <div className="p-2 bg-indigo-50 text-indigo-700 rounded-lg group-hover:scale-110 transition-transform">
+            <div className="p-2 bg-indigo-50/10 text-indigo-400 rounded-lg group-hover:scale-110 transition-transform">
               <LayoutDashboard size={18} />
             </div>
             <div>
-              <strong className="text-[#3a2e22] block font-serif">Sanctum</strong>
-              <span className="text-xs text-[#5c4033] font-sans">View your overall progress, daily goals, and quick guides.</span>
+              <strong className="text-[var(--gb-title)] block font-serif transition-colors duration-300">Sanctum</strong>
+              <span className="text-xs text-[var(--gb-body)] font-sans transition-colors duration-300">View your overall progress, daily goals, and quick guides.</span>
             </div>
           </button>
           
           <button 
             onClick={() => { onClose(); onTabChange('dungeons'); }}
-            className="w-full flex items-start gap-2 sm:gap-4 p-3 rounded-xl bg-[#e8dac1]/20 hover:bg-[#d8c5a5]/30 border border-[#8b6b4a]/10 transition-all text-left group"
+            className="w-full flex items-start gap-2 sm:gap-4 p-3 rounded-xl bg-[var(--gb-card)] hover:bg-[var(--gb-card-hover)] border border-[var(--gb-border)] transition-all text-left group"
           >
-            <div className="p-2 bg-emerald-50 text-emerald-700 rounded-lg group-hover:scale-110 transition-transform">
+            <div className="p-2 bg-emerald-50/10 text-emerald-400 rounded-lg group-hover:scale-110 transition-transform">
               <Sword size={18} />
             </div>
             <div>
-              <strong className="text-[#3a2e22] block font-serif">Dungeon</strong>
-              <span className="text-xs text-[#5c4033] font-sans">Embark on long-term goals and claim your hard-earned rewards.</span>
+              <strong className="text-[var(--gb-title)] block font-serif transition-colors duration-300">Dungeon</strong>
+              <span className="text-xs text-[var(--gb-body)] font-sans transition-colors duration-300">Embark on long-term goals and claim your hard-earned rewards.</span>
             </div>
           </button>
           <button 
             onClick={() => { onClose(); onTabChange('explore'); }}
-            className="w-full flex items-start gap-2 sm:gap-4 p-3 rounded-xl bg-[#e8dac1]/20 hover:bg-[#d8c5a5]/30 border border-[#8b6b4a]/10 transition-all text-left group"
+            className="w-full flex items-start gap-2 sm:gap-4 p-3 rounded-xl bg-[var(--gb-card)] hover:bg-[var(--gb-card-hover)] border border-[var(--gb-border)] transition-all text-left group"
           >
-            <div className="p-2 bg-rose-50 text-rose-700 rounded-lg group-hover:scale-110 transition-transform">
+            <div className="p-2 bg-rose-50/10 text-rose-400 rounded-lg group-hover:scale-110 transition-transform">
               <TimerIcon size={18} />
             </div>
             <div>
-              <strong className="text-[#3a2e22] block font-serif">Explore</strong>
-              <span className="text-xs text-[#5c4033] font-sans">The heart of focus. Engage the timer to record your study sessions.</span>
+              <strong className="text-[var(--gb-title)] block font-serif transition-colors duration-300">Explore</strong>
+              <span className="text-xs text-[var(--gb-body)] font-sans transition-colors duration-300">The heart of focus. Engage the timer to record your study sessions.</span>
             </div>
           </button>
         </div>
-        <p className="text-center font-serif text-[#8b6b4a] text-sm mt-auto pt-4 border-t border-[#8b6b4a]/20">Page 3</p>
+        <p className="text-center font-serif text-[var(--gb-label)] text-sm mt-auto pt-4 border-t border-[var(--gb-footer-border)] transition-colors duration-300">Page 3</p>
       </div>
     ),
 
     // Page 5: Map to the Sanctum (Right Page)
     (
-      <div className="w-full h-full paper-texture p-4 sm:p-8 flex flex-col pb-12 sm:pb-16 relative shadow-[inset_10px_0_20px_rgba(0,0,0,0.06)]">
-        <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-black/10 to-transparent pointer-events-none" />
+      <div className="w-full h-full paper-texture p-4 sm:p-8 flex flex-col pb-12 sm:pb-16 relative shadow-[inset_10px_0_20px_rgba(0,0,0,0.06)] transition-colors duration-300 overflow-y-auto hide-scrollbar">
+        <div className="absolute left-0 top-0 bottom-0 w-8 bg-[var(--gb-spine-r)] pointer-events-none" />
         <div className="space-y-1 sm:space-y-2 sm:space-y-4 mt-4">
           <button 
             onClick={() => { onClose(); onTabChange('shop'); }}
-            className="w-full flex items-start gap-2 sm:gap-4 p-3 rounded-xl bg-[#e8dac1]/20 hover:bg-[#d8c5a5]/30 border border-[#8b6b4a]/10 transition-all text-left group"
+            className="w-full flex items-start gap-2 sm:gap-4 p-3 rounded-xl bg-[var(--gb-card)] hover:bg-[var(--gb-card-hover)] border border-[var(--gb-border)] transition-all text-left group"
           >
-            <div className="p-2 bg-amber-50 text-amber-700 rounded-lg group-hover:scale-110 transition-transform">
+            <div className="p-2 bg-amber-50/10 text-amber-400 rounded-lg group-hover:scale-110 transition-transform">
               <ShoppingBag size={18} />
             </div>
             <div>
-              <strong className="text-[#3a2e22] block font-serif">Merchant</strong>
-              <span className="text-xs text-[#5c4033] font-sans">Spend your gold here on mysterious Gacha pools and rare items.</span>
+              <strong className="text-[var(--gb-title)] block font-serif transition-colors duration-300">Merchant</strong>
+              <span className="text-xs text-[var(--gb-body)] font-sans transition-colors duration-300">Spend your gold here on mysterious Gacha pools and rare items.</span>
             </div>
           </button>
 
           <button 
             onClick={() => { onClose(); onTabChange('vault'); }}
-            className="w-full flex items-start gap-2 sm:gap-4 p-3 rounded-xl bg-[#e8dac1]/20 hover:bg-[#d8c5a5]/30 border border-[#8b6b4a]/10 transition-all text-left group"
+            className="w-full flex items-start gap-2 sm:gap-4 p-3 rounded-xl bg-[var(--gb-card)] hover:bg-[var(--gb-card-hover)] border border-[var(--gb-border)] transition-all text-left group"
           >
-            <div className="p-2 bg-blue-50 text-blue-700 rounded-lg group-hover:scale-110 transition-transform">
+            <div className="p-2 bg-blue-50/10 text-blue-400 rounded-lg group-hover:scale-110 transition-transform">
               <Package size={18} />
             </div>
             <div>
-              <strong className="text-[#3a2e22] block font-serif">Vault</strong>
-              <span className="text-xs text-[#5c4033] font-sans">Review your collection of treasures and track your reward history.</span>
+              <strong className="text-[var(--gb-title)] block font-serif transition-colors duration-300">Vault</strong>
+              <span className="text-xs text-[var(--gb-body)] font-sans transition-colors duration-300">Review your collection of treasures and track your reward history.</span>
             </div>
           </button>
 
           <button 
             onClick={() => { onClose(); onTabChange('stats'); }}
-            className="w-full flex items-start gap-2 sm:gap-4 p-3 rounded-xl bg-[#e8dac1]/20 hover:bg-[#d8c5a5]/30 border border-[#8b6b4a]/10 transition-all text-left group"
+            className="w-full flex items-start gap-2 sm:gap-4 p-3 rounded-xl bg-[var(--gb-card)] hover:bg-[var(--gb-card-hover)] border border-[var(--gb-border)] transition-all text-left group"
           >
-            <div className="p-2 bg-sky-50 text-sky-700 rounded-lg group-hover:scale-110 transition-transform">
+            <div className="p-2 bg-sky-50/10 text-sky-400 rounded-lg group-hover:scale-110 transition-transform">
               <BarChart3 size={18} />
             </div>
             <div>
-              <strong className="text-[#3a2e22] block font-serif">Record</strong>
-              <span className="text-xs text-[#5c4033] font-sans">Analyze your performance statistics and long-term activity.</span>
+              <strong className="text-[var(--gb-title)] block font-serif transition-colors duration-300">Record</strong>
+              <span className="text-xs text-[var(--gb-body)] font-sans transition-colors duration-300">Analyze your performance statistics and long-term activity.</span>
             </div>
           </button>
         </div>
 
-        <div className="mt-auto bg-[#f4ecd8] p-4 rounded-xl border border-[#d8c5a5]">
-           <p className="text-xs text-amber-900/70 font-sans italic">
+        <div className="mt-auto bg-[var(--gb-accent-bg)] p-4 rounded-xl border border-[var(--gb-accent-border)] transition-colors duration-300">
+           <p className="text-xs text-[var(--gb-accent-text)] font-sans italic opacity-80">
              "Navigation Tip: You can jump to any section directly from the icons in this book. Go ahead, try it!"
            </p>
         </div>
-        <p className="text-center font-serif text-[#8b6b4a] text-sm mt-auto pt-4 border-t border-[#8b6b4a]/20">Page 4</p>
+        <p className="text-center font-serif text-[var(--gb-label)] text-sm mt-auto pt-4 border-t border-[var(--gb-footer-border)] transition-colors duration-300">Page 4</p>
       </div>
     ),
 
 
     // Page 6: Sanctum Items - Core 1 (Left Page)
     (
-      <div className="w-full h-full paper-texture p-4 sm:p-8 flex flex-col pb-12 sm:pb-16 relative shadow-[inset_-10px_0_20px_rgba(0,0,0,0.06)]">
-        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-black/10 to-transparent pointer-events-none" />
-        <div className="flex items-center gap-2 sm:gap-3 border-b-2 border-[#8b6b4a]/30 pb-3 sm:pb-4 mb-3 sm:mb-6">
+      <div className="w-full h-full paper-texture p-4 sm:p-8 flex flex-col pb-12 sm:pb-16 relative shadow-[inset_-10px_0_20px_rgba(0,0,0,0.06)] transition-colors duration-300 overflow-y-auto hide-scrollbar">
+        <div className="absolute right-0 top-0 bottom-0 w-8 bg-[var(--gb-spine-l)] pointer-events-none" />
+        <div className="flex items-center gap-2 sm:gap-3 border-b-2 border-[var(--gb-border)] pb-3 sm:pb-4 mb-3 sm:mb-6 transition-colors duration-300">
           <Package className="text-rose-600 w-6 h-6 sm:w-7 sm:h-7" />
-          <h2 className="text-2xl sm:text-2xl sm:text-3xl font-bold font-serif text-[#3a2e22]">Sanctum Items</h2>
+          <h2 className="text-2xl sm:text-2xl sm:text-3xl font-bold font-serif text-[var(--gb-title)] transition-colors duration-300">Sanctum Items</h2>
         </div>
-        <p className="text-[#5c4033] text-xs sm:text-sm md:text-base mb-4 sm:mb-3 sm:mb-6 leading-relaxed font-sans">
+        <p className="text-[var(--gb-body)] text-xs sm:text-sm md:text-base mb-4 sm:mb-3 sm:mb-6 leading-relaxed font-sans transition-colors duration-300">
           These essential resources and artifacts form the foundation of your journey within the Sanctum.
         </p>
-        <div className="space-y-3 sm:space-y-1 sm:space-y-2 sm:space-y-4 text-[#5c4033] text-xs sm:text-sm md:text-base font-sans mt-auto mb-auto">
+        <div className="space-y-3 sm:space-y-1 sm:space-y-2 sm:space-y-4 text-[var(--gb-body)] text-xs sm:text-sm md:text-base font-sans mt-auto mb-auto transition-colors duration-300">
           <div className="flex gap-2 items-start">
-            <span className="text-[#8b6b4a] font-bold mt-0.5 sm:mt-1">-</span>
+            <span className="text-[var(--gb-label)] font-bold mt-0.5 sm:mt-1">-</span>
             <div>
-              <strong className="text-amber-700 font-serif text-base sm:text-lg flex items-center gap-2"><Coins size={16} /> Gold Coins</strong>
-              <p className="mt-1 leading-relaxed text-[#5c4033]">The primary currency. Earned through sessions, <button onClick={() => { onClose(); onTabChange('dungeons'); }} className="font-bold underline text-amber-700 decoration-amber-700/30 hover:text-amber-800 transition-colors">Dungeons</button>, and <button onClick={() => { onClose(); onTabChange('dungeons', 'quests'); }} className="font-bold underline text-amber-700 decoration-amber-700/30 hover:text-amber-800 transition-colors">Quests</button>. Used in the <button onClick={() => { onClose(); onTabChange('shop'); }} className="font-bold underline text-amber-700 decoration-amber-700/30 hover:text-amber-800 transition-colors">Merchant Outpost</button> for items and Gacha.</p>
+              <strong className="text-amber-700 font-serif text-base sm:text-lg flex items-center gap-2 transition-colors duration-300"><Coins size={16} /> Gold Coins</strong>
+              <p className="mt-1 leading-relaxed text-[var(--gb-body)] transition-colors duration-300">The primary currency. Earned through sessions, <button onClick={() => { onClose(); onTabChange('dungeons'); }} className="font-bold underline text-amber-700 decoration-amber-700/30 hover:text-amber-800 transition-colors">Dungeons</button>, and <button onClick={() => { onClose(); onTabChange('dungeons', 'quests'); }} className="font-bold underline text-amber-700 decoration-amber-700/30 hover:text-amber-800 transition-colors">Quests</button>. Used in the <button onClick={() => { onClose(); onTabChange('shop'); }} className="font-bold underline text-amber-700 decoration-amber-700/30 hover:text-amber-800 transition-colors">Merchant Outpost</button> for items and Gacha.</p>
             </div>
           </div>
           <div className="flex gap-2 items-start">
-            <span className="text-[#8b6b4a] font-bold mt-0.5 sm:mt-1">-</span>
+            <span className="text-[var(--gb-label)] font-bold mt-0.5 sm:mt-1">-</span>
             <div>
-              <strong className="text-emerald-700 font-serif text-base sm:text-lg flex items-center gap-2"><Sparkles size={16} /> XP (Experience)</strong>
-              <p className="mt-1 leading-relaxed text-[#5c4033]">Represents your overall growth. Earn <span className="font-bold">XP</span> to level up, which unlocks rewards and <button onClick={() => { onClose(); onTabChange('talents'); }} className="font-bold underline text-emerald-700 decoration-emerald-700/30 hover:text-emerald-800 transition-colors">Talent Points</button>.</p>
+              <strong className="text-emerald-700 font-serif text-base sm:text-lg flex items-center gap-2 transition-colors duration-300"><Sparkles size={16} /> XP (Experience)</strong>
+              <p className="mt-1 leading-relaxed text-[var(--gb-body)] transition-colors duration-300">Represents your overall growth. Earn <span className="font-bold">XP</span> to level up, which unlocks rewards and <button onClick={() => { onClose(); onTabChange('talents'); }} className="font-bold underline text-emerald-700 decoration-emerald-700/30 hover:text-emerald-800 transition-colors">Talent Points</button>.</p>
             </div>
           </div>
         </div>
-        <p className="text-center font-serif text-[#8b6b4a] text-sm mt-auto pt-4 border-t border-[#8b6b4a]/20">Page 5</p>
+        <p className="text-center font-serif text-[var(--gb-label)] text-sm mt-auto pt-4 border-t border-[var(--gb-footer-border)] transition-colors duration-300">Page 5</p>
       </div>
     ),
 
     // Page 7: Sanctum Items - Core 2 (Right Page)
     (
-      <div className="w-full h-full paper-texture p-4 sm:p-8 flex flex-col pb-12 sm:pb-16 relative shadow-[inset_10px_0_20px_rgba(0,0,0,0.06)]">
-        <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-black/10 to-transparent pointer-events-none" />
+      <div className="w-full h-full paper-texture p-4 sm:p-8 flex flex-col pb-12 sm:pb-16 relative shadow-[inset_10px_0_20px_rgba(0,0,0,0.06)] transition-colors duration-300 overflow-y-auto hide-scrollbar">
+        <div className="absolute left-0 top-0 bottom-0 w-8 bg-[var(--gb-spine-r)] pointer-events-none" />
         
-        <p className="text-[#5c4033] text-xs sm:text-sm md:text-base mb-4 sm:mb-3 sm:mb-6 leading-relaxed font-sans mt-2 sm:mt-4">
+        <p className="text-[var(--gb-body)] text-xs sm:text-sm md:text-base mb-4 sm:mb-3 sm:mb-6 leading-relaxed font-sans mt-2 sm:mt-4 transition-colors duration-300">
           Resources dedicated to your skill development:
         </p>
-        <div className="space-y-3 sm:space-y-1 sm:space-y-2 sm:space-y-4 text-[#5c4033] text-xs sm:text-sm md:text-base font-sans mb-auto">
+        <div className="space-y-3 sm:space-y-1 sm:space-y-2 sm:space-y-4 text-[var(--gb-body)] text-xs sm:text-sm md:text-base font-sans mb-auto transition-colors duration-300">
           <div className="flex gap-2 items-start">
-            <span className="text-[#8b6b4a] font-bold mt-0.5 sm:mt-1">-</span>
+            <span className="text-[var(--gb-label)] font-bold mt-0.5 sm:mt-1">-</span>
             <div>
-              <strong className="text-indigo-700 font-serif text-base sm:text-lg flex items-center gap-2"><Zap size={16} /> Talent Points</strong>
-              <p className="mt-1 leading-relaxed text-[#5c4033]">Rare points used exclusively to unlock powerful passive traits in the <button onClick={() => { onClose(); onTabChange('talents'); }} className="font-bold underline text-indigo-700 decoration-indigo-700/30 hover:text-indigo-800 transition-colors">Talent Tree</button>.</p>
+              <strong className="text-indigo-600 font-serif text-base sm:text-lg flex items-center gap-2 transition-colors duration-300"><Zap size={16} /> Talent Points</strong>
+              <p className="mt-1 leading-relaxed text-[var(--gb-body)] transition-colors duration-300">Rare points used exclusively to unlock powerful passive traits in the <button onClick={() => { onClose(); onTabChange('talents'); }} className="font-bold underline text-indigo-600 decoration-indigo-600/30 hover:text-indigo-700 transition-colors">Talent Tree</button>.</p>
             </div>
           </div>
           <div className="flex gap-2 items-start">
-            <span className="text-[#8b6b4a] font-bold mt-0.5 sm:mt-1">-</span>
+            <span className="text-[var(--gb-label)] font-bold mt-0.5 sm:mt-1">-</span>
             <div>
-              <strong className="text-indigo-500 font-serif text-base sm:text-lg flex items-center gap-2"><Puzzle size={16} /> Talent Shards</strong>
-              <p className="mt-1 leading-relaxed text-[#5c4033]">Fragments of potential. Collect 3 shards to automatically forge 1 full <span className="font-bold">Talent Point</span>. Sometimes they drop together with items.</p>
+              <strong className="text-indigo-400 font-serif text-base sm:text-lg flex items-center gap-2 transition-colors duration-300"><Puzzle size={16} /> Talent Shards</strong>
+              <p className="mt-1 leading-relaxed text-[var(--gb-body)] transition-colors duration-300">Fragments of potential. Collect 3 shards to automatically forge 1 full <span className="font-bold">Talent Point</span>. Sometimes they drop together with items.</p>
             </div>
           </div>
         </div>
-        <p className="text-center font-serif text-[#8b6b4a] text-sm mt-auto pt-4 border-t border-[#8b6b4a]/20">Page 6</p>
+        <p className="text-center font-serif text-[var(--gb-label)] text-sm mt-auto pt-4 border-t border-[var(--gb-footer-border)] transition-colors duration-300">Page 6</p>
       </div>
     ),
 
     // Page 8: Sanctum Items - Advanced 1 (Left Page)
     (
-      <div className="w-full h-full paper-texture p-4 sm:p-8 flex flex-col pb-12 sm:pb-16 relative shadow-[inset_-10px_0_20px_rgba(0,0,0,0.06)]">
-        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-black/10 to-transparent pointer-events-none" />
-        <p className="text-[#5c4033] text-xs sm:text-sm md:text-base mb-4 sm:mb-3 sm:mb-6 leading-relaxed font-sans mt-2 sm:mt-4">
-          Powerful artifacts that can significantly alter your progress. Obtained mainly from the <button onClick={() => { onClose(); onTabChange('shop'); }} className="font-bold underline text-[#8b6b4a] decoration-[#8b6b4a]/30 hover:text-[#5c4033] transition-colors">Merchant's shop</button> or Dungeon rewards:
+      <div className="w-full h-full paper-texture p-4 sm:p-8 flex flex-col pb-12 sm:pb-16 relative shadow-[inset_-10px_0_20px_rgba(0,0,0,0.06)] transition-colors duration-300 overflow-y-auto hide-scrollbar">
+        <div className="absolute right-0 top-0 bottom-0 w-8 bg-[var(--gb-spine-l)] pointer-events-none" />
+        <p className="text-[var(--gb-body)] text-xs sm:text-sm md:text-base mb-4 sm:mb-3 sm:mb-6 leading-relaxed font-sans mt-2 sm:mt-4 transition-colors duration-300">
+          Powerful artifacts that can significantly alter your progress. Obtained mainly from the <button onClick={() => { onClose(); onTabChange('shop'); }} className="font-bold underline text-[var(--gb-label)] decoration-[var(--gb-border)] hover:text-[var(--gb-body)] transition-colors">Merchant's shop</button> or Dungeon rewards:
         </p>
-        <div className="space-y-3 sm:space-y-1 sm:space-y-2 sm:space-y-4 text-[#5c4033] text-xs sm:text-sm md:text-base font-sans mt-auto mb-auto">
-          <div className="flex gap-2 items-start bg-[#f4ebd8] p-2 sm:p-3 rounded-xl border border-[#d8c5a5]">
-            <span className="text-[#8b6b4a] font-bold mt-0.5 sm:mt-1">-</span>
+        <div className="space-y-3 sm:space-y-1 sm:space-y-2 sm:space-y-4 text-[var(--gb-body)] text-xs sm:text-sm md:text-base font-sans mt-auto mb-auto transition-colors duration-300">
+          <div className="flex gap-2 items-start bg-[var(--gb-accent-bg)] p-2 sm:p-3 rounded-xl border border-[var(--gb-accent-border)]">
+            <span className="text-[var(--gb-label)] font-bold mt-0.5 sm:mt-1">-</span>
             <div>
-              <strong className="text-rose-700 font-serif text-base flex items-center gap-2"><Shield size={16} /> Death Defying Medal</strong>
-              <p className="mt-1 text-xs sm:text-sm leading-relaxed text-[#5c4033]">Automatically consumed to prevent a <button onClick={() => { onClose(); onTabChange('dungeons'); }} className="font-bold underline text-rose-700 decoration-rose-700/30 hover:text-rose-800 transition-colors">Dungeon Goal</button> from failing if you miss a deadline, preserving your progress.</p>
+              <strong className="text-rose-400 font-serif text-base flex items-center gap-2 transition-colors duration-300"><Shield size={16} /> Death Defying Medal</strong>
+              <p className="mt-1 text-xs sm:text-sm leading-relaxed text-[var(--gb-body)] transition-colors duration-300">Automatically consumed to prevent a <button onClick={() => { onClose(); onTabChange('dungeons'); }} className="font-bold underline text-rose-400 decoration-rose-400/30 hover:text-rose-500 transition-colors">Dungeon Goal</button> from failing if you miss a deadline, preserving your progress.</p>
             </div>
           </div>
-          <div className="flex gap-2 items-start bg-[#f4ebd8] p-2 sm:p-3 rounded-xl border border-[#d8c5a5]">
-            <span className="text-[#8b6b4a] font-bold mt-0.5 sm:mt-1">-</span>
+          <div className="flex gap-2 items-start bg-[var(--gb-accent-bg)] p-2 sm:p-3 rounded-xl border border-[var(--gb-accent-border)]">
+            <span className="text-[var(--gb-label)] font-bold mt-0.5 sm:mt-1">-</span>
             <div>
-              <strong className="text-sky-700 font-serif text-base flex items-center gap-2"><Rocket size={16} /> Double XP Card</strong>
-              <p className="mt-1 text-xs sm:text-sm leading-relaxed text-[#5c4033]">When activated in your <button onClick={() => { onClose(); onTabChange('vault'); }} className="font-bold underline text-sky-700 decoration-sky-700/30 hover:text-sky-800 transition-colors">Vault</button>, temporarily doubles all <span className="font-bold">Experience Points</span> earned from sessions and quests.</p>
+              <strong className="text-sky-400 font-serif text-base flex items-center gap-2 transition-colors duration-300"><Rocket size={16} /> Double XP Card</strong>
+              <p className="mt-1 text-xs sm:text-sm leading-relaxed text-[var(--gb-body)] transition-colors duration-300">When activated in your <button onClick={() => { onClose(); onTabChange('vault'); }} className="font-bold underline text-sky-400 decoration-sky-400/30 hover:text-sky-500 transition-colors">Vault</button>, temporarily doubles all <span className="font-bold">Experience Points</span> earned from sessions and quests.</p>
             </div>
           </div>
         </div>
-        <p className="text-center font-serif text-[#8b6b4a] text-sm mt-auto pt-4 border-t border-[#8b6b4a]/20">Page 7</p>
+        <p className="text-center font-serif text-[var(--gb-label)] text-sm mt-auto pt-4 border-t border-[var(--gb-footer-border)] transition-colors duration-300">Page 7</p>
       </div>
     ),
 
     // Page 9: Sanctum Items - Advanced 2 (Right Page)
     (
-      <div className="w-full h-full paper-texture p-4 sm:p-8 flex flex-col pb-12 sm:pb-16 relative shadow-[inset_10px_0_20px_rgba(0,0,0,0.06)]">
-        <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-black/10 to-transparent pointer-events-none" />
+      <div className="w-full h-full paper-texture p-4 sm:p-8 flex flex-col pb-12 sm:pb-16 relative shadow-[inset_10px_0_20px_rgba(0,0,0,0.06)] transition-colors duration-300 overflow-y-auto hide-scrollbar">
+        <div className="absolute left-0 top-0 bottom-0 w-8 bg-[var(--gb-spine-r)] pointer-events-none" />
         
-        <p className="text-[#5c4033] text-xs sm:text-sm md:text-base mb-4 sm:mb-3 sm:mb-6 leading-relaxed font-sans mt-2 sm:mt-4">
+        <p className="text-[var(--gb-body)] text-xs sm:text-sm md:text-base mb-4 sm:mb-3 sm:mb-6 leading-relaxed font-sans mt-2 sm:mt-4 transition-colors duration-300">
           More artifacts you can discover:
         </p>
-        <div className="space-y-3 sm:space-y-1 sm:space-y-2 sm:space-y-4 text-[#5c4033] text-xs sm:text-sm md:text-base font-sans mb-auto">
-          <div className="flex gap-2 items-start bg-[#f4ebd8] p-2 sm:p-3 rounded-xl border border-[#d8c5a5]">
-            <span className="text-[#8b6b4a] font-bold mt-0.5 sm:mt-1">-</span>
+        <div className="space-y-3 sm:space-y-1 sm:space-y-2 sm:space-y-4 text-[var(--gb-body)] text-xs sm:text-sm md:text-base font-sans mb-auto transition-colors duration-300">
+          <div className="flex gap-2 items-start bg-[var(--gb-accent-bg)] p-2 sm:p-3 rounded-xl border border-[var(--gb-accent-border)]">
+            <span className="text-[var(--gb-label)] font-bold mt-0.5 sm:mt-1">-</span>
             <div>
-              <strong className="text-amber-700 font-serif flex text-base items-center gap-2"><Briefcase size={16} /> Double Gold Card</strong>
-              <p className="mt-1 text-xs sm:text-sm leading-relaxed text-[#5c4033]">When activated in your <button onClick={() => { onClose(); onTabChange('vault'); }} className="font-bold underline text-amber-700 decoration-amber-700/30 hover:text-amber-800 transition-colors">Vault</button>, temporarily doubles all <span className="font-bold">Gold Coins</span> earned, accelerating your wealth.</p>
+              <strong className="text-amber-500 font-serif flex text-base items-center gap-2 transition-colors duration-300"><Briefcase size={16} /> Double Gold Card</strong>
+              <p className="mt-1 text-xs sm:text-sm leading-relaxed text-[var(--gb-body)] transition-colors duration-300">When activated in your <button onClick={() => { onClose(); onTabChange('vault'); }} className="font-bold underline text-amber-500 decoration-amber-500/30 hover:text-amber-600 transition-colors">Vault</button>, temporarily doubles all <span className="font-bold">Gold Coins</span> earned, accelerating your wealth.</p>
             </div>
           </div>
         </div>
-        <div className="bg-[#f0e6d2]/80 p-3 sm:p-4 rounded-xl border border-[#d8c5a5] shadow-inner mb-4">
-           <h3 className="font-bold text-amber-800 mb-1 sm:mb-2 uppercase tracking-wider font-serif text-xs sm:text-sm">Pro Tip: Item Usage</h3>
-           <p className="text-xs sm:text-sm text-[#5c4033] leading-relaxed font-sans">
+        <div className="bg-[var(--gb-accent-bg)] p-3 sm:p-4 rounded-xl border border-[var(--gb-accent-border)] shadow-inner mb-4 transition-colors duration-300">
+           <h3 className="font-bold text-[var(--gb-accent-text)] mb-1 sm:mb-2 uppercase tracking-wider font-serif text-xs sm:text-sm transition-colors duration-300">Pro Tip: Item Usage</h3>
+           <p className="text-xs sm:text-sm text-[var(--gb-body)] leading-relaxed font-sans transition-colors duration-300">
              Visit the Vault and click "Use Item" on consumable cards to activate their effects. 
              They usually expire at the end of the day.
            </p>
         </div>
-        <p className="text-center font-serif text-[#8b6b4a] text-sm mt-auto pt-4 border-t border-[#8b6b4a]/20">Page 8</p>
+        <p className="text-center font-serif text-[var(--gb-label)] text-sm mt-auto pt-4 border-t border-[var(--gb-footer-border)] transition-colors duration-300">Page 8</p>
       </div>
     ),
 
-// Page 10: Coins (Left Page)
+    // Page 10: Coins (Left Page)
     (
-      <div className="w-full h-full paper-texture p-4 sm:p-8 flex flex-col pb-12 sm:pb-16 relative shadow-[inset_-10px_0_20px_rgba(0,0,0,0.06)]">
-        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-black/10 to-transparent pointer-events-none" />
-        <div className="flex items-center gap-2 sm:gap-3 border-b-2 border-[#8b6b4a]/30 pb-2 sm:pb-4 mb-4 sm:mb-6">
+      <div className="w-full h-full paper-texture p-4 sm:p-8 flex flex-col pb-12 sm:pb-16 relative shadow-[inset_-10px_0_20px_rgba(0,0,0,0.06)] transition-colors duration-300 overflow-y-auto hide-scrollbar">
+        <div className="absolute right-0 top-0 bottom-0 w-8 bg-[var(--gb-spine-l)] pointer-events-none" />
+        <div className="flex items-center gap-2 sm:gap-3 border-b-2 border-[var(--gb-border)] pb-2 sm:pb-4 mb-4 sm:mb-6 transition-colors duration-300">
           <HandCoins className="text-amber-600 w-7 h-7" />
-          <h2 className="text-2xl sm:text-3xl font-bold font-serif text-[#3a2e22]">Gold Coins</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold font-serif text-[var(--gb-title)] transition-colors duration-300">Gold Coins</h2>
         </div>
-        <p className="text-[#5c4033] text-xs sm:text-sm md:text-base mb-3 sm:mb-3 sm:mb-6 leading-relaxed font-sans">
+        <p className="text-[var(--gb-body)] text-xs sm:text-sm md:text-base mb-3 sm:mb-3 sm:mb-6 leading-relaxed font-sans transition-colors duration-300">
           Gold is the primary currency within the Sanctum. It is used to purchase items from the <button onClick={() => { onClose(); onTabChange('shop'); }} className="font-bold underline text-amber-700 decoration-amber-700/30 hover:text-amber-800 transition-colors">Merchant's Outpost</button> and roll the Gacha.
         </p>
-        <div className="bg-[#f4ebd8] p-3 sm:p-5 rounded-xl border border-[#d8c5a5]">
-          <h3 className="font-bold text-[#3a2e22] mb-2 sm:mb-3 uppercase tracking-wider font-serif text-lg">How to Acquire</h3>
-          <ul className="space-y-1 sm:space-y-2 text-[#5c4033] text-sm md:text-base font-sans">
+        <div className="bg-[var(--gb-accent-bg)] p-3 sm:p-5 rounded-xl border border-[var(--gb-accent-border)] transition-colors duration-300">
+          <h3 className="font-bold text-[var(--gb-title)] mb-2 sm:mb-3 uppercase tracking-wider font-serif text-lg transition-colors duration-300">How to Acquire</h3>
+          <ul className="space-y-1 sm:space-y-2 text-[var(--gb-body)] text-sm md:text-base font-sans transition-colors duration-300">
             <li className="flex gap-2"><span className="text-amber-600">❖</span> Complete sessions using the <button onClick={() => { onClose(); onTabChange('explore'); }} className="font-bold underline text-amber-700 decoration-amber-700/30 hover:text-amber-800">Timer</button></li>
             <li className="flex gap-2"><span className="text-amber-600">❖</span> Clear rooms in <button onClick={() => { onClose(); onTabChange('dungeons'); }} className="font-bold underline text-amber-700 decoration-amber-700/30 hover:text-amber-800">Dungeons</button></li>
             <li className="flex gap-2">
@@ -421,46 +421,46 @@ export const GuideBookModal: React.FC<GuideBookModalProps> = ({
             </li>
           </ul>
         </div>
-        <p className="text-center font-serif text-[#8b6b4a] text-sm mt-auto pt-4 border-t border-[#8b6b4a]/20">Page 9</p>
+        <p className="text-center font-serif text-[var(--gb-label)] text-sm mt-auto pt-4 border-t border-[var(--gb-footer-border)] transition-colors duration-300">Page 9</p>
       </div>
     ),
 
-    // Page 9: Coins Pro tips (Right Page)
+    // Page 11: Coins Pro tips (Right Page)
     (
-      <div className="w-full h-full paper-texture p-4 sm:p-8 flex flex-col pb-12 sm:pb-16 relative shadow-[inset_10px_0_20px_rgba(0,0,0,0.06)]">
-        <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-black/10 to-transparent pointer-events-none" />
-        <div className="bg-[#f0e6d2]/80 p-3 sm:p-5 rounded-xl border border-[#d8c5a5] shadow-inner mb-auto mt-4">
-          <h3 className="font-bold text-amber-800 mb-2 sm:mb-3 uppercase tracking-wider font-serif text-lg border-b border-amber-900/10 pb-2">Pro Tip: Customization</h3>
-          <p className="text-sm md:text-base text-[#5c4033] leading-relaxed mb-4 font-sans">
+      <div className="w-full h-full paper-texture p-4 sm:p-8 flex flex-col pb-12 sm:pb-16 relative shadow-[inset_10px_0_20px_rgba(0,0,0,0.06)] transition-colors duration-300 overflow-y-auto hide-scrollbar">
+        <div className="absolute left-0 top-0 bottom-0 w-8 bg-[var(--gb-spine-r)] pointer-events-none" />
+        <div className="bg-[var(--gb-accent-bg)] p-3 sm:p-5 rounded-xl border border-[var(--gb-accent-border)] shadow-inner mb-auto mt-4 transition-colors duration-300">
+          <h3 className="font-bold text-amber-600 mb-2 sm:mb-3 uppercase tracking-wider font-serif text-lg border-b border-[var(--gb-border)] pb-2 transition-colors duration-300">Pro Tip: Customization</h3>
+          <p className="text-sm md:text-base text-[var(--gb-body)] leading-relaxed mb-4 font-sans transition-colors duration-300">
             You can adjust how much Gold you earn and customize level-up gifts!
           </p>
           <div className="flex flex-col gap-2 sm:gap-3">
-            <button onClick={() => { onClose(); navigateToSettings('dev'); }} className="text-left w-full p-2 sm:p-3 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 text-sm md:text-base font-serif font-bold transition-colors shadow-sm">
+            <button onClick={() => { onClose(); navigateToSettings('dev'); }} className="text-left w-full p-2 sm:p-3 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-600 text-sm md:text-base font-serif font-bold transition-all shadow-sm">
               Go to Settings &gt; Developer<br/><span className="font-normal font-sans text-xs sm:text-sm opacity-80 mt-1 block">Adjust base Gold rates and multipliers.</span>
             </button>
-            <button onClick={() => { onClose(); navigateToSettings('levelRewards'); }} className="text-left w-full p-2 sm:p-3 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 text-sm md:text-base font-serif font-bold transition-colors shadow-sm">
+            <button onClick={() => { onClose(); navigateToSettings('levelRewards'); }} className="text-left w-full p-2 sm:p-3 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-600 text-sm md:text-base font-serif font-bold transition-all shadow-sm">
               Go to Settings &gt; Level Rewards<br/><span className="font-normal font-sans text-xs sm:text-sm opacity-80 mt-1 block">Add or modify Gold gifts upon leveling up.</span>
             </button>
           </div>
         </div>
-        <p className="text-center font-serif text-[#8b6b4a] text-sm mt-auto pt-4 border-t border-[#8b6b4a]/20">Page 10</p>
+        <p className="text-center font-serif text-[var(--gb-label)] text-sm mt-auto pt-4 border-t border-[var(--gb-footer-border)] transition-colors duration-300">Page 10</p>
       </div>
     ),
 
     // Page 10: XP (Left Page)
     (
-      <div className="w-full h-full paper-texture p-4 sm:p-8 flex flex-col pb-12 sm:pb-16 relative shadow-[inset_-10px_0_20px_rgba(0,0,0,0.06)]">
-        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-black/10 to-transparent pointer-events-none" />
-        <div className="flex items-center gap-2 sm:gap-3 border-b-2 border-[#8b6b4a]/30 pb-2 sm:pb-4 mb-4 sm:mb-6">
+      <div className="w-full h-full paper-texture p-4 sm:p-8 flex flex-col pb-12 sm:pb-16 relative shadow-[inset_-10px_0_20px_rgba(0,0,0,0.06)] transition-colors duration-300 overflow-y-auto hide-scrollbar">
+        <div className="absolute right-0 top-0 bottom-0 w-8 bg-[var(--gb-spine-l)] pointer-events-none" />
+        <div className="flex items-center gap-2 sm:gap-3 border-b-2 border-[var(--gb-border)] pb-2 sm:pb-4 mb-4 sm:mb-6 transition-colors duration-300">
           <HandTarget className="text-emerald-600 w-7 h-7" />
-          <h2 className="text-2xl sm:text-3xl font-bold font-serif text-[#3a2e22]">XP <span className="font-sans">&</span> Leveling</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold font-serif text-[var(--gb-title)] transition-colors duration-300">XP <span className="font-sans">&</span> Leveling</h2>
         </div>
-        <p className="text-[#5c4033] text-xs sm:text-sm md:text-base mb-3 sm:mb-3 sm:mb-6 leading-relaxed font-sans">
+        <p className="text-[var(--gb-body)] text-xs sm:text-sm md:text-base mb-3 sm:mb-3 sm:mb-6 leading-relaxed font-sans transition-colors duration-300">
           Gain Experience Points (XP) to level up. Leveling up can reward you with items, <button onClick={() => { onClose(); onTabChange('talents'); }} className="font-bold underline text-emerald-700 decoration-emerald-700/30 hover:text-emerald-800 transition-colors">Talent Points</button>, or Gold.
         </p>
-        <div className="bg-[#f4ebd8] p-3 sm:p-5 rounded-xl border border-[#d8c5a5]">
-          <h3 className="font-bold text-[#3a2e22] mb-2 sm:mb-3 uppercase tracking-wider font-serif text-lg">How to Acquire</h3>
-          <ul className="space-y-1 sm:space-y-2 text-[#5c4033] text-sm md:text-base font-sans">
+        <div className="bg-[var(--gb-accent-bg)] p-3 sm:p-5 rounded-xl border border-[var(--gb-accent-border)] transition-colors duration-300">
+          <h3 className="font-bold text-[var(--gb-title)] mb-2 sm:mb-3 uppercase tracking-wider font-serif text-lg transition-colors duration-300">How to Acquire</h3>
+          <ul className="space-y-1 sm:space-y-2 text-[var(--gb-body)] text-sm md:text-base font-sans transition-colors duration-300">
             <li className="flex gap-2"><span className="text-emerald-600">❖</span> Complete focus blocks via the <button onClick={() => { onClose(); onTabChange('explore'); }} className="font-bold underline text-emerald-700 decoration-emerald-700/30 hover:text-emerald-800">Timer</button></li>
             <li className="flex gap-2"><span className="text-emerald-600">❖</span> Slay monsters in <button onClick={() => { onClose(); onTabChange('dungeons'); }} className="font-bold underline text-emerald-700 decoration-emerald-700/30 hover:text-emerald-800">Dungeons</button></li>
             <li className="flex gap-2">
@@ -469,92 +469,92 @@ export const GuideBookModal: React.FC<GuideBookModalProps> = ({
             </li>
           </ul>
         </div>
-        <p className="text-center font-serif text-[#8b6b4a] text-sm mt-auto pt-4 border-t border-[#8b6b4a]/20">Page 11</p>
+        <p className="text-center font-serif text-[var(--gb-label)] text-sm mt-auto pt-4 border-t border-[var(--gb-footer-border)] transition-colors duration-300">Page 11</p>
       </div>
     ),
 
     // Page 11: XP Pro tips (Right Page)
     (
-      <div className="w-full h-full paper-texture p-4 sm:p-8 flex flex-col pb-12 sm:pb-16 relative shadow-[inset_10px_0_20px_rgba(0,0,0,0.06)]">
-        <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-black/10 to-transparent pointer-events-none" />
-        <div className="bg-[#f0e6d2]/80 p-3 sm:p-5 rounded-xl border border-[#d8c5a5] shadow-inner mb-auto mt-4">
-          <h3 className="font-bold text-emerald-800 mb-2 sm:mb-3 uppercase tracking-wider font-serif text-lg border-b border-emerald-900/10 pb-2">Pro Tip: Customization</h3>
-          <p className="text-sm md:text-base text-[#5c4033] leading-relaxed mb-4 font-sans">
+      <div className="w-full h-full paper-texture p-4 sm:p-8 flex flex-col pb-12 sm:pb-16 relative shadow-[inset_10px_0_20px_rgba(0,0,0,0.06)] transition-colors duration-300 overflow-y-auto hide-scrollbar">
+        <div className="absolute left-0 top-0 bottom-0 w-8 bg-[var(--gb-spine-r)] pointer-events-none" />
+        <div className="bg-[var(--gb-accent-bg)] p-3 sm:p-5 rounded-xl border border-[var(--gb-accent-border)] shadow-inner mb-auto mt-4 transition-colors duration-300">
+          <h3 className="font-bold text-emerald-600 mb-2 sm:mb-3 uppercase tracking-wider font-serif text-lg border-b border-[var(--gb-border)] pb-2 transition-colors duration-300">Pro Tip: Customization</h3>
+          <p className="text-sm md:text-base text-[var(--gb-body)] leading-relaxed mb-4 font-sans transition-colors duration-300">
             Configure your level-up rewards to match your progression style!
           </p>
           <div className="flex flex-col gap-2 sm:gap-3">
-            <button onClick={() => { onClose(); navigateToSettings('dev'); }} className="text-left w-full p-2 sm:p-3 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-900 text-sm md:text-base font-serif font-bold transition-colors shadow-sm">
+            <button onClick={() => { onClose(); navigateToSettings('dev'); }} className="text-left w-full p-2 sm:p-3 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-600 text-sm md:text-base font-serif font-bold transition-all shadow-sm">
               Go to Settings &gt; Developer<br/><span className="font-normal font-sans text-xs sm:text-sm opacity-80 mt-1 block">Adjust base XP rates and formula.</span>
             </button>
-            <button onClick={() => { onClose(); navigateToSettings('levelRewards'); }} className="text-left w-full p-2 sm:p-3 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-900 text-sm md:text-base font-serif font-bold transition-colors shadow-sm">
+            <button onClick={() => { onClose(); navigateToSettings('levelRewards'); }} className="text-left w-full p-2 sm:p-3 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-600 text-sm md:text-base font-serif font-bold transition-all shadow-sm">
               Go to Settings &gt; Level Rewards<br/><span className="font-normal font-sans text-xs sm:text-sm opacity-80 mt-1 block">Add/remove level-up gifts (e.g., loot).</span>
             </button>
           </div>
         </div>
-        <p className="text-center font-serif text-[#8b6b4a] text-sm mt-auto pt-4 border-t border-[#8b6b4a]/20">Page 12</p>
+        <p className="text-center font-serif text-[var(--gb-label)] text-sm mt-auto pt-4 border-t border-[var(--gb-footer-border)] transition-colors duration-300">Page 12</p>
       </div>
     ),
 
     // Page 12: Talents (Left Page)
     (
-      <div className="w-full h-full paper-texture p-4 sm:p-8 flex flex-col pb-12 sm:pb-16 relative shadow-[inset_-10px_0_20px_rgba(0,0,0,0.06)]">
-        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-black/10 to-transparent pointer-events-none" />
-        <div className="flex items-center gap-2 sm:gap-3 border-b-2 border-[#8b6b4a]/30 pb-2 sm:pb-4 mb-4 sm:mb-6">
-          <Network className="text-indigo-600 w-7 h-7" />
-          <h2 className="text-2xl sm:text-3xl font-bold font-serif text-[#3a2e22]">Talent System</h2>
+      <div className="w-full h-full paper-texture p-4 sm:p-8 flex flex-col pb-12 sm:pb-16 relative shadow-[inset_-10px_0_20px_rgba(0,0,0,0.06)] transition-colors duration-300 overflow-y-auto hide-scrollbar">
+        <div className="absolute right-0 top-0 bottom-0 w-8 bg-[var(--gb-spine-l)] pointer-events-none" />
+        <div className="flex items-center gap-2 sm:gap-3 border-b-2 border-[var(--gb-border)] pb-2 sm:pb-4 mb-4 sm:mb-6 transition-colors duration-300">
+          <Network className="text-[var(--gb-talent-color)] w-7 h-7" />
+          <h2 className="text-2xl sm:text-3xl font-bold font-serif text-[var(--gb-title)] transition-colors duration-300">Talent System</h2>
         </div>
-        <p className="text-[#5c4033] text-xs sm:text-sm md:text-base mb-3 sm:mb-3 sm:mb-6 leading-relaxed font-sans">
-          The <button onClick={() => { onClose(); onTabChange('talents'); }} className="font-bold underline text-indigo-700 decoration-indigo-700/30 hover:text-indigo-800">Talent Tree</button> allows you to unlock passive bonuses. You need <strong className="font-serif">Talent Points</strong> to unlock nodes.
+        <p className="text-[var(--gb-body)] text-xs sm:text-sm md:text-base mb-3 sm:mb-3 sm:mb-6 leading-relaxed font-sans transition-colors duration-300">
+          The <button onClick={() => { onClose(); onTabChange('talents'); }} className="font-bold underline text-[var(--gb-talent-color)] decoration-[var(--gb-talent-color)]/30 hover:opacity-80 transition-colors">Talent Tree</button> allows you to unlock passive bonuses. You need <strong className="font-serif">Talent Points</strong> to unlock nodes.
         </p>
-        <div className="bg-[#f4ebd8] p-3 sm:p-5 rounded-xl border border-[#d8c5a5]">
-          <h3 className="font-bold text-[#3a2e22] mb-2 sm:mb-3 uppercase tracking-wider font-serif text-lg">Acquiring Talent Points</h3>
-          <ul className="space-y-3 text-[#5c4033] text-sm md:text-base font-sans">
+        <div className="bg-[var(--gb-accent-bg)] p-3 sm:p-5 rounded-xl border border-[var(--gb-accent-border)] transition-colors duration-300">
+          <h3 className="font-bold text-[var(--gb-title)] mb-2 sm:mb-3 uppercase tracking-wider font-serif text-lg transition-colors duration-300">Acquiring Talent Points</h3>
+          <ul className="space-y-3 text-[var(--gb-body)] text-sm md:text-base font-sans transition-colors duration-300">
             <li className="flex gap-2 items-start">
-              <span className="text-indigo-600">❖</span>
+              <span className="text-[var(--gb-talent-color)]">❖</span>
               <div>
-                <strong className="text-indigo-900 block mb-1 font-serif">Leveling Up</strong>
+                <strong className="text-[var(--gb-talent-color)] block mb-1 font-serif transition-colors duration-300">Leveling Up</strong>
                 Points are granted at specific level milestones.
               </div>
             </li>
             <li className="flex gap-2 items-start">
-              <span className="text-indigo-600">❖</span>
+              <span className="text-[var(--gb-talent-color)]">❖</span>
               <div>
-                <strong className="text-indigo-900 block mb-1 font-serif">Finding Shards</strong>
-                Shards are rare drops in <button onClick={() => { onClose(); onTabChange('dungeons'); }} className="font-bold underline text-indigo-700 decoration-indigo-700/30 hover:text-indigo-800">Dungeons</button> or won from the <button onClick={() => { onClose(); onTabChange('shop'); }} className="font-bold underline text-indigo-700 decoration-indigo-700/30 hover:text-indigo-800">Merchant</button>.
+                <strong className="text-[var(--gb-talent-color)] block mb-1 font-serif transition-colors duration-300">Finding Shards</strong>
+                Shards are rare drops in <button onClick={() => { onClose(); onTabChange('dungeons'); }} className="font-bold underline text-[var(--gb-talent-color)] decoration-[var(--gb-talent-color)]/30 hover:opacity-80 transition-colors">Dungeons</button> or won from the <button onClick={() => { onClose(); onTabChange('shop'); }} className="font-bold underline text-[var(--gb-talent-color)] decoration-[var(--gb-talent-color)]/30 hover:opacity-80 transition-colors">Merchant</button>.
               </div>
             </li>
           </ul>
         </div>
-        <p className="text-center font-serif text-[#8b6b4a] text-sm mt-auto pt-4 border-t border-[#8b6b4a]/20">Page 13</p>
+        <p className="text-center font-serif text-[var(--gb-label)] text-sm mt-auto pt-4 border-t border-[var(--gb-footer-border)] transition-colors duration-300">Page 13</p>
       </div>
     ),
 
     // Page 13: Talents Pro tips (Right Page)
     (
-      <div className="w-full h-full paper-texture p-4 sm:p-8 flex flex-col pb-12 sm:pb-16 relative shadow-[inset_10px_0_20px_rgba(0,0,0,0.06)]">
-        <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-black/10 to-transparent pointer-events-none" />
-        <div className="bg-[#f0e6d2]/80 p-3 sm:p-5 rounded-xl border border-[#d8c5a5] shadow-inner mb-auto mt-4">
-          <h3 className="font-bold text-indigo-800 mb-2 sm:mb-3 uppercase tracking-wider font-serif text-lg border-b border-indigo-900/10 pb-2">Pro Tip: Customization</h3>
-          <p className="text-sm md:text-base text-[#5c4033] leading-relaxed mb-4 font-sans">
+      <div className="w-full h-full paper-texture p-4 sm:p-8 flex flex-col pb-12 sm:pb-16 relative shadow-[inset_10px_0_20px_rgba(0,0,0,0.06)] transition-colors duration-300 overflow-y-auto hide-scrollbar">
+        <div className="absolute left-0 top-0 bottom-0 w-8 bg-[var(--gb-spine-r)] pointer-events-none" />
+        <div className="bg-[var(--gb-accent-bg)] p-3 sm:p-5 rounded-xl border border-[var(--gb-accent-border)] shadow-inner mb-auto mt-4 transition-colors duration-300">
+          <h3 className="font-bold text-[var(--gb-title)] mb-2 sm:mb-3 uppercase tracking-wider font-serif text-lg border-b border-[var(--gb-border)] pb-2 transition-colors duration-300">Pro Tip: Customization</h3>
+          <p className="text-sm md:text-base text-[var(--gb-body)] leading-relaxed mb-4 font-sans transition-colors duration-300">
             Want more Talent Points? You can set them as rewards for leveling up!
           </p>
           <div className="flex flex-col gap-2 sm:gap-3">
-            <button onClick={() => { onClose(); navigateToSettings('levelRewards'); }} className="text-left w-full p-2 sm:p-3 rounded-lg bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-900 text-sm md:text-base font-serif font-bold transition-colors shadow-sm">
+            <button onClick={() => { onClose(); navigateToSettings('levelRewards'); }} className="text-left w-full p-2 sm:p-3 rounded-lg bg-[var(--gb-talent-bg)] hover:opacity-80 border border-[var(--gb-talent-color)]/30 text-[var(--gb-talent-color)] text-sm md:text-base font-serif font-bold transition-all shadow-sm">
               Go to Settings &gt; Level Rewards<br/><span className="font-normal font-sans text-xs sm:text-sm opacity-80 mt-1 block">Add Talent Points or Shards as level-up gifts.</span>
             </button>
           </div>
         </div>
-        <p className="text-center font-serif text-[#8b6b4a] text-sm mt-auto pt-4 border-t border-[#8b6b4a]/20">Page 14</p>
+        <p className="text-center font-serif text-[var(--gb-label)] text-sm mt-auto pt-4 border-t border-[var(--gb-footer-border)] transition-colors duration-300">Page 14</p>
       </div>
     ),
 
     // Page 14: Back Cover (Left Page)
     (
-      <div className="w-full h-full flex flex-col items-center justify-center text-center p-6 bg-[#5c4033] relative z-10 shadow-[inset_0_0_40px_rgba(0,0,0,0.8)] border-r flex-1 border-black/30">
-        <div className="absolute inset-3 border-2 border-dashed border-[#8b6b4a]/60 pointer-events-none" />
-        <Compass className="text-[#c79132]/60 mb-6 w-16 h-16 drop-shadow-lg" />
-        <div className="w-16 h-[2px] bg-gradient-to-r from-transparent via-[#c79132]/50 to-transparent my-4 rounded-full" />
-        <p className="text-[#e8dac1]/50 text-sm font-serif uppercase tracking-widest font-bold">Scholar's Sanctum</p>
+      <div className="w-full h-full flex flex-col items-center justify-center text-center p-6 bg-[var(--gb-cover-bg)] relative z-10 shadow-[inset_0_0_40px_rgba(0,0,0,0.8)] border-r flex-1 border-black/30 transition-colors duration-300">
+        <div className="absolute inset-3 border-2 border-dashed border-[var(--gb-cover-border)] pointer-events-none" />
+        <Compass className="text-[var(--gb-cover-accent)] mb-6 w-16 h-16 drop-shadow-lg" />
+        <div className="w-16 h-[2px] bg-gradient-to-r from-transparent via-[var(--gb-cover-accent-fade)] to-transparent my-4 rounded-full" />
+        <p className="text-[var(--gb-cover-sub)] text-sm font-serif uppercase tracking-widest font-bold">Scholar's Sanctum</p>
       </div>
     ),
 
@@ -620,13 +620,13 @@ export const GuideBookModal: React.FC<GuideBookModalProps> = ({
     <>
       <button 
         onClick={prevPage}
-        className={`absolute bottom-4 left-6 z-50 text-[#8b6b4a] hover:text-[#5c4033] hover:scale-110 flex items-center gap-1 font-serif text-sm font-bold transition-all px-2 py-1 bg-[#e8dac1]/50 rounded-lg backdrop-blur-sm ${(!isMobile && pageIndex === 0) ? 'hidden' : ''}`}
+        className={`absolute bottom-4 left-6 z-50 text-[var(--gb-label)] hover:text-[var(--gb-body)] hover:scale-110 flex items-center gap-1 font-serif text-sm font-bold transition-all px-2 py-1 bg-[var(--gb-accent-bg)] rounded-lg backdrop-blur-sm shadow-sm border border-[var(--gb-border)] ${(!isMobile && pageIndex === 0) ? 'hidden' : ''}`}
       >
         <ChevronLeft size={20} /> <span className="hidden sm:inline">Prev</span>
       </button>
       <button 
         onClick={nextPage}
-        className={`absolute bottom-4 right-6 z-50 text-[#8b6b4a] hover:text-[#5c4033] hover:scale-110 flex items-center gap-1 font-serif text-sm font-bold transition-all px-2 py-1 bg-[#e8dac1]/50 rounded-lg backdrop-blur-sm ${(!isMobile && pageIndex >= 16) ? 'hidden' : ''}`}
+        className={`absolute bottom-4 right-6 z-50 text-[var(--gb-label)] hover:text-[var(--gb-body)] hover:scale-110 flex items-center gap-1 font-serif text-sm font-bold transition-all px-2 py-1 bg-[var(--gb-accent-bg)] rounded-lg backdrop-blur-sm shadow-sm border border-[var(--gb-border)] ${(!isMobile && pageIndex >= 16) ? 'hidden' : ''}`}
       >
         <span className="hidden sm:inline">Next</span> <ChevronRight size={20} />
       </button>
@@ -642,7 +642,7 @@ export const GuideBookModal: React.FC<GuideBookModalProps> = ({
         <div className="absolute inset-0 pointer-events-none z-0" style={{ perspective: 1500 }}>
           {/* Left Base */}
           <div 
-            className={`absolute top-0 bottom-0 left-0 w-1/2 bg-[#5c4033] rounded-l-xl border-y-2 sm:border-y-4 border-l-2 sm:border-l-4 border-[#3a2e22] transform origin-right transition-transform duration-500 ease-in-out ${isMobile ? 'hidden' : ''}`}
+            className={`absolute top-0 bottom-0 left-0 w-1/2 bg-[var(--gb-cover-bg)] rounded-l-xl border-y-2 sm:border-y-4 border-l-2 sm:border-l-4 border-[var(--gb-cover-border)] transform origin-right transition-all duration-500 ease-in-out ${isMobile ? 'hidden' : ''}`}
             style={{ 
               boxShadow: '-25px 25px 50px -12px rgba(0, 0, 0, 0.7), inset 0 0 20px rgba(0,0,0,0.5)',
               transform: pageIndex === 0 ? 'rotateY(180deg)' : 'rotateY(0deg)',
@@ -651,7 +651,7 @@ export const GuideBookModal: React.FC<GuideBookModalProps> = ({
           />
           {/* Right Base */}
           <div 
-            className={`absolute top-0 bottom-0 right-0 w-1/2 bg-[#5c4033] rounded-r-xl border-y-2 sm:border-y-4 border-r-2 sm:border-r-4 border-[#3a2e22] transform origin-left transition-transform duration-500 ease-in-out ${isMobile ? 'hidden' : ''}`}
+            className={`absolute top-0 bottom-0 right-0 w-1/2 bg-[var(--gb-cover-bg)] rounded-r-xl border-y-2 sm:border-y-4 border-r-2 sm:border-r-4 border-[var(--gb-cover-border)] transform origin-left transition-all duration-500 ease-in-out ${isMobile ? 'hidden' : ''}`}
             style={{ 
               boxShadow: '25px 25px 50px -12px rgba(0, 0, 0, 0.7), inset 0 0 20px rgba(0,0,0,0.5)',
               transform: pageIndex >= 16 ? 'rotateY(-180deg)' : 'rotateY(0deg)',

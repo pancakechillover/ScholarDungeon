@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v6.7.2';
+export const APP_VERSION = 'v6.8.6';
 export const LAST_UPDATE_DATE = '2026-05-14';
-export const LAST_UPDATE_TIME = '16:35:00';
+export const LAST_UPDATE_TIME = '17:05:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,72 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v6.8.6',
+    date: '2026-05-14',
+    time: '17:05:00',
+    title: 'Audio Error Handling Refinement',
+    items: [
+      { category: 'Bug Fix', description: 'Improved audio playback error handling to silence expected browser autoplay policy errors.' }
+    ]
+  },
+  {
+    version: 'v6.8.5',
+    date: '2026-05-14',
+    time: '17:03:00',
+    title: 'Guidebook Scrollbar Refinement',
+    items: [
+      { category: 'UI', description: 'Improved visibility of \'Pro Tip\' headers in the Talent System guidebook page by updating text color to theme-aware variables.' }
+    ]
+  },
+  {
+    version: 'v6.8.4',
+    date: '2026-05-14',
+    time: '16:58:00',
+    title: 'Talent System Navigation Fix',
+    items: [
+      { category: 'Bug Fix', description: 'Fixed Talent System button in dashboard to point to the correct guidebook page.' }
+    ]
+  },
+  {
+    version: 'v6.8.3',
+    date: '2026-05-14',
+    time: '16:55:00',
+    title: 'Dashboard UI Polish',
+    items: [
+      { category: 'UX', description: 'Removed redundant "GUIDE" label from Guidebook buttons on the dashboard for a cleaner interface.' }
+    ]
+  },
+  {
+    version: 'v6.8.2',
+    date: '2026-05-14',
+    time: '16:52:00',
+    title: 'Talent Color Polish',
+    items: [
+      { category: 'UI', description: 'Brightened Talent System blue colors for improved visibility in Night, Forest, and Ocean themes.' }
+    ]
+  },
+  {
+    version: 'v6.8.1',
+    date: '2026-05-14',
+    time: '16:50:00',
+    title: 'Talent System Interaction Polish',
+    items: [
+      { category: 'UI', description: 'Updated Talent System icons and text to use theme-aware CSS variables, ensuring high visibility in all dark and light themes.' }
+    ]
+  },
+  {
+    version: 'v6.8.0',
+    date: '2026-05-14',
+    time: '16:45:00',
+    title: 'Themed Wisdom & Interaction Polish',
+    items: [
+      { category: 'Feature', description: 'Implemented comprehensive Guidebook theming for NIGHT, FOREST, and OCEAN; solid dark backgrounds with light mystical typography.' },
+      { category: 'UX', description: 'Enhanced Daily Sessions modal with permanently visible action buttons for better accessibility and touch support.' },
+      { category: 'UI', description: 'Removed redundant "Daily Record" buttons from chart tooltips to streamline the interaction flow.' },
+      { category: 'Visual', description: 'Polished book cover and spine aesthetics across all themes for improved immersion.' }
+    ]
+  },
   {
     version: 'v6.7.2',
     date: '2026-05-14',

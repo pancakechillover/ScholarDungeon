@@ -16,7 +16,7 @@ html {
 
 @layer utilities {
   .paper-texture {
-    background-color: var(--paper-bg, #f4ecd8);
+    background-color: var(--gb-bg, #f4ecd8);
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.08'/%3E%3C/svg%3E");
   }
 }
@@ -74,6 +74,111 @@ html {
     scrollbar-color: rgba(30, 41, 59, 0.5) transparent;
   }
   
+  /* GUIDEBOOK THEME VARS */
+  :root {
+    --gb-bg: #f4ecd8;
+    --gb-title: #3a2e22;
+    --gb-body: #5c4033;
+    --gb-border: rgba(139, 107, 74, 0.3);
+    --gb-label: #8b6b4a;
+    --gb-card: rgba(232, 218, 193, 0.2);
+    --gb-card-hover: rgba(216, 197, 165, 0.3);
+    --gb-spine-l: linear-gradient(to left, rgba(0,0,0,0.1), transparent);
+    --gb-spine-r: linear-gradient(to right, rgba(0,0,0,0.1), transparent);
+    --gb-spine-inner: linear-gradient(to right, transparent, rgba(0,0,0,0.2), transparent);
+    --gb-cover: #5c4033;
+    --gb-footer-border: rgba(139, 107, 74, 0.2);
+    --gb-toc-btn-hover: rgba(139, 107, 74, 0.1);
+    --gb-accent-bg: #f4ebd8;
+    --gb-accent-border: #d8c5a5;
+    --gb-accent-text: #713223;
+    --gb-talent-color: #4f46e5;
+    --gb-talent-bg: #e0e7ff;
+    --gb-cover-bg: #5c4033;
+    --gb-cover-border: rgba(139, 107, 74, 0.6);
+    --gb-cover-accent: rgba(199, 145, 50, 0.6);
+    --gb-cover-accent-fade: rgba(199, 145, 50, 0.5);
+    --gb-cover-sub: rgba(232, 218, 193, 0.5);
+  }
+
+  [data-theme="night"] {
+    --gb-bg: #0f172a;
+    --gb-title: #f8fafc;
+    --gb-body: #94a3b8;
+    --gb-border: rgba(51, 65, 85, 0.5);
+    --gb-label: #64748b;
+    --gb-card: rgba(30, 41, 59, 0.4);
+    --gb-card-hover: rgba(51, 65, 85, 0.5);
+    --gb-spine-l: linear-gradient(to left, rgba(255,255,255,0.05), transparent);
+    --gb-spine-r: linear-gradient(to right, rgba(255,255,255,0.05), transparent);
+    --gb-spine-inner: linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent);
+    --gb-cover: #020617;
+    --gb-footer-border: rgba(51, 65, 85, 0.3);
+    --gb-toc-btn-hover: rgba(51, 65, 85, 0.2);
+    --gb-accent-bg: #1e293b;
+    --gb-accent-border: #334155;
+    --gb-accent-text: #38bdf8;
+    --gb-talent-color: #bae6fd;
+    --gb-talent-bg: rgba(186, 230, 253, 0.2);
+    --gb-cover-bg: #020617;
+    --gb-cover-border: rgba(51, 65, 85, 0.6);
+    --gb-cover-accent: rgba(56, 189, 248, 0.6);
+    --gb-cover-accent-fade: rgba(56, 189, 248, 0.5);
+    --gb-cover-sub: rgba(148, 163, 184, 0.5);
+  }
+
+  [data-theme="forest"] {
+    --gb-bg: #064e3b;
+    --gb-title: #ecfdf5;
+    --gb-body: #a7f3d0;
+    --gb-border: rgba(6, 95, 70, 0.5);
+    --gb-label: #10b981;
+    --gb-card: rgba(6, 78, 59, 0.4);
+    --gb-card-hover: rgba(6, 95, 70, 0.5);
+    --gb-spine-l: linear-gradient(to left, rgba(255,255,255,0.05), transparent);
+    --gb-spine-r: linear-gradient(to right, rgba(255,255,255,0.05), transparent);
+    --gb-spine-inner: linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent);
+    --gb-cover: #022c22;
+    --gb-footer-border: rgba(6, 95, 70, 0.3);
+    --gb-toc-btn-hover: rgba(6, 95, 70, 0.2);
+    --gb-accent-bg: #065f46;
+    --gb-accent-border: #047857;
+    --gb-accent-text: #10b981;
+    --gb-talent-color: #bae6fd;
+    --gb-talent-bg: rgba(186, 230, 253, 0.2);
+    --gb-cover-bg: #022c22;
+    --gb-cover-border: rgba(6, 95, 70, 0.6);
+    --gb-cover-accent: rgba(16, 185, 129, 0.6);
+    --gb-cover-accent-fade: rgba(16, 185, 129, 0.5);
+    --gb-cover-sub: rgba(167, 243, 208, 0.5);
+  }
+
+  [data-theme="ocean"] {
+    --gb-bg: #0c4a6e;
+    --gb-title: #e0f2fe;
+    --gb-body: #7dd3fc;
+    --gb-border: rgba(7, 89, 133, 0.5);
+    --gb-label: #0ea5e9;
+    --gb-card: rgba(12, 74, 110, 0.4);
+    --gb-card-hover: rgba(7, 89, 133, 0.5);
+    --gb-spine-l: linear-gradient(to left, rgba(255,255,255,0.05), transparent);
+    --gb-spine-r: linear-gradient(to right, rgba(255,255,255,0.05), transparent);
+    --gb-spine-inner: linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent);
+    --gb-cover: #083344;
+    --gb-footer-border: rgba(7, 89, 133, 0.3);
+    --gb-toc-btn-hover: rgba(7, 89, 133, 0.2);
+    --gb-accent-bg: #075985;
+    --gb-accent-border: #0369a1;
+    --gb-accent-text: #38bdf8;
+    --gb-talent-color: #bae6fd;
+    --gb-talent-bg: rgba(186, 230, 253, 0.2);
+    --gb-cover-bg: #083344;
+    --gb-cover-border: rgba(7, 89, 133, 0.6);
+    --gb-cover-accent: rgba(56, 189, 248, 0.6);
+    --gb-cover-accent-fade: rgba(56, 189, 248, 0.5);
+    --gb-cover-sub: rgba(125, 211, 252, 0.5);
+  }
+
   /* 
    * ==========================================
    * 任务板配色设置 (Quest Board Color Theme)
@@ -471,13 +576,14 @@ html {
 }
 
 /* Custom Scrollbar - Hidden by default to prevent jitter */
-.scrollbar-hide {
-  -ms-overflow-style: none !important;
-  scrollbar-width: none !important;
-}
-.scrollbar-hide::-webkit-scrollbar {
-  display: none !important;
-}
+  .hide-scrollbar {
+    -ms-overflow-style: none !important;
+    scrollbar-width: none !important;
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none !important;
+  }
+
 
 .show-scrollbar {
   -ms-overflow-style: auto !important;
