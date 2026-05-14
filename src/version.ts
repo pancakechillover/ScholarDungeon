@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v6.3.14';
+export const APP_VERSION = 'v6.3.15';
 export const LAST_UPDATE_DATE = '2026-05-14';
-export const LAST_UPDATE_TIME = '12:15:00';
+export const LAST_UPDATE_TIME = '12:50:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,15 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v6.3.15',
+    date: '2026-05-14',
+    time: '12:50:00',
+    title: 'English Default Prompts',
+    items: [
+      { category: 'UX', description: 'Translated the default Sage prompts from Chinese to English per user request.' }
+    ]
+  },
   {
     version: 'v6.3.14',
     date: '2026-05-14',
