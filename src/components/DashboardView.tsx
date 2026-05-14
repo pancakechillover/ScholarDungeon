@@ -48,6 +48,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   openGuideBook,
   saveDailyLog
 }) => {
+  const isDarkTheme = ['night', 'forest', 'ocean'].includes(state.theme || '');
   const [showSageConsult, setShowSageConsult] = React.useState(false);
   const settlementPeriod = useMemo(() => {
     const ts = state.timeSettings || {
@@ -171,22 +172,24 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           )}
         </div>
 
-        {/* Sage Quick Consult Card */}
-        <div className="bg-emerald-950/20 rounded-3xl border border-emerald-500/20 p-6 relative overflow-hidden group">
-          <Bot className="absolute -bottom-6 right-8 text-emerald-500/10 w-32 h-32 group-hover:scale-110 transition-transform" />
-          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <Sparkles size={20} className="text-emerald-400" />
-                <h3 className="text-sm font-black text-emerald-400 uppercase tracking-widest">Oracle's Insight</h3>
+        <div className="bg-slate-900 rounded-3xl border border-slate-800 p-8 relative overflow-hidden group">
+          <Bot className="absolute -bottom-6 right-8 text-emerald-500/20 w-32 h-32 group-hover:scale-110 transition-transform" />
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 bg-emerald-500/10 rounded-xl">
+                    <Sparkles size={24} className="text-emerald-400" />
+                </div>
+                <h3 className="text-xl font-black text-white uppercase tracking-tighter italic">Oracle's Insight</h3>
               </div>
-              <p className="text-sm text-emerald-300/60 font-medium italic">Seek guidance from the Emerald Sage based on your journey.</p>
+              <p className="text-sm text-slate-400 font-medium">Seek guidance from the Emerald Sage based on your journey.</p>
             </div>
             <button 
                onClick={() => setShowSageConsult(true)}
-               className="py-3 px-6 bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all border border-emerald-500/30 flex items-center justify-center gap-2 whitespace-nowrap"
+               className="py-4 px-8 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl text-sm font-black uppercase tracking-widest transition-all border border-emerald-500/30 flex items-center justify-center gap-3 whitespace-nowrap"
             >
               Assemble Council
+              <ChevronRight size={18} />
             </button>
           </div>
         </div>
@@ -311,6 +314,7 @@ interface SageConsultModalProps {
 }
 
 const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, onClose }) => {
+  const isDarkTheme = ['night', 'forest', 'ocean'].includes(state.theme || '');
   const [loading, setLoading] = React.useState(false);
   const [userInput, setUserInput] = React.useState('');
   const [error, setError] = React.useState<string | null>(null);
@@ -420,11 +424,9 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
                  <h4 className="text-white font-black uppercase tracking-widest mb-3">Begin the Consultation</h4>
                  <p className="text-sm text-slate-400 max-w-xs leading-relaxed">The Oracle is ready to evaluate your scrolls. Speak, and the path shall be revealed.</p>
                </div>
-               <div className="flex flex-col gap-3 w-full max-w-xs">
-                 <button onClick={() => handleSend("Sage, analyze my recent journey.")} className="py-2.5 px-4 bg-slate-800/50 border border-slate-700 hover:border-emerald-500/50 text-slate-300 hover:text-white rounded-xl text-xs font-bold transition-all text-left">"Analyze my recent journey."</button>
-                 <button onClick={() => handleSend("Give me a mystical challenge for today.")} className="py-2.5 px-4 bg-slate-800/50 border border-slate-700 hover:border-emerald-500/50 text-slate-300 hover:text-white rounded-xl text-xs font-bold transition-all text-left">"Give me a mystical challenge."</button>
+               <div className="flex flex-wrap gap-2 justify-center max-w-lg px-4">
                  {state.sagePrompts?.map(p => (
-                   <button key={p.id} onClick={() => handleSend(p.prompt)} className="py-2.5 px-4 bg-emerald-900/20 border border-emerald-500/20 hover:border-emerald-500/50 text-emerald-300 hover:text-white rounded-xl text-xs font-bold transition-all text-left">{p.title}</button>
+                   <button key={p.id} onClick={() => handleSend(p.prompt)} className="py-2 px-3.5 bg-slate-900 border border-indigo-500/30 hover:border-indigo-500/60 hover:bg-indigo-500/10 text-indigo-300 hover:text-white rounded-xl text-xs font-bold transition-all whitespace-nowrap">{p.title}</button>
                  ))}
                </div>
             </div>
@@ -435,41 +437,48 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
               <div className={cn(
                 "max-w-[85%] p-4 rounded-2xl text-sm font-medium leading-relaxed shadow-lg relative",
                 msg.role === 'user' 
-                  ? "bg-indigo-600/20 border border-indigo-500/30 text-indigo-100 rounded-tr-none" 
-                  : "bg-slate-800/80 border border-emerald-500/20 text-slate-200 rounded-tl-none font-serif italic"
+                  ? "bg-indigo-600 border border-indigo-500 text-white rounded-tr-none" 
+                  : cn(
+                      "rounded-tl-none font-serif italic shadow-emerald-500/10",
+                      isDarkTheme 
+                        ? "bg-slate-900 border border-emerald-500/20 text-emerald-50" 
+                        : "bg-emerald-50 border border-emerald-200 text-emerald-950"
+                    )
               )}>
                 {msg.role === 'assistant' ? (
-                  <div className="prose prose-invert prose-emerald prose-sm max-w-none">
+                  <div className={cn("prose prose-sm max-w-none", isDarkTheme ? "prose-invert prose-emerald" : "prose-emerald")}>
                     <ReactMarkdown>{msg.content}</ReactMarkdown>
                   </div>
                 ) : (
                   msg.content
                 )}
-
-                {/* Message Actions */}
-                <div className={cn(
-                  "absolute bottom-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2 px-2 py-1 bg-slate-950/80 border border-slate-800 rounded-lg shadow-xl",
-                  msg.role === 'user' ? "right-full mr-2" : "left-full ml-2"
-                )}>
+              </div>
+              
+              <div className={cn(
+                "flex items-center gap-3 mt-1.5 px-2",
+                msg.role === 'user' ? "flex-row-reverse" : "flex-row"
+              )}>
+                <span className="text-[9px] font-bold text-slate-600 uppercase tracking-widest shrink-0">
+                  {msg.role === 'user' ? 'Scholar' : 'Emerald Sage'} • {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </span>
+                
+                <div className="flex items-center gap-1.5">
                   <button 
                     onClick={() => handleCopy(msg.content, `${idx}`)}
-                    className="p-1 hover:text-emerald-400 text-slate-500 transition-colors"
+                    className="p-1 hover:text-emerald-400 text-slate-500 transition-colors flex items-center justify-center"
                     title="Copy"
                   >
-                    {copiedId === `${idx}` ? <Check size={12} /> : <Copy size={12} />}
+                    {copiedId === `${idx}` ? <Check size={10} /> : <Copy size={10} />}
                   </button>
                   <button 
                     onClick={() => handleQuote(msg.content)}
-                    className="p-1 hover:text-emerald-400 text-slate-500 transition-colors"
+                    className="p-1 hover:text-emerald-400 text-slate-500 transition-colors flex items-center justify-center"
                     title="Quote"
                   >
-                    <Quote size={12} />
+                    <Quote size={10} />
                   </button>
                 </div>
               </div>
-              <span className="text-[9px] font-bold text-slate-600 mt-1 uppercase tracking-widest px-2">
-                {msg.role === 'user' ? 'Scholar' : 'Emerald Sage'} • {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </span>
             </div>
           ))}
 

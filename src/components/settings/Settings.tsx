@@ -35,8 +35,8 @@ import { RewardSettings } from './RewardSettings';
 import { ShopSettings } from './ShopSettings';
 import { GachaSettings } from './GachaSettings';
 import { DeveloperSettings } from './DeveloperSettings';
-import { AdviceSettingsSection } from './AdviceSettingsSection';
-
+import { CalcSettingsSection } from './CalcSettingsSection';
+import { SageSettingsSection } from './SageSettingsSection';
 import { CloudSettingsSection } from './CloudSettingsSection';
 
 interface VersionGroupProps {
@@ -56,7 +56,7 @@ const VersionGroup: React.FC<VersionGroupProps> = ({ group, logs, isInitialExpan
       >
         <div className="flex items-center gap-3">
           <Layers size={16} className={cn("transition-colors", isExpanded ? "text-indigo-400" : "text-slate-500")} />
-          <span className="text-sm font-black uppercase tracking-widest text-slate-200">Version {group}.x Series</span>
+          <span className="text-sm font-black uppercase tracking-widest text-slate-200">Version 6.x Series</span>
         </div>
         <div className="flex items-center gap-3">
           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">{logs.length} Updates</span>
@@ -196,7 +196,7 @@ export const Settings = React.memo<SettingsProps & { onOpenAstralArchives?: () =
   return (
     <div className="p-6 space-y-8">
       <div className="flex flex-wrap items-center justify-center gap-1.5 p-1.5 bg-slate-900/80 backdrop-blur rounded-3xl w-full border border-slate-800">
-        {(['general', 'timer', 'level', 'merchant', 'advice', 'cloud', 'dev', 'about'] as const).map(tab => {
+        {(['general', 'timer', 'level', 'merchant', 'calculator', 'sage', 'cloud', 'dev', 'about'] as const).map(tab => {
           return (
             <button
               key={tab}
@@ -208,7 +208,7 @@ export const Settings = React.memo<SettingsProps & { onOpenAstralArchives?: () =
                   : "text-slate-500 hover:text-slate-300 hover:bg-slate-800/30"
               )}
             >
-              {tab === 'dev' ? 'Developer' : tab === 'level' ? 'Level' : tab === 'merchant' ? 'Merchant' : tab === 'about' ? 'About' : tab === 'cloud' ? 'Cloud' : tab === 'advice' ? 'Advice' : tab}
+              {tab === 'dev' ? 'Developer' : tab === 'level' ? 'LV.' : tab === 'merchant' ? 'Merchant' : tab === 'about' ? 'About' : tab === 'cloud' ? 'Cloud' : tab === 'calculator' ? 'Calc' : tab === 'sage' ? 'Sage' : tab}
             </button>
           );
         })}
@@ -364,8 +364,11 @@ export const Settings = React.memo<SettingsProps & { onOpenAstralArchives?: () =
         {(activeSection === 'gacha' as any) && (
           <GachaSettings pools={gachaPools} onUpdate={onUpdateGacha} />
         )}
-        {activeSection === 'advice' && (
-          <AdviceSettingsSection state={state} setState={setState} />
+        {activeSection === 'calculator' && (
+          <CalcSettingsSection state={state} setState={setState} />
+        )}
+        {activeSection === 'sage' && (
+          <SageSettingsSection state={state} setState={setState} />
         )}
         
         {activeSection === 'dev' && (

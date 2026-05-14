@@ -87,7 +87,7 @@ function App() {
     }
   }, []);
 
-  const [activeSettingsSection, setActiveSettingsSection] = useState<'general' | 'timer' | 'rewards' | 'shop' | 'gacha' | 'dev' | 'levelRewards' | 'about' | 'level' | 'merchant' | 'cloud' | 'advice'>('general');
+  const [activeSettingsSection, setActiveSettingsSection] = useState<'general' | 'timer' | 'rewards' | 'shop' | 'gacha' | 'dev' | 'levelRewards' | 'about' | 'level' | 'merchant' | 'cloud' | 'calculator' | 'sage'>('general');
 
   const canPip = 'documentPictureInPicture' in window && window.self === window.top;
   const isPWA = window.matchMedia('(display-mode: standalone)').matches;

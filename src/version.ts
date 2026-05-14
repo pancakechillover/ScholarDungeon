@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v6.0.42';
-export const LAST_UPDATE_DATE = '2026-05-13';
-export const LAST_UPDATE_TIME = '23:35:00';
+export const APP_VERSION = 'v6.3.6';
+export const LAST_UPDATE_DATE = '2026-05-14';
+export const LAST_UPDATE_TIME = '10:30:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,179 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v6.3.6',
+    date: '2026-05-14',
+    time: '10:30:00',
+    title: 'Sage Dark Mode Messaging Polish',
+    items: [
+      { category: 'UI', description: 'Optimized Emerald Sage message bubbles for dark themes (Night, Forest, Ocean) by switching to a deep slate background with light emerald text, eliminating visual harshness.' }
+    ]
+  },
+  {
+    version: 'v6.3.5',
+    date: '2026-05-14',
+    time: '10:25:00',
+    title: 'Settings UI Compactness Refinement',
+    items: [
+      { category: 'UI', description: 'Renamed "Calculator" settings tab to "Calc" and "Level" tab to "LV." for a more compact and mobile-friendly navigation bar.' }
+    ]
+  },
+  {
+    version: 'v6.3.4',
+    date: '2026-05-14',
+    time: '10:20:00',
+    title: 'Emerald Sage Messaging Clarity',
+    items: [
+      { category: 'UI', description: 'Updated Sage\'s chat bubbles to use a solid light emerald background with high-contrast dark text, strictly adhering to the "Emerald" identity while ensuring superior readability.' }
+    ]
+  },
+  {
+    version: 'v6.3.3',
+    date: '2026-05-14',
+    time: '10:15:00',
+    title: 'Sage Branding Refinement',
+    items: [
+      { category: 'UI', description: 'Renamed "Emerald Sage" settings tab to "Sage" for a cleaner and more concise interface.' }
+    ]
+  },
+  {
+    version: 'v6.3.2',
+    date: '2026-05-14',
+    time: '10:10:00',
+    title: 'Sage Dark Mode Messaging Fix',
+    items: [
+      { category: 'UI', description: 'Inverted the Emerald Sage\'s message bubble to a dark background (slate-900) with light text (emerald-50) for superior readability in dark themes and a more mystical consistency.' }
+    ]
+  },
+  {
+    version: 'v6.3.1',
+    date: '2026-05-14',
+    time: '10:05:00',
+    title: 'Sage Council UI Refinement',
+    items: [
+      { category: 'UI', description: 'Optimized AI prompt library buttons with a compact, wrap-around layout for improved visual density and mobile ergonomics.' }
+    ]
+  },
+  {
+    version: 'v6.3.0',
+    date: '2026-05-14',
+    time: '10:00:00',
+    title: 'Sage UX & Theme Integration',
+    items: [
+      { category: 'UI', description: 'Unified and themed AI prompt buttons across the Sanctum and Settings, ensuring full synchronization with user-selected color palettes.' },
+      { category: 'UX', description: 'Streamlined the Sage Council starter prompts for a cleaner, more focused ritual experience.' }
+    ]
+  },
+  {
+    version: 'v6.2.2',
+    date: '2026-05-14',
+    time: '09:55:00',
+    title: 'Sage Interface Synchronization',
+    items: [
+      { category: 'UI', description: 'Synchronized chat interface CSS between Settings and Dashboard for absolute consistency, including message bubbles, animations, and action placements.' }
+    ]
+  },
+  {
+    version: 'v6.2.1',
+    date: '2026-05-14',
+    time: '09:50:00',
+    title: 'Sage Council UX Refinement',
+    items: [
+      { category: 'UX', description: 'Removed redundant default prompts ("Analyze journey", "Mystical challenge") from the Sage\'s Council chat interface to clear visual clutter.' }
+    ]
+  },
+  {
+    version: 'v6.2.0',
+    date: '2026-05-14',
+    time: '07:40:00',
+    title: 'Advice & Sage Structural Refinement',
+    items: [
+      { category: 'UX', description: 'Split the "Advice" settings section into two separate top-level tabs: "Calculator" and "Emerald Sage" for better navigation and focus.' },
+      { category: 'UI', description: 'Updated the settings navigation bar with new specialized icons and labels for the split sections.' }
+    ]
+  },
+  {
+    version: 'v6.1.8',
+    date: '2026-05-14',
+    time: '07:32:00',
+    title: 'Sage Interface Unification',
+    items: [
+      { category: 'UI', description: 'Unified prompt button styling across Sage\'s Council and Advice settings for a consistent mystical aesthetic.' }
+    ]
+  },
+  {
+    version: 'v6.1.7',
+    date: '2026-05-14',
+    time: '07:35:00',
+    title: 'Sage Council UX Enhancement',
+    items: [
+      { category: 'Feature', description: 'Added permanently visible Copy and Quote actions under chat bubbles in Sage\'s Council for easier interaction.' }
+    ]
+  },
+  {
+    version: 'v6.1.6',
+    date: '2026-05-14',
+    time: '07:30:00',
+    title: 'Emerald Sage Messaging Refinement',
+    items: [
+      { category: 'UI', description: 'Inverted Sage\'s chat bubble to dark font on a light emerald background for enhanced readability as per user request.' }
+    ]
+  },
+  {
+    version: 'v6.1.5',
+    date: '2026-05-14',
+    time: '07:25:00',
+    title: 'Sage Council Solid Styling',
+    items: [
+      { category: 'UI', description: 'Updated Sage\'s Council chat bubbles to use solid, theme-aware colors without transparency for maximum contrast and visual stability.' }
+    ]
+  },
+  {
+    version: 'v6.1.4',
+    date: '2026-05-14',
+    time: '07:22:00',
+    title: 'Sage Council Visual Polish',
+    items: [
+      { category: 'UI', description: 'Harmonized chat bubble styles in Sage\'s Council with theme-aware deep dark backgrounds and high-contrast mystical text colors.' }
+    ]
+  },
+  {
+    version: 'v6.1.3',
+    date: '2026-05-14',
+    time: '07:15:00',
+    title: 'Sage Chat UI Refinement',
+    items: [
+      { category: 'UI', description: 'Updated user chat bubbles in Sage\'s Council to use theme-aware dark background and light text for a more harmonious appearance.' }
+    ]
+  },
+  {
+    version: 'v6.1.2',
+    date: '2026-05-14',
+    time: '07:12:00',
+    title: 'Sage Chat Styling Refinement',
+    items: [
+      { category: 'UI', description: 'Updated user chat bubbles in Sage\'s Council to use dark font styling for improved readability.' }
+    ]
+  },
+  {
+    version: 'v6.1.1',
+    date: '2026-05-14',
+    time: '07:08:00',
+    title: 'Oracle UI Standardization',
+    items: [
+      { category: 'UI', description: 'Standardized the Oracle\'s Insight module CSS to match the welcome/dashboard bento grid style.' }
+    ]
+  },
+  {
+    version: 'v6.1.0',
+    date: '2026-05-14',
+    time: '07:05:00',
+    title: 'Mobile Header Stability Fix',
+    items: [
+      { category: 'Bug Fix', description: 'Fixed layout flickering on mobile by truncating long dungeon names in the page header.' }
+    ]
+  },
   {
     version: 'v6.0.42',
     date: '2026-05-13',

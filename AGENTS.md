@@ -23,8 +23,8 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v6.0.42
-- **Last Update Date:** 2026-05-13
+- **Current Version:** v6.3.6
+- **Last Update Date:** 2026-05-14
 
 ## Dark Themes Definition
 The following themes are considered "Dark Themes" and form the baseline for vibrant visual effects and high-contrast glowing elements:
@@ -49,6 +49,50 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v6.3.6 (2026-05-14):** Sage Dark Mode Messaging Polish.
+  - *UI:* Optimized Emerald Sage message bubbles for dark themes (Night, Forest, Ocean) by switching to a deep slate background with light emerald text, eliminating visual harshness.
+
+- **v6.3.5 (2026-05-14):** Settings UI Compactness Refinement.
+  - *UI:* Renamed "Calculator" settings tab to "Calc" and "Level" tab to "LV." for a more compact and mobile-friendly navigation bar.
+
+- **v6.3.4 (2026-05-14):** Sage Messaging Clarity Refinement.
+  - *UI:* Updated Emerald Sage chat bubbles to a solid light emerald background (emerald-50) with dark high-contrast text (emerald-950) for maximum readability and visual distinction across all themes.
+
+- **v6.3.3 (2026-05-14):** Sage Branding Refinement.
+  - *UI:* Renamed "Emerald Sage" settings tab to "Sage" for a cleaner and more concise interface.
+
+- **v6.3.2 (2026-05-14):** Sage Dark Mode Messaging Refinement.
+  - *UI:* Inverted Emerald Sage message bubbles to a dark background (slate-900) with light text (emerald-50) for enhanced readability in dark themes.
+
+- **v6.3.1 (2026-05-14):** Sage Council UI Refinement.
+  - *UI:* Optimized AI prompt library buttons with a compact, wrap-around layout for improved visual density.
+
+- **v6.3.0 (2026-05-14):** Sage UX & Theme Integration.
+  - *UI:* Unified and themed AI prompt buttons across the Sanctum and Settings, ensuring full synchronization with user-selected color palettes.
+  - *UX:* Streamlined the Sage Council starter prompts for a cleaner, more focused experience.
+
+- **v6.2.2 (2026-05-14):** Sage Interface Synchronization.
+  - *UI:* Synchronized chat interface CSS between Settings and Dashboard for absolute consistency, including message bubbles, animations, and action placements.
+
+- **v6.2.1 (2026-05-14):** Sage Council UX Refinement.
+  - *UX:* Removed redundant default prompts ("Analyze journey", "Mystical challenge") from the Sage's Council chat interface to clear visual clutter.
+
+- **v6.2.0 (2026-05-14):** Advice & Sage Structural Refinement.
+  - *UX:* Split the "Advice" settings section into two separate top-level navigation tabs: "Calculator" and "Emerald Sage".
+  - *Architecture:* Refactored `AdviceSettingsSection.tsx` into `CalcSettingsSection.tsx` and `SageSettingsSection.tsx` for improved modularity and maintenance.
+
+- **v6.1.8 (2026-05-14):** Sage Interface Unification.
+  - *UI:* Unified prompt button styling (backgrounds, borders, hover states) across Sage's Council and Advice settings for a consistent technical and mystical aesthetic.
+
+- **v6.1.7 (2026-05-14):** Sage Council UX Enhancement.
+  - *Feature:* Implemented permanently visible Copy and Quote actions for chat bubbles, improving interaction efficiency.
+
+- **v6.1.6 (2026-05-14):** Sage Messaging Readability Fix.
+  - *UI:* Inverted the Emerald Sage's message bubble to a dark font (emerald-950) on a light emerald background (emerald-50) for superior readability.
+
+- **v6.1.5 (2026-05-14):** Sage Council Styling Finalization.
+  - *UI:* Converted all chat bubbles in Sage's Council to solid, theme-aware colors (indigo for users, deep slate for Sage) without transparency to ensure readability and theme synchronization.
 
 - **v6.0.42 (2026-05-13):** Dev Tooling Background Refinement.
   - *UI:* Updated the Quest Board CSS Debugger to use solid backgrounds and headers, eliminating transparency for a more technical and focused interface.
