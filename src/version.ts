@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v6.3.10';
+export const APP_VERSION = 'v6.3.14';
 export const LAST_UPDATE_DATE = '2026-05-14';
-export const LAST_UPDATE_TIME = '11:30:00';
+export const LAST_UPDATE_TIME = '12:15:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,47 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v6.3.14',
+    date: '2026-05-14',
+    time: '12:15:00',
+    title: 'Input Box Readability & Complete Theme Inversion Fix',
+    items: [
+      { category: 'UX', description: 'Fixed unreadable text in the input box for AI consultation interfaces by using appropriate light/dark indigo variants instead of the inverted white/slate palette.' },
+      { category: 'UI', description: 'Replaced `bg-white` and hardcoded colors across prompt selectors and inputs to ensure high contrast in daylight, warm, and candy themes.' }
+    ]
+  },
+  {
+    version: 'v6.3.13',
+    date: '2026-05-14',
+    time: '12:05:00',
+    title: 'Sage Light Theme Background Sync',
+    items: [
+      { category: 'UI', description: 'Synchronized the AI chat main message area background to exactly match the sidebar background (`bg-indigo-50`) in all light themes for improved consistency.' }
+    ]
+  },
+  {
+    version: 'v6.3.12',
+    date: '2026-05-14',
+    time: '11:58:00',
+    title: 'Sage UI Full-Spectrum Theme Fix',
+    items: [
+      { category: 'Architecture', description: 'Overhauled global index.css to provide the full spectrum of theme-aware indigo variables (50 to 950), ensuring light theme accents correctly adapt to Warm and Candy palettes instead of defaulting to blue/purple.' },
+      { category: 'UI', description: 'Polished Sage\'s Council modal sidebar, banner, and message bubbles directly observing Dark/Light system preferences.' },
+      { category: 'UX', description: 'Implemented transparency logic (`bg-[color]/10`) for all AI interaction components in dark mode, fulfilling deep aesthetic contrast rules.' }
+    ]
+  },
+  {
+    version: 'v6.3.11',
+    date: '2026-05-14',
+    time: '11:45:00',
+    title: 'Sage Interface Complete Theme Synchronization',
+    items: [
+      { category: 'UI', description: 'Stripped the hardcoded standard "emerald" colors from the entire Sage\'s Council and Advice settings.' },
+      { category: 'UI', description: 'Replaced these colors with theme-aware variables (handled via "indigo" aliases in Tailwind), ensuring the AI interface beautifully adapts to "Warm", "Candy", "Ocean", and other selected themes.' },
+      { category: 'UI', description: 'Fixed the Prompt Library selector and Chat Input components in the Sage Interface to dynamically swap backgrounds and text colors perfectly for Day/Light themes instead of staying stuck in dark-mode aesthetics.' }
+    ]
+  },
   {
     version: 'v6.3.10',
     date: '2026-05-14',

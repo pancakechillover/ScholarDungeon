@@ -23,7 +23,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v6.3.10
+- **Current Version:** v6.3.14
 - **Last Update Date:** 2026-05-14
 
 ## Dark Themes Definition
@@ -49,6 +49,23 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v6.3.14 (2026-05-14):** Input Box Readability & Complete Theme Inversion Fix.
+  - *UX:* Fixed unreadable text in the input box for AI consultation interfaces by using appropriate light/dark indigo variants instead of the inverted white/slate palette.
+  - *UI:* Replaced `bg-white` and hardcoded colors across prompt selectors and inputs to ensure high contrast in daylight, warm, and candy themes.
+
+- **v6.3.13 (2026-05-14):** Sage Light Theme Background Sync.
+  - *UI:* Synchronized the AI chat main message area background to exactly match the sidebar background (`bg-indigo-50`) in all light themes for improved consistency.
+
+- **v6.3.12 (2026-05-14):** Sage UI Full-Spectrum Theme Fix.
+  - *Architecture:* Overhauled global index.css to provide the full spectrum of theme-aware indigo variables (50 to 950), ensuring light theme accents correctly adapt to Warm and Candy palettes instead of defaulting to blue/purple.
+  - *UI:* Polished Sage's Council modal sidebar, banner, and message bubbles directly observing Dark/Light system preferences.
+  - *UX:* Implemented transparency logic (`bg-[color]/10`) for all AI interaction components in dark mode, fulfilling deep aesthetic contrast rules.
+
+- **v6.3.11 (2026-05-14):** Sage Interface Complete Theme Synchronization.
+  - *UI:* Stripped the hardcoded standard "emerald" colors from the entire Sage's Council and Advice settings.
+  - *UI:* Replaced these colors with theme-aware variables (handled via "indigo" aliases in Tailwind), ensuring the AI interface beautifully adapts to "Warm", "Candy", "Ocean", and other selected themes.
+  - *UI:* Fixed the Prompt Library selector and Chat Input components in the Sage Interface to dynamically swap backgrounds and text colors perfectly for Day/Light themes instead of staying stuck in dark-mode aesthetics.
 
 - **v6.3.10 (2026-05-14):** Sage Interface Theme Polish.
   - *UI:* Fully synchronized the Sage Consultation sidebar and main chat background with the user's selected light/dark theme rules.

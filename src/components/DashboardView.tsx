@@ -183,12 +183,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
 
         <div className="bg-slate-900 rounded-3xl border border-slate-800 p-8 relative overflow-hidden group">
-          <Bot className="absolute -bottom-6 right-8 text-emerald-500/20 w-32 h-32 group-hover:scale-110 transition-transform" />
+          <Bot className="absolute -bottom-6 right-8 text-indigo-500/20 w-32 h-32 group-hover:scale-110 transition-transform" />
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-3">
-                <div className="p-2 bg-emerald-500/10 rounded-xl">
-                    <Sparkles size={24} className="text-emerald-400" />
+                <div className="p-2 bg-indigo-500/10 rounded-xl">
+                    <Sparkles size={24} className="text-indigo-400" />
                 </div>
                 <h3 className="text-xl font-black text-white uppercase tracking-tighter italic pr-1">Oracle's Insight</h3>
               </div>
@@ -196,7 +196,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
             <button 
                onClick={() => setShowSageConsult(true)}
-               className="py-4 px-8 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl text-sm font-black uppercase tracking-widest transition-all border border-emerald-500/30 flex items-center justify-center gap-3 whitespace-nowrap"
+               className="py-4 px-8 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl text-sm font-black uppercase tracking-widest transition-all border border-indigo-500/30 flex items-center justify-center gap-3 whitespace-nowrap"
             >
               Assemble Council
               <ChevronRight size={18} />
@@ -295,7 +295,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   <Coins size={16} className="text-amber-400" /> Gold Coins Guide
               </button>
               <button onClick={() => openGuideBook(4)} className="w-full flex items-center gap-3 p-3 rounded-xl bg-slate-950/50 hover:bg-slate-800 transition-colors border border-slate-800/50 text-xs text-slate-300">
-                  <BookOpen size={16} className="text-emerald-400" /> XP & Leveling Guide
+                  <BookOpen size={16} className="text-indigo-400" /> XP & Leveling Guide
               </button>
               <button onClick={() => openGuideBook(5)} className="w-full flex items-center gap-3 p-3 rounded-xl bg-slate-950/50 hover:bg-slate-800 transition-colors border border-slate-800/50 text-xs text-slate-300">
                   <Zap size={16} className="text-indigo-400" /> Talent System Guide
@@ -330,10 +330,10 @@ const SageLoadingTimer = ({ startTime, isDarkTheme }: { startTime: number, isDar
 
   return (
     <div className={cn("p-4 rounded-2xl rounded-tl-none flex items-center gap-3 border",
-      isDarkTheme ? "bg-slate-900/80 border-emerald-500/20" : "bg-emerald-50 border-emerald-200"
+      isDarkTheme ? "bg-slate-900/80 border-indigo-500/20" : "bg-indigo-50 border-indigo-200"
     )}>
-       <RefreshCw className={cn("animate-spin", isDarkTheme ? "text-emerald-400" : "text-emerald-600")} size={16} />
-       <span className={cn("text-xs font-serif italic pr-1", isDarkTheme ? "text-emerald-400/70" : "text-emerald-700")}>
+       <RefreshCw className={cn("animate-spin", isDarkTheme ? "text-indigo-400" : "text-indigo-600")} size={16} />
+       <span className={cn("text-xs font-serif italic pr-1", isDarkTheme ? "text-indigo-400/70" : "text-indigo-700")}>
          The Sage is consulting the scrolls... ({elapsed}s)
        </span>
     </div>
@@ -589,7 +589,7 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
         exit={{ scale: 0.9, opacity: 0 }}
         className={cn(
           "w-full max-w-4xl rounded-[2.5rem] border overflow-hidden shadow-2xl flex h-[85vh] relative",
-          isDarkTheme ? "bg-slate-900 border-emerald-500/30 shadow-emerald-500/10" : "bg-white border-emerald-200 shadow-emerald-900/10"
+          isDarkTheme ? "bg-slate-900 border-indigo-500/30 shadow-indigo-500/10" : "bg-indigo-50 border-indigo-200 shadow-indigo-900/10"
         )}
       >
         {/* Sidebar */}
@@ -601,14 +601,14 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
               exit={{ width: 0, opacity: 0 }}
               className={cn(
                 "h-full border-r flex flex-col flex-shrink-0 z-10",
-                isDarkTheme ? "border-slate-800 bg-slate-950/80" : "border-emerald-200 bg-emerald-50"
+                isDarkTheme ? "border-slate-800 bg-slate-950/80" : "border-indigo-200 bg-indigo-50"
               )}
             >
-              <div className={cn("p-4 border-b flex items-center justify-between", isDarkTheme ? "border-slate-800" : "border-emerald-200")}>
-                <span className={cn("text-xs font-black uppercase tracking-widest pl-2", isDarkTheme ? "text-slate-400" : "text-emerald-700")}>Consultations</span>
+              <div className={cn("p-4 border-b flex items-center justify-between", isDarkTheme ? "border-slate-800" : "border-indigo-200")}>
+                <span className={cn("text-xs font-black uppercase tracking-widest pl-2", isDarkTheme ? "text-slate-400" : "text-indigo-700")}>Consultations</span>
                 <button
                   onClick={handleNewConversation}
-                  className={cn("p-1.5 rounded-lg transition-colors", isDarkTheme ? "bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20" : "bg-emerald-200 text-emerald-700 hover:bg-emerald-300")}
+                  className={cn("p-1.5 rounded-lg transition-colors", isDarkTheme ? "bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20" : "bg-indigo-200 text-indigo-700 hover:bg-indigo-300")}
                   title="New Consultation"
                 >
                   <Plus size={16} />
@@ -627,11 +627,11 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
                       "w-full text-left p-3 rounded-2xl transition-all group flex items-start gap-3",
                       editingConvoId !== convo.id ? "cursor-pointer" : "",
                       activeConversationId === convo.id
-                        ? (isDarkTheme ? "bg-emerald-500/15 border border-emerald-500/30" : "bg-emerald-200 border border-emerald-400")
-                        : (isDarkTheme ? "bg-slate-900 border border-transparent hover:border-slate-800" : "bg-emerald-100/50 border border-transparent hover:bg-emerald-100")
+                        ? (isDarkTheme ? "bg-indigo-500/15 border border-indigo-500/30" : "bg-indigo-200 border border-indigo-400")
+                        : (isDarkTheme ? "bg-slate-900 border border-transparent hover:border-slate-800" : "bg-indigo-100/50 border border-transparent hover:bg-indigo-100")
                     )}
                   >
-                    <MessageSquare size={16} className={cn("mt-0.5 flex-shrink-0", activeConversationId === convo.id ? (isDarkTheme ? "text-emerald-400" : "text-emerald-700") : (isDarkTheme ? "text-slate-500 group-hover:text-slate-400" : "text-emerald-600/70 group-hover:text-emerald-700"))} />
+                    <MessageSquare size={16} className={cn("mt-0.5 flex-shrink-0", activeConversationId === convo.id ? (isDarkTheme ? "text-indigo-400" : "text-indigo-700") : (isDarkTheme ? "text-slate-500 group-hover:text-slate-400" : "text-indigo-600/70 group-hover:text-indigo-700"))} />
                     <div className="flex-1 overflow-hidden">
                       {editingConvoId === convo.id ? (
                         <input
@@ -644,14 +644,14 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
                             if (e.key === 'Enter') saveConversationTitle(convo.id);
                             if (e.key === 'Escape') setEditingConvoId(null);
                           }}
-                          className={cn("text-xs font-bold w-full bg-transparent outline-none border-b border-dashed", isDarkTheme ? "text-emerald-100 border-emerald-500/50" : "text-emerald-900 border-emerald-700")}
+                          className={cn("text-xs font-bold w-full bg-transparent outline-none border-b border-dashed", isDarkTheme ? "text-indigo-100 border-indigo-500/50" : "text-indigo-900 border-indigo-700")}
                         />
                       ) : (
-                        <div className={cn("text-xs font-bold line-clamp-1 break-all", activeConversationId === convo.id ? (isDarkTheme ? "text-emerald-100" : "text-emerald-900") : (isDarkTheme ? "text-slate-300 group-hover:text-slate-200" : "text-emerald-800 group-hover:text-emerald-950"))}>
+                        <div className={cn("text-xs font-bold line-clamp-1 break-all", activeConversationId === convo.id ? (isDarkTheme ? "text-indigo-100" : "text-indigo-900") : (isDarkTheme ? "text-slate-300 group-hover:text-slate-200" : "text-indigo-800 group-hover:text-indigo-950"))}>
                           {convo.title}
                         </div>
                       )}
-                      <div className={cn("text-[10px] mt-1", isDarkTheme ? "text-slate-600" : "text-emerald-700/60")}>
+                      <div className={cn("text-[10px] mt-1", isDarkTheme ? "text-slate-600" : "text-indigo-700/60")}>
                         {new Date(convo.updatedAt).toLocaleDateString()}
                       </div>
                     </div>
@@ -659,7 +659,7 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
                       <div className="flex flex-col gap-2 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity lg:opacity-100">
                         <button
                           onClick={(e) => handleRenameConversation(convo.id, convo.title, e)}
-                          className={cn("p-1", isDarkTheme ? "text-slate-500 hover:text-emerald-400" : "text-emerald-600/60 hover:text-emerald-800")}
+                          className={cn("p-1", isDarkTheme ? "text-slate-500 hover:text-indigo-400" : "text-indigo-600/60 hover:text-indigo-800")}
                           title="Rename"
                         >
                           <Edit2 size={12} />
@@ -667,7 +667,7 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
                         {conversations.length > 1 && (
                           <button
                             onClick={(e) => handleDeleteConversation(convo.id, e)}
-                            className={cn("p-1 hover:text-red-400", isDarkTheme ? "text-slate-500" : "text-emerald-600/60")}
+                            className={cn("p-1 hover:text-red-400", isDarkTheme ? "text-slate-500" : "text-indigo-600/60")}
                             title="Delete"
                           >
                             <Trash2 size={12} />
@@ -683,29 +683,29 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
         </AnimatePresence>
 
         {/* Main Chat Area */}
-        <div className={cn("flex-1 flex flex-col min-w-0 transition-colors", isDarkTheme ? "" : "bg-white")}>
-          <div className={cn("p-6 border-b flex justify-between items-center", isDarkTheme ? "border-slate-800 bg-emerald-500/5" : "border-emerald-200 bg-emerald-50")}>
+        <div className={cn("flex-1 flex flex-col min-w-0 transition-colors", isDarkTheme ? "" : "bg-indigo-50")}>
+          <div className={cn("p-6 border-b flex justify-between items-center", isDarkTheme ? "border-slate-800 bg-indigo-500/5" : "border-indigo-200 bg-indigo-50")}>
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
-                className={cn("p-2 mr-1 transition-colors rounded-xl", isDarkTheme ? "text-slate-400 hover:text-white bg-slate-800/50" : "text-emerald-700 hover:text-emerald-900 bg-emerald-200/50")}
+                className={cn("p-2 mr-1 transition-colors rounded-xl", isDarkTheme ? "text-slate-400 hover:text-white bg-slate-800/50" : "text-indigo-700 hover:text-indigo-900 bg-indigo-200/50")}
                 title={sidebarOpen ? "Close Sidebar" : "Open Sidebar"}
               >
                 {sidebarOpen ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
               </button>
-              <div className={cn("p-2 rounded-xl hidden sm:block", isDarkTheme ? "bg-emerald-500/20" : "bg-emerald-200")}>
-                 <Bot className={cn(isDarkTheme ? "text-emerald-400" : "text-emerald-700")} size={20} />
+              <div className={cn("p-2 rounded-xl hidden sm:block", isDarkTheme ? "bg-indigo-500/20" : "bg-indigo-200")}>
+                 <Bot className={cn(isDarkTheme ? "text-indigo-400" : "text-indigo-700")} size={20} />
               </div>
               <div>
-                 <h3 className={cn("text-lg font-black uppercase tracking-widest leading-none mb-1", isDarkTheme ? "text-white" : "text-emerald-950")}>Sage's Council</h3>
-                 <span className={cn("text-[10px] font-bold uppercase tracking-tighter line-clamp-1", isDarkTheme ? "text-emerald-400/60" : "text-emerald-700/80")}>{activeConversation?.title || 'Illuminating the Path'}</span>
+                 <h3 className={cn("text-lg font-black uppercase tracking-widest leading-none mb-1", isDarkTheme ? "text-white" : "text-indigo-950")}>Sage's Council</h3>
+                 <span className={cn("text-[10px] font-bold uppercase tracking-tighter line-clamp-1", isDarkTheme ? "text-indigo-400/60" : "text-indigo-700/80")}>{activeConversation?.title || 'Illuminating the Path'}</span>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <button 
                 onClick={handleExport}
                 title="Export Conversation"
-                className={cn("p-2 transition-colors", isDarkTheme ? "text-slate-400 hover:text-indigo-400" : "text-emerald-700 hover:text-indigo-600")}
+                className={cn("p-2 transition-colors", isDarkTheme ? "text-slate-400 hover:text-indigo-400" : "text-indigo-700 hover:text-indigo-600")}
                 disabled={!activeConversation || activeConversation.messages.length === 0}
               >
                 <Download size={18} />
@@ -718,11 +718,11 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
                   }
                 }}
                 title="Settings"
-                className={cn("p-2 transition-colors", isDarkTheme ? "text-slate-400 hover:text-emerald-400" : "text-emerald-700 hover:text-emerald-950")}
+                className={cn("p-2 transition-colors", isDarkTheme ? "text-slate-400 hover:text-indigo-400" : "text-indigo-700 hover:text-indigo-950")}
               >
                 <SettingsIcon size={18} />
               </button>
-              <button onClick={onClose} className={cn("p-2 transition-colors", isDarkTheme ? "text-slate-400 hover:text-white" : "text-emerald-700 hover:text-emerald-950")}>
+              <button onClick={onClose} className={cn("p-2 transition-colors", isDarkTheme ? "text-slate-400 hover:text-white" : "text-indigo-700 hover:text-indigo-950")}>
                 <X size={20} />
               </button>
             </div>
@@ -732,16 +732,19 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
           {history.length === 0 && !loading && (
             <div className="h-full flex flex-col items-center justify-center text-center space-y-8 py-10">
                <div className="relative">
-                 <div className="w-24 h-24 bg-emerald-500/10 rounded-full flex items-center justify-center border border-emerald-500/20 animate-pulse" />
-                 <Bot className="absolute inset-0 m-auto text-emerald-500/40" size={40} />
+                 <div className="w-24 h-24 bg-indigo-500/10 rounded-full flex items-center justify-center border border-indigo-500/20 animate-pulse" />
+                 <Bot className="absolute inset-0 m-auto text-indigo-500/40" size={40} />
                </div>
                <div>
-                 <h4 className="text-white font-black uppercase tracking-widest mb-3">Begin the Consultation</h4>
-                 <p className="text-sm text-slate-400 max-w-xs leading-relaxed">The Oracle is ready to evaluate your scrolls. Speak, and the path shall be revealed.</p>
+                 <h4 className={cn("font-black uppercase tracking-widest mb-3", isDarkTheme ? "text-white" : "text-indigo-950")}>Begin the Consultation</h4>
+                 <p className={cn("text-sm max-w-xs leading-relaxed", isDarkTheme ? "text-slate-400" : "text-indigo-700/80")}>The Oracle is ready to evaluate your scrolls. Speak, and the path shall be revealed.</p>
                </div>
                <div className="flex flex-wrap gap-2 justify-center max-w-lg px-4">
                  {state.sagePrompts?.map(p => (
-                   <button key={p.id} onClick={() => handleSend(p.prompt)} className="py-2 px-3.5 bg-slate-900 border border-indigo-500/30 hover:border-indigo-500/60 hover:bg-indigo-500/10 text-indigo-300 hover:text-white rounded-xl text-xs font-bold transition-all whitespace-nowrap">{p.title}</button>
+                   <button key={p.id} onClick={() => handleSend(p.prompt)} className={cn(
+                     "py-2 px-3.5 border rounded-xl text-xs font-bold transition-all whitespace-nowrap",
+                     isDarkTheme ? "bg-slate-900 border-indigo-500/30 hover:border-indigo-500/60 hover:bg-indigo-500/10 text-indigo-300 hover:text-white" : "bg-indigo-50 border-indigo-200 hover:border-indigo-400 hover:bg-indigo-100 text-indigo-700 hover:text-indigo-900"
+                   )}>{p.title}</button>
                  ))}
                </div>
             </div>
@@ -754,14 +757,14 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
                 msg.role === 'user' 
                   ? "bg-indigo-600 border border-indigo-500 text-white rounded-tr-none" 
                   : cn(
-                      "rounded-tl-none font-serif italic shadow-emerald-500/10 pr-1",
+                      "rounded-tl-none font-serif italic shadow-indigo-500/10 pr-1",
                       isDarkTheme 
-                        ? "bg-slate-900/80 border border-emerald-500/20 text-emerald-50" 
-                        : "bg-emerald-50 border border-emerald-200 text-emerald-950"
+                        ? "bg-slate-900/80 border border-indigo-500/20 text-indigo-50" 
+                        : "bg-indigo-50 border border-indigo-200 text-indigo-950"
                     )
               )}>
                 {msg.role === 'assistant' ? (
-                  <div className={cn("prose prose-sm max-w-none", isDarkTheme ? "prose-invert prose-emerald" : "prose-emerald")}>
+                  <div className={cn("prose prose-sm max-w-none", isDarkTheme ? "prose-invert prose-indigo" : "prose-indigo")}>
                     <ReactMarkdown>{msg.content}</ReactMarkdown>
                   </div>
                 ) : (
@@ -780,14 +783,14 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
                 <div className="flex items-center gap-1.5">
                   <button 
                     onClick={() => handleCopy(msg.content, `${idx}`)}
-                    className="p-1 hover:text-emerald-400 text-slate-500 transition-colors flex items-center justify-center"
+                    className="p-1 hover:text-indigo-400 text-slate-500 transition-colors flex items-center justify-center"
                     title="Copy"
                   >
                     {copiedId === `${idx}` ? <Check size={10} /> : <Copy size={10} />}
                   </button>
                   <button 
                     onClick={() => handleQuote(msg.content)}
-                    className="p-1 hover:text-emerald-400 text-slate-500 transition-colors flex items-center justify-center"
+                    className="p-1 hover:text-indigo-400 text-slate-500 transition-colors flex items-center justify-center"
                     title="Quote"
                   >
                     <Quote size={10} />
@@ -817,9 +820,13 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
                 initial={{ opacity: 0, y: 10, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                className="absolute bottom-full left-6 mb-4 w-72 bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl p-2 z-50 overflow-hidden"
+                className={cn("absolute bottom-full left-6 mb-4 w-72 rounded-3xl shadow-2xl p-2 z-50 overflow-hidden",
+                  isDarkTheme ? "bg-slate-900 border border-slate-800" : "bg-indigo-50 border border-indigo-200"
+                )}
               >
-                <div className="text-[10px] font-black text-emerald-500/50 uppercase tracking-widest px-4 py-3 border-b border-slate-800/50 mb-1 flex justify-between items-center">
+                <div className={cn("text-[10px] font-black uppercase tracking-widest px-4 py-3 border-b mb-1 flex justify-between items-center",
+                  isDarkTheme ? "text-indigo-500/50 border-slate-800/50" : "text-indigo-700/60 border-indigo-200/50"
+                )}>
                   <span>Prompt Library</span>
                   {(!state.sagePrompts || state.sagePrompts.length === 0) && (
                     <button 
@@ -828,7 +835,9 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
                           setState(prev => ({ ...prev, sagePrompts: DEFAULT_SAGE_PROMPTS }));
                         });
                       }}
-                      className="text-[9px] font-bold text-emerald-400 hover:text-emerald-300 transition-colors"
+                      className={cn("text-[9px] font-bold transition-colors",
+                        isDarkTheme ? "text-indigo-400 hover:text-indigo-300" : "text-indigo-600 hover:text-indigo-800"
+                      )}
                     >
                       Load Defaults
                     </button>
@@ -844,15 +853,23 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
                           setShowPromptSelector(false);
                           inputRef.current?.focus();
                         }}
-                        className="w-full text-left p-4 hover:bg-emerald-500/10 rounded-[1.25rem] transition-colors group"
+                        className={cn("w-full text-left p-4 rounded-[1.25rem] transition-colors group",
+                          isDarkTheme ? "hover:bg-indigo-500/10" : "hover:bg-indigo-100"
+                        )}
                       >
-                        <div className="text-xs font-bold text-slate-200 group-hover:text-emerald-400">{p.title}</div>
-                        <div className="text-[10px] text-slate-500 line-clamp-2 mt-1">{p.prompt}</div>
+                        <div className={cn("text-xs font-bold",
+                          isDarkTheme ? "text-slate-200 group-hover:text-indigo-400" : "text-indigo-950 group-hover:text-indigo-700"
+                        )}>{p.title}</div>
+                        <div className={cn("text-[10px] line-clamp-2 mt-1",
+                          isDarkTheme ? "text-slate-500" : "text-indigo-700/60"
+                        )}>{p.prompt}</div>
                       </button>
                     ))
                   ) : (
                     <div className="p-8 text-center">
-                      <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Library is empty</p>
+                      <p className={cn("text-[10px] font-bold uppercase tracking-widest",
+                        isDarkTheme ? "text-slate-600" : "text-indigo-700/40"
+                      )}>Library is empty</p>
                     </div>
                   )}
                 </div>
@@ -865,7 +882,9 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
                 onClick={() => setShowPromptSelector(!showPromptSelector)}
                 className={cn(
                   "flex-shrink-0 w-14 h-14 rounded-2xl border-2 transition-all flex items-center justify-center",
-                  showPromptSelector ? "bg-emerald-600 border-emerald-500 text-white" : "bg-slate-950 border-slate-800 text-slate-500 hover:border-emerald-500/50 hover:text-emerald-400"
+                  showPromptSelector 
+                    ? "bg-indigo-600 border-indigo-500 text-white" 
+                    : (isDarkTheme ? "bg-slate-950 border-slate-800 text-slate-500 hover:border-indigo-500/50 hover:text-indigo-400" : "bg-indigo-50 border-indigo-200 text-indigo-700/60 hover:border-indigo-400 hover:text-indigo-700")
                 )}
                 title="Select Prompt"
               >
@@ -879,12 +898,16 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
                   onChange={(e) => setUserInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                   placeholder="Ask the Sage..."
-                  className="w-full h-14 bg-slate-950 border-2 border-slate-800 rounded-2xl px-6 pr-16 text-slate-200 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-600 font-medium"
+                  className={cn("w-full h-14 border-2 rounded-2xl px-6 pr-16 outline-none transition-all font-medium",
+                    isDarkTheme ? "bg-slate-950 border-slate-800 text-slate-200 focus:border-indigo-500 placeholder:text-slate-600" : "bg-indigo-100 border-indigo-300 text-indigo-950 focus:border-indigo-500 placeholder:text-indigo-900/40"
+                  )}
                 />
                 <button 
                   onClick={() => handleSend()}
                   disabled={loading || !userInput.trim()}
-                  className="absolute right-2 top-2 bottom-2 w-12 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 text-white rounded-xl transition-all flex items-center justify-center p-0"
+                  className={cn("absolute right-2 top-2 bottom-2 w-12 text-white rounded-xl transition-all flex items-center justify-center p-0",
+                    isDarkTheme ? "bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800" : "bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-100"
+                  )}
                 >
                   <Send size={18} />
                 </button>
