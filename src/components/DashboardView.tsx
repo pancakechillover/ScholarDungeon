@@ -133,7 +133,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       className="w-full p-6 lg:p-8 space-y-8"
     >
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-2 flex flex-col space-y-6">
+        <div className="md:col-span-2 flex flex-col space-y-6 md:h-full">
           <div className="bg-slate-900 rounded-3xl border border-slate-800 p-8 relative overflow-hidden">
             <div className="absolute top-0 right-0 p-8 opacity-10">
             <Sword size={120} />
@@ -182,7 +182,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           )}
         </div>
 
-        <div className="bg-slate-900 rounded-3xl border border-slate-800 p-8 relative overflow-hidden group">
+        <div className="bg-slate-900 rounded-3xl border border-slate-800 p-8 relative overflow-hidden group flex-1">
           <Bot className="absolute -bottom-6 right-8 text-indigo-500/20 w-32 h-32 group-hover:scale-110 transition-transform" />
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="flex-1">
