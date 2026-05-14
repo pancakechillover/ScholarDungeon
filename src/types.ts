@@ -141,7 +141,7 @@ export interface ReflectionTemplate {
 export interface SageModelConfig {
   id: string;
   name: string;
-  provider: 'google' | 'openai';
+  provider: 'google' | 'openai' | 'deepseek' | 'doubao' | 'claude' | 'siliconflow' | 'custom';
   apiKey?: string;
   apiUrl?: string;
   modelName: string;
@@ -282,7 +282,7 @@ export interface AppState {
   customTimeEnabled?: boolean;
   customTimeOffset?: number; // Difference in milliseconds (SimulatedTime - RealTime)
   // Sage AI
-  sageApiProvider?: 'google' | 'openai';
+  sageApiProvider?: 'google' | 'openai' | 'deepseek' | 'doubao' | 'claude' | 'siliconflow' | 'custom';
   sageApiKey?: string;
   sageApiUrl?: string; 
   sageModelName?: string;

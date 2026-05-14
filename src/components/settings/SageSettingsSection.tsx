@@ -126,7 +126,7 @@ const SageConfigManager: React.FC<{ state: AppState, setState: React.Dispatch<Re
                   placeholder={personalityType === 'custom' ? "Enter your custom AI personality instructions..." : ""}
                   className="w-full h-40 bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-slate-300 text-xs font-medium focus:border-emerald-500 outline-none transition-all resize-none custom-scrollbar leading-relaxed"
                 />
-                <p className="text-[9px] text-slate-500 italic px-1">
+                <p className="text-[9px] text-slate-500 italic px-1 pr-1">
                   This prompt defines how the AI behaves. You can modify the defaults or create a completely new one under "Custom".
                 </p>
               </div>
@@ -139,13 +139,48 @@ const SageConfigManager: React.FC<{ state: AppState, setState: React.Dispatch<Re
             {editingModel ? (
               <div className="space-y-4 bg-slate-950 p-4 rounded-2xl border border-slate-800">
                 <input type="text" placeholder="Profile Name (e.g. GPT-4o)" value={editingModel.name} onChange={(e) => setEditingModel({...editingModel, name: e.target.value})} className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-white text-sm" />
-                <select value={editingModel.provider} onChange={(e) => setEditingModel({...editingModel, provider: e.target.value as any})} className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-white text-sm">
-                  <option value="google">Google Gemini</option>
-                  <option value="openai">OpenAI / Compatible</option>
+                <select value={editingModel.provider} onChange={(e) => {
+                  const newProvider = e.target.value as any;
+                  let newApiUrl = editingModel.apiUrl;
+                  let newModelName = editingModel.modelName;
+                  
+                  if (newProvider === 'deepseek' && !newApiUrl?.includes('deepseek')) {
+                    newApiUrl = 'https://api.deepseek.com/v1';
+                    if (!newModelName) newModelName = 'deepseek-chat';
+                  } else if (newProvider === 'doubao' && !newApiUrl?.includes('volces')) {
+                    newApiUrl = 'https://ark.cn-beijing.volces.com/api/v3';
+                    if (!newModelName) newModelName = 'doubao-pro-32k';
+                  } else if (newProvider === 'siliconflow' && !newApiUrl?.includes('siliconflow')) {
+                    newApiUrl = 'https://api.siliconflow.cn/v1';
+                    if (!newModelName) newModelName = 'Pro/deepseek-ai/DeepSeek-V3';
+                  } else if (newProvider === 'openai' && !newApiUrl) {
+                    newApiUrl = 'https://api.openai.com/v1';
+                  } else if (newProvider === 'google') {
+                    newApiUrl = '';
+                  }
+                  
+                  setEditingModel({...editingModel, provider: newProvider, apiUrl: newApiUrl, modelName: newModelName});
+                }} className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-white text-sm">
+                  <option value="google">Gemini</option>
+                  <option value="openai">ChatGPT / OpenAI</option>
+                  <option value="deepseek">DeepSeek</option>
+                  <option value="doubao">豆包 (Doubao)</option>
+                  <option value="claude">Claude / Anthropic</option>
+                  <option value="siliconflow">硅基流动 (SiliconFlow)</option>
+                  <option value="custom">Other Compatible</option>
                 </select>
-                <input type="text" placeholder="Model Name (e.g. gemini-1.5-flash)" value={editingModel.modelName} onChange={(e) => setEditingModel({...editingModel, modelName: e.target.value})} className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-white text-sm" />
+                <input type="text" list="popular-models" placeholder="Model Name (e.g. gemini-1.5-flash)" value={editingModel.modelName} onChange={(e) => setEditingModel({...editingModel, modelName: e.target.value})} className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-white text-sm" />
+                <datalist id="popular-models">
+                  <option value="gpt-4o">ChatGPT (gpt-4o)</option>
+                  <option value="gemini-2.5-pro">Gemini (gemini-2.5-pro)</option>
+                  <option value="deepseek-chat">DeepSeek (V3)</option>
+                  <option value="deepseek-reasoner">DeepSeek (R1)</option>
+                  <option value="claude-3-7-sonnet-20250219">Claude (3.7 Sonnet)</option>
+                  <option value="doubao-pro-32k">豆包 (doubao-pro)</option>
+                  <option value="Pro/deepseek-ai/DeepSeek-R1">硅基流动 (DeepSeek-R1)</option>
+                </datalist>
                 <input type="password" placeholder="API Key" value={editingModel.apiKey || ''} onChange={(e) => setEditingModel({...editingModel, apiKey: e.target.value})} className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-white text-sm" />
-                {editingModel.provider === 'openai' && (
+                {editingModel.provider !== 'google' && (
                   <input type="text" placeholder="Custom Base URL (optional)" value={editingModel.apiUrl || ''} onChange={(e) => setEditingModel({...editingModel, apiUrl: e.target.value})} className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-white text-sm" />
                 )}
                 <div className="flex gap-2">
@@ -236,10 +271,10 @@ const SageConfigManager: React.FC<{ state: AppState, setState: React.Dispatch<Re
                            </button>
                          </div>
                        </div>
-                       <p className="text-[10px] text-slate-500 line-clamp-1 italic">{p.prompt}</p>
+                       <p className="text-[10px] text-slate-500 line-clamp-1 italic pr-1">{p.prompt}</p>
                      </div>
                   ))}
-                  {prompts.length === 0 && <p className="text-center text-xs text-slate-500 py-4 italic">No prompts in your library yet.</p>}
+                  {prompts.length === 0 && <p className="text-center text-xs text-slate-500 py-4 italic pr-1">No prompts in your library yet.</p>}
                 </div>
                 <button onClick={() => setEditingPrompt({ id: 'new', title: '', prompt: '' })} className="w-full py-3 bg-slate-800 border border-slate-700 border-dashed hover:border-emerald-500 hover:text-emerald-400 text-slate-400 rounded-xl text-xs font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2">
                   <Plus size={14} /> Create New Prompt
@@ -404,9 +439,9 @@ const SageInterface: React.FC<SageInterfaceProps> = ({ state, setState }) => {
                 msg.role === 'user' 
                   ? "bg-indigo-600 border border-indigo-500 text-white rounded-tr-none" 
                   : cn(
-                      "rounded-tl-none font-serif italic shadow-emerald-500/10",
+                      "rounded-tl-none font-serif italic shadow-emerald-500/10 pr-1",
                       isDarkTheme 
-                        ? "bg-slate-900 border border-emerald-500/20 text-emerald-50" 
+                        ? "bg-slate-900/80 border border-emerald-500/20 text-emerald-50" 
                         : "bg-emerald-50 border border-emerald-200 text-emerald-950"
                     )
               )}>
@@ -448,10 +483,12 @@ const SageInterface: React.FC<SageInterfaceProps> = ({ state, setState }) => {
           ))}
 
           {loading && (
-            <div className="flex flex-col items-start">
-              <div className="bg-slate-800/40 border border-emerald-500/20 p-4 rounded-2xl rounded-tl-none flex items-center gap-3">
-                 <RefreshCw className="animate-spin text-emerald-400" size={16} />
-                 <span className="text-xs font-serif italic text-emerald-400/70">The Sage is consulting the scrolls...</span>
+            <div className="flex flex-col items-start pr-1">
+              <div className={cn("p-4 rounded-2xl rounded-tl-none flex items-center gap-3 border",
+                isDarkTheme ? "bg-slate-900/80 border-emerald-500/20" : "bg-emerald-50 border-emerald-200"
+              )}>
+                 <RefreshCw className={cn("animate-spin", isDarkTheme ? "text-emerald-400" : "text-emerald-600")} size={16} />
+                 <span className={cn("text-xs font-serif italic pr-1", isDarkTheme ? "text-emerald-400/70" : "text-emerald-700")}>The Sage is consulting the scrolls...</span>
               </div>
             </div>
           )}

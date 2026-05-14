@@ -9,7 +9,7 @@ export interface SageAdviceRequest {
 }
 
 export async function getSageAdvice({ state, prompt, history = [] }: SageAdviceRequest): Promise<string> {
-  let provider = state.sageApiProvider || 'google';
+  let provider: string = state.sageApiProvider || 'google';
   let apiKey = state.sageApiKey || process.env.GEMINI_API_KEY;
   let baseUrl = state.sageApiUrl;
   let model = state.sageModelName || (provider === 'google' ? 'gemini-3-flash-preview' : 'gpt-4o-mini');
@@ -24,8 +24,8 @@ export async function getSageAdvice({ state, prompt, history = [] }: SageAdviceR
     }
   }
 
-  if (!apiKey && provider === 'openai') {
-    throw new Error("Missing Sage API Key for OpenAI. Please configure it in Advice Settings.");
+  if (!apiKey && provider !== 'google') {
+    throw new Error("Missing Sage API Key. Please configure it in Advice Settings.");
   }
 
   // Gather user context for the prompt

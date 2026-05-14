@@ -456,8 +456,8 @@ export const QuestManager = React.memo<QuestManagerProps>(({ quests, questHistor
               <HistoryItem key={item.id} item={item} />
             ))}
             {filteredHistory.length === 0 && (
-              <div className="text-center py-20 bg-slate-200/50 dark:bg-slate-800/50 rounded-xl border border-slate-300 dark:border-slate-700 border-dashed">
-                <p className="font-serif italic text-slate-500 text-lg">
+              <div className="text-center py-20 bg-slate-200/50 dark:bg-slate-800/50 rounded-xl border border-slate-300 dark:border-slate-700 border-dashed pr-1">
+                <p className="font-serif italic text-slate-500 text-lg pr-1">
                   {historyFilter === 'all' 
                     ? "No chronicles of past tasks yet..." 
                     : historyFilter === 'today' 
@@ -588,8 +588,8 @@ export const QuestManager = React.memo<QuestManagerProps>(({ quests, questHistor
               </DraggableQuestItem>
             ))}
             {filteredQuests.length === 0 && (
-              <div className="text-center py-20 bg-slate-200/50 dark:bg-slate-800/50 rounded-xl border border-slate-300 dark:border-slate-700 border-dashed">
-                <p className="font-serif italic text-slate-500 text-lg">The board is currently barren...</p>
+              <div className="text-center py-20 bg-slate-200/50 dark:bg-slate-800/50 rounded-xl border border-slate-300 dark:border-slate-700 border-dashed pr-1">
+                <p className="font-serif italic text-slate-500 text-lg pr-1">The board is currently barren...</p>
                 <p className="text-xs text-slate-400 mt-2 uppercase tracking-widest font-bold">Post a new task to begin</p>
               </div>
             )}

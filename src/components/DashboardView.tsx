@@ -180,7 +180,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <div className="p-2 bg-emerald-500/10 rounded-xl">
                     <Sparkles size={24} className="text-emerald-400" />
                 </div>
-                <h3 className="text-xl font-black text-white uppercase tracking-tighter italic">Oracle's Insight</h3>
+                <h3 className="text-xl font-black text-white uppercase tracking-tighter italic pr-1">Oracle's Insight</h3>
               </div>
               <p className="text-sm text-slate-400 font-medium">Seek guidance from the Emerald Sage based on your journey.</p>
             </div>
@@ -439,9 +439,9 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
                 msg.role === 'user' 
                   ? "bg-indigo-600 border border-indigo-500 text-white rounded-tr-none" 
                   : cn(
-                      "rounded-tl-none font-serif italic shadow-emerald-500/10",
+                      "rounded-tl-none font-serif italic shadow-emerald-500/10 pr-1",
                       isDarkTheme 
-                        ? "bg-slate-900 border border-emerald-500/20 text-emerald-50" 
+                        ? "bg-slate-900/80 border border-emerald-500/20 text-emerald-50" 
                         : "bg-emerald-50 border border-emerald-200 text-emerald-950"
                     )
               )}>
@@ -483,10 +483,12 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
           ))}
 
           {loading && (
-            <div className="flex flex-col items-start">
-              <div className="bg-slate-800/40 border border-emerald-500/20 p-4 rounded-2xl rounded-tl-none flex items-center gap-3">
-                 <RefreshCw className="animate-spin text-emerald-400" size={16} />
-                 <span className="text-xs font-serif italic text-emerald-400/70">The Sage is consulting the scrolls...</span>
+            <div className="flex flex-col items-start pr-1">
+              <div className={cn("p-4 rounded-2xl rounded-tl-none flex items-center gap-3 border",
+                isDarkTheme ? "bg-slate-900/80 border-emerald-500/20" : "bg-emerald-50 border-emerald-200"
+              )}>
+                 <RefreshCw className={cn("animate-spin", isDarkTheme ? "text-emerald-400" : "text-emerald-600")} size={16} />
+                 <span className={cn("text-xs font-serif italic pr-1", isDarkTheme ? "text-emerald-400/70" : "text-emerald-700")}>The Sage is consulting the scrolls...</span>
               </div>
             </div>
           )}

@@ -356,7 +356,7 @@ export const RewardHistory: React.FC<RewardHistoryProps> = ({ history, onToggleR
                           )}
                         </div>
                       ) : (
-                        <div className="text-center text-[10px] text-slate-600 italic">No Session</div>
+                        <div className="text-center text-[10px] text-slate-600 italic pr-1">No Session</div>
                       )}
                     </td>
                     <td className="px-6 py-4 hidden sm:table-cell">
@@ -392,7 +392,7 @@ export const RewardHistory: React.FC<RewardHistoryProps> = ({ history, onToggleR
                       ) : (
                         <div className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 text-emerald-500 rounded-lg border border-emerald-500/20">
                           <CheckCircle2 size={14} />
-                          <span className="text-[10px] font-black uppercase tracking-tight italic">Claimed</span>
+                          <span className="text-[10px] font-black uppercase tracking-tight italic pr-1">Claimed</span>
                         </div>
                       )}
                     </td>

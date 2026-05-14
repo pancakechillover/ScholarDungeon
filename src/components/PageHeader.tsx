@@ -31,7 +31,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
       <div className="flex-1">
         <h2 className="text-xl sm:text-3xl font-black text-slate-50 tracking-tighter uppercase italic pr-2 flex items-center gap-2 sm:gap-3 min-w-0">
           <Icon className="text-indigo-500 w-5 h-5 sm:w-7 sm:h-7 shrink-0" />
-          <span className="truncate">{title}</span>
+          <span className="truncate pr-1">{title}</span>
         </h2>
         <p className="text-slate-400 text-sm mt-1 font-medium">{description}</p>
         {children}

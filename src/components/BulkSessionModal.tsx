@@ -79,7 +79,7 @@ export const BulkSessionModal: React.FC<BulkSessionModalProps> = ({
           {/* Header */}
           <div className="p-6 pb-2">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-black text-white uppercase tracking-tighter italic">Bulk Manage Sessions</h3>
+              <h3 className="text-xl font-black text-white uppercase tracking-tighter italic pr-1">Bulk Manage Sessions</h3>
               <button onClick={onClose} className="p-2 text-slate-500 hover:text-white transition-colors bg-slate-800 rounded-full">
                 <X size={20} />
               </button>
@@ -177,7 +177,7 @@ export const BulkSessionModal: React.FC<BulkSessionModalProps> = ({
                         onChange={(e) => setCount(parseInt(e.target.value))}
                         className="flex-1 accent-indigo-500 h-2 bg-slate-800 rounded-full appearance-none cursor-pointer"
                       />
-                      <span className="w-12 text-center text-lg font-black text-indigo-400 italic">{count}</span>
+                      <span className="w-12 text-center text-lg font-black text-indigo-400 italic pr-1">{count}</span>
                    </div>
                 </div>
 

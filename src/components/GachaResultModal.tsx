@@ -329,7 +329,7 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({
                           </div>
                           <div className="w-full text-center px-4 overflow-hidden">
                             <h3 className={cn(
-                              "font-black leading-tight uppercase italic mb-2 sm:mb-4 line-clamp-3 overflow-hidden text-ellipsis",
+                              "font-black leading-tight uppercase italic pr-1 mb-2 sm:mb-4 line-clamp-3 overflow-hidden text-ellipsis",
                               "text-sm sm:text-2xl md:text-3xl",
                               styles.text
                             )}>

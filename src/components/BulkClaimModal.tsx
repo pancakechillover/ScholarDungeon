@@ -47,7 +47,7 @@ export const BulkClaimModal: React.FC<BulkClaimModalProps> = ({ isOpen, onClose,
                   <Gift size={28} />
                 </div>
                 <div>
-                  <h2 className="text-xl font-black text-white italic tracking-tight">Magnificent Harvest!</h2>
+                  <h2 className="text-xl font-black text-white italic tracking-tight pr-1">Magnificent Harvest!</h2>
                   <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Multiple Rewards Claimed</p>
                 </div>
               </div>

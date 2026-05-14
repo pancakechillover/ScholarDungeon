@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v6.3.6';
+export const APP_VERSION = 'v6.3.7';
 export const LAST_UPDATE_DATE = '2026-05-14';
-export const LAST_UPDATE_TIME = '10:30:00';
+export const LAST_UPDATE_TIME = '10:45:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,17 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v6.3.7',
+    date: '2026-05-14',
+    time: '10:45:00',
+    title: 'UI Clipping & Sage Theme Refinement',
+    items: [
+      { category: 'UI', description: 'Applied pr-1 padding to all italicized banner titles and empty states globally to prevent character clipping.' },
+      { category: 'UI', description: 'Optimized Sage\'s chat bubbles for all themes using theme-aware solid light backgrounds and high-contrast dark text, ensuring no transparency.' },
+      { category: 'UI', description: 'Renamed "Settings" inner tabs: "calculator" to "Calc" and "level" to "LV." for better density.' }
+    ]
+  },
   {
     version: 'v6.3.6',
     date: '2026-05-14',
