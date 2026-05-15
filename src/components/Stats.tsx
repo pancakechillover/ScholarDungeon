@@ -578,37 +578,36 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
     }
     const hour = localDate.getHours();
     
-  // Check global settlement boundary
-    if (ts.night.start > ts.night.end && hour < ts.night.end) {
-      // Handled normally by Night block logic if within Night
-    } else if (hour < ts.morning.start) {
-      return { period: 'Other', assignedDate: subDays(localDate, 1) };
-    }
-    
     // Morning
-    if (ts.morning.start < ts.morning.end) {
-      if (hour >= ts.morning.start && hour < ts.morning.end) return { period: 'Morning', assignedDate: localDate };
-    } else {
+    if (ts.morning.start > ts.morning.end) {
       if (hour >= ts.morning.start) return { period: 'Morning', assignedDate: localDate };
       if (hour < ts.morning.end) return { period: 'Morning', assignedDate: subDays(localDate, 1) };
+    } else if (hour >= ts.morning.start && hour < ts.morning.end) {
+      return { period: 'Morning', assignedDate: localDate };
     }
     
     // Afternoon
-    if (ts.afternoon.start < ts.afternoon.end) {
-      if (hour >= ts.afternoon.start && hour < ts.afternoon.end) return { period: 'Afternoon', assignedDate: localDate };
-    } else {
+    if (ts.afternoon.start > ts.afternoon.end) {
       if (hour >= ts.afternoon.start) return { period: 'Afternoon', assignedDate: localDate };
       if (hour < ts.afternoon.end) return { period: 'Afternoon', assignedDate: subDays(localDate, 1) };
+    } else if (hour >= ts.afternoon.start && hour < ts.afternoon.end) {
+      return { period: 'Afternoon', assignedDate: localDate };
     }
 
     // Night
-    if (ts.night.start < ts.night.end) {
-      if (hour >= ts.night.start && hour < ts.night.end) return { period: 'Night', assignedDate: localDate };
-    } else {
+    if (ts.night.start > ts.night.end) {
       if (hour >= ts.night.start) return { period: 'Night', assignedDate: localDate };
       if (hour < ts.night.end) return { period: 'Night', assignedDate: subDays(localDate, 1) };
+    } else if (hour >= ts.night.start && hour < ts.night.end) {
+      return { period: 'Night', assignedDate: localDate };
     }
 
+    // Other (fallback based on day-reset hour)
+    const resetHour = ts.night.end;
+    if (hour < resetHour) {
+      return { period: 'Other', assignedDate: subDays(localDate, 1) };
+    }
+    
     return { period: 'Other', assignedDate: localDate };
   };
 
@@ -1298,7 +1297,13 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
           </div>
         </div>
 
-        <RoutineTracker history={state.history} dungeons={dungeons} majorDungeons={majorDungeons} />
+        <RoutineTracker 
+          history={state.history} 
+          dungeons={dungeons} 
+          majorDungeons={majorDungeons} 
+          timeSettings={state.timeSettings}
+          timezone={state.timezone}
+        />
 
         {/* Study Heatmap */}
         <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800 lg:col-span-2">

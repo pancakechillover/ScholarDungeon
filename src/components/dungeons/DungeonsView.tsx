@@ -304,6 +304,7 @@ export const DungeonsView: React.FC<DungeonsViewProps> = ({
           onFinalizeMajor={finalizeMajorDungeon}
           onArchiveMajor={archiveMajorDungeon}
           onForceCompleteSub={forceCompleteSubDungeon}
+          timeSettings={state.timeSettings}
         />
       ) : dungeonSubTab === 'quests' ? (
         <QuestManager 

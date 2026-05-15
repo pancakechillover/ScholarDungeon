@@ -1,16 +1,19 @@
 import React, { useState, useMemo } from 'react';
 import { StudySession, Dungeon, MajorDungeon } from '../types';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, startOfYear, eachMonthOfInterval, endOfYear } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, startOfYear, eachMonthOfInterval, endOfYear, subDays } from 'date-fns';
 import { cn } from '../lib/utils';
 import { Calendar, ChevronLeft, ChevronRight, Check } from 'lucide-react';
+import { AppState } from '../types';
 
 interface RoutineTrackerProps {
   history: StudySession[];
   dungeons?: Dungeon[];
   majorDungeons?: MajorDungeon[];
+  timeSettings?: AppState['timeSettings'];
+  timezone?: string;
 }
 
-export const RoutineTracker: React.FC<RoutineTrackerProps> = ({ history, dungeons = [], majorDungeons = [] }) => {
+export const RoutineTracker: React.FC<RoutineTrackerProps> = ({ history, dungeons = [], majorDungeons = [], timeSettings, timezone }) => {
   const [activeTab, setActiveTab] = useState<'daily' | 'weekly' | 'monthly'>('daily');
   const [currentDate, setCurrentDate] = useState(new Date());
 
@@ -66,7 +69,19 @@ export const RoutineTracker: React.FC<RoutineTrackerProps> = ({ history, dungeon
     });
 
     history.forEach(session => {
-      const sessionDate = new Date(session.timestamp);
+      let sessionDate = new Date(session.timestamp);
+      
+      if (timezone) {
+        try {
+          const str = sessionDate.toLocaleString('en-US', { timeZone: timezone });
+          sessionDate = new Date(str);
+        } catch (e) {}
+      }
+
+      const resetHour = timeSettings?.night?.end || 0;
+      if (resetHour > 0 && sessionDate.getHours() < resetHour) {
+        sessionDate = subDays(sessionDate, 1);
+      }
       
       if (activeTab === 'monthly') {
         if (sessionDate.getFullYear() !== currentDate.getFullYear()) return;

@@ -818,21 +818,29 @@ function App() {
       
       const lastReset = new Date(major.lastRoutineReset);
       let shouldReset = false;
+      const resetHour = state.timeSettings?.night.end || 0;
+      
+      const logicalLastReset = new Date(lastReset);
+      if (logicalLastReset.getHours() < resetHour) {
+        logicalLastReset.setDate(logicalLastReset.getDate() - 1);
+      }
       
       if (major.routineType === 'daily') {
-        const resetTime = new Date(lastReset);
-        const resetHour = state.timeSettings?.night.end || 0;
+        const resetTime = new Date(logicalLastReset);
+        resetTime.setDate(resetTime.getDate() + 1);
         resetTime.setHours(resetHour, 0, 0, 0);
-        if (lastReset.getHours() >= resetHour) {
-          resetTime.setDate(resetTime.getDate() + 1);
-        }
         if (now >= resetTime) shouldReset = true;
       } else if (major.routineType === 'weekly') {
-        const lastResetPlus7 = new Date(lastReset.getTime() + 7 * 24 * 60 * 60 * 1000);
-        if (now >= lastResetPlus7) shouldReset = true; // Simple +7 days logic
+        const resetTime = new Date(logicalLastReset);
+        resetTime.setDate(resetTime.getDate() + 7);
+        resetTime.setHours(resetHour, 0, 0, 0);
+        if (now >= resetTime) shouldReset = true;
       } else if (major.routineType === 'monthly') {
-        const resetMonth = lastReset.getMonth() + 1;
-        if (now.getMonth() === resetMonth || now.getFullYear() > lastReset.getFullYear()) shouldReset = true;
+        const resetTime = new Date(logicalLastReset);
+        resetTime.setDate(1);
+        resetTime.setMonth(resetTime.getMonth() + 1);
+        resetTime.setHours(resetHour, 0, 0, 0);
+        if (now >= resetTime) shouldReset = true;
       }
 
       if (shouldReset) {
@@ -859,21 +867,29 @@ function App() {
       // 2. Direct routine reset
       else if (d.isRoutine && d.routineType && d.lastRoutineReset && d.status === 'completed') {
         const lastReset = new Date(d.lastRoutineReset);
+        const resetHour = state.timeSettings?.night.end || 0;
+        
+        const logicalLastReset = new Date(lastReset);
+        if (logicalLastReset.getHours() < resetHour) {
+          logicalLastReset.setDate(logicalLastReset.getDate() - 1);
+        }
         
         if (d.routineType === 'daily') {
-          const resetTime = new Date(lastReset);
-          const resetHour = state.timeSettings?.night.end || 0;
+          const resetTime = new Date(logicalLastReset);
+          resetTime.setDate(resetTime.getDate() + 1);
           resetTime.setHours(resetHour, 0, 0, 0);
-          if (lastReset.getHours() >= resetHour) {
-            resetTime.setDate(resetTime.getDate() + 1);
-          }
           if (now >= resetTime) isResetting = true;
         } else if (d.routineType === 'weekly') {
-          const lastResetPlus7 = new Date(lastReset.getTime() + 7 * 24 * 60 * 60 * 1000);
-          if (now >= lastResetPlus7) isResetting = true;
+          const resetTime = new Date(logicalLastReset);
+          resetTime.setDate(resetTime.getDate() + 7);
+          resetTime.setHours(resetHour, 0, 0, 0);
+          if (now >= resetTime) isResetting = true;
         } else if (d.routineType === 'monthly') {
-          const resetMonth = lastReset.getMonth() + 1;
-          if (now.getMonth() === resetMonth || now.getFullYear() > lastReset.getFullYear()) isResetting = true;
+          const resetTime = new Date(logicalLastReset);
+          resetTime.setDate(1);
+          resetTime.setMonth(resetTime.getMonth() + 1);
+          resetTime.setHours(resetHour, 0, 0, 0);
+          if (now >= resetTime) isResetting = true;
         }
       }
 
@@ -1116,12 +1132,12 @@ function App() {
             )}
 
             {/* XP Bar */}
-            <div className="flex items-center gap-1.5 sm:gap-2 group relative" title="Experience">
-              <span className="text-[10px] sm:text-xs font-black text-white bg-indigo-600 px-1.5 sm:px-2 py-0.5 rounded-lg italic pr-1 leading-none shrink-0 shadow-lg shadow-indigo-600/20">
+            <div className="flex flex-col sm:flex-row items-center sm:items-center gap-0.5 sm:gap-2 group relative" title="Experience">
+              <span className="text-[11px] sm:text-xs font-black text-indigo-400 sm:text-white bg-transparent sm:bg-indigo-600 px-0 sm:px-2 py-0 sm:py-0.5 rounded-none sm:rounded-lg italic pr-1 leading-none shrink-0 shadow-none sm:shadow-lg sm:shadow-indigo-600/20">
                 LV.{state.level}
               </span>
               <div className="flex items-center gap-1.5 sm:gap-2">
-                <div className="w-8 sm:w-16 md:w-20 h-1 sm:h-2 bg-slate-800/80 rounded-full overflow-hidden border border-slate-700/50 shrink-0">
+                <div className="w-10 sm:w-16 md:w-20 h-1 sm:h-2 bg-slate-800/80 rounded-full overflow-hidden border border-slate-700/50 shrink-0">
                   <div 
                     className="h-full bg-gradient-to-r from-indigo-400 to-indigo-600 shadow-[0_0_8px_rgba(99,102,241,0.4)] transition-all duration-700 ease-in-out" 
                     style={{ width: `${(state.xp / getXPForLevel(state.level)) * 100}%` }} 
@@ -1173,10 +1189,7 @@ function App() {
             </div>
 
             {/* Streak */}
-            <div className={cn(
-              "items-center space-x-1 sm:space-x-1.5 shrink-0",
-              isSidebarCollapsed ? "flex" : "hidden sm:flex"
-            )}>
+            <div className="hidden sm:flex items-center space-x-1 sm:space-x-1.5 shrink-0">
               <Flame className="text-orange-500 shrink-0" size={14} />
               <span className="font-bold text-white text-xs sm:text-sm">{state.streak} <span className="hidden lg:inline text-[10px] text-slate-500">{state.streak === 1 ? 'Day' : 'Days'}</span></span>
             </div>

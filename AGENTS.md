@@ -23,7 +23,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v6.8.21
+- **Current Version:** v6.8.24
 - **Last Update Date:** 2026-05-15
 
 ## Dark Themes Definition
@@ -49,6 +49,19 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v6.8.24 (2026-05-15):** Top Bar Mobile UX Polish.
+  - *UI:* Optimized the Top Bar for small mobile screens by conditionally hiding the streak days indicator, converting the XP Bar layout below the level badge, and simplifying the Level badge's CSS styling (removing background and shadows) to conserve horizontal space.
+
+- **v6.8.23 (2026-05-15):** Dungeon Tiers Preset & iOS UX Fix.
+  - *Feature:* Added "Save Preset" functionality when creating Dungeon Tiers, allowing users to save their favorite configurations (e.g., standard 20 rooms, 200 coin reward).
+  - *Feature:* Added an "Auto-Load" capability that, when enabled, seamlessly applies your saved preset every time you create a new tier.
+  - *Bug Fix:* Fixed a critical iOS / Edge bug where modifying reward items while creating a new tier directly edited the parent expedition state, rendering the inputs seemingly frozen.
+
+- **v6.8.22 (2026-05-15):** Routine Reset Synchronization.
+  - *Logic:* Synchronized routine resets (`daily`, `weekly`, `monthly`) in Dungeons with the globally configured user day-reset time, calculating against "logical days" instead of generic midnight thresholds.
+  - *Data Sync:* Refined "Routine Tracker" matrix logic handling so that routines checked-off in the crossover zone (e.g. 03:29 AM instead of 04:00 AM reset boundaries) accurately log as completed for the *previous* calendar day.
+  - *UI:* Visual refresh badges for routines actively respect the customized reset shifts in real-time.
 
 - **v6.8.21 (2026-05-15):** Background Audio Keep-Alive for Mobile PWAs.
   - *Feature:* Implemented a continuous, silent HTML5 Audio track (`useBackgroundKeepAlive`) that loops automatically when the timer is active.

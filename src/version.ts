@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v6.8.21';
+export const APP_VERSION = 'v6.8.24';
 export const LAST_UPDATE_DATE = '2026-05-15';
-export const LAST_UPDATE_TIME = '14:58:00';
+export const LAST_UPDATE_TIME = '16:46:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,37 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v6.8.24',
+    date: '2026-05-15',
+    time: '16:46:00',
+    title: 'Top Bar Mobile UX Polish',
+    items: [
+      { category: 'UI', description: 'Optimized the Top Bar for small mobile screens by conditionally hiding the streak days indicator, converting the XP Bar layout below the level badge, and simplifying the Level badge\'s CSS styling.' }
+    ]
+  },
+  {
+    version: 'v6.8.23',
+    date: '2026-05-15',
+    time: '16:45:00',
+    title: 'Dungeon Tiers Preset & iOS UX Fix',
+    items: [
+      { category: 'Feature', description: 'Added "Save Preset" functionality when creating Dungeon Tiers, allowing users to save their favorite configurations (e.g., standard 20 rooms, 200 coin reward).' },
+      { category: 'Feature', description: 'Added an "Auto-Load" capability that, when enabled, seamlessly applies your saved preset every time you create a new tier.' },
+      { category: 'Bug Fix', description: 'Fixed a critical iOS / Edge bug where modifying reward items while creating a new tier directly edited the parent expedition state, rendering the inputs seemingly frozen.' }
+    ]
+  },
+  {
+    version: 'v6.8.22',
+    date: '2026-05-15',
+    time: '16:32:00',
+    title: 'Routine Reset Synchronization',
+    items: [
+      { category: 'Logic', description: 'Routine expeditions now strictly align to the custom reset time defined in Settings, rather than standard midnight rollovers.' },
+      { category: 'Logic', description: 'Completing a routine task during late-night crossover hours (e.g. 03:00 AM) now properly credits the previous calendar day instead of prematurely checking off the next day.' },
+      { category: 'UI', description: 'Dungeon UI refresh schedule badges now correctly display the logical day calculated against your custom night-end offset.' }
+    ]
+  },
   {
     version: 'v6.8.21',
     date: '2026-05-15',
