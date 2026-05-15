@@ -19,6 +19,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, Legend
 import Markdown from 'react-markdown';
 import { ImmersiveReflectionModal } from './ImmersiveReflectionModal';
 import { DailySessionsModal } from './DailySessionsModal';
+import { RoutineTracker } from './RoutineTracker';
 
 interface StatsProps {
   state: AppState;
@@ -1296,6 +1297,8 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
             </div>
           </div>
         </div>
+
+        <RoutineTracker history={state.history} dungeons={dungeons} majorDungeons={majorDungeons} />
 
         {/* Study Heatmap */}
         <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800 lg:col-span-2">

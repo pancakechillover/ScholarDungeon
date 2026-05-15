@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v6.8.18';
+export const APP_VERSION = 'v6.8.19';
 export const LAST_UPDATE_DATE = '2026-05-15';
-export const LAST_UPDATE_TIME = '13:22:00';
+export const LAST_UPDATE_TIME = '13:35:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,16 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v6.8.19',
+    date: '2026-05-15',
+    time: '13:35:00',
+    title: 'Routine Tracker Dashboard',
+    items: [
+      { category: 'Feature', description: 'Added a "Routine Tracker" matrix module to the Record interface placed precisely above the Heatmap to display daily/monthly completion progress for all Routine-tagged Expeditions.' },
+      { category: 'UX', description: 'Tier configuration now directly exposes the "Routine Expedition" toggle previously only available on parent goals.' }
+    ]
+  },
   {
     version: 'v6.8.18',
     date: '2026-05-15',
