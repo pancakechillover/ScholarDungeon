@@ -251,7 +251,7 @@ export const LevelRewardsSettings = ({ state, setState }: { state: any, setState
                       onChange={e => setEditing({ ...editing, type: e.target.value })}
                       className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white"
                     >
-                      <option value="talentPoint">Talent Point</option>
+                      <option value="talentPoint">Talent Scroll</option>
                       <option value="coins">Gold</option>
                       <option value="text">Text Reward</option>
                     </select>

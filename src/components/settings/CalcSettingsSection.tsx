@@ -185,7 +185,7 @@ export const CalcSettingsSection: React.FC<CalcSettingsProps> = ({ state, setSta
           <li>Your session time (e.g. <span className="text-white font-mono bg-slate-950 px-1.5 py-0.5 rounded">25+5</span>) does <span className="text-indigo-400 font-bold">not</span> scale your base XP or Gold naturally. A flat base is given per session.</li>
           <li>Longer focus sessions require deliberate tuning of Developer Settings to remain balanced. If you prefer 50-minute sessions over 25-minute ones, you should double your Base XP and Base Coins.</li>
           <li>Streak bonuses from Talents (A3/B3) trigger extremely powerful rewards on exactly your <span className="text-indigo-400 font-bold">8th session</span> of the day once you reach a streak of 2 days or more.</li>
-          <li>Talent points are obtained by collecting <span className="text-indigo-400 font-bold">10 Talent Shards</span>. Adjust your Reward Pool weights if they feel too rare.</li>
+          <li>Talent scrolls are obtained by collecting <span className="text-indigo-400 font-bold">3 Talent Shards</span>. Adjust your Reward Pool weights if they feel too rare.</li>
         </ul>
       </div>
 

@@ -17,7 +17,7 @@
     *   **Truth Crown (A)**：提升 XP 获取。
     *   **Golden Law (B)**：提升金币获取。
     *   **Fate Dice (C)**：增加随机性和额外奖励。
-    *   使用 Talent Points 解锁天赋，并激活它们以获得增益。
+    *   使用 Talent Scrolls 解锁天赋，并激活它们以获得增益。
 
 ## 3. 经济系统：Merchant's Outpost (商店)
 

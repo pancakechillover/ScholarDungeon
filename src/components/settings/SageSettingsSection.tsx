@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Bot, Send, RefreshCw, Settings as SettingsIcon, Plus, Edit2, Trash2, Library, Check, Copy, Quote, MessageSquare, PanelLeftClose, PanelLeftOpen, Download } from 'lucide-react';
+import { Bot, Send, RefreshCw, Settings as SettingsIcon, Plus, Edit2, Trash2, Library, Check, Copy, Quote, MessageSquare, PanelLeftClose, PanelLeftOpen, Download, X } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { AppState, SageModelConfig, SagePromptConfig } from '../../types';
 import { cn } from '../../lib/utils';

@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v6.8.8';
+export const APP_VERSION = 'v6.8.11';
 export const LAST_UPDATE_DATE = '2026-05-15';
-export const LAST_UPDATE_TIME = '08:10:00';
+export const LAST_UPDATE_TIME = '11:15:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,36 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v6.8.11',
+    date: '2026-05-15',
+    time: '11:15:00',
+    title: 'Top Bar Polish',
+    items: [
+      { category: 'UI', description: 'Unified icon sizes across the top bar. Adapted the Sync button to remove bulky padding, syncing its dimensions with standard info indicators.' },
+      { category: 'UX', description: 'Fixed top bar streak text to use proper pluralization ("Days" vs "Day").' }
+    ]
+  },
+  {
+    version: 'v6.8.10',
+    date: '2026-05-15',
+    time: '10:48:00',
+    title: 'Nomenclature & Iconography Update',
+    items: [
+      { category: 'Terminology', description: 'Renamed "Talent Points" mathematically to "Talent Scrolls" across all UI, settings, and quest reward tables.' },
+      { category: 'UI', description: 'Updated the icon for Talent Scrolls from a Star to a Scroll, and altered Talent Shards to a Puzzle icon to better fit the fantasy aesthetic.' }
+    ]
+  },
+  {
+    version: 'v6.8.9',
+    date: '2026-05-15',
+    time: '09:41:00',
+    title: 'UI Consistency',
+    items: [
+      { category: 'UI', description: 'Updated the CSS styling of the "Quest History" view to match the modernized "Quest Board" styling for a cohesive interface.' },
+      { category: 'UI', description: 'Exchanged standard Zap icons in rewards rendering to Star globally when referencing "Talent Points" for clarity.' }
+    ]
+  },
   {
     version: 'v6.8.8',
     date: '2026-05-15',

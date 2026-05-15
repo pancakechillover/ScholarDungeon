@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence, Reorder, useDragControls } from 'motion/react';
 import { Quest, QuestType, QuestReward, QuestHistoryItem, Talent } from '../types';
-import { Target, Trophy, Plus, Trash2, Edit2, CheckCircle2, ChevronDown, ChevronUp, X, Gift, Coins, Zap, CheckSquare, Square, GripVertical, Pin, Clock, History, BrainCircuit } from 'lucide-react';
+import { Target, Trophy, Plus, Trash2, Edit2, CheckCircle2, ChevronDown, ChevronUp, X, Gift, Coins, Zap, Star, Scroll, CheckSquare, Square, GripVertical, Pin, Clock, History, BrainCircuit } from 'lucide-react';
 import { PageHeader } from './PageHeader';
 import { cn } from '../lib/utils';
 import { SpinnerInput } from './SpinnerInput';
@@ -44,52 +44,52 @@ const DraggableQuestItem = ({ quest, isEditMode, children, className }: any) => 
 };
 
 const HistoryItem = ({ item }: { item: QuestHistoryItem }) => {
-  const rotation = React.useMemo(() => (Math.random() * 4) - 2, []);
-  
   return (
     <motion.div 
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
-      style={{ rotate: 0 }}
-      className="paper-texture border border-slate-200 rounded-sm p-4 flex items-center justify-between gap-4 shadow-sm relative group hover:shadow-md transition-shadow"
+      className="qb-card border rounded-lg p-5 flex items-center justify-between gap-4 shadow-md relative group transition-all"
     >
-      {/* Pin removed from history items */}
-
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 flex-1 min-w-0">
         <div className={cn(
-          "w-10 h-10 rounded-lg flex items-center justify-center border shrink-0 qb-dark-box",
-          item.isAchievement ? "border-amber-500" : "border-slate-700"
+          "w-12 h-12 rounded-lg flex items-center justify-center border shrink-0 transition-colors qb-success"
         )}>
-          {item.isAchievement ? <Trophy size={20} className="text-amber-400" /> : <History size={20} className="text-emerald-400" />}
+          {item.isAchievement ? <Trophy size={24} /> : <History size={24} />}
         </div>
-        <div>
-          <h4 className="font-serif font-black text-slate-900 text-base leading-tight">{item.title}</h4>
-          <div className="flex items-center gap-2 mt-1">
-            <div className="flex items-center gap-1 text-[10px] text-slate-500 font-bold">
-              <Clock size={10} />
-              {new Date(item.timestamp).toLocaleString()}
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 mb-0.5">
+            <h4 className="font-bold text-base leading-tight truncate">{item.title}</h4>
+            <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-1 px-1.5 py-0.5 rounded qb-tag text-[9px] font-bold uppercase tracking-tighter border">
+                <Clock size={10} />
+                {new Date(item.timestamp).toLocaleString()}
+              </div>
+              {item.talentRequired && (() => {
+                const talent = TALENTS.find(t => t.id === item.talentRequired);
+                if (!talent) return null;
+                const TalentIcon = (LucideIcons as any)[talent.icon] || BrainCircuit;
+                return (
+                  <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 text-[9px] font-bold uppercase tracking-tighter shrink-0">
+                    <TalentIcon size={10} />
+                    <span>{talent.name}</span>
+                  </div>
+                );
+              })()}
             </div>
-            {item.talentRequired && (() => {
-              const talent = TALENTS.find(t => t.id === item.talentRequired);
-              if (!talent) return null;
-              const TalentIcon = (LucideIcons as any)[talent.icon] || BrainCircuit;
-              return (
-                <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-500 border border-indigo-500/20 text-[9px] font-bold uppercase tracking-tighter shrink-0">
-                  <TalentIcon size={10} />
-                  <span>{talent.name}</span>
-                </div>
-              );
-            })()}
+          </div>
+          
+          <div className="flex flex-wrap items-center gap-3 mt-2">
+            {item.rewards.map((r, i) => (
+              <div key={i} className="flex items-center gap-1 px-2 py-0.5 rounded qb-tag border text-[10px] font-black shadow-sm">
+                {r.type === 'coins' ? <Coins size={10} className="text-amber-600" /> : 
+                 r.type === 'xp' ? <Zap size={10} className="text-indigo-600" /> :
+                 r.type === 'talentPoint' ? <Scroll size={10} className="text-purple-600" /> :
+                 <Gift size={10} className="text-emerald-600" />}
+                <span>{r.amount}</span>
+              </div>
+            ))}
           </div>
         </div>
-      </div>
-      <div className="flex items-center gap-2">
-        {item.rewards.map((r, i) => (
-          <div key={i} className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-[10px] font-black text-slate-700">
-            {r.type === 'coins' ? <Coins size={10} className="text-amber-600" /> : <Zap size={10} className="text-indigo-600" />}
-            <span>{r.amount}</span>
-          </div>
-        ))}
       </div>
     </motion.div>
   );
@@ -364,7 +364,7 @@ export const QuestManager = React.memo<QuestManagerProps>(({ quests, questHistor
                           >
                             <option value="coins">Coins</option>
                             <option value="xp">XP</option>
-                            <option value="talentPoint">Talent Points</option>
+                            <option value="talentPoint">Talent Scrolls</option>
                             <option value="item">Item</option>
                             <option value="text">Custom Text</option>
                           </select>
@@ -522,7 +522,10 @@ export const QuestManager = React.memo<QuestManagerProps>(({ quests, questHistor
                     <div className="flex flex-wrap items-center gap-3 mt-2">
                       {(quest.rewards || [quest.reward]).map((reward, ridx) => (
                         <div key={ridx} className="flex items-center gap-1 px-2 py-0.5 rounded qb-tag border text-[10px] font-black shadow-sm">
-                          {reward.type === 'coins' ? <Coins size={10} className="text-amber-600" /> : <Zap size={10} className="text-indigo-600" />}
+                          {reward.type === 'coins' ? <Coins size={10} className="text-amber-600" /> : 
+                           reward.type === 'xp' ? <Zap size={10} className="text-indigo-600" /> :
+                           reward.type === 'talentPoint' ? <Scroll size={10} className="text-purple-600" /> :
+                           <Gift size={10} className="text-emerald-600" />}
                           <span>{reward.amount}</span>
                         </div>
                       ))}

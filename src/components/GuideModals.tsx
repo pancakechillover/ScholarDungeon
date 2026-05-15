@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, ChevronLeft, ChevronRight, Bookmark, Compass, Network, LayoutDashboard, Sword, Timer as TimerIcon, ShoppingBag, Package, BarChart3, Scroll, Trophy, Sparkles, Shield, Rocket, Briefcase, BookOpen, Coins, Puzzle, Zap } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Bookmark, Compass, Network, LayoutDashboard, Sword, Timer as TimerIcon, ShoppingBag, Package, BarChart3, Scroll as ScrollIcon, Trophy, Sparkles, Shield, Rocket, Briefcase, BookOpen, Coins, Puzzle, Zap, Star, Scroll } from 'lucide-react';
 import { HandBook, HandCoins, HandTarget, HandZap } from './icons/HandDrawnIcons';
 import { createPortal } from 'react-dom';
 import { playSound } from '../lib/sound';
@@ -308,7 +308,7 @@ export const GuideBookModal: React.FC<GuideBookModalProps> = ({
             <span className="text-[var(--gb-label)] font-bold mt-0.5 sm:mt-1">-</span>
             <div>
               <strong className="text-emerald-700 font-serif text-base sm:text-lg flex items-center gap-2 transition-colors duration-300"><Sparkles size={16} /> XP (Experience)</strong>
-              <p className="mt-1 leading-relaxed text-[var(--gb-body)] transition-colors duration-300">Represents your overall growth. Earn <span className="font-bold">XP</span> to level up, which unlocks rewards and <button onClick={() => { onClose(); onTabChange('talents'); }} className="font-bold underline text-emerald-700 decoration-emerald-700/30 hover:text-emerald-800 transition-colors">Talent Points</button>.</p>
+              <p className="mt-1 leading-relaxed text-[var(--gb-body)] transition-colors duration-300">Represents your overall growth. Earn <span className="font-bold">XP</span> to level up, which unlocks rewards and <button onClick={() => { onClose(); onTabChange('talents'); }} className="font-bold underline text-emerald-700 decoration-emerald-700/30 hover:text-emerald-800 transition-colors">Talent Scrolls</button>.</p>
             </div>
           </div>
         </div>
@@ -328,7 +328,7 @@ export const GuideBookModal: React.FC<GuideBookModalProps> = ({
           <div className="flex gap-2 items-start">
             <span className="text-[var(--gb-label)] font-bold mt-0.5 sm:mt-1">-</span>
             <div>
-              <strong className="text-indigo-600 font-serif text-base sm:text-lg flex items-center gap-2 transition-colors duration-300"><Zap size={16} /> Talent Points</strong>
+              <strong className="text-indigo-600 font-serif text-base sm:text-lg flex items-center gap-2 transition-colors duration-300"><Scroll size={16} /> Talent Scrolls</strong>
               <p className="mt-1 leading-relaxed text-[var(--gb-body)] transition-colors duration-300">Rare points used exclusively to unlock powerful passive traits in the <button onClick={() => { onClose(); onTabChange('talents'); }} className="font-bold underline text-indigo-600 decoration-indigo-600/30 hover:text-indigo-700 transition-colors">Talent Tree</button>.</p>
             </div>
           </div>
@@ -336,7 +336,7 @@ export const GuideBookModal: React.FC<GuideBookModalProps> = ({
             <span className="text-[var(--gb-label)] font-bold mt-0.5 sm:mt-1">-</span>
             <div>
               <strong className="text-indigo-400 font-serif text-base sm:text-lg flex items-center gap-2 transition-colors duration-300"><Puzzle size={16} /> Talent Shards</strong>
-              <p className="mt-1 leading-relaxed text-[var(--gb-body)] transition-colors duration-300">Fragments of potential. Collect 3 shards to automatically forge 1 full <span className="font-bold">Talent Point</span>. Sometimes they drop together with items.</p>
+              <p className="mt-1 leading-relaxed text-[var(--gb-body)] transition-colors duration-300">Fragments of potential. Collect 3 shards to automatically forge 1 full <span className="font-bold">Talent Scroll</span>. Sometimes they drop together with items.</p>
             </div>
           </div>
         </div>
@@ -456,7 +456,7 @@ export const GuideBookModal: React.FC<GuideBookModalProps> = ({
           <h2 className="text-2xl sm:text-3xl font-bold font-serif text-[var(--gb-title)] transition-colors duration-300">XP <span className="font-sans">&</span> Leveling</h2>
         </div>
         <p className="text-[var(--gb-body)] text-xs sm:text-sm md:text-base mb-3 sm:mb-3 sm:mb-6 leading-relaxed font-sans transition-colors duration-300">
-          Gain Experience Points (XP) to level up. Leveling up can reward you with items, <button onClick={() => { onClose(); onTabChange('talents'); }} className="font-bold underline text-emerald-700 decoration-emerald-700/30 hover:text-emerald-800 transition-colors">Talent Points</button>, or Gold.
+          Gain Experience Points (XP) to level up. Leveling up can reward you with items, <button onClick={() => { onClose(); onTabChange('talents'); }} className="font-bold underline text-emerald-700 decoration-emerald-700/30 hover:text-emerald-800 transition-colors">Talent Scrolls</button>, or Gold.
         </p>
         <div className="bg-[var(--gb-accent-bg)] p-3 sm:p-5 rounded-xl border border-[var(--gb-accent-border)] transition-colors duration-300">
           <h3 className="font-bold text-[var(--gb-title)] mb-2 sm:mb-3 uppercase tracking-wider font-serif text-lg transition-colors duration-300">How to Acquire</h3>
@@ -504,10 +504,10 @@ export const GuideBookModal: React.FC<GuideBookModalProps> = ({
           <h2 className="text-2xl sm:text-3xl font-bold font-serif text-[var(--gb-title)] transition-colors duration-300">Talent System</h2>
         </div>
         <p className="text-[var(--gb-body)] text-xs sm:text-sm md:text-base mb-3 sm:mb-3 sm:mb-6 leading-relaxed font-sans transition-colors duration-300">
-          The <button onClick={() => { onClose(); onTabChange('talents'); }} className="font-bold underline text-[var(--gb-talent-color)] decoration-[var(--gb-talent-color)]/30 hover:opacity-80 transition-colors">Talent Tree</button> allows you to unlock passive bonuses. You need <strong className="font-serif">Talent Points</strong> to unlock nodes.
+          The <button onClick={() => { onClose(); onTabChange('talents'); }} className="font-bold underline text-[var(--gb-talent-color)] decoration-[var(--gb-talent-color)]/30 hover:opacity-80 transition-colors">Talent Tree</button> allows you to unlock passive bonuses. You need <strong className="font-serif">Talent Scrolls</strong> to unlock nodes.
         </p>
         <div className="bg-[var(--gb-accent-bg)] p-3 sm:p-5 rounded-xl border border-[var(--gb-accent-border)] transition-colors duration-300">
-          <h3 className="font-bold text-[var(--gb-title)] mb-2 sm:mb-3 uppercase tracking-wider font-serif text-lg transition-colors duration-300">Acquiring Talent Points</h3>
+          <h3 className="font-bold text-[var(--gb-title)] mb-2 sm:mb-3 uppercase tracking-wider font-serif text-lg transition-colors duration-300">Acquiring Talent Scrolls</h3>
           <ul className="space-y-3 text-[var(--gb-body)] text-sm md:text-base font-sans transition-colors duration-300">
             <li className="flex gap-2 items-start">
               <span className="text-[var(--gb-talent-color)]">❖</span>
@@ -536,11 +536,11 @@ export const GuideBookModal: React.FC<GuideBookModalProps> = ({
         <div className="bg-[var(--gb-accent-bg)] p-3 sm:p-5 rounded-xl border border-[var(--gb-accent-border)] shadow-inner mb-auto mt-4 transition-colors duration-300">
           <h3 className="font-bold text-[var(--gb-title)] mb-2 sm:mb-3 uppercase tracking-wider font-serif text-lg border-b border-[var(--gb-border)] pb-2 transition-colors duration-300">Pro Tip: Customization</h3>
           <p className="text-sm md:text-base text-[var(--gb-body)] leading-relaxed mb-4 font-sans transition-colors duration-300">
-            Want more Talent Points? You can set them as rewards for leveling up!
+            Want more Talent Scrolls? You can set them as rewards for leveling up!
           </p>
           <div className="flex flex-col gap-2 sm:gap-3">
             <button onClick={() => { onClose(); navigateToSettings('levelRewards'); }} className="text-left w-full p-2 sm:p-3 rounded-lg bg-[var(--gb-talent-bg)] hover:opacity-80 border border-[var(--gb-talent-color)]/30 text-[var(--gb-talent-color)] text-sm md:text-base font-serif font-bold transition-all shadow-sm">
-              Go to Settings &gt; Level Rewards<br/><span className="font-normal font-sans text-xs sm:text-sm opacity-80 mt-1 block">Add Talent Points or Shards as level-up gifts.</span>
+              Go to Settings &gt; Level Rewards<br/><span className="font-normal font-sans text-xs sm:text-sm opacity-80 mt-1 block">Add Talent Scrolls or Shards as level-up gifts.</span>
             </button>
           </div>
         </div>

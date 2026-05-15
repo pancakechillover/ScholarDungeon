@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Trophy, Coins, Zap, Gift } from 'lucide-react';
+import { Trophy, Coins, Zap, Star, Gift, MessageSquare, Scroll } from 'lucide-react';
 import { DungeonReward } from '../types';
 
 interface RewardCompletionModalProps {
@@ -38,24 +38,35 @@ export const RewardCompletionModal: React.FC<RewardCompletionModalProps> = ({ re
               </h2>
               <h3 className="text-3xl font-bold text-white tracking-tighter mb-8 italic pr-1">{rewardData.dungeonName}</h3>
             </motion.div>
-            <div className="space-y-3 mb-10">
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Rewards Acquired</p>
-              <div className="grid grid-cols-1 gap-2">
-                {rewardData.rewards.map((reward, idx) => (
-                  <motion.div key={idx} initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.4 + idx * 0.1 }} className="flex items-center justify-between bg-white/5 border border-white/10 p-4 rounded-2xl">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-indigo-500/20 text-indigo-400 rounded-lg">
-                        {reward.type === 'coins' ? <Coins size={16} /> : reward.type === 'xp' ? <Zap size={16} /> : reward.type === 'talentPoint' ? <Zap size={16} className="text-emerald-400" /> : <Gift size={16} />}
+            
+            {rewardData.rewards.length > 0 ? (
+              <div className="space-y-3 mb-10">
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Rewards Acquired</p>
+                <div className="grid grid-cols-1 gap-2">
+                  {rewardData.rewards.map((reward, idx) => (
+                    <motion.div key={idx} initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.4 + idx * 0.1 }} className="flex items-center justify-between bg-white/5 border border-white/10 p-4 rounded-2xl">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-indigo-500/20 text-indigo-400 rounded-lg">
+                          {reward.type === 'coins' ? <Coins size={16} /> : reward.type === 'xp' ? <Zap size={16} /> : reward.type === 'talentPoint' ? <Scroll size={16} className="text-purple-400" /> : reward.type === 'text' ? <MessageSquare size={16} /> : <Gift size={16} />}
+                        </div>
+                        <span className="text-sm font-bold text-white">
+                          {reward.type === 'text' ? reward.rewardText : reward.type === 'talentPoint' ? 'Talent Scrolls' : reward.type === 'coins' ? 'Gold Coins' : reward.type === 'xp' ? 'Experience' : (reward.itemName || 'Item')}
+                        </span>
                       </div>
-                      <span className="text-sm font-bold text-white">
-                        {reward.type === 'text' ? reward.rewardText : reward.type === 'talentPoint' ? 'Talent Points' : reward.type === 'coins' ? 'Gold Coins' : reward.type === 'xp' ? 'Experience' : (reward.itemName || 'Item')}
-                      </span>
-                    </div>
-                    <span className="text-lg font-black text-indigo-400">+{reward.amount}</span>
-                  </motion.div>
-                ))}
+                      {reward.type !== 'text' && (
+                        <span className="text-lg font-black text-indigo-400">+{reward.amount}</span>
+                      )}
+                    </motion.div>
+                  ))}
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="space-y-3 mb-10">
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest opacity-0">Spacer</p>
+                <div className="py-4"></div>
+              </div>
+            )}
+            
             <div className="flex flex-col gap-3">
               <button onClick={onClose} className="w-full py-5 bg-white text-slate-900 rounded-2xl font-black uppercase tracking-widest hover:bg-indigo-400 transition-colors shadow-xl">
                 {rewardData.type === 'dungeon' ? 'Claim Dungeon Rewards' : 

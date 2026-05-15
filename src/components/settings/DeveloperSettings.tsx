@@ -266,7 +266,7 @@ export const DeveloperSettings: React.FC<DeveloperSettingsProps> = ({
                   setModalConfig({
                     isOpen: true,
                     title: "Reset Talent Tree?",
-                    message: "This will lock all talents and clear your active build. Your spent Talent Points will NOT be refunded automatically. Continue?",
+                    message: "This will lock all talents and clear your active build. Your spent Talent Scrolls will NOT be refunded automatically. Continue?",
                     confirmText: "Reset Talents",
                     type: "danger",
                     onConfirm: () => {

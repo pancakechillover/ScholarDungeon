@@ -31,12 +31,12 @@ These essential resources and artifacts form the foundation of your journey with
 ### Core Resources
 
 * **Gold Coins:** The primary currency. Earned through sessions, [Dungeons](#-sanctum-map), and [Quests](#-sanctum-map). Used in the [Merchant Outpost](#-sanctum-map) for items and Gacha.
-* **XP (Experience):** Represents your overall growth. Earn **XP** to level up, which unlocks rewards and [Talent Points](#-talent-system).
+* **XP (Experience):** Represents your overall growth. Earn **XP** to level up, which unlocks rewards and [Talent Scrolls](#-talent-system).
 
 Resources dedicated to your skill development:
 
-* **Talent Points:** Rare points used exclusively to unlock powerful passive traits in the [Talent Tree](#-talent-system).
-* **Talent Shards:** Fragments of potential. Collect 3 shards to automatically forge 1 full **Talent Point**. Sometimes they drop together with items.
+* **Talent Scrolls:** Rare points used exclusively to unlock powerful passive traits in the [Talent Tree](#-talent-system).
+* **Talent Shards:** Fragments of potential. Collect 3 shards to automatically forge 1 full **Talent Scroll**. Sometimes they drop together with items.
 
 ### Advanced Items
 
@@ -71,7 +71,7 @@ Gold is the primary currency within the Sanctum. It is used to purchase items fr
 ## 🎯 XP & Leveling
 *Growth & Progression*
 
-Gain Experience Points (XP) to level up. Leveling up can reward you with items, [Talent Points](#-talent-system), or Gold.
+Gain Experience Points (XP) to level up. Leveling up can reward you with items, [Talent Scrolls](#-talent-system), or Gold.
 
 ### How to Acquire
 * **❖** Complete focus blocks via the [Timer](#-sanctum-map)
@@ -88,12 +88,12 @@ Gain Experience Points (XP) to level up. Leveling up can reward you with items, 
 ## 🕸️ Talent System
 *Unlocking Potential*
 
-The [Talent Tree](#-sanctum-map) allows you to unlock passive bonuses. You need **Talent Points** to unlock nodes.
+The [Talent Tree](#-sanctum-map) allows you to unlock passive bonuses. You need **Talent Scrolls** to unlock nodes.
 
-### Acquiring Talent Points
+### Acquiring Talent Scrolls
 * **❖ Leveling Up:** Points are granted at specific level milestones.
 * **❖ Finding Shards:** Shards are rare drops in [Dungeons](#-sanctum-map) or won from the [Merchant](#-sanctum-map).
 
 > **Pro Tip: Customization**  
-> Want more Talent Points? You can set them as rewards for leveling up!
-> * **Go to Settings > Level Rewards:** Add Talent Points or Shards as level-up gifts.
+> Want more Talent Scrolls? You can set them as rewards for leveling up!
+> * **Go to Settings > Level Rewards:** Add Talent Scrolls or Shards as level-up gifts.

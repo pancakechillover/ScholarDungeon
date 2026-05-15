@@ -23,7 +23,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v6.8.8
+- **Current Version:** v6.8.11
 - **Last Update Date:** 2026-05-15
 
 ## Dark Themes Definition
@@ -49,6 +49,18 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v6.8.11 (2026-05-15):** Top Bar Polish.
+  - *UI:* Unified icon sizes across the top bar. Adapted the Sync button to remove bulky padding, syncing its dimensions with standard info indicators.
+  - *UX:* Fixed top bar streak text to use proper pluralization ("Days" vs "Day").
+
+- **v6.8.10 (2026-05-15):** Nomenclature & Iconography Update.
+  - *Terminology:* Renamed "Talent Points" globally to "Talent Scrolls".
+  - *UI:* Updated the icon for "Talent Scrolls" to a `Scroll` and "Talent Shards" to a `Puzzle`.
+
+- **v6.8.9 (2026-05-15):** UI Consistency.
+  - *UI:* Updated the CSS styling of the "Quest History" view to match the modernized "Quest Board" styling for a cohesive interface.
+  - *UI:* Exchanged standard `Zap` icons in rewards rendering to `Star` globally when referencing "Talent Scrolls" for clarity.
 
 - **v6.8.8 (2026-05-15):** Sage AI Output & Performance Enhancements.
   - *Feature:* Implemented capability to cancel ongoing AI consultations (AbortController) by clicking a cancel icon next to the loading timer.

@@ -17,11 +17,11 @@ import {
   X,
   Trophy,
   Package,
-  Star,
+  Scroll,
+  Puzzle,
   RefreshCw,
   Gift,
-  Flame,
-  Scroll
+  Flame
 } from 'lucide-react';
 import { AppIcon } from './components/icons/AppIcon';
 import { DailySummaryModal } from './components/DailySummaryModal';
@@ -1000,12 +1000,12 @@ function App() {
                 onClick={() => checkCloudSync(true)}
                 disabled={isSyncing || isVerifying}
                 className={cn(
-                  "p-1.5 rounded-lg transition-all flex items-center justify-center gap-2 group relative border",
+                  "flex items-center justify-center transition-all group relative shrink-0",
                   hasUnsyncedChanges 
-                    ? "bg-amber-500/10 border-amber-500/30 text-amber-500 hover:bg-amber-500/20" 
+                    ? "text-amber-500 hover:text-amber-400" 
                     : (isSyncing || isVerifying)
-                      ? "bg-indigo-500/10 border-indigo-500/30 text-indigo-400"
-                      : "bg-slate-800/80 border-slate-700/50 text-slate-400 hover:text-indigo-400 hover:bg-slate-800"
+                      ? "text-indigo-400"
+                      : "text-slate-400 hover:text-indigo-400"
                 )}
                 title={hasUnsyncedChanges ? "Unsynced Changes - Click to Verify" : "Verify & Compare Archives"}
               >
@@ -1013,9 +1013,9 @@ function App() {
                   <RefreshCw size={14} className={isSyncing || isVerifying ? "animate-spin" : ""} />
                 </div>
                 {hasUnsyncedChanges && (
-                  <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                  <span className="absolute -top-1 -right-1 flex h-2 w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500 border-2 border-slate-900"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500 border border-slate-900"></span>
                   </span>
                 )}
               </button>
@@ -1062,13 +1062,13 @@ function App() {
               "items-center space-x-1.5",
               isSidebarCollapsed ? "hidden md:flex" : "hidden xl:flex"
             )} title="Talent Shards">
-              <Star className="text-amber-400" size={16} />
+              <Puzzle className="text-amber-400" size={14} />
               <span className="font-bold text-white text-sm">{state.talentShards}<span className="text-slate-500 text-xs">/3</span></span>
             </div>
 
-            {/* Talent Points */}
-            <div className="flex items-center space-x-1 sm:space-x-1.5 shrink-0" title="Talent Points">
-              <Zap className="text-emerald-400 shrink-0" size={14} />
+            {/* Talent Scrolls */}
+            <div className="flex items-center space-x-1 sm:space-x-1.5 shrink-0" title="Talent Scrolls">
+              <Scroll className="text-purple-400 shrink-0" size={14} />
               <span className="font-bold text-white text-xs sm:text-sm">{state.talentPoints}</span>
             </div>
 
@@ -1084,7 +1084,7 @@ function App() {
               isSidebarCollapsed ? "flex" : "hidden sm:flex"
             )}>
               <Flame className="text-orange-500 shrink-0" size={14} />
-              <span className="font-bold text-white text-xs sm:text-sm">{state.streak} <span className="hidden lg:inline text-[10px] text-slate-500">Day</span></span>
+              <span className="font-bold text-white text-xs sm:text-sm">{state.streak} <span className="hidden lg:inline text-[10px] text-slate-500">{state.streak === 1 ? 'Day' : 'Days'}</span></span>
             </div>
             
             {/* Mobile-only Profile and Settings */}

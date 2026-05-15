@@ -108,7 +108,7 @@ export const INITIAL_REWARD_POOL: RewardCard[] = [
   },
 
   // EPIC
-  { id: 'talent_shard', name: 'Talent Shard', description: 'Talent point piece (1/3)', rarity: 'epic', type: 'item', itemType: 'talent_shard', amount: 1, weight: 12 },
+  { id: 'talent_shard', name: 'Talent Shard', description: 'Talent scroll piece (1/3)', rarity: 'epic', type: 'item', itemType: 'talent_shard', amount: 1, weight: 12 },
   { 
     id: 'milk_tea', 
     name: 'Milk Tea', 

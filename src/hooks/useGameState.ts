@@ -702,7 +702,7 @@ export function useGameState() {
             
             addRewardToHistory({
               name: reward.type === 'text' ? (reward.rewardText || 'Dungeon Goal Reward') : 
-                    reward.type === 'talentPoint' ? `+${reward.amount} Talent Points` :
+                    reward.type === 'talentPoint' ? `+${reward.amount} Talent Scrolls` :
                     reward.type === 'coins' ? `+${reward.amount} Gold Coins` :
                     reward.type === 'xp' ? `+${reward.amount} Experience` :
                     (reward.itemName || 'Item'),
@@ -717,7 +717,7 @@ export function useGameState() {
           setState(s => ({
             ...s,
             lastCompletionRewards: {
-              dungeonName: `GOAL ACHIEVED: ${major.name}`,
+              dungeonName: major.name,
               type: 'dungeon',
               rewards: major.rewards || []
             }
@@ -921,7 +921,7 @@ export function useGameState() {
 
               if (questRewards.length > 0) {
                 newState.lastCompletionRewards = {
-                  dungeonName: newlyCompletedQuests === 1 ? `QUEST COMPLETE: ${completedQuests[0].title}` : `${newlyCompletedQuests} QUESTS COMPLETED`,
+                  dungeonName: newlyCompletedQuests === 1 ? completedQuests[0].title : `${newlyCompletedQuests} OBJECTIVES COMPLETED`,
                   type: completedQuests.some(q => q.isAchievement) ? 'achievement' : 'quest',
                   rewards: questRewards
                 };
@@ -960,7 +960,7 @@ export function useGameState() {
                   newState.rewardHistory = [{
                     id: Math.random().toString(36).substr(2, 9),
                     name: r.type === 'text' ? (r.rewardText || 'Quest Reward') : 
-                          r.type === 'talentPoint' ? `+${r.amount} Talent Points` :
+                          r.type === 'talentPoint' ? `+${r.amount} Talent Scrolls` :
                           r.type === 'coins' ? `+${r.amount} Gold Coins` :
                           r.type === 'xp' ? `+${r.amount} Experience` :
                           (r.itemName || 'Item'),
@@ -1009,7 +1009,7 @@ export function useGameState() {
                 
                 addRewardToHistory({
                   name: reward.type === 'text' ? (reward.rewardText || 'Dungeon Reward') : 
-                        reward.type === 'talentPoint' ? `+${reward.amount} Talent Points` :
+                        reward.type === 'talentPoint' ? `+${reward.amount} Talent Scrolls` :
                         reward.type === 'coins' ? `+${reward.amount} Gold Coins` :
                         reward.type === 'xp' ? `+${reward.amount} Experience` :
                         (reward.itemName || 'Item'),
@@ -1048,7 +1048,7 @@ export function useGameState() {
                         
                         addRewardToHistory({
                           name: reward.type === 'text' ? (reward.rewardText || 'Dungeon Goal Reward') : 
-                                reward.type === 'talentPoint' ? `+${reward.amount} Talent Points` :
+                                reward.type === 'talentPoint' ? `+${reward.amount} Talent Scrolls` :
                                 reward.type === 'coins' ? `+${reward.amount} Gold Coins` :
                                 reward.type === 'xp' ? `+${reward.amount} Experience` :
                                 (reward.itemName || 'Item'),
@@ -1063,7 +1063,7 @@ export function useGameState() {
                       setState(s => ({
                         ...s,
                         lastCompletionRewards: {
-                          dungeonName: `GOAL ACHIEVED: ${major.name}`,
+                          dungeonName: major.name,
                           type: 'dungeon',
                           rewards: major.rewards || []
                         }
@@ -1109,7 +1109,7 @@ export function useGameState() {
         
         addRewardToHistory({
           name: reward.type === 'text' ? (reward.rewardText || 'Dungeon Reward') : 
-                reward.type === 'talentPoint' ? `+${reward.amount} Talent Points` :
+                reward.type === 'talentPoint' ? `+${reward.amount} Talent Scrolls` :
                 reward.type === 'coins' ? `+${reward.amount} Gold Coins` :
                 reward.type === 'xp' ? `+${reward.amount} Experience` :
                 (reward.itemName || 'Item'),
@@ -1145,7 +1145,7 @@ export function useGameState() {
                 
                 addRewardToHistory({
                   name: reward.type === 'text' ? (reward.rewardText || 'Major Reward') : 
-                        reward.type === 'talentPoint' ? `+${reward.amount} Talent Points` :
+                        reward.type === 'talentPoint' ? `+${reward.amount} Talent Scrolls` :
                         reward.type === 'coins' ? `+${reward.amount} Gold Coins` :
                         reward.type === 'xp' ? `+${reward.amount} Experience` :
                         (reward.itemName || 'Item'),
@@ -1160,7 +1160,7 @@ export function useGameState() {
               setState(s => ({
                 ...s,
                 lastCompletionRewards: {
-                  dungeonName: `MAJOR CLEAR: ${major.name}`,
+                  dungeonName: major.name,
                   type: 'dungeon',
                   rewards: major.rewards || []
                 }
@@ -1498,7 +1498,7 @@ export function useGameState() {
         const newItem: RewardHistoryItem = {
           id: Math.random().toString(36).substr(2, 9),
           name: reward.type === 'text' ? (reward.rewardText || 'Quest Reward') : 
-                reward.type === 'talentPoint' ? `+${reward.amount} Talent Points` :
+                reward.type === 'talentPoint' ? `+${reward.amount} Talent Scrolls` :
                 reward.type === 'coins' ? `+${reward.amount} Gold Coins` :
                 reward.type === 'xp' ? `+${reward.amount} Experience` :
                 (reward.itemName || 'Item'),
@@ -1575,7 +1575,7 @@ export function useGameState() {
           const newItem: RewardHistoryItem = {
             id: Math.random().toString(36).substr(2, 9),
             name: reward.type === 'text' ? (reward.rewardText || 'Quest Reward') : 
-                  reward.type === 'talentPoint' ? `+${reward.amount} Talent Points` :
+                  reward.type === 'talentPoint' ? `+${reward.amount} Talent Scrolls` :
                   reward.type === 'coins' ? `+${reward.amount} Gold Coins` :
                   reward.type === 'xp' ? `+${reward.amount} Experience` :
                   (reward.itemName || 'Item'),

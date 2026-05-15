@@ -7,7 +7,8 @@ import {
   Coins, 
   Zap, 
   Trophy, 
-  Star, 
+  Star,
+  Scroll, 
   RefreshCw,
   Cloud,
   CheckCircle2,
@@ -220,15 +221,15 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
 
                 <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-indigo-500/5 rounded-xl sm:rounded-2xl border border-indigo-500/10">
                   <div className="p-1.5 sm:p-2 bg-indigo-500/20 rounded-lg">
-                    <Star size={16} className="sm:w-5 sm:h-5 text-indigo-400" />
+                    <Scroll size={16} className="sm:w-5 sm:h-5 text-indigo-400" />
                   </div>
                   <div>
                     <p className="text-[8px] sm:text-[10px] font-black text-indigo-400 uppercase tracking-widest">Next Reward</p>
                     <p className="text-xs sm:text-sm font-bold text-white">
                       {state.levelRewards?.find(r => r.level === state.level + 1) ? (
-                        `+${state.levelRewards.find(r => r.level === state.level + 1)?.amount} ${state.levelRewards.find(r => r.level === state.level + 1)?.type === 'talentPoint' ? 'Talent Point' : 'Gold'}`
+                        `+${state.levelRewards.find(r => r.level === state.level + 1)?.amount} ${state.levelRewards.find(r => r.level === state.level + 1)?.type === 'talentPoint' ? 'Talent Scroll' : 'Gold'}`
                       ) : (
-                        ((state.level + 1) <= 3 || ((state.level + 1) <= 9 && ((state.level + 1) - 3) % 2 === 0) || ((state.level + 1) > 9 && ((state.level + 1) - 9) % 3 === 0)) ? '+1 Talent Point' : 'New Dungeon Access'
+                        ((state.level + 1) <= 3 || ((state.level + 1) <= 9 && ((state.level + 1) - 3) % 2 === 0) || ((state.level + 1) > 9 && ((state.level + 1) - 9) % 3 === 0)) ? '+1 Talent Scroll' : 'New Dungeon Access'
                       )}
                     </p>
                   </div>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Trophy, HelpCircle, Zap, Coins, Scroll } from 'lucide-react';
+import { Trophy, HelpCircle, Zap, Star, Coins, Scroll } from 'lucide-react';
 import { AppState } from '../types';
 
 import { createPortal } from 'react-dom';
@@ -76,9 +76,9 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                       return (
                         <>
                           <div className="flex items-center justify-center gap-2">
-                            {reward?.type === 'talentPoint' && <Zap size={20} className="text-indigo-400" />}
+                            {reward?.type === 'talentPoint' && <Scroll size={20} className="text-purple-400" />}
                             {reward?.type === 'coins' && <Coins size={20} className="text-amber-400" />}
-                            <span>+{reward?.amount} {reward?.type === 'talentPoint' ? 'Talent Point' : 'Gold'}</span>
+                            <span>+{reward?.amount} {reward?.type === 'talentPoint' ? 'Talent Scroll' : 'Gold'}</span>
                           </div>
                           {reward?.type === 'talentPoint' && (
                             <p className="text-xs text-slate-500 mt-2">Check the Talents tab to spend it!</p>
@@ -92,8 +92,8 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                     {isTalentLevel(currentLevelUp) ? (
                       <>
                         <div className="flex items-center gap-2">
-                          <Zap size={20} className="text-indigo-400" />
-                          <span>+1 Talent Point</span>
+                          <Scroll size={20} className="text-purple-400" />
+                          <span>+1 Talent Scroll</span>
                         </div>
                         <p className="text-xs text-slate-500 mt-2">Check the Talents tab to spend it!</p>
                       </>
@@ -101,7 +101,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                       <div className="flex flex-col items-center gap-2">
                         <span className="text-slate-500 text-sm">No specific reward for this level</span>
                         <span className="text-indigo-400/80 text-xs font-medium">
-                          Next Talent Point in {getNextTalentLevel(currentLevelUp, state.levelRewards) - currentLevelUp} level(s)
+                          Next Talent Scroll in {getNextTalentLevel(currentLevelUp, state.levelRewards) - currentLevelUp} level(s)
                         </span>
                       </div>
                     )}

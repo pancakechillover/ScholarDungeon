@@ -662,7 +662,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                                 >
                                   <option value="coins">Coins</option>
                                   <option value="xp">XP</option>
-                                  <option value="talentPoint">Talent Points</option>
+                                  <option value="talentPoint">Talent Scrolls</option>
                                   <option value="item">Item</option>
                                   <option value="text">Custom Text</option>
                                 </select>
