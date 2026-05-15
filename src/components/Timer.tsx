@@ -7,6 +7,7 @@ import { RewardCard, StudySession, Dungeon } from '../types';
 import { cn } from '../lib/utils';
 import { triggerSimpleConfetti } from '../lib/effects';
 import { createWorkerTimer } from '../lib/workerTimer';
+import { useBackgroundKeepAlive } from '../lib/keepAlive';
 
 interface TimerProps {
   currentDungeon: Dungeon | null;
@@ -102,6 +103,8 @@ export const Timer = React.memo<TimerProps>(({
   const [showTalentPopup, setShowTalentPopup] = useState<StudySession['triggeredTalents'] | null>(null);
   const [showFocusPrompt, setShowFocusPrompt] = useState(false);
 
+  useBackgroundKeepAlive(isActive, isResting, duration, timeLeft);
+
   // Sync to localStorage moved to App.tsx or handled via state setters passed down
 
   useEffect(() => {
@@ -172,40 +175,7 @@ export const Timer = React.memo<TimerProps>(({
     }
     
     setShowRewards(null);
-    
-    let safeLoopCount = loopCount;
-    if (isLooping && loopTarget > 0 && safeLoopCount >= loopTarget) safeLoopCount = 0;
-
-    if (enableRest) {
-      setIsResting(true);
-      setDuration(restDuration);
-      setTimeLeft(restDuration * 60);
-      
-      const shouldAutoStartRest = isLooping && (loopTarget === 0 || safeLoopCount < loopTarget);
-      if (shouldAutoStartRest) {
-        setIsActive(true);
-        setEndTime(Date.now() + restDuration * 60 * 1000);
-      } else {
-        setIsActive(false); 
-        setEndTime(null);
-      }
-    } else {
-      const nextLoopCount = safeLoopCount + 1;
-      setLoopCount(nextLoopCount);
-      const shouldContinueLoop = isLooping && (loopTarget === 0 || nextLoopCount < loopTarget);
-      
-      setDuration(focusDuration);
-      setTimeLeft(focusDuration * 60);
-      
-      if (shouldContinueLoop) {
-        setIsActive(true);
-        setEndTime(Date.now() + focusDuration * 60 * 1000);
-      } else {
-        setIsActive(false);
-        setEndTime(null);
-      }
-    }
-  }, [loopCount, setLoopCount, isLooping, loopTarget, enableRest, setIsResting, setDuration, restDuration, setTimeLeft, setIsActive, setEndTime, focusDuration, onRewardSelect, onInventoryAdd, setShowTalentPopup, setShowRewards]);
+  }, [onRewardSelect, onInventoryAdd, setShowTalentPopup]);
 
   const handleComplete = useCallback((silent: boolean = false) => {
     setIsActive(false);
@@ -650,39 +620,6 @@ export const Timer = React.memo<TimerProps>(({
                     <button
                       onClick={() => {
                         setShowRewards(null);
-                        
-                        let safeLoopCount = loopCount;
-                        if (isLooping && loopTarget > 0 && safeLoopCount >= loopTarget) safeLoopCount = 0;
-
-                        if (enableRest) {
-                          setIsResting(true);
-                          setDuration(restDuration);
-                          setTimeLeft(restDuration * 60);
-                          
-                          const shouldAutoStartRest = isLooping && (loopTarget === 0 || safeLoopCount < loopTarget);
-                          if (shouldAutoStartRest) {
-                            setIsActive(true);
-                            setEndTime(Date.now() + restDuration * 60 * 1000);
-                          } else {
-                            setIsActive(false); 
-                            setEndTime(null);
-                          }
-                        } else {
-                          const nextLoopCount = safeLoopCount + 1;
-                          setLoopCount(nextLoopCount);
-                          const shouldContinueLoop = isLooping && (loopTarget === 0 || nextLoopCount < loopTarget);
-                          
-                          setDuration(focusDuration);
-                          setTimeLeft(focusDuration * 60);
-                          
-                          if (shouldContinueLoop) {
-                            setIsActive(true);
-                            setEndTime(Date.now() + focusDuration * 60 * 1000);
-                          } else {
-                            setIsActive(false);
-                            setEndTime(null);
-                          }
-                        }
                       }}
                       className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 rounded-full font-bold uppercase text-[10px] md:text-xs hover:bg-emerald-600/30 transition-all"
                     >
@@ -731,39 +668,6 @@ export const Timer = React.memo<TimerProps>(({
                           // Short delay to let the confetti pop before closing
                           setTimeout(() => {
                             setShowRewards(null);
-                            
-                            let safeLoopCount = loopCount;
-                            if (isLooping && loopTarget > 0 && safeLoopCount >= loopTarget) safeLoopCount = 0;
-
-                            if (enableRest) {
-                              setIsResting(true);
-                              setDuration(restDuration);
-                              setTimeLeft(restDuration * 60);
-                              
-                              const shouldAutoStartRest = isLooping && (loopTarget === 0 || safeLoopCount < loopTarget);
-                              if (shouldAutoStartRest) {
-                                setIsActive(true);
-                                setEndTime(Date.now() + restDuration * 60 * 1000);
-                              } else {
-                                setIsActive(false); 
-                                setEndTime(null);
-                              }
-                            } else {
-                              const nextLoopCount = safeLoopCount + 1;
-                              setLoopCount(nextLoopCount);
-                              const shouldContinueLoop = isLooping && (loopTarget === 0 || nextLoopCount < loopTarget);
-                              
-                              setDuration(focusDuration);
-                              setTimeLeft(focusDuration * 60);
-                              
-                              if (shouldContinueLoop) {
-                                setIsActive(true);
-                                setEndTime(Date.now() + focusDuration * 60 * 1000);
-                              } else {
-                                setIsActive(false);
-                                setEndTime(null);
-                              }
-                            }
                           }, 400);
                         }}
                         className={cn(

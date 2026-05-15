@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v6.8.19';
+export const APP_VERSION = 'v6.8.21';
 export const LAST_UPDATE_DATE = '2026-05-15';
-export const LAST_UPDATE_TIME = '13:35:00';
+export const LAST_UPDATE_TIME = '14:58:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,26 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v6.8.21',
+    date: '2026-05-15',
+    time: '14:58:00',
+    title: 'Mobile PWA Background Precision',
+    items: [
+      { category: 'Architecture', description: 'Implemented a continuous HTML5 silent audio track that guarantees JavaScript execution on mobile devices when the PWA is backgrounded or the screen is locked.' },
+      { category: 'Bug Fix', description: 'Solved the issue where Timer notifications would not deliver until the player reopened the Web App by forcing background wake-locks via the audio stream.' },
+      { category: 'Feature', description: 'Active timers will now display natively on your lock screen using the Media Session API!' }
+    ]
+  },
+  {
+    version: 'v6.8.20',
+    date: '2026-05-15',
+    time: '14:31:00',
+    title: 'Timer Progression Sync',
+    items: [
+      { category: 'Bug Fix', description: 'Fixed an issue where the timer would wait at 0:00 for reward selection. The timer now automatically jumps to the next state (Resting/Focus) even while the reward modal stays open for you to pick an item on your own time.' }
+    ]
+  },
   {
     version: 'v6.8.19',
     date: '2026-05-15',

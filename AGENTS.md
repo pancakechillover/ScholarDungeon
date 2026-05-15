@@ -23,7 +23,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v6.8.19
+- **Current Version:** v6.8.21
 - **Last Update Date:** 2026-05-15
 
 ## Dark Themes Definition
@@ -49,6 +49,14 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v6.8.21 (2026-05-15):** Background Audio Keep-Alive for Mobile PWAs.
+  - *Feature:* Implemented a continuous, silent HTML5 Audio track (`useBackgroundKeepAlive`) that loops automatically when the timer is active.
+  - *Bug Fix:* Resolved a critical iOS/Android Safari issue where backgrounding the PWA would suspend the JavaScript context, causing timer push notifications to be delayed until the user reopened the app.
+  - *Feature:* Hooked MediaSession API to display specific timer progress on the mobile Lock Screen media player.
+
+- **v6.8.20 (2026-05-15):** Timer Loop Progression Fix.
+  - *Bug Fix:* Fixed an issue in `Timer` where the countdown would halt at `0:00` waiting for the user to select their focus reward. The timer now automatically progresses to the next step (e.g. resting or loop resets) immediately on completion, while safely leaving the reward modal open in the foreground for the user to make their choice on their own time.
 
 - **v6.8.19 (2026-05-15):** Routine Tracker Dashboard.
   - *Feature:* Added a "Routine Tracker" matrix module to the Record interface placed precisely above the Heatmap.
