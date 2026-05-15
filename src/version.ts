@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v6.8.12';
+export const APP_VERSION = 'v6.8.17';
 export const LAST_UPDATE_DATE = '2026-05-15';
-export const LAST_UPDATE_TIME = '11:27:00';
+export const LAST_UPDATE_TIME = '12:44:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,54 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v6.8.17',
+    date: '2026-05-15',
+    time: '12:44:00',
+    title: 'Routine Expeditions',
+    items: [
+      { category: 'Feature', description: 'Added "Routine" configuration when creating or editing an Expedition Goal. Routine expeditions reset their tier progress recursively on a daily, weekly, or monthly interval to allow replayable challenges and repeated rewards.' }
+    ]
+  },
+  {
+    version: 'v6.8.16',
+    date: '2026-05-15',
+    time: '12:30:00',
+    title: 'UI Polish & Convenience Enhancements',
+    items: [
+      { category: 'UI', description: 'Updated the color of "Talent Scrolls" icons globally from purple to emerald green for better theme consistency.' },
+      { category: 'UX', description: 'In the Dungeons view, creating a new expedition or tier now automatically defaults to 100 Coins for the Completion Reward, avoiding an empty initial state.' }
+    ]
+  },
+  {
+    version: 'v6.8.15',
+    date: '2026-05-15',
+    time: '12:22:00',
+    title: 'UI Stability & Error Handling Polish',
+    items: [
+      { category: 'Bug Fix', description: 'Resolved a React warning regarding uncontrolled inputs changing to controlled states during item/quest editing by enforcing explicit string fallbacks (value || "").' },
+      { category: 'Bug Fix', description: 'Suppressed expected NotSupportedError playback failures for missing page-flip.mp3 files in environments where audio is disabled or absent.' }
+    ]
+  },
+  {
+    version: 'v6.8.14',
+    date: '2026-05-15',
+    time: '12:15:00',
+    title: 'Disable Sub/Parent Transference',
+    items: [
+      { category: 'UX/Fix', description: 'Completely disabled the functionality to transfer items between major and sub-levels via dragging. Drag and drop now strictly focuses on simple list reordering to stabilize the application and prevent potential data state losses.' }
+    ]
+  },
+  {
+    version: 'v6.8.13',
+    date: '2026-05-15',
+    time: '11:40:00',
+    title: 'Dungeons Drag & Drop Stability',
+    items: [
+      { category: 'Bug Fix', description: 'Resolved a critical bug where dragging one dungeon item into another caused the item to be "swallowed" and disappear. Implementing strictly functional state updates fixes conflicts between drag state and list reordering UI states.' },
+      { category: 'UI', description: 'Corrected the icon for Talent Scrolls rewards in the Expedition view to properly display a Scroll instead of a Trophy.' }
+    ]
+  },
   {
     version: 'v6.8.12',
     date: '2026-05-15',

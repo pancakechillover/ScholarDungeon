@@ -83,7 +83,7 @@ const HistoryItem = ({ item }: { item: QuestHistoryItem }) => {
               <div key={i} className="flex items-center gap-1 px-2 py-0.5 rounded qb-tag border text-[10px] font-black shadow-sm">
                 {r.type === 'coins' ? <Coins size={10} className="text-amber-600" /> : 
                  r.type === 'xp' ? <Zap size={10} className="text-indigo-600" /> :
-                 r.type === 'talentPoint' ? <Scroll size={10} className="text-purple-600" /> :
+                 r.type === 'talentPoint' ? <Scroll size={10} className="text-emerald-600" /> :
                  <Gift size={10} className="text-emerald-600" />}
                 <span>{r.amount}</span>
               </div>
@@ -273,7 +273,7 @@ export const QuestManager = React.memo<QuestManagerProps>(({ quests, questHistor
                     <input
                       type="text"
                       placeholder="Title"
-                      value={newQuest.title}
+                      value={newQuest.title || ''}
                       onChange={e => setNewQuest({ ...newQuest, title: e.target.value })}
                       className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
                     />
@@ -283,7 +283,7 @@ export const QuestManager = React.memo<QuestManagerProps>(({ quests, questHistor
                     <input
                       type="text"
                       placeholder="Description"
-                      value={newQuest.description}
+                      value={newQuest.description || ''}
                       onChange={e => setNewQuest({ ...newQuest, description: e.target.value })}
                       className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
                     />
@@ -391,7 +391,7 @@ export const QuestManager = React.memo<QuestManagerProps>(({ quests, questHistor
                             <input 
                               type="text"
                               placeholder="Item Name"
-                              value={reward.itemName}
+                              value={reward.itemName || ''}
                               onChange={e => updateReward(idx, 'itemName', e.target.value)}
                               className="bg-slate-900 text-xs text-white border-slate-700 rounded-lg px-2 py-1.5"
                             />
@@ -401,7 +401,7 @@ export const QuestManager = React.memo<QuestManagerProps>(({ quests, questHistor
                           <input 
                             type="text"
                             placeholder="Reward Message"
-                            value={reward.rewardText}
+                            value={reward.rewardText || ''}
                             onChange={e => updateReward(idx, 'rewardText', e.target.value)}
                             className="w-full bg-slate-900 text-xs text-white border-slate-700 rounded-lg px-2 py-1.5"
                           />
@@ -524,7 +524,7 @@ export const QuestManager = React.memo<QuestManagerProps>(({ quests, questHistor
                         <div key={ridx} className="flex items-center gap-1 px-2 py-0.5 rounded qb-tag border text-[10px] font-black shadow-sm">
                           {reward.type === 'coins' ? <Coins size={10} className="text-amber-600" /> : 
                            reward.type === 'xp' ? <Zap size={10} className="text-indigo-600" /> :
-                           reward.type === 'talentPoint' ? <Scroll size={10} className="text-purple-600" /> :
+                           reward.type === 'talentPoint' ? <Scroll size={10} className="text-emerald-600" /> :
                            <Gift size={10} className="text-emerald-600" />}
                           <span>{reward.amount}</span>
                         </div>

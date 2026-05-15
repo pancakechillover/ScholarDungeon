@@ -1711,69 +1711,82 @@ export function useGameState() {
   }, []);
 
   const moveDungeonItem = useCallback((itemId: string, newParentId: string | null) => {
-    let newD = [...dungeons];
-    let newM = [...majorDungeons];
-    const isSub = newD.find(d => d.id === itemId);
-    const isMajor = newM.find(m => m.id === itemId);
-
-    if (newParentId === null) {
-      if (isSub) {
-        const newMajor: MajorDungeon = {
-          id: isSub.id,
-          name: isSub.name,
-          description: isSub.description || '',
-          status: isSub.status,
-          rewards: isSub.rewards,
-          completedAt: isSub.completedAt,
-        };
-        newM = [...newM.filter(m => m.id !== itemId), newMajor];
-        newD = newD.filter(d => d.id !== itemId);
-        setMajorDungeons(newM);
-        setDungeons(newD);
+    setDungeons(prevD => {
+      let isSubMovingToRoot = false;
+      let newSubAsMajor: MajorDungeon | null = null;
+      let isMajorMovingToSub = false;
+      let newMajorAsSub: Dungeon | null = null;
+      
+      const isSub = prevD.find(d => d.id === itemId);
+      
+      if (newParentId === null) {
+        if (isSub) {
+          isSubMovingToRoot = true;
+          newSubAsMajor = {
+            id: isSub.id,
+            name: isSub.name,
+            description: isSub.description || '',
+            status: isSub.status,
+            rewards: isSub.rewards,
+            completedAt: isSub.completedAt,
+          };
+          setMajorDungeons(prevM => [...prevM.filter(m => m.id !== itemId), newSubAsMajor!]);
+          return prevD.filter(d => d.id !== itemId);
+        }
+        return prevD;
       }
-      return;
-    }
-
-    const checkCycleRecursive = (targetId: string | null, movingId: string): boolean => {
-      let curr = targetId;
-      const visited = new Set<string>();
-      while (curr) {
-        if (curr === movingId) return true;
-        if (visited.has(curr)) break;
-        visited.add(curr);
-        const parent = newD.find(d => d.id === curr);
-        curr = parent?.parentId || null;
-      }
-      return false;
-    };
-
-    if (checkCycleRecursive(newParentId, itemId)) return;
-
-    if (isSub) {
-      newD = newD.map(d => d.id === itemId ? { ...d, parentId: newParentId } : d);
-      setDungeons(newD);
-    } else if (isMajor) {
-      const newSub: Dungeon = {
-        id: isMajor.id,
-        name: isMajor.name,
-        description: isMajor.description,
-        status: isMajor.status,
-        parentId: newParentId,
-        rewards: isMajor.rewards,
-        completedAt: isMajor.completedAt,
-        totalSessions: 1,
-        completedSessions: isMajor.status === 'completed' ? 1 : 0,
-        rewardCoins: 0,
-        rewardXP: 0,
-        rewardText: '',
-        isLongTerm: false
+      
+      const checkCycleRecursive = (currentD: Dungeon[], targetId: string | null, movingId: string): boolean => {
+        let curr = targetId;
+        const visited = new Set<string>();
+        while (curr) {
+          if (curr === movingId) return true;
+          if (visited.has(curr)) break;
+          visited.add(curr);
+          const parent = currentD.find(d => d.id === curr);
+          curr = parent?.parentId || null;
+        }
+        return false;
       };
-      newM = newM.filter(m => m.id !== itemId);
-      newD = [...newD, newSub];
-      setMajorDungeons(newM);
-      setDungeons(newD);
-    }
-  }, [dungeons, majorDungeons]);
+
+      if (checkCycleRecursive(prevD, newParentId, itemId)) return prevD;
+
+      if (isSub) {
+         return prevD.map(d => d.id === itemId ? { ...d, parentId: newParentId } : d);
+      } else {
+         // It's a major dungeon moving to a sub dungeon
+         
+         // We can use majorDungeons from closure because we only need to read isMajor to construct the sub-dungeon.
+         // Its identity (id) is stable. 
+         const isMajor = majorDungeons.find(m => m.id === itemId);
+         
+         if (isMajor) {
+             const localNewSub: Dungeon = {
+              id: isMajor.id,
+              name: isMajor.name,
+              description: isMajor.description,
+              status: isMajor.status,
+              parentId: newParentId,
+              rewards: isMajor.rewards,
+              completedAt: isMajor.completedAt,
+              totalSessions: 1,
+              completedSessions: isMajor.status === 'completed' ? 1 : 0,
+              rewardCoins: 0,
+              rewardXP: 0,
+              rewardText: '',
+              isLongTerm: false
+            };
+            
+            // Queue removal from majors
+            setMajorDungeons(prevM => prevM.filter(m => m.id !== itemId));
+            
+            // Add to subs
+            return [...prevD, localNewSub];
+         }
+      }
+      return prevD;
+    });
+  }, [majorDungeons]);
 
 
   const bulkCreateSessions = useCallback((data: { count: number, objectiveId: string, startTime: string, endTime: string }) => {

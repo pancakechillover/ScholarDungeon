@@ -715,13 +715,16 @@ function App() {
     }
   }, [setMajorDungeons, state.currentDungeonId, dungeons, setState]);
 
-  const handleCreateMajor = (name: string, description: string, rewards?: DungeonReward[]) => {
+  const handleCreateMajor = (name: string, description: string, rewards?: DungeonReward[], isRoutine?: boolean, routineType?: 'daily' | 'weekly' | 'monthly') => {
     const newMajor: MajorDungeon = {
       id: Math.random().toString(36).substr(2, 9),
       name,
       description,
       status: 'active' as const,
-      rewards
+      rewards,
+      isRoutine,
+      routineType,
+      lastRoutineReset: new Date().toISOString()
     };
     setMajorDungeons([...majorDungeons, newMajor]);
   };
@@ -797,12 +800,72 @@ function App() {
 
   useEffect(() => {
     if (appReady) {
-      // Auto check sync on load or when a new provider is connected
       if (state.syncProvider === 'Google Drive' || state.syncProvider === 'WebDAV' || state.secretCode) {
         checkCloudSync();
       }
     }
-  }, [appReady, state.syncProvider, !!state.secretCode]); // Run on load or when connection status changes
+  }, [appReady, state.syncProvider, !!state.secretCode]);
+
+  useEffect(() => {
+    // Check and reset routine major dungeons
+    let hasChanges = false;
+    const now = new Date();
+    
+    const updatedMajors = majorDungeons.map(major => {
+      if (!major.isRoutine || !major.routineType || !major.lastRoutineReset) return major;
+      
+      const lastReset = new Date(major.lastRoutineReset);
+      let shouldReset = false;
+      
+      if (major.routineType === 'daily') {
+        const resetTime = new Date(lastReset);
+        const resetHour = state.timeSettings?.night.end || 0;
+        resetTime.setHours(resetHour, 0, 0, 0);
+        if (lastReset.getHours() >= resetHour) {
+          resetTime.setDate(resetTime.getDate() + 1);
+        }
+        if (now >= resetTime) shouldReset = true;
+      } else if (major.routineType === 'weekly') {
+        const lastResetPlus7 = new Date(lastReset.getTime() + 7 * 24 * 60 * 60 * 1000);
+        if (now >= lastResetPlus7) shouldReset = true; // Simple +7 days logic
+      } else if (major.routineType === 'monthly') {
+        const resetMonth = lastReset.getMonth() + 1;
+        if (now.getMonth() === resetMonth || now.getFullYear() > lastReset.getFullYear()) shouldReset = true;
+      }
+
+      if (shouldReset) {
+        hasChanges = true;
+        // Also we should reset the children but we don't have access to setDungeons here inside the loop.
+        // We will do a separate pass for Dungeons if hasChanges is true.
+        return {
+          ...major,
+          status: 'active' as const,
+          completedAt: undefined,
+          lastRoutineReset: now.toISOString()
+        };
+      }
+      return major;
+    });
+
+    if (hasChanges) {
+      setMajorDungeons(updatedMajors);
+      // Reset all child sub-dungeons for the reset majors
+      const resetMajorIds = updatedMajors.filter((m, i) => m.lastRoutineReset !== majorDungeons[i].lastRoutineReset).map(m => m.id);
+      if (resetMajorIds.length > 0) {
+        setDungeons(prev => prev.map(d => {
+          if (d.parentId && resetMajorIds.includes(d.parentId)) {
+            return {
+              ...d,
+              completedSessions: 0,
+              status: 'active' as const,
+              completedAt: undefined
+            };
+          }
+          return d;
+        }));
+      }
+    }
+  }, [appReady, state.timeSettings?.night.end]); // Run after app loads
 
   const handleSplashComplete = useCallback(() => setAppReady(true), []);
 
@@ -1068,7 +1131,7 @@ function App() {
 
             {/* Talent Scrolls */}
             <div className="flex items-center space-x-1 sm:space-x-1.5 shrink-0" title="Talent Scrolls">
-              <Scroll className="text-purple-400 shrink-0" size={14} />
+              <Scroll className="text-emerald-400 shrink-0" size={14} />
               <span className="font-bold text-white text-xs sm:text-sm">{state.talentPoints}</span>
             </div>
 

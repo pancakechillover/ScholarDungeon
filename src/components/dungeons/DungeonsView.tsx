@@ -36,7 +36,7 @@ interface DungeonsViewProps {
   unclaimedQuestsCount: number;
   unclaimedAchievementsCount: number;
   setState: React.Dispatch<React.SetStateAction<AppState>>;
-  handleCreateMajor: (name: string, description: string, rewards?: DungeonReward[]) => void;
+  handleCreateMajor: (name: string, description: string, rewards?: DungeonReward[], isRoutine?: boolean, routineType?: 'daily' | 'weekly' | 'monthly') => void;
   handleCreateSub: (dungeon: Omit<Dungeon, 'id' | 'completedSessions' | 'status'>) => void;
   handleUpdateMajor: (id: string, updates: Partial<MajorDungeon>) => void;
   handleUpdateSub: (id: string, updates: Partial<Dungeon>) => void;

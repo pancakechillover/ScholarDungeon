@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence, Reorder, useDragControls } from 'motion/react';
 import { Dungeon, MajorDungeon, DungeonReward } from '../../types';
-import { Plus, Target, Sword, CheckCircle2, ChevronRight, Trash2, FolderPlus, Folder, ChevronDown, ChevronUp, Gift, X, Edit2, Coins, Zap, Trophy, HelpCircle, Square, CheckSquare, EyeOff, Eye, Archive, Search, Filter, Calendar, GripVertical } from 'lucide-react';
+import { Plus, Target, Sword, CheckCircle2, ChevronRight, Trash2, FolderPlus, Folder, ChevronDown, ChevronUp, Gift, X, Edit2, Coins, Zap, Trophy, HelpCircle, Square, CheckSquare, EyeOff, Eye, Archive, Search, Filter, Calendar, GripVertical, Scroll, RefreshCcw } from 'lucide-react';
 import { PageHeader } from '../PageHeader';
 import { cn } from '../../lib/utils';
 import { SpinnerInput } from '../SpinnerInput';
@@ -24,31 +24,8 @@ const DraggableItem = ({ item, isEditMode, children, className, handleClassName,
       }}
       dragMomentum={false}
       dragElastic={0}
-      onDragEnd={(e: any, info) => {
-        if (!isEditMode || !onMove) return;
-        
-        // Use client coordinates for more consistent element detection across devices
-        const x = info.point.x;
-        const y = info.point.y;
-        
-        const targets = document.elementsFromPoint(x, y);
-        const dropTargetElement = targets.find(t => {
-          const dt = t.closest('[data-drop-target="true"]');
-          // Skip the item itself and ensure we found a valid target
-          return dt && dt.getAttribute('data-id') !== item.id;
-        })?.closest('[data-drop-target="true"]');
-
-        if (dropTargetElement) {
-          const targetId = dropTargetElement.getAttribute('data-id');
-          if (targetId === 'root') {
-            onMove(item.id, null);
-          } else if (targetId) {
-            onMove(item.id, targetId);
-            
-            const evt = new CustomEvent('expandDungeon', { detail: targetId });
-            window.dispatchEvent(evt);
-          }
-        }
+      onDragEnd={() => {
+        // Parent/child transfer functionality has been disabled
       }}
     >
       <div className="flex items-start w-full gap-2">
@@ -82,7 +59,7 @@ interface DungeonManagerProps {
   isAddingMajor: boolean;
   setIsAddingMajor: (val: boolean) => void;
   onSelect: (id: string) => void;
-  onCreateMajor: (name: string, description: string, rewards?: DungeonReward[]) => void;
+  onCreateMajor: (name: string, description: string, rewards?: DungeonReward[], isRoutine?: boolean, routineType?: 'daily' | 'weekly' | 'monthly') => void;
   onCreateSub: (dungeon: Omit<Dungeon, 'id' | 'completedSessions' | 'status'>) => void;
   onUpdateMajor: (id: string, updates: Partial<MajorDungeon>) => void;
   onUpdateSub: (id: string, updates: Partial<Dungeon>) => void;
@@ -144,7 +121,13 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
   const [archiveSearch, setArchiveSearch] = useState('');
   const [dateFilter, setDateFilter] = useState<'all' | 'week' | 'month'>('all');
 
-  const [newMajor, setNewMajor] = useState({ name: '', description: '', rewards: [] as DungeonReward[] });
+  const [newMajor, setNewMajor] = useState({ 
+    name: '', 
+    description: '', 
+    rewards: [{ type: 'coins', amount: 100 }] as DungeonReward[],
+    isRoutine: false,
+    routineType: 'daily' as 'daily' | 'weekly' | 'monthly'
+  });
   const [newSub, setNewSub] = useState({
     name: '',
     description: '',
@@ -152,7 +135,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
     rewardCoins: 0,
     rewardXP: 0,
     rewardText: '',
-    rewards: [] as DungeonReward[],
+    rewards: [{ type: 'coins', amount: 100 }] as DungeonReward[],
     isLongTerm: false
   });
 
@@ -197,9 +180,30 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
 
   React.useEffect(() => {
     if (isAddingMajor && !editingMajor) {
-      setNewMajor({ name: '', description: '', rewards: [] });
+      setNewMajor({ 
+        name: '', 
+        description: '', 
+        rewards: [{ type: 'coins', amount: 100 }],
+        isRoutine: false,
+        routineType: 'daily'
+      });
     }
   }, [isAddingMajor, editingMajor]);
+
+  React.useEffect(() => {
+    if (isAddingSub) {
+      setNewSub({
+        name: '',
+        description: '',
+        totalSessions: 10,
+        rewardCoins: 0,
+        rewardXP: 0,
+        rewardText: '',
+        rewards: [{ type: 'coins', amount: 100 }],
+        isLongTerm: false
+      });
+    }
+  }, [isAddingSub]);
 
   const addReward = (isMajor: boolean = false) => {
     if (isMajor) {
@@ -297,7 +301,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
           <div key={i} className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-900/50 border border-slate-800 text-[10px] font-bold text-slate-400">
             {r.type === 'coins' && <Coins size={10} className="text-amber-500" />}
             {r.type === 'xp' && <Zap size={10} className="text-indigo-400" />}
-            {r.type === 'talentPoint' && <Trophy size={10} className="text-emerald-400" />}
+            {r.type === 'talentPoint' && <Scroll size={10} className="text-emerald-400" />}
             <span>{r.amount}</span>
           </div>
         ))}
@@ -597,6 +601,46 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                       />
                     </div>
                   )}
+
+                  {(editingMajor || isAddingMajor) && (
+                    <div className="space-y-2 sm:col-span-2 pt-2">
+                      <label className="flex items-center gap-2 text-white text-sm cursor-pointer border border-slate-700 bg-slate-800 p-3 rounded-xl hover:border-indigo-500 transition-colors">
+                        <input
+                          type="checkbox"
+                          checked={isAddingMajor ? newMajor.isRoutine : (editingMajor?.isRoutine || false)}
+                          onChange={e => {
+                            if (isAddingMajor) setNewMajor({ ...newMajor, isRoutine: e.target.checked });
+                            else if (editingMajor) setEditingMajor({ ...editingMajor, isRoutine: e.target.checked });
+                          }}
+                          className="w-4 h-4 rounded bg-slate-900 border-indigo-500 text-indigo-500 focus:ring-0 focus:ring-offset-0 cursor-pointer"
+                        />
+                        <span className="font-bold">Routine Expedition</span>
+                        <span className="text-xs text-slate-400 font-normal ml-auto">Resets progress periodically</span>
+                      </label>
+                      
+                      {(isAddingMajor ? newMajor.isRoutine : editingMajor?.isRoutine) && (
+                        <div className="flex gap-4 p-3 bg-slate-800/80 rounded-xl border border-slate-700">
+                          <span className="text-xs font-bold text-slate-500 uppercase tracking-widest my-auto mr-2">Interval</span>
+                          {(['daily', 'weekly', 'monthly'] as const).map(t => (
+                            <label key={t} className="flex items-center gap-2 cursor-pointer text-sm text-slate-300 hover:text-white">
+                              <input
+                                type="radio"
+                                name="routineType"
+                                value={t}
+                                checked={(isAddingMajor ? newMajor.routineType : editingMajor?.routineType || 'daily') === t}
+                                onChange={e => {
+                                  if (isAddingMajor) setNewMajor({ ...newMajor, routineType: e.target.value as any });
+                                  else if (editingMajor) setEditingMajor({ ...editingMajor, routineType: e.target.value as any });
+                                }}
+                                className="w-4 h-4 text-indigo-500 border-slate-600 focus:ring-0 focus:ring-offset-0 cursor-pointer"
+                              />
+                              <span className="capitalize font-medium">{t}</span>
+                            </label>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-3">
@@ -704,7 +748,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                                     type="text"
                                     disabled={isRewardLocked}
                                     placeholder="Item Name"
-                                    value={reward.itemName}
+                                    value={reward.itemName || ''}
                                     onChange={e => updateReward(idx, 'itemName', e.target.value, isAddingMajor || !!editingMajor || !!isAddingSub)}
                                     className={cn(
                                       "bg-slate-900 text-xs border-slate-700 rounded-lg px-2 py-1.5 focus:outline-none focus:border-indigo-500",
@@ -718,7 +762,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                                   type="text"
                                   disabled={isRewardLocked}
                                   placeholder="Reward Message"
-                                  value={reward.rewardText}
+                                  value={reward.rewardText || ''}
                                   onChange={e => updateReward(idx, 'rewardText', e.target.value, isAddingMajor || !!editingMajor || !!isAddingSub)}
                                   className={cn(
                                     "w-full bg-slate-900 text-xs border-slate-700 rounded-lg px-2 py-1.5 focus:outline-none focus:border-indigo-500",
@@ -793,13 +837,19 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                     }
 
                     if (isAddingMajor) {
-                      onCreateMajor(newMajor.name, newMajor.description, newMajor.rewards);
+                      onCreateMajor(newMajor.name, newMajor.description, newMajor.rewards, newMajor.isRoutine, newMajor.routineType);
                       setIsAddingMajor(false);
                     } else if (isAddingSub) {
                       onCreateSub({ ...newSub, parentId: isAddingSub.parentId });
                       setIsAddingSub(null);
                     } else if (editingMajor) {
-                      onUpdateMajor(editingMajor.id, { name: editingMajor.name, description: editingMajor.description, rewards: editingMajor.rewards });
+                      onUpdateMajor(editingMajor.id, { 
+                        name: editingMajor.name, 
+                        description: editingMajor.description, 
+                        rewards: editingMajor.rewards,
+                        isRoutine: editingMajor.isRoutine,
+                        routineType: editingMajor.routineType 
+                      });
                       setEditingMajor(null);
                     } else if (editingSub) {
                       onUpdateSub(editingSub.id, { name: editingSub.name, description: editingSub.description, totalSessions: editingSub.totalSessions, rewards: editingSub.rewards });
@@ -891,6 +941,31 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                       {major.description && (
                          <p className="text-xs text-slate-400 font-medium italic mt-0.5 line-clamp-1 w-full pr-1">{major.description}</p>
                       )}
+                      
+                      {major.isRoutine && (
+                        <div className="flex items-center gap-1 px-1.5 py-0.5 rounded border border-indigo-500/30 bg-indigo-500/10 text-indigo-400 text-[10px] font-black uppercase shadow-sm" title="Refreshes progress on reset">
+                          <RefreshCcw size={10} />
+                          <span>{major.routineType}</span>
+                          {major.lastRoutineReset && (
+                            <span className="opacity-75 font-normal ml-0.5 border-l border-indigo-500/30 pl-1">
+                              Resets {(() => {
+                                const lastReset = new Date(major.lastRoutineReset!);
+                                const next = new Date(lastReset);
+                                if (major.routineType === 'daily') {
+                                  next.setDate(next.getDate() + 1);
+                                } else if (major.routineType === 'weekly') {
+                                  next.setDate(next.getDate() + 7);
+                                } else if (major.routineType === 'monthly') {
+                                  next.setMonth(next.getMonth() + 1);
+                                  next.setDate(1);
+                                }
+                                return `${next.getMonth() + 1}/${next.getDate()}`;
+                              })()}
+                            </span>
+                          )}
+                        </div>
+                      )}
+
                       {renderRewards(major)}
                       {(() => {
                         const majorSubs = dungeons.filter(d => d.parentId === major.id);

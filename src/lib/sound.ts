@@ -36,7 +36,7 @@ export const playSound = (type: SoundType, volume: number = 0.5, enabled: boolea
         if (e.name === 'NotAllowedError') {
           console.debug('Audio play blocked by browser policy');
         } else {
-          console.error('Audio play failed:', e);
+          console.debug('Audio play failed:', e);
         }
       });
     }

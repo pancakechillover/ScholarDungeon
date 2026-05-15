@@ -23,7 +23,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v6.8.12
+- **Current Version:** v6.8.17
 - **Last Update Date:** 2026-05-15
 
 ## Dark Themes Definition
@@ -49,6 +49,25 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v6.8.17 (2026-05-15):** Routine Expeditions Feature.
+  - *Feature:* Added "Routine" configuration when creating or editing an Expedition Goal. Routine expeditions reset their tier progress recursively on a daily, weekly, or monthly interval to allow replayable challenges and repeated rewards.
+  - *UI:* Displayed a Routine badge in the Expedition Goal summary, showing the configured refresh interval and calculated next refresh date.
+
+- **v6.8.16 (2026-05-15):** UI Polish & Convenience Enhancements.
+  - *UI:* Updated the color of "Talent Scrolls" icons globally from purple to emerald green for better theme consistency.
+  - *UX:* In the Dungeons view, creating a new expedition or tier now automatically defaults to 100 Coins for the Completion Reward, avoiding an empty initial state.
+
+- **v6.8.15 (2026-05-15):** UI Stability & Error Handling Polish.
+  - *Bug Fix:* Resolved a React warning regarding uncontrolled inputs changing to controlled states during item/quest editing by enforcing explicit string fallbacks (`|| ""`).
+  - *Bug Fix:* Suppressed expected `NotSupportedError` playback failures for missing `page-flip.mp3` files in environments where audio is disabled or absent.
+
+- **v6.8.14 (2026-05-15):** Disable Sub/Parent Transference.
+  - *UX/Fix:* Completely disabled the functionality to transfer items between major and sub-levels via dragging. Drag and drop now strictly focuses on simple list reordering to stabilize the application and prevent potential data state losses.
+
+- **v6.8.13 (2026-05-15):** Dungeons Drag & Drop Stability.
+  - *Bug Fix:* Fixed a major bug where dragging one dungeon item into another would cause the dropped item to permanently disappear due to stale state closures conflicting with concurrent list reordering logic from Framer Motion. Implemented strict functional state transitions.
+  - *UI:* Corrected the reward icon for Talent Scrolls in the Expedition view to properly display a Scroll instead of a Trophy.
 
 - **v6.8.12 (2026-05-15):** Fullscreen UX Enhancements.
   - *Feature:* Added WakeLock support (`navigator.wakeLock`) to keep the screen on during fullscreen sessions.

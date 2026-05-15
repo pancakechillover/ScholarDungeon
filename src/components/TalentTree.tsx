@@ -128,7 +128,7 @@ export const TalentTree = React.memo<TalentTreeProps>(({
         description="Customize your learning build"
         icon={Network}
         stats={[
-          { label: 'Talent Scrolls', value: points, icon: Scroll, color: 'text-purple-400' },
+          { label: 'Talent Scrolls', value: points, icon: Scroll, color: 'text-emerald-400' },
           { label: 'Talent Shards', value: `${shards}/3`, icon: Puzzle, color: 'text-amber-400' }
         ]}
       >

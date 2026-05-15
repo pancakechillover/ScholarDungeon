@@ -120,7 +120,7 @@ export const ShopSettings = ({ items, onUpdate }: { items: ShopItem[], onUpdate:
                       <div className="space-y-4 flex flex-col flex-1">
                         <div className="space-y-1.5">
                           <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Item Name</label>
-                          <input type="text" placeholder="e.g. Ancient Relic" value={editing.name} onChange={e => setEditing({...editing, name: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:border-amber-500 transition-colors" />
+                          <input type="text" placeholder="e.g. Ancient Relic" value={editing.name || ''} onChange={e => setEditing({...editing, name: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:border-amber-500 transition-colors" />
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="space-y-1.5">
@@ -150,7 +150,7 @@ export const ShopSettings = ({ items, onUpdate }: { items: ShopItem[], onUpdate:
                         </div>
                         <div className="space-y-1.5 flex-1 flex flex-col">
                           <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Description</label>
-                          <textarea placeholder="What does this item do?..." value={editing.description} onChange={e => setEditing({...editing, description: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm flex-1 min-h-[160px] resize-none focus:border-amber-500 transition-colors" />
+                          <textarea placeholder="What does this item do?..." value={editing.description || ''} onChange={e => setEditing({...editing, description: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm flex-1 min-h-[160px] resize-none focus:border-amber-500 transition-colors" />
                         </div>
                       </div>
                     </div>

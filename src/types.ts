@@ -61,6 +61,9 @@ export interface MajorDungeon {
   isFinalized?: boolean;
   rewards?: DungeonReward[];
   completedAt?: string;
+  isRoutine?: boolean;
+  routineType?: 'daily' | 'weekly' | 'monthly';
+  lastRoutineReset?: string;
 }
 
 export interface RewardHistoryItem {

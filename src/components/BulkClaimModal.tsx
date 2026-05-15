@@ -78,10 +78,10 @@ export const BulkClaimModal: React.FC<BulkClaimModalProps> = ({ isOpen, onClose,
                   </div>
                 )}
                 {totals.talentPoints > 0 && (
-                  <div className="p-3 bg-purple-500/10 border border-purple-500/20 rounded-2xl flex flex-col items-center justify-center gap-1 text-center">
-                    <Scroll className="text-purple-400" size={20} />
+                  <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex flex-col items-center justify-center gap-1 text-center">
+                    <Scroll className="text-emerald-400" size={20} />
                     <span className="text-lg font-black text-white tabular-nums">+{totals.talentPoints}</span>
-                    <span className="text-[8px] font-bold text-purple-500/60 uppercase tracking-tighter">Talent Scrolls</span>
+                    <span className="text-[8px] font-bold text-emerald-500/60 uppercase tracking-tighter">Talent Scrolls</span>
                   </div>
                 )}
                 {totals.shards > 0 && (
@@ -133,7 +133,7 @@ export const BulkClaimModal: React.FC<BulkClaimModalProps> = ({ isOpen, onClose,
                           <div key={ridx} className="flex items-center gap-1 px-2 py-1 bg-black/40 rounded-full border border-white/5 text-[10px] font-black text-white">
                             {r.type === 'coins' ? <Coins size={12} className="text-amber-400" /> : 
                              r.type === 'xp' ? <Zap size={12} className="text-indigo-400" /> : 
-                             r.type === 'talentPoint' ? <Scroll size={12} className="text-purple-400" /> :
+                             r.type === 'talentPoint' ? <Scroll size={12} className="text-emerald-400" /> :
                              <Gift size={12} className="text-emerald-400" />}
                             {r.type !== 'text' && <span className="tabular-nums">+{r.amount}</span>}
                             {r.type === 'text' && <span className="tabular-nums opacity-80">(Message)</span>}

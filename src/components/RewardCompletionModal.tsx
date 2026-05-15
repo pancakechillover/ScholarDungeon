@@ -47,7 +47,7 @@ export const RewardCompletionModal: React.FC<RewardCompletionModalProps> = ({ re
                     <motion.div key={idx} initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.4 + idx * 0.1 }} className="flex items-center justify-between bg-white/5 border border-white/10 p-4 rounded-2xl">
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-indigo-500/20 text-indigo-400 rounded-lg">
-                          {reward.type === 'coins' ? <Coins size={16} /> : reward.type === 'xp' ? <Zap size={16} /> : reward.type === 'talentPoint' ? <Scroll size={16} className="text-purple-400" /> : reward.type === 'text' ? <MessageSquare size={16} /> : <Gift size={16} />}
+                          {reward.type === 'coins' ? <Coins size={16} /> : reward.type === 'xp' ? <Zap size={16} /> : reward.type === 'talentPoint' ? <Scroll size={16} className="text-emerald-400" /> : reward.type === 'text' ? <MessageSquare size={16} /> : <Gift size={16} />}
                         </div>
                         <span className="text-sm font-bold text-white">
                           {reward.type === 'text' ? reward.rewardText : reward.type === 'talentPoint' ? 'Talent Scrolls' : reward.type === 'coins' ? 'Gold Coins' : reward.type === 'xp' ? 'Experience' : (reward.itemName || 'Item')}

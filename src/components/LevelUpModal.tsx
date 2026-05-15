@@ -76,7 +76,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                       return (
                         <>
                           <div className="flex items-center justify-center gap-2">
-                            {reward?.type === 'talentPoint' && <Scroll size={20} className="text-purple-400" />}
+                            {reward?.type === 'talentPoint' && <Scroll size={20} className="text-emerald-400" />}
                             {reward?.type === 'coins' && <Coins size={20} className="text-amber-400" />}
                             <span>+{reward?.amount} {reward?.type === 'talentPoint' ? 'Talent Scroll' : 'Gold'}</span>
                           </div>
@@ -92,7 +92,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                     {isTalentLevel(currentLevelUp) ? (
                       <>
                         <div className="flex items-center gap-2">
-                          <Scroll size={20} className="text-purple-400" />
+                          <Scroll size={20} className="text-emerald-400" />
                           <span>+1 Talent Scroll</span>
                         </div>
                         <p className="text-xs text-slate-500 mt-2">Check the Talents tab to spend it!</p>
