@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v6.8.6';
-export const LAST_UPDATE_DATE = '2026-05-14';
-export const LAST_UPDATE_TIME = '17:05:00';
+export const APP_VERSION = 'v6.8.7';
+export const LAST_UPDATE_DATE = '2026-05-15';
+export const LAST_UPDATE_TIME = '07:33:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,16 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v6.8.7',
+    date: '2026-05-15',
+    time: '07:33:00',
+    title: 'Background Timer & Notification Precision',
+    items: [
+      { category: 'Architecture', description: 'Delegated timer countdowns to a dedicated Web Worker to prevent browser throttling when the PWA is in the background.' },
+      { category: 'Feature', description: 'Added high urgency flag to Web Push notifications to bypass mobile OS battery-saver deferrals.' }
+    ]
+  },
   {
     version: 'v6.8.6',
     date: '2026-05-14',

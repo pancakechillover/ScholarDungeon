@@ -219,7 +219,7 @@ const processPushQueue = async (client: any) => {
             title: task.title,
             body: task.body,
             data: { type: task.type }
-          }));
+          }), { urgency: 'high' });
         } catch (err: any) {
           const bodyMsg = err.body ? (typeof err.body === 'string' ? err.body : JSON.stringify(err.body)) : '';
           console.error(`Push failed for ${task.secretCode}:`, err.message, bodyMsg);
@@ -240,7 +240,7 @@ const processPushQueue = async (client: any) => {
             title: task.title,
             body: task.body,
             data: { type: task.type }
-          }));
+          }), { urgency: 'high' });
         } catch (err: any) {
           const bodyMsg = err.body ? (typeof err.body === 'string' ? err.body : JSON.stringify(err.body)) : '';
           console.error(`Legacy push failed for ${task.secretCode}:`, err.message, bodyMsg);

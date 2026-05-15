@@ -23,8 +23,8 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v6.8.5
-- **Last Update Date:** 2026-05-14
+- **Current Version:** v6.8.7
+- **Last Update Date:** 2026-05-15
 
 ## Dark Themes Definition
 The following themes are considered "Dark Themes" and form the baseline for vibrant visual effects and high-contrast glowing elements:
@@ -49,6 +49,10 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v6.8.7 (2026-05-15):** Background Timer & Notification Precision.
+  - *Architecture:* Delegated timer countdowns to a dedicated Web Worker to prevent browser throttling when the PWA is in the background.
+  - *Feature:* Added `{ urgency: 'high' }` flag to Web Push notifications to bypass mobile OS battery-saver deferrals.
 
 - **v6.8.6 (2026-05-14):** Audio Error Handling Refinement.
   - *Bug Fix:* Improved audio playback error handling to silence expected browser autoplay policy errors.

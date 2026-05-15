@@ -6,6 +6,7 @@ import { TreasureChestIcon } from './icons/TreasureChestIcon';
 import { RewardCard, StudySession, Dungeon } from '../types';
 import { cn } from '../lib/utils';
 import { triggerSimpleConfetti } from '../lib/effects';
+import { createWorkerTimer } from '../lib/workerTimer';
 
 interface TimerProps {
   currentDungeon: Dungeon | null;
@@ -324,7 +325,7 @@ export const Timer = React.memo<TimerProps>(({
   }, [duration, isResting, focusDuration, restDuration, enableRest, isLooping, onComplete, onRestComplete, rewardPool, activeTalents, setShowCoinRain, setIsActive, setEndTime, setIsResting, setDuration, setTimeLeft, pushEnabled, timerSkipVictoryMode, handleRewardSelection, onDeferReward]);
 
   useEffect(() => {
-    let interval: any = null;
+    let worker: Worker | null = null;
     
     const checkTime = () => {
       if (!isActive || !endTime) return;
@@ -342,11 +343,16 @@ export const Timer = React.memo<TimerProps>(({
 
     if (isActive && endTime) {
       checkTime(); // Check immediately
-      interval = setInterval(checkTime, 1000);
+      worker = createWorkerTimer();
+      worker.onmessage = checkTime;
+      worker.postMessage({ command: 'start', interval: 1000 });
     }
     
     return () => {
-      if (interval) clearInterval(interval);
+      if (worker) {
+        worker.postMessage({ command: 'stop' });
+        worker.terminate();
+      }
     };
   }, [isActive, endTime, handleComplete, setIsActive, setEndTime, setTimeLeft]);
 

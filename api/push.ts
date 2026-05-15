@@ -152,7 +152,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 title: task.title,
                 body: task.body,
                 data: task.data || { type: task.type }
-              }));
+              }), { urgency: 'high' });
               results.push({ secretCode: task.secretCode, status: 'sent', endpoint: subscription.endpoint.substring(0, 20) });
             } catch (err: any) {
               console.error(`Push failed for sub:`, err.message, err.body ? err.body : '');
@@ -172,7 +172,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 title: task.title,
                 body: task.body,
                 data: task.data || { type: task.type }
-              }));
+              }), { urgency: 'high' });
               results.push({ secretCode: task.secretCode, status: 'sent_legacy' });
             } catch (err: any) {
               console.error(`Legacy push failed for sub:`, err.message, err.body ? err.body : '');
