@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v6.8.11';
+export const APP_VERSION = 'v6.8.12';
 export const LAST_UPDATE_DATE = '2026-05-15';
-export const LAST_UPDATE_TIME = '11:15:00';
+export const LAST_UPDATE_TIME = '11:27:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,18 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v6.8.12',
+    date: '2026-05-15',
+    time: '11:27:00',
+    title: 'Fullscreen UX & WakeLock Support',
+    items: [
+      { category: 'Feature', description: 'Added Screen WakeLock support to prevent the device from sleeping during fullscreen sessions.' },
+      { category: 'Feature', description: 'Screen orientation is dynamically unlocked during fullscreen, allowing landscape viewing natively on mobile.' },
+      { category: 'UI', description: 'Overhauled mobile landscape fullscreen layout. Rescaled main timer module and relocated progress UI to bottom to prevent vertical overflow issues.' },
+      { category: 'UI', description: 'Adjusted narrow screen portrait layout for the fullscreen progress bar. Ensures right-edge spacing prevents overlap with the Exit Fullscreen button.' }
+    ]
+  },
   {
     version: 'v6.8.11',
     date: '2026-05-15',

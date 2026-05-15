@@ -173,6 +173,39 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
     return () => window.removeEventListener('mousedown', handleGlobalClick);
   }, [activeTooltipId]);
 
+  // Handle WakeLock and orientation in fullscreen mode
+  React.useEffect(() => {
+    let wakeLockSentinel: any = null;
+
+    const requestWakeLock = async () => {
+      try {
+        if ('wakeLock' in navigator) {
+          wakeLockSentinel = await (navigator as any).wakeLock.request('screen');
+        }
+      } catch (err: any) {
+        console.warn(`WakeLock error: ${err.message}`);
+      }
+    };
+
+    if (isFullscreenExplore) {
+      // 1. Keep screen on
+      requestWakeLock();
+      
+      // 2. Allow orientation change in fullscreen (unlock)
+      try {
+        if (window.screen && window.screen.orientation && window.screen.orientation.unlock) {
+          window.screen.orientation.unlock();
+        }
+      } catch(e) {}
+    }
+
+    return () => {
+      if (wakeLockSentinel !== null) {
+        wakeLockSentinel.release().catch(() => {});
+      }
+    };
+  }, [isFullscreenExplore]);
+
   // Handle jump to recent sessions from Stats
   React.useEffect(() => {
     const handleJump = (e: any) => {
@@ -453,7 +486,7 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
                    <motion.div 
                      initial={{ opacity: 0, y: -20 }}
                      animate={{ opacity: 1, y: 0 }}
-                     className="absolute top-8 sm:top-12 left-1/2 -translate-x-1/2 w-full max-w-sm space-y-2 z-[30] px-8"
+                     className="absolute top-6 sm:top-12 left-4 sm:left-1/2 sm:-translate-x-1/2 w-[calc(100%-80px)] sm:w-full sm:max-w-sm space-y-2 z-[30] px-0 sm:px-8 [@media(orientation:landscape)_and_(max-height:600px)]:top-auto [@media(orientation:landscape)_and_(max-height:600px)]:bottom-6 [@media(orientation:landscape)_and_(max-height:600px)]:left-1/2 [@media(orientation:landscape)_and_(max-height:600px)]:-translate-x-1/2 [@media(orientation:landscape)_and_(max-height:600px)]:w-full"
                    >
                       <div className="flex justify-between items-center px-1">
                         <span className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em]">{currentDungeon.name}</span>
@@ -469,8 +502,8 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
                    </motion.div>
                  )}
 
-                 {/* Scaled Timer for Fullscreen Experience */}
-                 <div className="scale-110 md:scale-125 lg:scale-[1.35] origin-center transform transition-transform">
+                  {/* Scaled Timer for Fullscreen Experience */}
+                 <div className="scale-100 sm:scale-110 md:scale-125 lg:scale-[1.35] origin-center transform transition-transform [@media(orientation:landscape)_and_(max-height:600px)]:scale-[0.70] [@media(orientation:landscape)_and_(max-height:600px)]:-mt-8">
                    <Timer 
                       currentDungeon={currentDungeon || null}
                       rewardPool={state.rewardPool || []}
