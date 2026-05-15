@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v6.8.24';
+export const APP_VERSION = 'v6.9.0';
 export const LAST_UPDATE_DATE = '2026-05-15';
-export const LAST_UPDATE_TIME = '16:46:00';
+export const LAST_UPDATE_TIME = '16:57:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,15 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v6.9.0',
+    date: '2026-05-15',
+    time: '16:57:00',
+    title: 'Version 6.9.0 Milestone',
+    items: [
+      { category: 'Milestone', description: 'Upgraded system version to 6.9.0.' }
+    ]
+  },
   {
     version: 'v6.8.24',
     date: '2026-05-15',
