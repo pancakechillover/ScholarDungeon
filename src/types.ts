@@ -157,7 +157,7 @@ export interface SageConversation {
   id: string;
   title: string;
   updatedAt: number;
-  messages: { role: 'user' | 'assistant'; content: string; timestamp: number }[];
+  messages: { role: 'user' | 'assistant'; content: string; timestamp: number; reasoningContent?: string }[];
 }
 
 export interface AppState {

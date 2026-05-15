@@ -296,7 +296,7 @@ const SageConfigManager: React.FC<{ state: AppState, setState: React.Dispatch<Re
   );
 };
 
-const SageLoadingTimer = ({ startTime, isDarkTheme }: { startTime: number, isDarkTheme: boolean }) => {
+const SageLoadingTimer = ({ startTime, isDarkTheme, onCancel }: { startTime: number, isDarkTheme: boolean, onCancel?: () => void }) => {
   const [elapsed, setElapsed] = React.useState(0);
   
   React.useEffect(() => {
@@ -311,9 +311,14 @@ const SageLoadingTimer = ({ startTime, isDarkTheme }: { startTime: number, isDar
       isDarkTheme ? "bg-slate-900/80 border-indigo-500/20" : "bg-indigo-50 border-indigo-200"
     )}>
        <RefreshCw className={cn("animate-spin", isDarkTheme ? "text-indigo-400" : "text-indigo-600")} size={16} />
-       <span className={cn("text-xs font-serif italic pr-1", isDarkTheme ? "text-indigo-400/70" : "text-indigo-700")}>
+       <span className={cn("text-xs font-serif italic pr-1 flex-1", isDarkTheme ? "text-indigo-400/70" : "text-indigo-700")}>
          The Sage is consulting the scrolls... ({elapsed}s)
        </span>
+       {onCancel && (
+         <button onClick={onCancel} className="p-1 rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-500 transition-colors shrink-0" title="Cancel Request">
+           <X size={14} />
+         </button>
+       )}
     </div>
   );
 };
@@ -372,6 +377,15 @@ const SageInterface: React.FC<SageInterfaceProps> = ({ state, setState }) => {
     }
   }, [history, loading]);
 
+  const abortControllerRef = React.useRef<AbortController | null>(null);
+
+  const handleCancelConsult = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+  };
+
   const handleSend = async (customPrompt?: string) => {
     const prompt = customPrompt || userInput;
     if (!prompt.trim() && !customPrompt) return;
@@ -402,20 +416,30 @@ const SageInterface: React.FC<SageInterfaceProps> = ({ state, setState }) => {
       };
     });
 
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
+
     try {
       const getAdvicePromise = getSageAdvice({ 
         state, 
         prompt, 
-        history: history.map(h => ({ role: h.role, content: h.content })) 
+        history: history.map(h => ({ role: h.role, content: h.content })),
+        signal: abortController.signal
       });
 
-      const timeoutPromise = new Promise<string>((_, reject) => {
+      const timeoutPromise = new Promise<any>((_, reject) => {
         setTimeout(() => reject(new Error('TIMEOUT_ERROR')), 180 * 1000);
       });
 
       const res = await Promise.race([getAdvicePromise, timeoutPromise]);
       
-      const assistantMsg = { role: 'assistant' as const, content: res, timestamp: Date.now() };
+      const assistantMsg = { 
+        role: 'assistant' as const, 
+        content: res.content, 
+        reasoningContent: res.reasoningContent,
+        timestamp: Date.now() 
+      };
+      
       setState(prev => {
         const convos = prev.sageConversations || [];
         return {
@@ -430,6 +454,14 @@ const SageInterface: React.FC<SageInterfaceProps> = ({ state, setState }) => {
         };
       });
     } catch (e: any) {
+      if (e.name === 'AbortError') {
+        setState(prev => ({
+          ...prev,
+          sageIsLoading: false,
+          sageLoadingStartTime: null
+        }));
+        return;
+      }
       if (e.message === 'TIMEOUT_ERROR') {
         const assistantMsg = { role: 'assistant' as const, content: "*(The Sage pondered deeply for too long and lost the connection. Please try again.)*", timestamp: Date.now() };
         setState(prev => {
@@ -759,6 +791,16 @@ const SageInterface: React.FC<SageInterfaceProps> = ({ state, setState }) => {
               )}>
                 {msg.role === 'assistant' ? (
                   <div className={cn("prose prose-sm max-w-none", isDarkTheme ? "prose-invert prose-indigo" : "prose-indigo")}>
+                    {msg.reasoningContent && (
+                      <details className={cn("mb-4 rounded-xl border group overflow-hidden bg-transparent", isDarkTheme ? "border-indigo-500/20 hover:bg-indigo-500/5" : "border-indigo-200 hover:bg-black/5")}>
+                        <summary className={cn("px-3 py-2 text-xs font-bold cursor-pointer select-none transition-colors outline-none", isDarkTheme ? "text-indigo-400" : "text-indigo-700")}>
+                          Thought Process
+                        </summary>
+                        <div className={cn("px-3 pb-3 pt-1 text-[11px] opacity-80 border-t", isDarkTheme ? "border-indigo-500/20" : "border-indigo-200")}>
+                          <ReactMarkdown>{msg.reasoningContent}</ReactMarkdown>
+                        </div>
+                      </details>
+                    )}
                     <ReactMarkdown>{msg.content}</ReactMarkdown>
                   </div>
                 ) : (
@@ -796,7 +838,7 @@ const SageInterface: React.FC<SageInterfaceProps> = ({ state, setState }) => {
 
           {loading && (
             <div className="flex flex-col items-start pr-1">
-              <SageLoadingTimer startTime={loadingStartTime} isDarkTheme={isDarkTheme} />
+              <SageLoadingTimer startTime={loadingStartTime} isDarkTheme={isDarkTheme} onCancel={handleCancelConsult} />
             </div>
           )}
 

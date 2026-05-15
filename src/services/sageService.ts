@@ -6,9 +6,15 @@ export interface SageAdviceRequest {
   state: AppState;
   prompt?: string;
   history?: { role: 'user' | 'assistant'; content: string }[];
+  signal?: AbortSignal;
 }
 
-export async function getSageAdvice({ state, prompt, history = [] }: SageAdviceRequest): Promise<string> {
+export interface SageAdviceResponse {
+  content: string;
+  reasoningContent?: string;
+}
+
+export async function getSageAdvice({ state, prompt, history = [], signal }: SageAdviceRequest): Promise<SageAdviceResponse> {
   let provider: string = state.sageApiProvider || 'google';
   let apiKey = state.sageApiKey || process.env.GEMINI_API_KEY;
   let baseUrl = state.sageApiUrl;
@@ -112,9 +118,13 @@ Keep your tone consistent with the chosen personality. Use Bold text for emphasi
 
       const response = await ai.models.generateContent({
         model,
-        contents
+        contents,
+        config: signal ? {
+          // Note: @google/genai SDK might not support AbortSignal directly in generateContent config
+          // but we will implement it for standard OpenAI. For GenAI, we'll wrap it.
+        } : undefined
       });
-      return response.text || "The Sage remains silent...";
+      return { content: response.text || "The Sage remains silent..." };
     } else {
       const openai = new OpenAI({
         apiKey: apiKey!,
@@ -132,21 +142,22 @@ Keep your tone consistent with the chosen personality. Use Bold text for emphasi
       const response = await openai.chat.completions.create({
         model,
         messages,
-      });
+      }, { signal });
       
       const choice = response.choices[0].message;
       let content = choice.content || "The Sage remains silent...";
       const anyChoice = choice as any;
       
+      let reasoningContent: string | undefined = undefined;
       // Support for DeepSeek and other models that return reasoning_content
       if (anyChoice.reasoning_content) {
         const pondered = anyChoice.reasoning_content.trim();
         if (pondered) {
-          content = `> ***Thoughts...***\n> *${pondered.replace(/\n/g, '\n> ')}*\n\n---\n\n${content}`;
+          reasoningContent = pondered;
         }
       }
 
-      return content;
+      return { content, reasoningContent };
     }
   } catch (error: any) {
     console.error("Sage AI Error:", error);

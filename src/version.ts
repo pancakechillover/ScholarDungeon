@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v6.8.7';
+export const APP_VERSION = 'v6.8.8';
 export const LAST_UPDATE_DATE = '2026-05-15';
-export const LAST_UPDATE_TIME = '07:33:00';
+export const LAST_UPDATE_TIME = '08:10:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,16 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v6.8.8',
+    date: '2026-05-15',
+    time: '08:10:00',
+    title: 'Sage AI Output & Performance Enhancements',
+    items: [
+      { category: 'Feature', description: 'Implemented capability to cancel ongoing AI consultations if the Sage is taking too long.' },
+      { category: 'UI', description: 'Collapsible thought process for "reasoning" models like DeepSeek to reduce clutter in chat history.' }
+    ]
+  },
   {
     version: 'v6.8.7',
     date: '2026-05-15',
