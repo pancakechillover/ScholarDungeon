@@ -136,7 +136,9 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
     rewardXP: 0,
     rewardText: '',
     rewards: [{ type: 'coins', amount: 100 }] as DungeonReward[],
-    isLongTerm: false
+    isLongTerm: false,
+    isRoutine: false,
+    routineType: 'daily' as 'daily' | 'weekly' | 'monthly'
   });
 
   React.useEffect(() => {
@@ -200,7 +202,9 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
         rewardXP: 0,
         rewardText: '',
         rewards: [{ type: 'coins', amount: 100 }],
-        isLongTerm: false
+        isLongTerm: false,
+        isRoutine: false,
+        routineType: 'daily'
       });
     }
   }, [isAddingSub]);
@@ -406,6 +410,30 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                   </div>
                 </div>
 
+                {sub.isRoutine && (
+                  <div className="flex items-center gap-1 px-1.5 py-0.5 rounded border border-indigo-500/30 bg-indigo-500/10 text-indigo-400 text-[9px] font-black uppercase shadow-sm shrink-0" title="Refreshes progress on reset">
+                    <RefreshCcw size={8} />
+                    <span>{sub.routineType}</span>
+                    {sub.lastRoutineReset && (
+                      <span className="opacity-75 font-normal ml-0.5 border-l border-indigo-500/30 pl-1">
+                        {(() => {
+                          const lastReset = new Date(sub.lastRoutineReset!);
+                          const next = new Date(lastReset);
+                          if (sub.routineType === 'daily') {
+                            next.setDate(next.getDate() + 1);
+                          } else if (sub.routineType === 'weekly') {
+                            next.setDate(next.getDate() + 7);
+                          } else if (sub.routineType === 'monthly') {
+                            next.setMonth(next.getMonth() + 1);
+                            next.setDate(1);
+                          }
+                          return `${next.getMonth() + 1}/${next.getDate()}`;
+                        })()}
+                      </span>
+                    )}
+                  </div>
+                )}
+
                 {renderRewards(sub)}
 
                 <div className="flex items-center gap-2 shrink-0">
@@ -602,23 +630,35 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                     </div>
                   )}
 
-                  {(editingMajor || isAddingMajor) && (
+                  {(editingMajor || isAddingMajor || editingSub || isAddingSub) && (
                     <div className="space-y-2 sm:col-span-2 pt-2">
                       <label className="flex items-center gap-2 text-white text-sm cursor-pointer border border-slate-700 bg-slate-800 p-3 rounded-xl hover:border-indigo-500 transition-colors">
                         <input
                           type="checkbox"
-                          checked={isAddingMajor ? newMajor.isRoutine : (editingMajor?.isRoutine || false)}
+                          checked={
+                            isAddingMajor ? newMajor.isRoutine : 
+                            isAddingSub ? newSub.isRoutine :
+                            editingMajor ? editingMajor.isRoutine :
+                            editingSub ? editingSub.isRoutine : false
+                          }
                           onChange={e => {
                             if (isAddingMajor) setNewMajor({ ...newMajor, isRoutine: e.target.checked });
+                            else if (isAddingSub) setNewSub({ ...newSub, isRoutine: e.target.checked });
                             else if (editingMajor) setEditingMajor({ ...editingMajor, isRoutine: e.target.checked });
+                            else if (editingSub) setEditingSub({ ...editingSub, isRoutine: e.target.checked });
                           }}
                           className="w-4 h-4 rounded bg-slate-900 border-indigo-500 text-indigo-500 focus:ring-0 focus:ring-offset-0 cursor-pointer"
                         />
-                        <span className="font-bold">Routine Expedition</span>
+                        <span className="font-bold">Routine {isAddingMajor || editingMajor ? 'Expedition' : 'Tier'}</span>
                         <span className="text-xs text-slate-400 font-normal ml-auto">Resets progress periodically</span>
                       </label>
                       
-                      {(isAddingMajor ? newMajor.isRoutine : editingMajor?.isRoutine) && (
+                      {(
+                        isAddingMajor ? newMajor.isRoutine : 
+                        isAddingSub ? newSub.isRoutine :
+                        editingMajor ? editingMajor.isRoutine : 
+                        editingSub ? editingSub.isRoutine : false
+                      ) && (
                         <div className="flex gap-4 p-3 bg-slate-800/80 rounded-xl border border-slate-700">
                           <span className="text-xs font-bold text-slate-500 uppercase tracking-widest my-auto mr-2">Interval</span>
                           {(['daily', 'weekly', 'monthly'] as const).map(t => (
@@ -627,10 +667,17 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                                 type="radio"
                                 name="routineType"
                                 value={t}
-                                checked={(isAddingMajor ? newMajor.routineType : editingMajor?.routineType || 'daily') === t}
+                                checked={(
+                                  isAddingMajor ? newMajor.routineType :
+                                  isAddingSub ? newSub.routineType :
+                                  editingMajor ? editingMajor.routineType :
+                                  editingSub ? editingSub.routineType : 'daily'
+                                ) === t}
                                 onChange={e => {
                                   if (isAddingMajor) setNewMajor({ ...newMajor, routineType: e.target.value as any });
+                                  else if (isAddingSub) setNewSub({ ...newSub, routineType: e.target.value as any });
                                   else if (editingMajor) setEditingMajor({ ...editingMajor, routineType: e.target.value as any });
+                                  else if (editingSub) setEditingSub({ ...editingSub, routineType: e.target.value as any });
                                 }}
                                 className="w-4 h-4 text-indigo-500 border-slate-600 focus:ring-0 focus:ring-offset-0 cursor-pointer"
                               />
@@ -852,7 +899,14 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                       });
                       setEditingMajor(null);
                     } else if (editingSub) {
-                      onUpdateSub(editingSub.id, { name: editingSub.name, description: editingSub.description, totalSessions: editingSub.totalSessions, rewards: editingSub.rewards });
+                      onUpdateSub(editingSub.id, { 
+                        name: editingSub.name, 
+                        description: editingSub.description, 
+                        totalSessions: editingSub.totalSessions, 
+                        rewards: editingSub.rewards,
+                        isRoutine: editingSub.isRoutine,
+                        routineType: editingSub.routineType
+                      });
                       setEditingSub(null);
                     }
                   }}

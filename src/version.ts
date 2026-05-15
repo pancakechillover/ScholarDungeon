@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v6.8.17';
+export const APP_VERSION = 'v6.8.18';
 export const LAST_UPDATE_DATE = '2026-05-15';
-export const LAST_UPDATE_TIME = '12:44:00';
+export const LAST_UPDATE_TIME = '13:22:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,16 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v6.8.18',
+    date: '2026-05-15',
+    time: '13:22:00',
+    title: 'Routine Expeditions Detail',
+    items: [
+      { category: 'Feature', description: 'Expanded "Routine" configuration to allow individual Tiers (sub-dungeons) to have routine intervals indepedent of their Expedition Goal.' },
+      { category: 'UI', description: 'The refresh schedule dates (M/D) are now explicitly displayed alongside the routine badges for Daily, Weekly, and Monthly intervals.' }
+    ]
+  },
   {
     version: 'v6.8.17',
     date: '2026-05-15',

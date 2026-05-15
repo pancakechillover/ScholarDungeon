@@ -742,7 +742,8 @@ function App() {
       ...dungeon,
       id: Math.random().toString(36).substr(2, 9),
       completedSessions: 0,
-      status: 'active'
+      status: 'active',
+      lastRoutineReset: new Date().toISOString()
     };
     setDungeons([...dungeons, newSub]);
   };
@@ -808,7 +809,8 @@ function App() {
 
   useEffect(() => {
     // Check and reset routine major dungeons
-    let hasChanges = false;
+    let hasMajorChanges = false;
+    let hasDungeonChanges = false;
     const now = new Date();
     
     const updatedMajors = majorDungeons.map(major => {
@@ -834,9 +836,7 @@ function App() {
       }
 
       if (shouldReset) {
-        hasChanges = true;
-        // Also we should reset the children but we don't have access to setDungeons here inside the loop.
-        // We will do a separate pass for Dungeons if hasChanges is true.
+        hasMajorChanges = true;
         return {
           ...major,
           status: 'active' as const,
@@ -847,23 +847,54 @@ function App() {
       return major;
     });
 
-    if (hasChanges) {
-      setMajorDungeons(updatedMajors);
-      // Reset all child sub-dungeons for the reset majors
-      const resetMajorIds = updatedMajors.filter((m, i) => m.lastRoutineReset !== majorDungeons[i].lastRoutineReset).map(m => m.id);
-      if (resetMajorIds.length > 0) {
-        setDungeons(prev => prev.map(d => {
-          if (d.parentId && resetMajorIds.includes(d.parentId)) {
-            return {
-              ...d,
-              completedSessions: 0,
-              status: 'active' as const,
-              completedAt: undefined
-            };
-          }
-          return d;
-        }));
+    const resetMajorIds = hasMajorChanges ? updatedMajors.filter((m, i) => m.lastRoutineReset !== majorDungeons[i].lastRoutineReset).map(m => m.id) : [];
+
+    const updatedDungeons = dungeons.map(d => {
+      let isResetting = false;
+
+      // 1. Inherited reset from major
+      if (d.parentId && resetMajorIds.includes(d.parentId)) {
+        isResetting = true;
       }
+      // 2. Direct routine reset
+      else if (d.isRoutine && d.routineType && d.lastRoutineReset && d.status === 'completed') {
+        const lastReset = new Date(d.lastRoutineReset);
+        
+        if (d.routineType === 'daily') {
+          const resetTime = new Date(lastReset);
+          const resetHour = state.timeSettings?.night.end || 0;
+          resetTime.setHours(resetHour, 0, 0, 0);
+          if (lastReset.getHours() >= resetHour) {
+            resetTime.setDate(resetTime.getDate() + 1);
+          }
+          if (now >= resetTime) isResetting = true;
+        } else if (d.routineType === 'weekly') {
+          const lastResetPlus7 = new Date(lastReset.getTime() + 7 * 24 * 60 * 60 * 1000);
+          if (now >= lastResetPlus7) isResetting = true;
+        } else if (d.routineType === 'monthly') {
+          const resetMonth = lastReset.getMonth() + 1;
+          if (now.getMonth() === resetMonth || now.getFullYear() > lastReset.getFullYear()) isResetting = true;
+        }
+      }
+
+      if (isResetting) {
+        hasDungeonChanges = true;
+        return {
+          ...d,
+          completedSessions: 0,
+          status: 'active' as const,
+          completedAt: undefined,
+          lastRoutineReset: d.isRoutine ? now.toISOString() : undefined // Update direct routine timer if it's routine
+        };
+      }
+      return d;
+    });
+
+    if (hasMajorChanges) {
+      setMajorDungeons(updatedMajors);
+    }
+    if (hasDungeonChanges) {
+      setDungeons(updatedDungeons);
     }
   }, [appReady, state.timeSettings?.night.end]); // Run after app loads
 

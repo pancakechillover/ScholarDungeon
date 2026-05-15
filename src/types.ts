@@ -51,6 +51,9 @@ export interface Dungeon {
   status: 'active' | 'completed' | 'archived';
   parentId?: string; // ID of the Major Dungeon
   completedAt?: string;
+  isRoutine?: boolean;
+  routineType?: 'daily' | 'weekly' | 'monthly';
+  lastRoutineReset?: string;
 }
 
 export interface MajorDungeon {
