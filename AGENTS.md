@@ -23,7 +23,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v6.11.4
+- **Current Version:** v6.12.2
 - **Last Update Date:** 2026-05-16
 
 ## Dark Themes Definition
@@ -49,6 +49,24 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v6.12.2 (2026-05-16):** Vault UI Refinement.
+  - *UI:* Removed the Gold Earned, Gold Spent, and XP Earned statistics from the Economy Log banner to streamline the interface.
+
+- **v6.12.1 (2026-05-16):** Vault UI Consolidation.
+  - *UI:* Removed the separated dual-page navigation layout taking up space in the Vault. Merged the Economy Log entrance natively into the main view's category tabs for a cleaner, unified flow.
+
+- **v6.12.0 (2026-05-16):** Economy Transaction Log.
+  - *Feature:* Added an Economy Log module to the Vault page, tracking every single Gold Coin and XP acquisition and expenditure to ensure complete visibility into resource flow.
+  - *Architecture:* Implemented a robust centralized `processTransaction` method in the game state to ensure no economy modifications can slip past the logging system.
+
+- **v6.11.6 (2026-05-16):** Sage AI Light Theme & Output Enhancements.
+  - *UI:* Optimized Sage AI persona selector and interactable plan modifier forms specifically for light themes by replacing theme-agnostic styling with context-aware coloring.
+  - *Feature:* Added "Help me create tasks" as a standard default preset prompt within the Sage AI library.
+  - *Fix:* AI-generated task plans now accurately embed their Total Rooms (`sessions`) metric into the generated output structures instead of defaulting to 1.
+
+- **v6.11.5 (2026-05-16):** Reward Tag Display Fix.
+  - *Fix:* Resolved an issue where Dungeon reward tags of type "Item" or "Custom Text" were not displaying in the list.
 
 - **v6.11.4 (2026-05-16):** ReferenceError Bug Fix.
   - *Fix:* Resolved Uncaught ReferenceError: `applyExpeditionPlan` is not defined in the Sage AI consult modal by properly passing the prop down into the modal component closure.

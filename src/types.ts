@@ -166,6 +166,14 @@ export interface SageConversation {
   messages: { role: 'user' | 'assistant'; content: string; timestamp: number; reasoningContent?: string }[];
 }
 
+export interface Transaction {
+  id: string;
+  timestamp: string;
+  type: 'coins' | 'xp';
+  amount: number;
+  reason: string;
+}
+
 export interface AppState {
   level: number;
   xp: number;
@@ -178,6 +186,7 @@ export interface AppState {
   currentDungeonId: string | null;
   history: StudySession[];
   rewardHistory: RewardHistoryItem[];
+  transactionHistory?: Transaction[];
   questHistory: QuestHistoryItem[];
   lastStudyDate: string | null;
   streak: number;

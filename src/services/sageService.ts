@@ -104,6 +104,7 @@ Current User Status:
 ### AUTOMATION & TASK CREATION:
 If the user explicitly asks you to create a plan, expedition, or set of tasks (e.g., "design an IELTS review expedition with tiers"):
 Instead of just responding with text, you MUST output a structured JSON block representing the proposed Expedition and Tiers. 
+IMPORTANT: The user calls the requirement unit "Total Rooms" or "Sessions". You MUST specify the exact number of required sessions in the \`sessions\` property for each tier!
 Format it EXACTLY as a markdown JSON block with the tag "json expedition_plan". 
 Example:
 \`\`\`json expedition_plan

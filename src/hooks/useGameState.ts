@@ -562,12 +562,28 @@ export function useGameState() {
   }, [state.lastDailyReset, state.lastWeeklyReset, state.lastMonthlyReset, state.lastStudyDate, state.streak, state.quests]);
 
   // Helper functions for state updates
-  const processXP = (state: AppState, amount: number): AppState => {
-    let newXP = state.xp + amount;
-    let newLevel = state.level;
-    let newTalentPoints = state.talentPoints;
-    let newCoins = state.coins;
-    let newRewardHistory = [...state.rewardHistory];
+  const processTransaction = (state: AppState, type: 'coins' | 'xp', amount: number, reason: string): AppState => {
+    if (amount === 0) return state;
+    const newTx = {
+      id: Math.random().toString(36).substr(2, 9) + Date.now().toString(36),
+      timestamp: new Date().toISOString(),
+      type,
+      amount,
+      reason
+    };
+    return {
+      ...state,
+      transactionHistory: [newTx, ...(state.transactionHistory || [])].slice(0, 500)
+    };
+  };
+
+  const processXP = (state: AppState, amount: number, reason: string = 'Added XP'): AppState => {
+    let newState = processTransaction(state, 'xp', amount, reason);
+    let newXP = newState.xp + amount;
+    let newLevel = newState.level;
+    let newTalentPoints = newState.talentPoints;
+    let newCoins = newState.coins;
+    let newRewardHistory = [...newState.rewardHistory];
 
     while (newXP >= getXPForLevel(newLevel)) {
       newXP -= getXPForLevel(newLevel);
@@ -576,7 +592,10 @@ export function useGameState() {
       const customReward = state.levelRewards?.find(r => r.level === newLevel);
       if (customReward) {
         if (customReward.type === 'talentPoint') newTalentPoints += customReward.amount;
-        else if (customReward.type === 'coins') newCoins += customReward.amount;
+        else if (customReward.type === 'coins') {
+          newCoins += customReward.amount;
+          newState = processTransaction(newState, 'coins', customReward.amount, `Level ${newLevel} Reward`);
+        }
         
         newRewardHistory.unshift({
           id: Math.random().toString(36).substr(2, 9),
@@ -591,7 +610,10 @@ export function useGameState() {
         const defaultReward = getDefaultRewardForLevel(newLevel);
         if (defaultReward) {
           if (defaultReward.type === 'talentPoint') newTalentPoints += defaultReward.amount;
-          else if (defaultReward.type === 'coins') newCoins += defaultReward.amount;
+          else if (defaultReward.type === 'coins') {
+            newCoins += defaultReward.amount;
+            newState = processTransaction(newState, 'coins', defaultReward.amount, `Level ${newLevel} Reward`);
+          }
           
           newRewardHistory.unshift({
             id: Math.random().toString(36).substr(2, 9),
@@ -606,7 +628,7 @@ export function useGameState() {
       }
     }
 
-    return { ...state, xp: newXP, level: newLevel, talentPoints: newTalentPoints, coins: newCoins, rewardHistory: newRewardHistory };
+    return { ...newState, xp: newXP, level: newLevel, talentPoints: newTalentPoints, coins: newCoins, rewardHistory: newRewardHistory };
   };
 
   const processShards = (state: AppState, amount: number): AppState => {
@@ -629,8 +651,11 @@ export function useGameState() {
     setState(prev => processShards(prev, amount));
   }, []);
 
-  const addCoins = useCallback((amount: number) => {
-    setState(prev => ({ ...prev, coins: prev.coins + amount }));
+  const addCoins = useCallback((amount: number, reason: string = 'Added Coins') => {
+    setState(prev => {
+      const newState = processTransaction(prev, 'coins', amount, reason);
+      return { ...newState, coins: newState.coins + amount };
+    });
   }, []);
 
   const setActivePool = useCallback((type: 'gacha' | 'ichiban', poolId: string) => {
@@ -665,6 +690,7 @@ export function useGameState() {
       // Special handling for immediate value rewards
       if (reward.type === 'coins') {
         newState.coins += reward.amount || 0;
+        newState = processTransaction(newState, 'coins', reward.amount || 0, 'Toggle Reward Redeemed');
       } else if (reward.type === 'xp') {
         newState = processXP(newState, reward.amount || 0);
       } else if (reward.type === 'item') {
@@ -849,7 +875,7 @@ export function useGameState() {
         return item;
       });
 
-      let newState = {
+      let newState = processTransaction({
         ...prev,
         history: [...prev.history, session],
         lastStudyDate: todayStr,
@@ -858,7 +884,7 @@ export function useGameState() {
         coins: prev.coins + Math.floor(baseCoins),
         inventory: [], // Clear inventory after session
         shopItems: newShopItems
-      };
+      }, 'coins', Math.floor(baseCoins), 'Study Session Reward');
 
       // Process Quests
       if (newState.quests) {
@@ -944,6 +970,7 @@ export function useGameState() {
 
                   if (r.type === 'coins') {
                     newState.coins += r.amount;
+                    newState = processTransaction(newState, 'coins', r.amount, `Quest Reward: ${q.title}`);
                   } else if (r.type === 'xp') {
                     newState = processXP(newState, r.amount);
                   } else if (r.type === 'talentPoint') {
@@ -1042,7 +1069,7 @@ export function useGameState() {
                     // Major Dungeon Rewards
                     if (major.rewards) {
                       major.rewards.forEach(reward => {
-                        if (reward.type === 'coins') addCoins(reward.amount);
+                        if (reward.type === 'coins') addCoins(reward.amount, 'Dungeon Reward');
                         else if (reward.type === 'talentPoint') setState(s => ({ ...s, talentPoints: s.talentPoints + reward.amount }));
                         else if (reward.type === 'xp') addXP(reward.amount);
                         
@@ -1284,8 +1311,12 @@ export function useGameState() {
       pullResults = results;
       success = true;
 
+      const expectedCost = prev.coins - newCoins;
+
+      const newState = processTransaction(prev, 'coins', -expectedCost, `Gacha Roll (${amount}x)`);
+
       return {
-        ...prev,
+        ...newState,
         coins: newCoins,
         gachaPools: newPools
       };
@@ -1515,6 +1546,7 @@ export function useGameState() {
         // Apply rewards immediately if not item/text
         if (reward.type === 'coins') {
           newState.coins += reward.amount;
+          newState = processTransaction(newState, 'coins', reward.amount, `Quest Reward: ${quest.title}`);
         } else if (reward.type === 'xp') {
           newState = processXP(newState, reward.amount);
         } else if (reward.type === 'talentPoint') {
@@ -1592,6 +1624,7 @@ export function useGameState() {
           // Apply rewards
           if (reward.type === 'coins') {
             newState.coins += reward.amount;
+            newState = processTransaction(newState, 'coins', reward.amount, `Quest Reward: ${quest.title}`);
           } else if (reward.type === 'xp') {
             newState = processXP(newState, reward.amount);
           } else if (reward.type === 'talentPoint') {
@@ -1661,8 +1694,10 @@ export function useGameState() {
         redeemed: false
       };
 
+      const newState = processTransaction(prev, 'coins', -item.price, `Bought item: ${item.name}`);
+
       return {
-        ...prev,
+        ...newState,
         coins: prev.coins - item.price,
         shopItems: newShopItems,
         rewardHistory: [newItem, ...prev.rewardHistory]

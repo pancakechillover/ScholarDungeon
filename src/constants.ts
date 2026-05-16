@@ -186,6 +186,7 @@ export const INITIAL_GACHA: GachaPool[] = [
 
 export const DEFAULT_SAGE_PROMPTS = [
   { id: 'prompt_welcome', title: 'App Intro', prompt: 'Sage, please introduce me to the "Scholar\'s Dungeon" application. What are its core mechanics, reward systems, and how should I start my journey of growth here?' },
+  { id: 'prompt_tasks', title: 'Create Tasks', prompt: 'Help me plan an expedition. Please create a structured learning task or expedition for me, including its tiers, required sessions, and rewards.' },
   { id: 'prompt_balance', title: 'Balance Guide', prompt: 'Based on my current level, gold earning rate, and shop prices, could you recommend how I should set my game balance? For example, how should XP and Gold rewards for each Focus Session be distributed to be fair and motivating?' },
   { id: 'prompt_week', title: 'Weekly Analysis', prompt: 'Please retrieve my study records from the past 7 days and analyze my peak focus hours, as well as the correlation between my emotional state and productivity. Please summarize my overall performance this week using intuitive data observations.' },
   { id: 'prompt_month', title: 'Monthly Review', prompt: 'I would like to do a deep reflection on the past month. Please analyze my monthly progress curve. Have I stagnated in any area? Based on my growth rate, please set three specific "step-by-step goals" for next month.' },

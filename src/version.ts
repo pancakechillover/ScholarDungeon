@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v6.11.4';
+export const APP_VERSION = 'v6.12.2';
 export const LAST_UPDATE_DATE = '2026-05-16';
-export const LAST_UPDATE_TIME = '07:42:00';
+export const LAST_UPDATE_TIME = '11:41:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,54 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v6.12.2',
+    date: '2026-05-16',
+    time: '11:41:00',
+    title: 'Vault UI Refinement',
+    items: [
+      { category: 'UI', description: 'Removed the Gold Earned, Gold Spent, and XP Earned statistics from the Economy Log banner to streamline the interface.' },
+    ]
+  },
+  {
+    version: 'v6.12.1',
+    date: '2026-05-16',
+    time: '11:40:00',
+    title: 'Vault UI Consolidation',
+    items: [
+      { category: 'UI', description: 'Consolidated the Reward Vault and Economy Log navigation into a single unified tab row to optimize screen space and improve overall Vault coherence.' },
+    ]
+  },
+  {
+    version: 'v6.12.0',
+    date: '2026-05-16',
+    time: '11:27:00',
+    title: 'Economy Transaction Log',
+    items: [
+      { category: 'Feature', description: 'Added an Economy Log module to the Vault page, tracking every single Gold Coin and XP acquisition and expenditure to ensure complete visibility into resource flow.' },
+      { category: 'Architecture', description: 'Implemented a robust centralized transaction methodology in the game state to ensure no economy modifications can slip past the logging system.' }
+    ]
+  },
+  {
+    version: 'v6.11.6',
+    date: '2026-05-16',
+    time: '07:54:00',
+    title: 'Sage AI Light Theme & Output Enhancements',
+    items: [
+      { category: 'UI', description: 'Optimized Sage AI persona selector and interactable plan modifier forms specifically for light themes by replacing theme-agnostic styling with context-aware coloring.' },
+      { category: 'Feature', description: 'Added "Help me create tasks" as a standard default preset prompt within the Sage AI library.' },
+      { category: 'Fix', description: 'AI-generated task plans now accurately embed their Total Rooms (`sessions`) metric into the generated output structures instead of defaulting to 1.' }
+    ]
+  },
+  {
+    version: 'v6.11.5',
+    date: '2026-05-16',
+    time: '07:46:00',
+    title: 'Reward Tag Display Fix',
+    items: [
+      { category: 'Fix', description: 'Resolved an issue where Dungeon reward tags of type "Item" or "Custom Text" were not displaying in the list.' }
+    ]
+  },
   {
     version: 'v6.11.4',
     date: '2026-05-16',

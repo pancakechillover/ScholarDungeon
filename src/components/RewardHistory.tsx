@@ -21,19 +21,22 @@ import { cn } from '../lib/utils';
 import { PageHeader } from './PageHeader';
 import { format, isWithinInterval, subDays, startOfDay, endOfDay } from 'date-fns';
 import { getColorClass } from '../lib/colors';
+import { EconomyLog } from './EconomyLog';
+import { Transaction } from '../types';
 
 interface RewardHistoryProps {
   history: RewardHistoryItem[];
+  transactionHistory?: Transaction[];
   onToggleRedeemed: (id: string) => void;
 }
 
-type FilterTab = 'all' | 'treasures' | 'custom';
+type FilterTab = 'all' | 'treasures' | 'custom' | 'economy';
 type TimeRange = 'all' | 'today' | '7d' | '30d';
 type SourceFilter = 'all' | 'Explore' | 'Gacha' | 'Shop' | 'LevelUp';
 type StatusFilter = 'all' | 'redeemed' | 'pending';
 type RarityFilter = 'all' | 'COMMON' | 'RARE' | 'EPIC' | 'LASTONE';
 
-export const RewardHistory: React.FC<RewardHistoryProps> = ({ history, onToggleRedeemed }) => {
+export const RewardHistory: React.FC<RewardHistoryProps> = ({ history, transactionHistory = [], onToggleRedeemed }) => {
   const [activeTab, setActiveTab] = useState<FilterTab>('all');
   const [timeRange, setTimeRange] = useState<TimeRange>('all');
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>('all');
@@ -95,15 +98,23 @@ export const RewardHistory: React.FC<RewardHistoryProps> = ({ history, onToggleR
 
   return (
     <div className="space-y-6">
-      <PageHeader 
-        title="Reward Vault"
-        description="Manage your treasures and custom rewards."
-        icon={History}
-        stats={[
-          { label: 'Treasures', value: stats.treasures, icon: Trophy, color: 'text-amber-400' },
-          { label: 'Custom', value: stats.custom, icon: Scroll, color: 'text-indigo-400' }
-        ]}
-      />
+      {activeTab === 'economy' ? (
+        <PageHeader 
+          title="Economy Log"
+          description="Comprehensive history of all Gold Coins and Experience Points acquired and spent."
+          icon={Coins}
+        />
+      ) : (
+        <PageHeader 
+          title="Reward Vault"
+          description="Manage your treasures and custom rewards."
+          icon={History}
+          stats={[
+            { label: 'Treasures', value: stats.treasures, icon: Trophy, color: 'text-amber-400' },
+            { label: 'Custom', value: stats.custom, icon: Scroll, color: 'text-indigo-400' }
+          ]}
+        />
+      )}
 
       {/* Tabs & Search */}
       <div className="flex flex-col lg:flex-row gap-4">
@@ -135,35 +146,50 @@ export const RewardHistory: React.FC<RewardHistoryProps> = ({ history, onToggleR
           >
             Custom
           </button>
-        </div>
+          
+          <div className="w-px bg-slate-800 my-1 mx-1"></div>
 
-        <div className="flex-grow flex gap-2">
-          <div className="relative flex-grow">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
-            <input
-              type="text"
-              placeholder="Search rewards..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-800 rounded-2xl pl-12 pr-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition-all"
-            />
-          </div>
           <button
-            onClick={() => setShowFilters(!showFilters)}
+            onClick={() => setActiveTab('economy')}
             className={cn(
-              "px-4 rounded-2xl border transition-all flex items-center gap-2",
-              showFilters ? "bg-indigo-600 border-indigo-500 text-white" : "bg-slate-900 border-slate-800 text-slate-400 hover:text-white"
+              "px-6 py-2 rounded-xl text-xs font-bold flex items-center gap-2 uppercase tracking-widest transition-all",
+              activeTab === 'economy' ? "bg-indigo-600 text-white shadow-lg" : "text-slate-500 hover:text-slate-300"
             )}
           >
-            <Filter size={18} />
-            <span className="hidden sm:inline text-xs font-bold uppercase">Filters</span>
+            <Coins size={14} />
+            Economy Log
           </button>
         </div>
+
+        {activeTab !== 'economy' && (
+          <div className="flex-grow flex gap-2">
+            <div className="relative flex-grow">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+              <input
+                type="text"
+                placeholder="Search rewards..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-slate-900 border border-slate-800 rounded-2xl pl-12 pr-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition-all"
+              />
+            </div>
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={cn(
+                "px-4 rounded-2xl border transition-all flex items-center gap-2",
+                showFilters ? "bg-indigo-600 border-indigo-500 text-white" : "bg-slate-900 border-slate-800 text-slate-400 hover:text-white"
+              )}
+            >
+              <Filter size={18} />
+              <span className="hidden sm:inline text-xs font-bold uppercase">Filters</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Advanced Filters */}
       <AnimatePresence>
-        {showFilters && (
+        {showFilters && activeTab !== 'economy' && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
@@ -237,10 +263,19 @@ export const RewardHistory: React.FC<RewardHistoryProps> = ({ history, onToggleR
         )}
       </AnimatePresence>
 
-      {/* Reward Table */}
-      <div className="bg-slate-900 rounded-3xl border border-slate-800 overflow-hidden">
-        <div className="overflow-x-auto custom-scrollbar">
-          <table className="w-full text-left border-collapse">
+      {/* Content */}
+      {activeTab === 'economy' ? (
+        <motion.div
+          key="economy-log"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <EconomyLog history={transactionHistory} />
+        </motion.div>
+      ) : (
+        <div className="bg-slate-900 rounded-3xl border border-slate-800 overflow-hidden">
+          <div className="overflow-x-auto custom-scrollbar">
+            <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-bottom border-slate-800 bg-slate-950/50">
                 <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] w-16">Icon</th>
@@ -403,6 +438,7 @@ export const RewardHistory: React.FC<RewardHistoryProps> = ({ history, onToggleR
           </table>
         </div>
       </div>
+      )}
     </div>
   );
 };

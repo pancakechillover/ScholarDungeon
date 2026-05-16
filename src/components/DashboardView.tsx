@@ -881,7 +881,7 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
                           )}
                           
                           {parsedSettings && setState && (
-                            <div className={cn("my-4 p-4 border rounded-2xl flex flex-col items-start gap-3", isDarkTheme ? "bg-slate-900 border-indigo-500/30" : "bg-white border-indigo-200")}>
+                            <div className={cn("my-4 p-4 border rounded-2xl flex flex-col items-start gap-3", isDarkTheme ? "bg-slate-900 border-indigo-500/30" : "bg-white border-slate-200 shadow-sm")}>
                               <h4 className={cn("font-black tracking-wide flex items-center gap-2", isDarkTheme ? "text-indigo-400" : "text-indigo-600")}>
                                 <SettingsIcon size={16} /> Balance Settings Update
                               </h4>
@@ -1036,20 +1036,20 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
                     className={cn("text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded-lg transition-colors border",
                       (state.sagePersonality || 'sage') === p 
                         ? (isDarkTheme ? "bg-indigo-600 border-indigo-500 text-white" : "bg-indigo-500 border-indigo-400 text-white")
-                        : (isDarkTheme ? "bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-600" : "bg-white border-indigo-100 text-indigo-700/60 hover:border-indigo-300")
+                        : (isDarkTheme ? "bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-600" : "bg-slate-50 border-slate-200 text-slate-500 hover:border-slate-300 hover:bg-slate-100")
                     )}
                   >
                     {p}
                   </button>
                 ))}
               </div>
-              <div className={cn("w-px h-3 mx-1", isDarkTheme ? "bg-slate-800" : "bg-indigo-200")}></div>
+              <div className={cn("w-px h-3 mx-1", isDarkTheme ? "bg-slate-800" : "bg-slate-200")}></div>
               <button
                 onClick={() => setState(prev => ({ ...prev, sageAllowGameModifiers: !prev.sageAllowGameModifiers }))}
                 className={cn("flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-lg border transition-all",
                   state.sageAllowGameModifiers 
-                    ? (isDarkTheme ? "bg-rose-500/10 border-rose-500/30 text-rose-400" : "bg-rose-50 border-rose-200 text-rose-600")
-                    : (isDarkTheme ? "bg-slate-900 border-slate-800 text-slate-500 hover:border-slate-600" : "bg-white border-indigo-100 text-indigo-400 hover:border-indigo-300")
+                    ? (isDarkTheme ? "bg-rose-500/10 border-rose-500/30 text-rose-400" : "bg-rose-500/10 border-rose-200 text-rose-600")
+                    : (isDarkTheme ? "bg-slate-900 border-slate-800 text-slate-500 hover:border-slate-600" : "bg-slate-50 border-slate-200 text-slate-500 hover:border-slate-300")
                 )}
                 title="Allow AI to propose game modifications (quests, settings)"
               >

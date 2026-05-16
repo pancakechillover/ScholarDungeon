@@ -1259,7 +1259,7 @@ function App() {
                       parentId: majorId,
                       name: tier.name,
                       description: tier.requirement,
-                      totalSessions: 1,
+                      totalSessions: tier.sessions || 1,
                       completedSessions: 0,
                       rewardCoins: tier.reward.amount || 0,
                       rewardXP: tier.reward.xp || 0,

@@ -20,6 +20,7 @@ export const VaultView: React.FC<VaultViewProps> = ({ state, toggleRewardRedeeme
     >
       <RewardHistory 
         history={state.rewardHistory} 
+        transactionHistory={state.transactionHistory || []}
         onToggleRedeemed={(id) => {
           toggleRewardRedeemed(id);
           playSound('redeem', state.soundVolume, state.soundEnabled);

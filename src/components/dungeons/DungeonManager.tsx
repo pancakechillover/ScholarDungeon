@@ -344,16 +344,22 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
     if (rewards.length === 0) return null;
 
     return (
-      <div className="flex items-center gap-1.5 ml-auto mr-2">
+      <div className="flex items-center gap-1.5 ml-auto mr-2 overflow-hidden flex-wrap shrink-0">
         {rewards.slice(0, 3).map((r, i) => (
-          <div key={i} className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-900/50 border border-slate-800 text-[10px] font-bold text-slate-400">
-            {r.type === 'coins' && <Coins size={10} className="text-amber-500" />}
-            {r.type === 'xp' && <Zap size={10} className="text-indigo-400" />}
-            {r.type === 'talentPoint' && <Scroll size={10} className="text-emerald-400" />}
-            <span>{r.amount}</span>
+          <div key={i} className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-900/50 border border-slate-800 text-[10px] font-bold text-slate-400 shrink-0 max-w-[120px] truncate">
+            {r.type === 'coins' && <Coins size={10} className="text-amber-500 min-w-[10px]" />}
+            {r.type === 'xp' && <Zap size={10} className="text-indigo-400 min-w-[10px]" />}
+            {r.type === 'talentPoint' && <Scroll size={10} className="text-emerald-400 min-w-[10px]" />}
+            {r.type === 'item' && <Gift size={10} className="text-pink-400 min-w-[10px]" />}
+            {r.type === 'text' && <CheckCircle2 size={10} className="text-cyan-400 min-w-[10px]" />}
+            <span className="truncate">
+              {r.type === 'item' ? `${r.amount} ${r.itemName || 'Item'}` : 
+               r.type === 'text' ? (r.rewardText || 'Reward') : 
+               r.amount}
+            </span>
           </div>
         ))}
-        {rewards.length > 3 && <span className="text-[9px] text-slate-600 font-bold">+{rewards.length - 3}</span>}
+        {rewards.length > 3 && <span className="text-[9px] text-slate-600 font-bold shrink-0">+{rewards.length - 3}</span>}
       </div>
     );
   };

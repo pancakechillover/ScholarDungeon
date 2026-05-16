@@ -61,8 +61,8 @@ export const ExpeditionPlanPreview: React.FC<Props> = ({ plan: initialPlan, onAp
   };
 
   return (
-    <div className={cn("mt-4 mb-2 rounded-2xl overflow-hidden border", isDarkTheme ? "bg-slate-900 border-indigo-500/30" : "bg-white border-indigo-200")}>
-      <div className={cn("p-4 border-b flex items-center justify-between", isDarkTheme ? "bg-slate-800/80 border-indigo-500/30" : "bg-indigo-50 border-indigo-200")}>
+    <div className={cn("mt-4 mb-2 rounded-2xl overflow-hidden border", isDarkTheme ? "bg-slate-900 border-indigo-500/30" : "bg-white border-slate-200 shadow-sm")}>
+      <div className={cn("p-4 border-b flex items-center justify-between", isDarkTheme ? "bg-slate-800/80 border-indigo-500/30" : "bg-slate-50 border-slate-200")}>
         <div className="flex items-center gap-2">
           <Map className={isDarkTheme ? "text-indigo-400" : "text-indigo-600"} size={20} />
           <h4 className={cn("font-black tracking-wide", isDarkTheme ? "text-slate-100" : "text-slate-900")}>
@@ -82,7 +82,7 @@ export const ExpeditionPlanPreview: React.FC<Props> = ({ plan: initialPlan, onAp
         {/* Header fields */}
         <div className="space-y-3">
           <div>
-            <label className={cn("block text-[10px] font-bold uppercase tracking-widest mb-1", isDarkTheme ? "text-indigo-300/70" : "text-indigo-600/70")}>Expedition Title</label>
+            <label className={cn("block text-[10px] font-bold uppercase tracking-widest mb-1", isDarkTheme ? "text-indigo-300/70" : "text-slate-500")}>Expedition Title</label>
             {isEditing ? (
               <input
                 type="text"
@@ -95,7 +95,7 @@ export const ExpeditionPlanPreview: React.FC<Props> = ({ plan: initialPlan, onAp
             )}
           </div>
           <div>
-            <label className={cn("block text-[10px] font-bold uppercase tracking-widest mb-1", isDarkTheme ? "text-indigo-300/70" : "text-indigo-600/70")}>Description</label>
+            <label className={cn("block text-[10px] font-bold uppercase tracking-widest mb-1", isDarkTheme ? "text-indigo-300/70" : "text-slate-500")}>Description</label>
             {isEditing ? (
               <input
                 type="text"
@@ -110,7 +110,7 @@ export const ExpeditionPlanPreview: React.FC<Props> = ({ plan: initialPlan, onAp
         </div>
 
         {/* Total Reward */}
-        <div className={cn("p-3 flex items-center justify-between rounded-xl", isDarkTheme ? "bg-indigo-950/30" : "bg-indigo-50/50")}>
+        <div className={cn("p-3 flex items-center justify-between rounded-xl", isDarkTheme ? "bg-indigo-950/30" : "bg-indigo-50/50 border border-slate-100")}>
           <span className={cn("text-[10px] font-bold uppercase tracking-widest", isDarkTheme ? "text-indigo-300" : "text-indigo-700")}>Goal Reward</span>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1"><Coins size={12} className="text-amber-400" /><span className="text-xs font-mono font-bold text-amber-500">{plan.reward.amount}</span></div>
