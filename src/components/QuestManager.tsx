@@ -6,6 +6,7 @@ import { PageHeader } from './PageHeader';
 import { cn } from '../lib/utils';
 import { SpinnerInput } from './SpinnerInput';
 import { TALENTS } from '../constants';
+import { PresetControl, getAutoLoadedPreset } from './PresetControl';
 import * as LucideIcons from 'lucide-react';
 
 const DraggableQuestItem = ({ quest, isEditMode, children, className }: any) => {
@@ -144,26 +145,19 @@ export const QuestManager = React.memo<QuestManagerProps>(({ quests, questHistor
   React.useEffect(() => {
     if (isAdding && !isEditing) {
       const isAchievement = activeTab === 'achievements';
-      const autoloadKey = isAchievement ? 'achievement_autoload' : 'quest_autoload';
-      const presetKey = isAchievement ? 'achievement_preset' : 'quest_preset';
+      const preset = getAutoLoadedPreset<any>(isAchievement ? 'achievement' : 'quest');
 
-      if (localStorage.getItem(autoloadKey) === 'true') {
-        const presetStr = localStorage.getItem(presetKey);
-        if (presetStr) {
-          try {
-            const preset = JSON.parse(presetStr);
-            setNewQuest({
-              title: '',
-              description: preset.description || '',
-              type: preset.type || (isAchievement ? 'total_sessions' : 'daily_sessions'),
-              target: preset.target || 1,
-              rewards: preset.rewards || [{ type: 'coins', amount: 10 }],
-              isAchievement: isAchievement,
-              talentRequired: preset.talentRequired
-            });
-            return;
-          } catch (e) {}
-        }
+      if (preset) {
+        setNewQuest({
+          title: '',
+          description: preset.description || '',
+          type: preset.type || (isAchievement ? 'total_sessions' : 'daily_sessions'),
+          target: preset.target || 1,
+          rewards: preset.rewards || [{ type: 'coins', amount: 10 }],
+          isAchievement: isAchievement,
+          talentRequired: preset.talentRequired
+        });
+        return;
       }
 
       setNewQuest({
@@ -285,56 +279,23 @@ export const QuestManager = React.memo<QuestManagerProps>(({ quests, questHistor
               className="bg-slate-900 border border-indigo-500/30 rounded-3xl p-6 max-w-2xl w-full shadow-2xl space-y-6 overflow-y-auto max-h-[90vh]"
             >
               <div className="flex justify-between items-center">
-                <h3 className="text-lg font-bold text-white">{isEditing ? 'Edit' : 'Create'} {activeTab === 'quests' ? 'Quest' : 'Achievement'}</h3>
+                <h3 className="text-lg font-bold text-white uppercase tracking-tight">{isEditing ? 'EDIT' : 'CREATE'} {activeTab === 'quests' ? 'Quest' : 'Achievement'}</h3>
                 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   {!isEditing && (
-                    <>
-                      <button 
-                        onClick={() => {
-                          const presetKey = activeTab === 'quests' ? 'quest_preset' : 'achievement_preset';
-                          const preset = {
-                            description: newQuest.description,
-                            type: newQuest.type,
-                            target: newQuest.target,
-                            rewards: newQuest.rewards,
-                            talentRequired: newQuest.talentRequired
-                          };
-                          localStorage.setItem(presetKey, JSON.stringify(preset));
-                          alert("Preset Saved");
-                        }} 
-                        className="px-2 py-1 bg-slate-800 border border-slate-700 text-[10px] font-bold text-slate-300 rounded hover:bg-slate-700 hover:text-white transition-colors"
-                      >
-                        Save Preset
-                      </button>
-                      <button 
-                        onClick={() => {
-                          const presetKey = activeTab === 'quests' ? 'quest_preset' : 'achievement_preset';
-                          const presetStr = localStorage.getItem(presetKey);
-                          if (presetStr) {
-                            try {
-                              const preset = JSON.parse(presetStr);
-                              setNewQuest(prev => ({ ...prev, ...preset }));
-                            } catch (e) {}
-                          }
-                        }} 
-                        className="px-2 py-1 bg-slate-800 border border-slate-700 text-[10px] font-bold text-slate-300 rounded hover:bg-slate-700 hover:text-white transition-colors"
-                      >
-                        Load
-                      </button>
-                      <label className="flex items-center gap-1 cursor-pointer ml-1">
-                        <input 
-                          type="checkbox"
-                          checked={localStorage.getItem(activeTab === 'quests' ? 'quest_autoload' : 'achievement_autoload') === 'true'}
-                          onChange={(e) => {
-                            localStorage.setItem(activeTab === 'quests' ? 'quest_autoload' : 'achievement_autoload', e.target.checked ? 'true' : 'false');
-                            setNewQuest({ ...newQuest });
-                          }}
-                          className="w-3 h-3 text-indigo-500 bg-slate-900 border-slate-700 rounded focus:ring-0"
-                        />
-                        <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Auto-Load</span>
-                      </label>
-                    </>
+                    <PresetControl
+                      type={activeTab === 'quests' ? 'quest' : 'achievement'}
+                      currentData={newQuest}
+                      defaultData={{
+                        title: '',
+                        description: '',
+                        type: activeTab === 'achievements' ? 'total_sessions' : 'daily_sessions',
+                        target: 1,
+                        rewards: [{ type: 'coins', amount: 10 }],
+                        isAchievement: activeTab === 'achievements'
+                      }}
+                      onLoad={(data) => setNewQuest(prev => ({ ...prev, ...data }))}
+                    />
                   )}
                   <button onClick={() => { setIsAdding(false); setIsEditing(null); }} className="text-slate-500 hover:text-white"><X size={20} /></button>
                 </div>

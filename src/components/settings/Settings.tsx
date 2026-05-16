@@ -379,7 +379,7 @@ export const Settings = React.memo<SettingsProps & { onOpenAstralArchives?: () =
           <div className="space-y-8 py-4">
             <div className="flex flex-col items-center text-center space-y-4">
               <div className="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center shadow-2xl shadow-indigo-600/20">
-                <SettingsIcon size={40} className="text-white" />
+                <SettingsIcon size={40} className="text-white-pure" />
               </div>
               <div>
                 <h3 className="text-3xl font-black text-white tracking-tight">Scholar's Dungeon</h3>

@@ -402,6 +402,17 @@ html {
     color: var(--qb-dark-box-text);
   }
   
+  .text-white-pure {
+    color: #ffffff !important;
+    opacity: 1 !important;
+  }
+}
+
+@media (min-width: 640px) {
+  .sm\:text-white-pure {
+    color: #ffffff !important;
+    opacity: 1 !important;
+  }
 }
 
 /* Theme Overrides */

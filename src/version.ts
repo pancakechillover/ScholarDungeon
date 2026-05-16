@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v6.9.1';
+export const APP_VERSION = 'v6.10.3';
 export const LAST_UPDATE_DATE = '2026-05-16';
-export const LAST_UPDATE_TIME = '02:03:00';
+export const LAST_UPDATE_TIME = '02:49:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,76 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v6.10.3',
+    date: '2026-05-16',
+    time: '02:49:00',
+    title: 'Top Bar Coloring Bug Fix',
+    items: [
+      { category: 'Bug Fix', description: 'Removed globally invasive sm:bg-indigo-600 theme overrides from index.css that were forcefully coloring mobile narrow-screen level text as pure white instead of matching the adaptive theme-colors of the other elements in the top bar.' }
+    ]
+  },
+  {
+    version: 'v6.10.2',
+    date: '2026-05-16',
+    time: '02:40:00',
+    title: 'Top Bar Adaptive Coloring',
+    items: [
+      { category: 'UI', description: 'Reverted level text color on narrow screens to uniquely inherit theme-aware styling similarly to other attributes, whilst retaining purely white coloration specifically on wide screens.' }
+    ]
+  },
+  {
+    version: 'v6.10.1',
+    date: '2026-05-16',
+    time: '02:37:00',
+    title: 'Top Bar Mobile & Wide UI Refinement',
+    items: [
+      { category: 'UI', description: 'Fixed Level Label (LV) to use text-black-pure on narrow screens and text-white-pure on wide screens.' },
+      { category: 'Architecture', description: 'Added .text-black-pure global utility in index.css.' }
+    ]
+  },
+  {
+    version: 'v6.10.0',
+    date: '2026-05-16',
+    time: '03:10:00',
+    title: 'Advanced Multi-Named Preset System',
+    items: [
+      { category: 'Feature', description: 'Overhauled the Preset system to support multiple named configurations for Expeditions, Tiers, Quests, and Achievements.' },
+      { category: 'UI', description: 'Centralized preset management into a unified "PresetControl" component integrated into the banner of all creation modals.' },
+      { category: 'UX', description: 'Enhanced Auto-Load functionality to reliably apply the specific active preset designated by the user upon modal opening.' }
+    ]
+  },
+  {
+    version: 'v6.9.4',
+    date: '2026-05-16',
+    time: '02:30:00',
+    title: 'Top Bar UI Persistence Fix',
+    items: [
+      { category: 'Bug Fix', description: 'Resolved CSS specificity conflict in index.css ensuring Level Label remains white on wide screens.' },
+      { category: 'UI', description: 'Decoupled Level Label font color from global top bar theme defaults.' }
+    ]
+  },
+  {
+    version: 'v6.9.3',
+    date: '2026-05-16',
+    time: '02:28:00',
+    title: 'UI Branding & Icon Polish',
+    items: [
+      { category: 'UI', description: 'Applied .text-white-pure to the main settings icon in the About screen to ensure it remains white across all themes.' },
+      { category: 'UI', description: 'Optimized level badge color logic to use global white utility.' }
+    ]
+  },
+  {
+    version: 'v6.9.2',
+    date: '2026-05-16',
+    time: '02:26:00',
+    title: 'Level Label UI Polish',
+    items: [
+      { category: 'Architecture', description: 'Added .text-white-pure global utility in index.css to bypass theme-aware color overrides.' },
+      { category: 'UI', description: 'Fixed Level Label (LV) in Top Bar to use pure white color on wide screens across all themes (daylight, warm sun, candy).' },
+      { category: 'UI', description: 'Retained theme-aware adaptive coloring for the Level Label on mobile for optimal legibility.' }
+    ]
+  },
   {
     version: 'v6.9.1',
     date: '2026-05-16',

@@ -1134,8 +1134,7 @@ function App() {
             {/* XP Bar */}
             <div className="flex flex-col sm:flex-row items-center sm:items-center gap-0.5 sm:gap-2 group relative" title="Experience">
               <span className={cn(
-                "text-[11px] sm:text-xs font-black italic pr-1 leading-none shrink-0 shadow-none sm:shadow-lg bg-transparent sm:bg-indigo-600 px-0 sm:px-2 py-0 sm:py-0.5 rounded-none sm:rounded-lg",
-                (state.theme === 'daylight' || state.theme === 'warm' || state.theme === 'candy') ? "text-white opacity-100" : "text-white sm:text-white"
+                "text-[11px] sm:text-xs font-black italic pr-1 leading-none shrink-0 shadow-none sm:shadow-lg bg-transparent sm:bg-indigo-600 px-0 sm:px-2 py-0 sm:py-0.5 rounded-none sm:rounded-lg text-white sm:text-white-pure opacity-100",
               )}>
                 LV.{state.level}
               </span>

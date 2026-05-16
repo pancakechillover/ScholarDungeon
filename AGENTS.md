@@ -23,8 +23,8 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v6.9.0
-- **Last Update Date:** 2026-05-15
+- **Current Version:** v6.10.3
+- **Last Update Date:** 2026-05-16
 
 ## Dark Themes Definition
 The following themes are considered "Dark Themes" and form the baseline for vibrant visual effects and high-contrast glowing elements:
@@ -49,6 +49,34 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v6.10.3 (2026-05-16):** Top Bar Coloring Bug Fix.
+  - *Bug Fix:* Removed globally invasive `sm:bg-indigo-600` theme overrides from `index.css` that were forcefully coloring mobile narrow-screen level text as pure white instead of matching the adaptive theme-colors of the other elements in the top bar.
+
+- **v6.10.2 (2026-05-16):** Top Bar Adaptive Coloring.
+  - *UI:* Reverted level text color on narrow screens to natively inherit theme-aware styling identically to other top-bar attributes, retaining purely white coloration explicitly on wide screens for premium aesthetic alignment.
+
+- **v6.10.1 (2026-05-16):** Top Bar Mobile & Wide UI Refinement.
+  - *UI:* Fixed Level Label (LV) to use `text-black-pure` on narrow screens and `text-white-pure` on wide screens, bypassing theme overrides.
+  - *Architecture:* Added `.text-black-pure` global utility in `index.css`.
+
+- **v6.10.0 (2026-05-16):** Advanced Multi-Named Preset System.
+  - *Feature:* Overhauled the Preset system to support multiple named configurations for Expeditions, Tiers, Quests, and Achievements.
+  - *UI:* Centralized preset management into a unified `PresetControl` component integrated exactly into the right side of the banner for all creation modals.
+  - *UX:* Enhanced "Auto-Load" capability to intelligently apply the specific active preset name designated by the user whenever a new creation modal is opened.
+
+- **v6.9.4 (2026-05-16):** Top Bar UI Persistence Fix.
+  - *Bug Fix:* Resolved CSS specificity conflict in `index.css` ensuring Level Label remains white on wide screens by adding responsive variants to theme-aware white-text overrides.
+  - *UI:* Decoupled Level Label font color from global top bar theme defaults for better contrast in light themes.
+
+- **v6.9.3 (2026-05-16):** UI Branding & Icon Polish.
+  - *UI:* Applied `.text-white-pure` to the main settings icon in the About screen to ensure it remains white across all themes.
+  - *UI:* Optimized level badge color logic to use global white utility.
+
+- **v6.9.2 (2026-05-16):** Level Label UI Polish & Global Utility.
+  - *Architecture:* Added `.text-white-pure` global utility in `index.css` to bypass theme-aware color overrides.
+  - *UI:* Fixed Level Label (LV) in Top Bar to use pure white color on wide screens across all themes (daylight, warm sun, candy).
+  - *UI:* Retained theme-aware adaptive coloring for the Level Label on mobile for optimal legibility.
 
 - **v6.9.1 (2026-05-16):** Wide screen Level Label Polish.
   - *UI:* Fixed Level Label (LV) to ensure it is always solid white and opaque on light themes (daylight, warm sun, candy) for wide screens.

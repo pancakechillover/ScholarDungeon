@@ -6,6 +6,7 @@ import { PageHeader } from '../PageHeader';
 import { cn } from '../../lib/utils';
 import { SpinnerInput } from '../SpinnerInput';
 import { ConfirmModal } from '../ConfirmModal';
+import { PresetControl, getAutoLoadedPreset } from '../PresetControl';
 
 const DraggableItem = ({ item, isEditMode, children, className, handleClassName, onMove, onDragStart }: any) => {
   const controls = useDragControls();
@@ -196,21 +197,16 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
 
   React.useEffect(() => {
     if (isAddingMajor) {
-      if (localStorage.getItem('dungeon_major_autoload') === 'true') {
-        const presetStr = localStorage.getItem('dungeon_major_preset');
-        if (presetStr) {
-          try {
-            const preset = JSON.parse(presetStr);
-            setNewMajor({
-              name: '',
-              description: preset.description || '',
-              rewards: preset.rewards || [{ type: 'coins', amount: 100 }],
-              isRoutine: preset.isRoutine || false,
-              routineType: preset.routineType || 'daily'
-            });
-            return;
-          } catch (e) {}
-        }
+      const preset = getAutoLoadedPreset<any>('dungeon_major');
+      if (preset) {
+        setNewMajor({
+          name: '',
+          description: preset.description || '',
+          rewards: preset.rewards || [{ type: 'coins', amount: 100 }],
+          isRoutine: preset.isRoutine || false,
+          routineType: preset.routineType || 'daily'
+        });
+        return;
       }
 
       setNewMajor({
@@ -225,26 +221,21 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
 
   React.useEffect(() => {
     if (isAddingSub) {
-      if (localStorage.getItem('dungeon_sub_autoload') === 'true') {
-        const presetStr = localStorage.getItem('dungeon_sub_preset');
-        if (presetStr) {
-          try {
-            const preset = JSON.parse(presetStr);
-            setNewSub({
-              name: '',
-              description: preset.description || '',
-              totalSessions: preset.totalSessions || 10,
-              rewardCoins: preset.rewardCoins || 0,
-              rewardXP: preset.rewardXP || 0,
-              rewardText: preset.rewardText || '',
-              rewards: preset.rewards || [{ type: 'coins', amount: 100 }],
-              isLongTerm: preset.isLongTerm || false,
-              isRoutine: preset.isRoutine || false,
-              routineType: preset.routineType || 'daily'
-            });
-            return;
-          } catch (e) {}
-        }
+      const preset = getAutoLoadedPreset<any>('dungeon_sub');
+      if (preset) {
+        setNewSub({
+          name: '',
+          description: preset.description || '',
+          totalSessions: preset.totalSessions || 10,
+          rewardCoins: preset.rewardCoins || 0,
+          rewardXP: preset.rewardXP || 0,
+          rewardText: preset.rewardText || '',
+          rewards: preset.rewards || [{ type: 'coins', amount: 100 }],
+          isLongTerm: preset.isLongTerm || false,
+          isRoutine: preset.isRoutine || false,
+          routineType: preset.routineType || 'daily'
+        });
+        return;
       }
       
       setNewSub({
@@ -629,9 +620,39 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                 <h3 className="text-xl font-bold text-white uppercase tracking-tight">
                   {isAddingMajor ? 'CREATE EXPEDITION GOAL' : isAddingSub ? `CREATE TIER ${getSubDungeonDepth(isAddingSub.parentId) + 1}` : `EDIT ${editingMajor ? 'DUNGEON GOAL' : 'TIER ' + getSubDungeonDepth(editingSub?.id || '')}`}
                 </h3>
-                <button onClick={() => { setEditingMajor(null); setEditingSub(null); setIsAddingMajor(false); setIsAddingSub(null); }} className="text-slate-500 hover:text-white">
-                  <X size={24} />
-                </button>
+                <div className="flex items-center gap-3">
+                  {(isAddingMajor || isAddingSub) && (
+                    <PresetControl
+                      type={isAddingMajor ? 'dungeon_major' : 'dungeon_sub'}
+                      currentData={isAddingMajor ? newMajor : newSub}
+                      defaultData={(isAddingMajor ? {
+                        name: '',
+                        description: '',
+                        rewards: [{ type: 'coins', amount: 100 }],
+                        isRoutine: false,
+                        routineType: 'daily'
+                      } : {
+                        name: '',
+                        description: '',
+                        totalSessions: 10,
+                        rewardCoins: 0,
+                        rewardXP: 0,
+                        rewardText: '',
+                        rewards: [{ type: 'coins', amount: 100 }],
+                        isLongTerm: false,
+                        isRoutine: false,
+                        routineType: 'daily'
+                      }) as any}
+                      onLoad={(data) => {
+                        if (isAddingMajor) setNewMajor(prev => ({ ...prev, ...data }));
+                        else setNewSub(prev => ({ ...prev, ...data }));
+                      }}
+                    />
+                  )}
+                  <button onClick={() => { setEditingMajor(null); setEditingSub(null); setIsAddingMajor(false); setIsAddingSub(null); }} className="text-slate-500 hover:text-white">
+                    <X size={24} />
+                  </button>
+                </div>
               </div>
 
               <div className="space-y-4">
@@ -879,74 +900,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                 </div>
               </div>
 
-              <div className="flex items-center justify-between pt-4 border-t border-slate-800">
-                <div className="flex items-center gap-2">
-                  {(isAddingSub || isAddingMajor) && (
-                    <>
-                      <button 
-                        onClick={() => {
-                          if (isAddingSub) {
-                            const preset = {
-                              totalSessions: newSub.totalSessions,
-                              description: newSub.description,
-                              rewards: newSub.rewards,
-                              isRoutine: newSub.isRoutine,
-                              routineType: newSub.routineType
-                            };
-                            localStorage.setItem('dungeon_sub_preset', JSON.stringify(preset));
-                          } else {
-                            const preset = {
-                              description: newMajor.description,
-                              rewards: newMajor.rewards,
-                              isRoutine: newMajor.isRoutine,
-                              routineType: newMajor.routineType
-                            };
-                            localStorage.setItem('dungeon_major_preset', JSON.stringify(preset));
-                          }
-                          setModalConfig({
-                            isOpen: true,
-                            title: "Preset Saved",
-                            message: "The current configuration has been saved as your preset.",
-                            confirmText: "Got it",
-                            type: "info",
-                            isAlert: true
-                          });
-                        }} 
-                        className="px-3 py-1.5 bg-slate-800 border border-slate-700 text-xs font-bold text-slate-300 rounded-lg hover:bg-slate-700 hover:text-white transition-colors"
-                      >
-                        Save Preset
-                      </button>
-                      <button 
-                        onClick={() => {
-                          const presetStr = localStorage.getItem(isAddingSub ? 'dungeon_sub_preset' : 'dungeon_major_preset');
-                          if (presetStr) {
-                            try {
-                              const preset = JSON.parse(presetStr);
-                              if (isAddingSub) setNewSub(prev => ({ ...prev, ...preset }));
-                              else setNewMajor(prev => ({ ...prev, ...preset }));
-                            } catch (e) {}
-                          }
-                        }} 
-                        className="px-3 py-1.5 bg-slate-800 border border-slate-700 text-xs font-bold text-slate-300 rounded-lg hover:bg-slate-700 hover:text-white transition-colors"
-                      >
-                        Load
-                      </button>
-                      <label className="flex items-center gap-1.5 cursor-pointer ml-1">
-                        <input 
-                          type="checkbox"
-                          checked={localStorage.getItem(isAddingSub ? 'dungeon_sub_autoload' : 'dungeon_major_autoload') === 'true'}
-                          onChange={(e) => {
-                            localStorage.setItem(isAddingSub ? 'dungeon_sub_autoload' : 'dungeon_major_autoload', e.target.checked ? 'true' : 'false');
-                            if(isAddingSub) setNewSub({ ...newSub });
-                            else setNewMajor({ ...newMajor });
-                          }}
-                          className="w-3 h-3 text-indigo-500 bg-slate-900 border-slate-700 rounded focus:ring-0"
-                        />
-                        <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Auto-Load</span>
-                      </label>
-                    </>
-                  )}
-                </div>
+              <div className="flex items-center justify-end pt-4 border-t border-slate-800">
                 <div className="flex space-x-3">
                   <button onClick={() => { setEditingMajor(null); setEditingSub(null); setIsAddingMajor(false); setIsAddingSub(null); }} className="px-4 py-2 text-slate-400 font-bold hover:text-white transition-colors">Cancel</button>
                   <button 
