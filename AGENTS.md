@@ -23,7 +23,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v6.10.8
+- **Current Version:** v6.11.4
 - **Last Update Date:** 2026-05-16
 
 ## Dark Themes Definition
@@ -49,6 +49,28 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v6.11.4 (2026-05-16):** ReferenceError Bug Fix.
+  - *Fix:* Resolved Uncaught ReferenceError: `applyExpeditionPlan` is not defined in the Sage AI consult modal by properly passing the prop down into the modal component closure.
+
+- **v6.11.3 (2026-05-16):** Sage AI Interactive Chat Controls.
+  - *Feature:* Added an inline Identity Selector directly above the Sage AI chat input for seamless persona switching (Sage, Friend, Master).
+  - *Feature:* Added an explicit "Modify Mode" toggle. AI configuration schemas will now only render as interactive game modifier widgets if this mode is enabled, preventing accidental state changes.
+  - *Fix:* Re-wrote JSON response block parsing from the ground up to aggressively strip markdown tags and ensure expedition configuration elements always render reliably even when AI incorrectly formats code blocks.
+
+- **v6.11.2 (2026-05-16):** Sage AI Master Persona.
+  - *Feature:* Added "Master" personality mode to Sage AI settings. Forms a strict, highly analytical game master persona to help accurately plan tasks and adjust balance settings logically.
+
+- **v6.11.1 (2026-05-16):** Sage JSON Render Reliability.
+  - *Fix:* Improved the fallback JSON parsing engine within the chat interface, ensuring that interactive planners and balance setters always render properly even when AI omits code-block language tags.
+  - *Feature:* Added direct configuration rules for 'sessions' requirement values in Expedition Planners, allowing users to modify them natively.
+
+- **v6.11.0 (2026-05-16):** Sage AI Interactive Task Automation.
+  - *Feature:* The Sage AI chat can now directly generate fully-configured Expedition Plans including titles, descriptions, goals, and multiple reward tiers based on natural language requests (e.g., "Design an IELTS review expedition").
+  - *Feature:* Added `ExpeditionPlanPreview` component that intercepts JSON payloads from Sage and renders them natively as an interactive, editable table within the chat interface.
+  - *Feature:* Users can freely customize the AI's proposed tiers, rewards, and requirements before clicking "Accept", which automatically maps and constructs the parent `MajorDungeon` and child `Dungeon` entries directly into the active state.
+  - *Feature:* Sage AI can also dynamically adjust global economy balance settings (`devBaseXP`, `devBaseCoins`) via interactive embedded chat UI components.
+  - *Prompt Polish:* Overhauled the hidden system prompt inside `sageService.ts` to strictly enforce markdown JSON outputs matching the `expedition_plan` syntax schema.
 
 - **v6.10.8 (2026-05-16):** Stats Chart Alignment.
   - *UI:* Aligned the maximum height of the Weekly bar chart with the Daily bar chart for visual consistency across the Record dashboard.

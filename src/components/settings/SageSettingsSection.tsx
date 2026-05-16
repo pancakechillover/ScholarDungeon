@@ -41,6 +41,8 @@ const SageConfigManager: React.FC<{ state: AppState, setState: React.Dispatch<Re
 
   const defaultFriendPrompt = `You are a supportive, down-to-earth study buddy and friend. \nAnalyze the user's progress and provide practical, encouraging advice without complex game-like metaphors or mystical language. \nSpeak naturally and focus on their real-life well-being and study habits.`;
 
+  const defaultMasterPrompt = `You are "The Master", a strict, highly analytical, and strategic game master and productivity coach. \nYou strictly plan tasks, rigorously manage time and efficiency, and wisely adjust the balance of the game (rewards, xp) to challenge the user appropriately. \nYou expect nothing but the best, giving precise, actionable, and data-driven commands.`;
+
   const saveModel = () => {
     if (!editingModel) return;
     let newModels = [...models];
@@ -91,8 +93,8 @@ const SageConfigManager: React.FC<{ state: AppState, setState: React.Dispatch<Re
           <div className="space-y-6">
             <div className="space-y-2">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">AI Personality</label>
-              <div className="grid grid-cols-3 gap-2">
-                {(['sage', 'friend', 'custom'] as const).map(type => (
+              <div className="grid grid-cols-4 gap-2">
+                {(['sage', 'friend', 'master', 'custom'] as const).map(type => (
                   <button
                     key={type}
                     onClick={() => setState(prev => ({ ...prev, sagePersonality: type }))}
@@ -125,7 +127,7 @@ const SageConfigManager: React.FC<{ state: AppState, setState: React.Dispatch<Re
                   )}
                 </div>
                 <textarea
-                  value={personalityPrompts[personalityType] || (personalityType === 'friend' ? defaultFriendPrompt : (personalityType === 'sage' ? defaultSagePrompt : ''))}
+                  value={personalityPrompts[personalityType] || (personalityType === 'friend' ? defaultFriendPrompt : (personalityType === 'master' ? defaultMasterPrompt : (personalityType === 'sage' ? defaultSagePrompt : '')))}
                   onChange={(e) => updatePersonalityPrompt(personalityType, e.target.value)}
                   placeholder={personalityType === 'custom' ? "Enter your custom AI personality instructions..." : ""}
                   className={cn("w-full h-40 border rounded-2xl px-4 py-3 text-xs font-medium focus:border-indigo-500 outline-none transition-all resize-none custom-scrollbar leading-relaxed",

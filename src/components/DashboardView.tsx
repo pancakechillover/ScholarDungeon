@@ -36,6 +36,7 @@ import { AppState, Dungeon } from '../types';
 import { playSound } from '../lib/sound';
 import { getSageAdvice } from '../services/sageService';
 import { cn } from '../lib/utils';
+import { ExpeditionPlanPreview } from './ExpeditionPlanPreview';
 
 interface DashboardViewProps {
   state: AppState;
@@ -45,6 +46,7 @@ interface DashboardViewProps {
   setShowDailySummary: (show: boolean) => void;
   openGuideBook: (chapter: number) => void;
   saveDailyLog: (date: string, rating: number, reflection: string, mood?: string) => void;
+  applyExpeditionPlan?: (plan: any) => void;
   navigateToSettings?: (section: any) => void;
 }
 
@@ -56,6 +58,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   setShowDailySummary,
   openGuideBook,
   saveDailyLog,
+  applyExpeditionPlan,
   navigateToSettings
 }) => {
   const isDarkTheme = ['night', 'forest', 'ocean'].includes(state.theme || '');
@@ -308,6 +311,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
            setState={setState}
            onClose={() => setShowSageConsult(false)} 
            navigateToSettings={navigateToSettings}
+           applyExpeditionPlan={applyExpeditionPlan}
          />,
          document.body
       )}
@@ -347,9 +351,10 @@ interface SageConsultModalProps {
   setState: React.Dispatch<React.SetStateAction<AppState>>;
   onClose: () => void;
   navigateToSettings?: (section: any) => void;
+  applyExpeditionPlan?: (plan: any) => void;
 }
 
-const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, onClose, navigateToSettings }) => {
+const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, onClose, navigateToSettings, applyExpeditionPlan }) => {
   const isDarkTheme = ['night', 'forest', 'ocean'].includes(state.theme || '');
   const loading = !!state.sageIsLoading;
   const loadingStartTime = state.sageLoadingStartTime || Date.now();
@@ -804,7 +809,112 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
                         </div>
                       </details>
                     )}
-                    <ReactMarkdown>{msg.content}</ReactMarkdown>
+                    {(() => {
+                      let parsedPlan = null;
+                      let parsedSettings = null;
+                      let textToRender = msg.content;
+                      let hasMarkdownBlock = false;
+                      const canModify = !!state.sageAllowGameModifiers;
+
+                      if (canModify) {
+                        try {
+                          // Try to find a JSON object in the text
+                          const startObj = msg.content.indexOf('{');
+                          const endObj = msg.content.lastIndexOf('}');
+                          if (startObj !== -1 && endObj !== -1 && endObj > startObj) {
+                            const possibleJson = msg.content.substring(startObj, endObj + 1);
+                            const parsed = JSON.parse(possibleJson);
+                            
+                            if (parsed.tiers && parsed.title) {
+                              parsedPlan = parsed;
+                            } else if (parsed.devBaseXP !== undefined || parsed.devBaseCoins !== undefined) {
+                              parsedSettings = parsed;
+                            }
+
+                            if (parsedPlan || parsedSettings) {
+                              // Try to strip the json block, including any markdown formatting around it
+                              const blockRegex = /```(?:json)?\s*\{[\s\S]*\}\s*```/;
+                              if (blockRegex.test(textToRender)) {
+                                textToRender = textToRender.replace(blockRegex, '');
+                              } else {
+                                textToRender = textToRender.replace(possibleJson, '');
+                              }
+                            }
+                          }
+                        } catch (e) {
+                          // Ignore parse error
+                        }
+                      }
+
+                      return (
+                        <>
+                          {(textToRender.trim().length > 0) && (
+                            <ReactMarkdown
+                              components={{
+                                code({node, inline, className, children, ...props}: any) {
+                                  const match = /language-(\w+)/.exec(className || '');
+                                  const isJson = match && match[1] === 'json';
+                                  const content = String(children).replace(/\n$/, '');
+                                  
+                                  // We already extracted top-level JSON above. 
+                                  // If there are other code blocks, just render them as normal.
+                                  return (
+                                    <code className={cn("px-1 py-0.5 rounded text-xs select-auto font-mono", isDarkTheme ? "bg-slate-900/50 text-indigo-300" : "bg-white/50 text-indigo-700", className)} {...props}>
+                                      {children}
+                                    </code>
+                                  );
+                                }
+                              }}
+                            >
+                              {textToRender}
+                            </ReactMarkdown>
+                          )}
+                          
+                          {parsedPlan && applyExpeditionPlan && (
+                            <div className="my-4">
+                              <ExpeditionPlanPreview 
+                                plan={parsedPlan} 
+                                onApply={applyExpeditionPlan} 
+                                isDarkTheme={isDarkTheme} 
+                              />
+                            </div>
+                          )}
+                          
+                          {parsedSettings && setState && (
+                            <div className={cn("my-4 p-4 border rounded-2xl flex flex-col items-start gap-3", isDarkTheme ? "bg-slate-900 border-indigo-500/30" : "bg-white border-indigo-200")}>
+                              <h4 className={cn("font-black tracking-wide flex items-center gap-2", isDarkTheme ? "text-indigo-400" : "text-indigo-600")}>
+                                <SettingsIcon size={16} /> Balance Settings Update
+                              </h4>
+                              <div className="flex gap-4 items-center">
+                                {parsedSettings.devBaseXP !== undefined && (
+                                  <div className={cn("px-3 py-1.5 rounded-lg border", isDarkTheme ? "bg-slate-800 border-slate-700" : "bg-slate-50 border-slate-200")}>
+                                    <span className="text-xs font-bold text-indigo-500">XP: {parsedSettings.devBaseXP}</span>
+                                  </div>
+                                )}
+                                {parsedSettings.devBaseCoins !== undefined && (
+                                  <div className={cn("px-3 py-1.5 rounded-lg border", isDarkTheme ? "bg-slate-800 border-slate-700" : "bg-slate-50 border-slate-200")}>
+                                    <span className="text-xs font-bold text-amber-500">Gold: {parsedSettings.devBaseCoins}</span>
+                                  </div>
+                                )}
+                              </div>
+                              <button 
+                                onClick={() => {
+                                  setState(prev => ({
+                                    ...prev,
+                                    ...(parsedSettings.devBaseXP !== undefined && { devBaseXP: parsedSettings.devBaseXP }),
+                                    ...(parsedSettings.devBaseCoins !== undefined && { devBaseCoins: parsedSettings.devBaseCoins })
+                                  }));
+                                  alert("Balance settings updated!");
+                                }}
+                                className="px-4 py-2 mt-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold"
+                              >
+                                Apply Settings
+                              </button>
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
                 ) : (
                   msg.content
@@ -915,6 +1025,38 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
               </motion.div>
             )}
            </AnimatePresence>
+
+           <div className="flex flex-wrap items-center gap-3 mb-3 pl-1">
+              <div className="flex items-center gap-1 opacity-80 hover:opacity-100 transition-opacity">
+                <span className={cn("text-[9px] font-black uppercase tracking-widest mr-1", isDarkTheme ? "text-slate-500" : "text-indigo-900/40")}>Persona:</span>
+                {(['sage', 'friend', 'master'] as const).map(p => (
+                  <button
+                    key={p}
+                    onClick={() => setState(prev => ({ ...prev, sagePersonality: p }))}
+                    className={cn("text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded-lg transition-colors border",
+                      (state.sagePersonality || 'sage') === p 
+                        ? (isDarkTheme ? "bg-indigo-600 border-indigo-500 text-white" : "bg-indigo-500 border-indigo-400 text-white")
+                        : (isDarkTheme ? "bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-600" : "bg-white border-indigo-100 text-indigo-700/60 hover:border-indigo-300")
+                    )}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+              <div className={cn("w-px h-3 mx-1", isDarkTheme ? "bg-slate-800" : "bg-indigo-200")}></div>
+              <button
+                onClick={() => setState(prev => ({ ...prev, sageAllowGameModifiers: !prev.sageAllowGameModifiers }))}
+                className={cn("flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-lg border transition-all",
+                  state.sageAllowGameModifiers 
+                    ? (isDarkTheme ? "bg-rose-500/10 border-rose-500/30 text-rose-400" : "bg-rose-50 border-rose-200 text-rose-600")
+                    : (isDarkTheme ? "bg-slate-900 border-slate-800 text-slate-500 hover:border-slate-600" : "bg-white border-indigo-100 text-indigo-400 hover:border-indigo-300")
+                )}
+                title="Allow AI to propose game modifications (quests, settings)"
+              >
+                <Edit2 size={10} />
+                Modify Mode
+              </button>
+           </div>
 
            <div className="flex gap-3">
               <button 

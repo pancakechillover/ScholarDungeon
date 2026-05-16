@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v6.10.8';
+export const APP_VERSION = 'v6.11.4';
 export const LAST_UPDATE_DATE = '2026-05-16';
-export const LAST_UPDATE_TIME = '03:18:00';
+export const LAST_UPDATE_TIME = '07:42:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,58 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v6.11.4',
+    date: '2026-05-16',
+    time: '07:42:00',
+    title: 'ReferenceError Bug Fix',
+    items: [
+      { category: 'Fix', description: 'Resolved Uncaught ReferenceError: applyExpeditionPlan is not defined in the Sage AI consult modal.' }
+    ]
+  },
+  {
+    version: 'v6.11.3',
+    date: '2026-05-16',
+    time: '07:35:00',
+    title: 'Sage AI Interactive Chat Controls',
+    items: [
+      { category: 'Feature', description: 'Added an inline Identity Selector directly above the Sage AI chat input for seamless persona switching (Sage, Friend, Master).' },
+      { category: 'Feature', description: 'Added an explicit "Modify Mode" toggle. AI configuration schemas will now only render as interactive game modifier widgets if this mode is enabled, preventing accidental state changes.' },
+      { category: 'Fix', description: 'Re-wrote JSON response block parsing from the ground up to aggressively strip markdown tags and ensure expedition configuration elements always render reliably even when AI incorrectly formats code blocks.' }
+    ]
+  },
+  {
+    version: 'v6.11.2',
+    date: '2026-05-16',
+    time: '07:29:00',
+    title: 'Sage AI Master Persona',
+    items: [
+      { category: 'Feature', description: 'Added "Master" personality mode to Sage AI settings. Forms a strict, highly analytical game master persona to help accurately plan tasks and adjust balance settings logically.' }
+    ]
+  },
+  {
+    version: 'v6.11.1',
+    date: '2026-05-16',
+    time: '04:22:00',
+    title: 'Sage JSON Render Reliability',
+    items: [
+      { category: 'Fix', description: 'Improved the fallback JSON parsing engine within the chat interface, ensuring that interactive planners and balance setters always render properly even when AI omits code-block language tags.' },
+      { category: 'Feature', description: 'Added direct configuration rules for \'sessions\' requirement values in Expedition Planners, allowing users to modify them natively.' }
+    ]
+  },
+  {
+    version: 'v6.11.0',
+    date: '2026-05-16',
+    time: '04:10:00',
+    title: 'Sage AI Interactive Task Automation',
+    items: [
+      { category: 'Feature', description: 'The Sage AI chat can now directly generate fully-configured Expedition Plans including titles, descriptions, goals, and multiple reward tiers based on natural language requests.' },
+      { category: 'Feature', description: 'Added ExpeditionPlanPreview component that intercepts JSON payloads from Sage and renders them natively as an interactive, editable table within the chat interface.' },
+      { category: 'Feature', description: 'Users can freely customize the AI\'s proposed tiers, rewards, and requirements before clicking "Accept", which automatically maps and constructs the parent MajorDungeon and child Dungeon entries directly into the active state.' },
+      { category: 'Feature', description: 'Sage AI can also dynamically adjust global economy balance settings via interactive embedded chat UI components.' },
+      { category: 'Prompt Polish', description: 'Overhauled the hidden system prompt inside sageService.ts to strictly enforce markdown JSON outputs matching the expedition_plan syntax schema.' }
+    ]
+  },
   {
     version: 'v6.10.8',
     date: '2026-05-16',

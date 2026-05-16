@@ -1232,6 +1232,48 @@ function App() {
                   setShowGuideBook(true);
                 }}
                 saveDailyLog={saveDailyLog}
+                applyExpeditionPlan={(plan) => {
+                  const generateId = () => Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+                  const majorId = generateId();
+                  const newMajor: MajorDungeon = {
+                    id: majorId,
+                    name: plan.title,
+                    description: plan.description,
+                    status: 'active',
+                    isFinalized: false,
+                    rewards: []
+                  };
+                  
+                  if (plan.reward.amount > 0) newMajor.rewards?.push({ type: 'coins', amount: plan.reward.amount });
+                  if (plan.reward.xp > 0) newMajor.rewards?.push({ type: 'xp', amount: plan.reward.xp });
+                  if (plan.reward.shards > 0) newMajor.rewards?.push({ type: 'item', itemType: 'talent_shard', amount: plan.reward.shards });
+
+                  const newSubs: Dungeon[] = plan.tiers.map(tier => {
+                    const subRewards: DungeonReward[] = [];
+                    if (tier.reward.amount > 0) subRewards.push({ type: 'coins', amount: tier.reward.amount });
+                    if (tier.reward.xp > 0) subRewards.push({ type: 'xp', amount: tier.reward.xp });
+                    if (tier.reward.shards > 0) subRewards.push({ type: 'item', itemType: 'talent_shard', amount: tier.reward.shards });
+
+                    return {
+                      id: generateId(),
+                      parentId: majorId,
+                      name: tier.name,
+                      description: tier.requirement,
+                      totalSessions: 1,
+                      completedSessions: 0,
+                      rewardCoins: tier.reward.amount || 0,
+                      rewardXP: tier.reward.xp || 0,
+                      rewardText: '',
+                      rewards: subRewards,
+                      isLongTerm: false,
+                      status: 'active'
+                    };
+                  });
+
+                  setMajorDungeons(prev => [newMajor, ...prev]);
+                  setDungeons(prev => [...prev, ...newSubs]);
+                  setActiveTab('dungeons');
+                }}
                 navigateToSettings={(section) => {
                   setActiveTab('settings');
                   setActiveSettingsSection(section);

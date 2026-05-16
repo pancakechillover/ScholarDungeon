@@ -307,8 +307,9 @@ export interface AppState {
   activeSageConversationId?: string;
   sageIsLoading?: boolean;
   sageLoadingStartTime?: number | null;
-  sagePersonality?: 'sage' | 'friend' | 'custom';
+  sagePersonality?: 'sage' | 'friend' | 'master' | 'custom';
   sagePersonalityPrompts?: Record<string, string>;
+  sageAllowGameModifiers?: boolean;
 }
 
 export interface StudySession {
