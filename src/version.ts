@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v6.10.3';
+export const APP_VERSION = 'v6.10.8';
 export const LAST_UPDATE_DATE = '2026-05-16';
-export const LAST_UPDATE_TIME = '02:49:00';
+export const LAST_UPDATE_TIME = '03:18:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,52 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v6.10.8',
+    date: '2026-05-16',
+    time: '03:18:00',
+    title: 'Stats Chart Alignment',
+    items: [
+      { category: 'UI', description: 'Aligned the maximum height of the Weekly bar chart with the Daily bar chart for visual consistency across the Record dashboard.' }
+    ]
+  },
+  {
+    version: 'v6.10.7',
+    date: '2026-05-16',
+    time: '03:14:00',
+    title: 'Stats Today Button Refinement',
+    items: [
+      { category: 'UI', description: 'Replaced the "TODAY" text buttons in the Record dashboard\'s Daily and Weekly modules with a compact "Return" (RotateCcw) icon to further conserve horizontal space.' }
+    ]
+  },
+  {
+    version: 'v6.10.6',
+    date: '2026-05-16',
+    time: '03:10:00',
+    title: 'Stats Controls Polish',
+    items: [
+      { category: 'UI', description: 'Consolidated the "Natural" and "Last 7d" Weekly date mode selectors into a single dropdown component, drastically reducing horizontal space usage.' },
+      { category: 'UI', description: 'Narrowed the width of the Weekly date selector specifically to optimize for smaller tablet screens.' }
+    ]
+  },
+  {
+    version: 'v6.10.5',
+    date: '2026-05-16',
+    time: '03:04:00',
+    title: 'Stats Controls Polish',
+    items: [
+      { category: 'UI', description: 'Aligned the font size CSS classes for the Weekly module\'s date selector to perfectly match the Daily module.' }
+    ]
+  },
+  {
+    version: 'v6.10.4',
+    date: '2026-05-16',
+    time: '03:00:00',
+    title: 'Stats Controls Optimization',
+    items: [
+      { category: 'UI', description: 'Refined the styling and dimensions of the Daily and Weekly controls in the Record dashboard to prevent overflow and ensure a cohesive view on mobile/tablet.' }
+    ]
+  },
   {
     version: 'v6.10.3',
     date: '2026-05-16',

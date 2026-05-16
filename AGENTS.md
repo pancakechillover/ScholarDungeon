@@ -23,7 +23,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v6.10.3
+- **Current Version:** v6.10.8
 - **Last Update Date:** 2026-05-16
 
 ## Dark Themes Definition
@@ -49,6 +49,22 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v6.10.8 (2026-05-16):** Stats Chart Alignment.
+  - *UI:* Aligned the maximum height of the Weekly bar chart with the Daily bar chart for visual consistency across the Record dashboard.
+
+- **v6.10.7 (2026-05-16):** Stats Today Button Refinement.
+  - *UI:* Replaced the "TODAY" text buttons in the Record dashboard's Daily and Weekly modules with a compact "Return" (`RotateCcw`) icon to further conserve horizontal space.
+
+- **v6.10.6 (2026-05-16):** Stats Controls Polish.
+  - *UI:* Consolidated the "Natural" and "Last 7d" Weekly date mode selectors into a single dropdown component, drastically reducing horizontal space usage.
+  - *UI:* Narrowed the width of the Weekly date selector specifically to optimize for smaller tablet screens.
+
+- **v6.10.5 (2026-05-16):** Stats Controls Polish.
+  - *UI:* Aligned the font size CSS classes for the Weekly module's date selector to perfectly match the Daily module's standard (`text-[10px] sm:text-xs`).
+
+- **v6.10.4 (2026-05-16):** Stats Controls Optimization.
+  - *UI:* Refined the styling and dimensions of the Daily and Weekly controls in the Record dashboard. Shifted to smaller padding, tighter gaps, and flexible widths on mobile and tablet screens to prevent overflow and ensure a cohesive view.
 
 - **v6.10.3 (2026-05-16):** Top Bar Coloring Bug Fix.
   - *Bug Fix:* Removed globally invasive `sm:bg-indigo-600` theme overrides from `index.css` that were forcefully coloring mobile narrow-screen level text as pure white instead of matching the adaptive theme-colors of the other elements in the top bar.

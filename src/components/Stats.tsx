@@ -9,7 +9,7 @@ import {
 import { StudySession, AppState, RewardHistoryItem, Dungeon, MajorDungeon } from '../types';
 import { cn } from '../lib/utils';
 import { 
-  BarChart2, Zap, Coins, ChevronLeft, ChevronRight, Calendar, Star, StarHalf, Edit2, Save, X, Eye, EyeOff, LineChart as LineChartIcon, Trophy, Sword, Heart, Maximize2, Minimize2, LayoutTemplate, File, FileText
+  BarChart2, Zap, Coins, ChevronLeft, ChevronRight, ChevronDown, Calendar, Star, StarHalf, Edit2, Save, X, Eye, EyeOff, LineChart as LineChartIcon, Trophy, Sword, Heart, Maximize2, Minimize2, LayoutTemplate, File, FileText, RotateCcw
 } from 'lucide-react';
 import { MOOD_OPTIONS, DEFAULT_ENABLED_MOODS } from '../constants';
 
@@ -900,14 +900,16 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
         
         {/* Daily */}
         <div id="daily-activity-section" className="bg-slate-900 p-6 rounded-3xl border border-slate-800 flex flex-col space-y-6">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-bold text-slate-100">Daily</h3>
-            <div className="flex items-center gap-2 bg-slate-800/50 rounded-lg p-1">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
+            <div className="flex items-center justify-between w-full sm:w-auto">
+              <h3 className="text-lg font-bold text-slate-100">Daily</h3>
+            </div>
+            <div className="flex items-center justify-center sm:justify-start gap-1 sm:gap-2 bg-slate-800/50 rounded-lg p-0.5 sm:p-1 w-full sm:w-auto">
               <button onClick={() => handleDailyDateChange(subDays(dailyDate, 1))} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-slate-200"><ChevronLeft size={16} /></button>
-              <div className="relative flex items-center justify-center">
+              <div className="relative flex items-center justify-center flex-1 sm:flex-none">
                 <button 
                   onClick={() => dailyInputRef.current?.showPicker()}
-                  className="text-xs font-bold text-slate-300 w-24 text-center hover:text-indigo-400 transition-colors"
+                  className="text-[10px] sm:text-xs font-bold text-slate-300 w-full sm:w-24 text-center hover:text-indigo-400 transition-colors"
                 >
                   {format(dailyDate, 'MMM d, yyyy')}
                 </button>
@@ -922,9 +924,10 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
               <button onClick={() => handleDailyDateChange(addDays(dailyDate, 1))} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-slate-200"><ChevronRight size={16} /></button>
               <button 
                 onClick={() => handleDailyDateChange(new Date())}
-                className="px-2 py-1 text-[10px] font-black uppercase tracking-widest text-indigo-400 hover:text-white transition-colors"
+                className="p-1 text-indigo-400 hover:bg-slate-700 hover:text-indigo-300 rounded transition-colors"
+                title="Return to Today"
               >
-                Today
+                <RotateCcw size={14} />
               </button>
             </div>
           </div>
@@ -1157,39 +1160,33 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
 
         {/* Weekly */}
         <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800 flex flex-col space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 sm:gap-4">
+            <div className="flex items-center justify-between md:justify-start gap-2 sm:gap-4 w-full md:w-auto">
               <h3 className="text-lg font-bold text-slate-100">Weekly</h3>
-              <div className="flex bg-slate-800/50 p-1 rounded-lg">
-                <button
-                  onClick={() => setWeeklyMode('calendar')}
-                  className={cn(
-                    "px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-md transition-all whitespace-nowrap",
-                    weeklyMode === 'calendar' ? "bg-indigo-600 text-white" : "text-slate-400 hover:text-slate-200"
-                  )}
+              <div className="relative bg-slate-800/50 hover:bg-slate-700 transition-colors rounded-lg flex items-center p-0.5 sm:p-1 cursor-pointer group">
+                <span className="px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-black uppercase tracking-wide sm:tracking-widest text-indigo-400 group-hover:text-indigo-300 whitespace-nowrap pointer-events-none flex items-center gap-1">
+                  {weeklyMode === 'calendar' ? 'Natural' : 'Last 7d'}
+                  <ChevronDown size={12} className="opacity-70" />
+                </span>
+                <select 
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  value={weeklyMode}
+                  onChange={(e) => setWeeklyMode(e.target.value as 'calendar' | 'rolling')}
                 >
-                  Natural
-                </button>
-                <button
-                  onClick={() => setWeeklyMode('rolling')}
-                  className={cn(
-                    "px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-md transition-all whitespace-nowrap",
-                    weeklyMode === 'rolling' ? "bg-indigo-600 text-white" : "text-slate-400 hover:text-slate-200"
-                  )}
-                >
-                  Last 7d
-                </button>
+                  <option value="calendar">Natural</option>
+                  <option value="rolling">Last 7d</option>
+                </select>
               </div>
             </div>
-            <div className="flex items-center gap-2 bg-slate-800/50 rounded-lg p-1 self-start sm:self-auto">
+            <div className="flex items-center justify-center sm:justify-start gap-1 sm:gap-2 bg-slate-800/50 rounded-lg p-0.5 sm:p-1 w-full md:w-auto">
               <button onClick={() => {
                 const amount = weeklyMode === 'calendar' ? 1 : 7;
                 setWeeklyDate(subDays(weeklyDate, amount));
               }} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-slate-200"><ChevronLeft size={16} /></button>
-              <div className="relative flex items-center justify-center">
+              <div className="relative flex items-center justify-center flex-1 sm:flex-none">
                 <button 
                   onClick={() => weeklyInputRef.current?.showPicker()}
-                  className="text-[10px] font-bold text-slate-300 w-32 text-center hover:text-indigo-400 transition-colors"
+                  className="text-[10px] sm:text-xs font-bold text-slate-300 w-[90px] sm:w-28 text-center hover:text-indigo-400 transition-colors"
                 >
                   {format(weekStart, 'MMM d')} - {format(weekEnd, 'MMM d')}
                 </button>
@@ -1207,9 +1204,10 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
               }} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-slate-200"><ChevronRight size={16} /></button>
               <button 
                 onClick={() => setWeeklyDate(new Date())}
-                className="px-2 py-1 text-[10px] font-black uppercase tracking-widest text-indigo-400 hover:text-white transition-colors"
+                className="p-1 text-indigo-400 hover:bg-slate-700 hover:text-indigo-300 rounded transition-colors"
+                title="Return to Today"
               >
-                Today
+                <RotateCcw size={14} />
               </button>
             </div>
           </div>
@@ -1240,7 +1238,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
           </div>
           
           <div className="space-y-8">
-            <div className="h-40 min-h-[160px]">
+            <div className="h-48 min-h-[192px]">
               <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                 <BarChart data={weeklyData} margin={{ top: 35, right: 10, left: 10, bottom: 20 }} onClick={(state) => handleChartClick(state, 'weeklyBar')} style={{ outline: 'none', touchAction: 'pan-y' }}>
                   <XAxis dataKey="name" axisLine={false} tickLine={false} interval={0} tick={{ fill: '#64748b', fontSize: 10 }} />
