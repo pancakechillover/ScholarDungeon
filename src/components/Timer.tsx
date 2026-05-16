@@ -291,8 +291,40 @@ export const Timer = React.memo<TimerProps>(({
           }
         }
       }
+
+      if (enableRest && restDuration > 0) {
+        setIsResting(true);
+        setDuration(restDuration);
+        setTimeLeft(restDuration * 60);
+        setIsActive(true);
+        setEndTime(Date.now() + restDuration * 60 * 1000);
+      } else {
+        // No rest period. Handle loop increment immediately.
+        let safeLoopCount = loopCount;
+        if (isLooping && loopTarget > 0 && safeLoopCount >= loopTarget) safeLoopCount = 0;
+
+        const nextLoopCount = safeLoopCount + 1;
+        setLoopCount(nextLoopCount);
+        const shouldContinueLoop = isLooping && (loopTarget === 0 || nextLoopCount < loopTarget);
+        
+        if (shouldContinueLoop) {
+          setDuration(focusDuration);
+          setTimeLeft(focusDuration * 60);
+          if (requireFocusConfirmation) {
+            setShowFocusPrompt(true);
+            setIsActive(false);
+            setEndTime(null);
+          } else {
+            setIsActive(true);
+            setEndTime(Date.now() + focusDuration * 60 * 1000);
+          }
+        } else {
+          setIsActive(false);
+          setEndTime(null);
+        }
+      }
     }
-  }, [duration, isResting, focusDuration, restDuration, enableRest, isLooping, onComplete, onRestComplete, rewardPool, activeTalents, setShowCoinRain, setIsActive, setEndTime, setIsResting, setDuration, setTimeLeft, pushEnabled, timerSkipVictoryMode, handleRewardSelection, onDeferReward]);
+  }, [duration, isResting, focusDuration, restDuration, enableRest, isLooping, loopCount, loopTarget, onComplete, onRestComplete, rewardPool, activeTalents, setShowCoinRain, setIsActive, setEndTime, setIsResting, setDuration, setTimeLeft, pushEnabled, timerSkipVictoryMode, handleRewardSelection, onDeferReward, requireFocusConfirmation, setLoopCount, setShowFocusPrompt]);
 
   useEffect(() => {
     let worker: Worker | null = null;

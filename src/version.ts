@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v6.12.2';
+export const APP_VERSION = 'v6.12.3';
 export const LAST_UPDATE_DATE = '2026-05-16';
-export const LAST_UPDATE_TIME = '11:41:00';
+export const LAST_UPDATE_TIME = '11:51:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,15 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v6.12.3',
+    date: '2026-05-16',
+    time: '11:51:00',
+    title: 'Timer Loop Progression Fix',
+    items: [
+      { category: 'Bug Fix', description: 'Fixed a bug where the timer would halt at 0:00 instead of automatically progressing to the resting phase or next loop when a focus session concluded.' },
+    ]
+  },
   {
     version: 'v6.12.2',
     date: '2026-05-16',
