@@ -143,6 +143,29 @@ export const QuestManager = React.memo<QuestManagerProps>(({ quests, questHistor
 
   React.useEffect(() => {
     if (isAdding && !isEditing) {
+      const isAchievement = activeTab === 'achievements';
+      const autoloadKey = isAchievement ? 'achievement_autoload' : 'quest_autoload';
+      const presetKey = isAchievement ? 'achievement_preset' : 'quest_preset';
+
+      if (localStorage.getItem(autoloadKey) === 'true') {
+        const presetStr = localStorage.getItem(presetKey);
+        if (presetStr) {
+          try {
+            const preset = JSON.parse(presetStr);
+            setNewQuest({
+              title: '',
+              description: preset.description || '',
+              type: preset.type || (isAchievement ? 'total_sessions' : 'daily_sessions'),
+              target: preset.target || 1,
+              rewards: preset.rewards || [{ type: 'coins', amount: 10 }],
+              isAchievement: isAchievement,
+              talentRequired: preset.talentRequired
+            });
+            return;
+          } catch (e) {}
+        }
+      }
+
       setNewQuest({
         title: '',
         description: '',
@@ -263,7 +286,58 @@ export const QuestManager = React.memo<QuestManagerProps>(({ quests, questHistor
             >
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-bold text-white">{isEditing ? 'Edit' : 'Create'} {activeTab === 'quests' ? 'Quest' : 'Achievement'}</h3>
-                <button onClick={() => { setIsAdding(false); setIsEditing(null); }} className="text-slate-500 hover:text-white"><X size={24} /></button>
+                
+                <div className="flex items-center gap-2">
+                  {!isEditing && (
+                    <>
+                      <button 
+                        onClick={() => {
+                          const presetKey = activeTab === 'quests' ? 'quest_preset' : 'achievement_preset';
+                          const preset = {
+                            description: newQuest.description,
+                            type: newQuest.type,
+                            target: newQuest.target,
+                            rewards: newQuest.rewards,
+                            talentRequired: newQuest.talentRequired
+                          };
+                          localStorage.setItem(presetKey, JSON.stringify(preset));
+                          alert("Preset Saved");
+                        }} 
+                        className="px-2 py-1 bg-slate-800 border border-slate-700 text-[10px] font-bold text-slate-300 rounded hover:bg-slate-700 hover:text-white transition-colors"
+                      >
+                        Save Preset
+                      </button>
+                      <button 
+                        onClick={() => {
+                          const presetKey = activeTab === 'quests' ? 'quest_preset' : 'achievement_preset';
+                          const presetStr = localStorage.getItem(presetKey);
+                          if (presetStr) {
+                            try {
+                              const preset = JSON.parse(presetStr);
+                              setNewQuest(prev => ({ ...prev, ...preset }));
+                            } catch (e) {}
+                          }
+                        }} 
+                        className="px-2 py-1 bg-slate-800 border border-slate-700 text-[10px] font-bold text-slate-300 rounded hover:bg-slate-700 hover:text-white transition-colors"
+                      >
+                        Load
+                      </button>
+                      <label className="flex items-center gap-1 cursor-pointer ml-1">
+                        <input 
+                          type="checkbox"
+                          checked={localStorage.getItem(activeTab === 'quests' ? 'quest_autoload' : 'achievement_autoload') === 'true'}
+                          onChange={(e) => {
+                            localStorage.setItem(activeTab === 'quests' ? 'quest_autoload' : 'achievement_autoload', e.target.checked ? 'true' : 'false');
+                            setNewQuest({ ...newQuest });
+                          }}
+                          className="w-3 h-3 text-indigo-500 bg-slate-900 border-slate-700 rounded focus:ring-0"
+                        />
+                        <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Auto-Load</span>
+                      </label>
+                    </>
+                  )}
+                  <button onClick={() => { setIsAdding(false); setIsEditing(null); }} className="text-slate-500 hover:text-white"><X size={20} /></button>
+                </div>
               </div>
               
               <div className="space-y-4">

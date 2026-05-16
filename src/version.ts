@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v6.9.0';
-export const LAST_UPDATE_DATE = '2026-05-15';
-export const LAST_UPDATE_TIME = '16:57:00';
+export const APP_VERSION = 'v6.9.1';
+export const LAST_UPDATE_DATE = '2026-05-16';
+export const LAST_UPDATE_TIME = '02:03:00';
 
 export interface ReleaseLog {
   version: string;
@@ -12,12 +12,22 @@ export interface ReleaseLog {
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
   {
+    version: 'v6.9.1',
+    date: '2026-05-16',
+    time: '02:03:00',
+    title: 'Level Label Polish',
+    items: [
+      { category: 'UI', description: 'Fixed Level Label (LV) to ensure it is always solid white and opaque on light themes (daylight, warm sun, candy) for wide screens.' }
+    ]
+  },
+  {
     version: 'v6.9.0',
     date: '2026-05-15',
     time: '16:57:00',
-    title: 'Version 6.9.0 Milestone',
+    title: 'Preset System & iOS Fix',
     items: [
-      { category: 'Milestone', description: 'Upgraded system version to 6.9.0.' }
+      { category: 'Feature', description: 'Added "Save Preset", "Load", and "Auto-Load" functionality for Expedition Goals, Tiers, Quests, and Achievements creation forms.' },
+      { category: 'Bug Fix', description: 'Resolved iOS-specific input state issue preventing reward editing during initial item creation.' }
     ]
   },
   {

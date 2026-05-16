@@ -195,6 +195,35 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
   }, [isAddingMajor, editingMajor]);
 
   React.useEffect(() => {
+    if (isAddingMajor) {
+      if (localStorage.getItem('dungeon_major_autoload') === 'true') {
+        const presetStr = localStorage.getItem('dungeon_major_preset');
+        if (presetStr) {
+          try {
+            const preset = JSON.parse(presetStr);
+            setNewMajor({
+              name: '',
+              description: preset.description || '',
+              rewards: preset.rewards || [{ type: 'coins', amount: 100 }],
+              isRoutine: preset.isRoutine || false,
+              routineType: preset.routineType || 'daily'
+            });
+            return;
+          } catch (e) {}
+        }
+      }
+
+      setNewMajor({
+        name: '',
+        description: '',
+        rewards: [{ type: 'coins', amount: 100 }],
+        isRoutine: false,
+        routineType: 'daily'
+      });
+    }
+  }, [isAddingMajor]);
+
+  React.useEffect(() => {
     if (isAddingSub) {
       if (localStorage.getItem('dungeon_sub_autoload') === 'true') {
         const presetStr = localStorage.getItem('dungeon_sub_preset');
@@ -769,7 +798,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                                 <select 
                                   value={reward.type}
                                   disabled={isRewardLocked}
-                                  onChange={e => updateReward(idx, 'type', e.target.value, isAddingMajor || !!editingMajor)}
+                                  onChange={e => updateReward(idx, 'type', e.target.value, !!isAddingMajor || !!editingMajor)}
                                   className={cn(
                                     "flex-grow bg-slate-900 text-sm border-slate-700 rounded-lg px-2 py-1.5 focus:outline-none focus:border-indigo-500",
                                     isRewardLocked ? "text-slate-500 cursor-not-allowed opacity-70" : "text-white"
@@ -785,7 +814,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                                   disabled={isRewardLocked}
                                   value={reward.amount === undefined || reward.amount === null ? '' : reward.amount}
                                   onChange={(val) => {
-                                    updateReward(idx, 'amount', typeof val === 'number' ? val : ('' as any), isAddingMajor || !!editingMajor);
+                                    updateReward(idx, 'amount', typeof val === 'number' ? val : ('' as any), !!isAddingMajor || !!editingMajor);
                                   }}
                                   className={cn(
                                     "w-24 text-sm px-2",
@@ -794,7 +823,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                                   placeholder="Amt"
                                 />
                                 {!isRewardLocked && (
-                                  <button onClick={() => removeReward(idx, isAddingMajor || !!editingMajor)} className="p-1.5 text-slate-500 hover:text-red-400">
+                                  <button onClick={() => removeReward(idx, !!isAddingMajor || !!editingMajor)} className="p-1.5 text-slate-500 hover:text-red-400">
                                     <X size={16} />
                                   </button>
                                 )}
@@ -804,7 +833,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                                   <select 
                                     disabled={isRewardLocked}
                                     value={reward.itemType}
-                                    onChange={e => updateReward(idx, 'itemType', e.target.value, isAddingMajor || !!editingMajor)}
+                                    onChange={e => updateReward(idx, 'itemType', e.target.value, !!isAddingMajor || !!editingMajor)}
                                     className={cn(
                                       "bg-slate-900 text-xs border-slate-700 rounded-lg px-2 py-1.5 focus:outline-none focus:border-indigo-500",
                                       isRewardLocked ? "text-slate-500 cursor-not-allowed opacity-70" : "text-white"
@@ -820,7 +849,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                                     disabled={isRewardLocked}
                                     placeholder="Item Name"
                                     value={reward.itemName || ''}
-                                    onChange={e => updateReward(idx, 'itemName', e.target.value, isAddingMajor || !!editingMajor)}
+                                    onChange={e => updateReward(idx, 'itemName', e.target.value, !!isAddingMajor || !!editingMajor)}
                                     className={cn(
                                       "bg-slate-900 text-xs border-slate-700 rounded-lg px-2 py-1.5 focus:outline-none focus:border-indigo-500",
                                       isRewardLocked ? "text-slate-500 cursor-not-allowed opacity-70" : "text-white"
@@ -834,7 +863,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                                   disabled={isRewardLocked}
                                   placeholder="Reward Message"
                                   value={reward.rewardText || ''}
-                                  onChange={e => updateReward(idx, 'rewardText', e.target.value, isAddingMajor || !!editingMajor)}
+                                  onChange={e => updateReward(idx, 'rewardText', e.target.value, !!isAddingMajor || !!editingMajor)}
                                   className={cn(
                                     "w-full bg-slate-900 text-xs border-slate-700 rounded-lg px-2 py-1.5 focus:outline-none focus:border-indigo-500",
                                     isRewardLocked ? "text-slate-500 cursor-not-allowed opacity-70" : "text-white"
@@ -852,23 +881,32 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
 
               <div className="flex items-center justify-between pt-4 border-t border-slate-800">
                 <div className="flex items-center gap-2">
-                  {isAddingSub && (
+                  {(isAddingSub || isAddingMajor) && (
                     <>
                       <button 
                         onClick={() => {
-                          const preset = {
-                            totalSessions: newSub.totalSessions,
-                            description: newSub.description,
-                            rewards: newSub.rewards,
-                            isRoutine: newSub.isRoutine,
-                            routineType: newSub.routineType
-                          };
-                          localStorage.setItem('dungeon_sub_preset', JSON.stringify(preset));
-                          const autoLoad = localStorage.getItem('dungeon_sub_autoload') === 'true';
+                          if (isAddingSub) {
+                            const preset = {
+                              totalSessions: newSub.totalSessions,
+                              description: newSub.description,
+                              rewards: newSub.rewards,
+                              isRoutine: newSub.isRoutine,
+                              routineType: newSub.routineType
+                            };
+                            localStorage.setItem('dungeon_sub_preset', JSON.stringify(preset));
+                          } else {
+                            const preset = {
+                              description: newMajor.description,
+                              rewards: newMajor.rewards,
+                              isRoutine: newMajor.isRoutine,
+                              routineType: newMajor.routineType
+                            };
+                            localStorage.setItem('dungeon_major_preset', JSON.stringify(preset));
+                          }
                           setModalConfig({
                             isOpen: true,
                             title: "Preset Saved",
-                            message: "The current tier configuration has been saved as your preset.",
+                            message: "The current configuration has been saved as your preset.",
                             confirmText: "Got it",
                             type: "info",
                             isAlert: true
@@ -880,11 +918,12 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                       </button>
                       <button 
                         onClick={() => {
-                          const presetStr = localStorage.getItem('dungeon_sub_preset');
+                          const presetStr = localStorage.getItem(isAddingSub ? 'dungeon_sub_preset' : 'dungeon_major_preset');
                           if (presetStr) {
                             try {
                               const preset = JSON.parse(presetStr);
-                              setNewSub(prev => ({ ...prev, ...preset }));
+                              if (isAddingSub) setNewSub(prev => ({ ...prev, ...preset }));
+                              else setNewMajor(prev => ({ ...prev, ...preset }));
                             } catch (e) {}
                           }
                         }} 
@@ -895,11 +934,11 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                       <label className="flex items-center gap-1.5 cursor-pointer ml-1">
                         <input 
                           type="checkbox"
-                          checked={localStorage.getItem('dungeon_sub_autoload') === 'true'}
+                          checked={localStorage.getItem(isAddingSub ? 'dungeon_sub_autoload' : 'dungeon_major_autoload') === 'true'}
                           onChange={(e) => {
-                            localStorage.setItem('dungeon_sub_autoload', e.target.checked ? 'true' : 'false');
-                            // force re-render for checkbox visual update
-                            setNewSub({ ...newSub }); 
+                            localStorage.setItem(isAddingSub ? 'dungeon_sub_autoload' : 'dungeon_major_autoload', e.target.checked ? 'true' : 'false');
+                            if(isAddingSub) setNewSub({ ...newSub });
+                            else setNewMajor({ ...newMajor });
                           }}
                           className="w-3 h-3 text-indigo-500 bg-slate-900 border-slate-700 rounded focus:ring-0"
                         />

@@ -50,8 +50,13 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 ## Task History
 
+- **v6.9.1 (2026-05-16):** Wide screen Level Label Polish.
+  - *UI:* Fixed Level Label (LV) to ensure it is always solid white and opaque on light themes (daylight, warm sun, candy) for wide screens.
+
 - **v6.9.0 (2026-05-15):** Version 6.9.0 Milestone Update.
   - *Milestone:* Upgraded system version to 6.9.0.
+  - *Feature:* Added "Save Preset", "Load", and "Auto-Load" functionality for Expedition Goals, Tiers, Quests, and Achievements creation forms.
+  - *Bug Fix:* Resolved iOS-specific input state issue preventing reward editing during initial item creation.
 
 - **v6.8.24 (2026-05-15):** Top Bar Mobile UX Polish.
   - *UI:* Optimized the Top Bar for small mobile screens by conditionally hiding the streak days indicator, converting the XP Bar layout below the level badge, and simplifying the Level badge's CSS styling (removing background and shadows) to conserve horizontal space.
