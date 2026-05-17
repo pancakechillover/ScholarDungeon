@@ -64,6 +64,8 @@ export function useGameState() {
       ichibanAnimation: 'scratch',
       gachaAllowOverlap: false,
       defaultMarkdownEnabled: true,
+      timeBasedMode: false,
+      standardSessionMinutes: 25,
       requireFocusConfirmation: false,
       timerBannerCompactMode: false,
       timerSkipVictoryMode: 'none',
@@ -269,6 +271,8 @@ export function useGameState() {
         }
 
         if (parsed.requireFocusConfirmation === undefined) parsed.requireFocusConfirmation = false;
+        if (parsed.timeBasedMode === undefined) parsed.timeBasedMode = false;
+        if (parsed.standardSessionMinutes === undefined) parsed.standardSessionMinutes = 25;
         if (parsed.timerBannerCompactMode === undefined) parsed.timerBannerCompactMode = false;
         if (parsed.timerSkipVictoryMode === undefined) parsed.timerSkipVictoryMode = 'none';
         if (parsed.timerBannerShortcuts === undefined) parsed.timerBannerShortcuts = ['pomodoro', 'short_break', 'long_break'];
@@ -1021,7 +1025,11 @@ export function useGameState() {
       setDungeons(prevDungeons => {
         const updatedDungeons = prevDungeons.map(d => {
           if (d.id === dungeonId) {
-            const newCompleted = d.completedSessions + 1;
+            const actualDuration = focusDuration || duration;
+            const addedProgress = state.timeBasedMode 
+              ? (Math.max(1, actualDuration) / (state.standardSessionMinutes || 25))
+              : 1;
+            const newCompleted = d.completedSessions + addedProgress;
             if (newCompleted >= d.totalSessions && d.status !== 'completed') {
               // Dungeon completed rewards
               const allRewards: DungeonReward[] = [];
@@ -1460,12 +1468,18 @@ export function useGameState() {
       // If dungeonId changed, we need to update dungeons completedSessions
       if (updates.dungeonId && updates.dungeonId !== session.dungeonId) {
          setDungeons(prevDungeons => {
+            const getProgress = (sess: StudySession) => {
+              if (!prev.timeBasedMode) return 1;
+              return Math.max(1, sess.focusDuration || sess.duration) / (prev.standardSessionMinutes || 25);
+            };
+            const oldProgress = getProgress(session);
+            const newProgress = getProgress({ ...session, ...updates });
             return prevDungeons.map(d => {
                if (d.id === session.dungeonId) {
-                  return { ...d, completedSessions: Math.max(0, d.completedSessions - 1), status: 'active' };
+                  return { ...d, completedSessions: Math.max(0, d.completedSessions - oldProgress), status: 'active' };
                }
                if (d.id === updates.dungeonId) {
-                  const newCount = d.completedSessions + 1;
+                  const newCount = d.completedSessions + newProgress;
                   const isCompleted = newCount >= d.totalSessions;
                   return { ...d, completedSessions: newCount, status: isCompleted ? 'completed' : 'active', completedAt: isCompleted ? getNow().toISOString() : undefined };
                }
@@ -1487,18 +1501,67 @@ export function useGameState() {
 
       if (session.dungeonId !== 'free_study') {
          setDungeons(prevDungeons => {
+            const addedProgress = prev.timeBasedMode ? (Math.max(1, session.focusDuration || session.duration) / (prev.standardSessionMinutes || 25)) : 1;
             return prevDungeons.map(d => {
                if (d.id === session.dungeonId) {
-                  return { ...d, completedSessions: Math.max(0, d.completedSessions - 1), status: 'active' };
+                  return { ...d, completedSessions: Math.max(0, d.completedSessions - addedProgress), status: 'active' };
                }
                return d;
             });
          });
       }
 
-      return { ...prev, history: newHistory };
+      let newState = { ...prev, history: newHistory };
+
+      // Withdraw XP and Coins
+      if (session.coinsEarned > 0) {
+        newState = processTransaction(newState, 'coins', -session.coinsEarned, `Deleted Session: ${session.dungeonId}`);
+        newState.coins = Math.max(0, newState.coins - session.coinsEarned);
+      }
+      
+      if (session.xpEarned > 0) {
+        newState = processTransaction(newState, 'xp', -session.xpEarned, `Deleted Session: ${session.dungeonId}`);
+        newState.xp = Math.max(0, newState.xp - session.xpEarned);
+      }
+
+      // Check for pending chest for this session
+      let pendingChests = newState.pendingRewardChest || [];
+      const pendingChestIndex = pendingChests.findIndex(c => c.session.id === sessionId);
+      if (pendingChestIndex !== -1) {
+         pendingChests = [...pendingChests];
+         pendingChests.splice(pendingChestIndex, 1);
+         newState.pendingRewardChest = pendingChests;
+      }
+
+      // Decrement dailySessions if the session was today
+      const now = getNow();
+      const ts = prev.timeSettings || {
+        morning: { start: 8, end: 12 },
+        afternoon: { start: 14, end: 18 },
+        night: { start: 20, end: 24 }
+      };
+
+      const getSettlementDay = (date: Date) => {
+        const hour = date.getHours();
+        let baseDate = new Date(date);
+        if (ts.night.start > ts.night.end && hour < ts.night.end) {
+          baseDate.setDate(baseDate.getDate() - 1);
+        } else if (hour < ts.morning.start) {
+          baseDate.setDate(baseDate.getDate() - 1);
+        }
+        return format(baseDate, 'yyyy-MM-dd');
+      };
+
+      const todayStr = getSettlementDay(now);
+      const sessionDay = getSettlementDay(new Date(session.timestamp));
+
+      if (sessionDay === todayStr) {
+        newState.dailySessions = Math.max(0, newState.dailySessions - 1);
+      }
+
+      return newState;
     });
-  }, [setDungeons]);
+  }, [setDungeons, getNow]);
 
   const claimQuestReward = useCallback((questId: string) => {
     setState(prev => {

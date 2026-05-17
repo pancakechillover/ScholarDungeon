@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { RewardCard, ShopItem, GachaPool, Rarity } from '../../types';
 import { INITIAL_GACHA, MOOD_OPTIONS, DEFAULT_ENABLED_MOODS } from '../../constants';
-import { Plus, Trash2, Save, Edit2, X, ChevronRight, Coins, Zap, Sparkles, Trophy, Timer as TimerIcon, Package, Flame, AlertTriangle, Scroll, Volume2, VolumeX, Sun, Moon, Smile, Settings as SettingsIcon, ShoppingBag, Trees, Waves, Database, Download, Upload, Target, Gift, User, Sword, Eye, Palette, Check, Bell, BellOff, RefreshCw, Key, Layers, Sunrise, Cloud, CloudSun, Lollipop, Wrench, History, Ticket, Globe, ShieldCheck, CalendarCheck } from 'lucide-react';
+import { Plus, Trash2, Save, Edit2, X, ChevronRight, Coins, Zap, Sparkles, Trophy, Timer as TimerIcon, Package, Flame, AlertTriangle, Scroll, Volume2, VolumeX, Sun, Moon, Smile, Settings as SettingsIcon, ShoppingBag, Trees, Waves, Database, Download, Upload, Target, Gift, User, Sword, Eye, Palette, Check, Bell, BellOff, RefreshCw, Key, Layers, Sunrise, Cloud, CloudSun, Lollipop, Wrench, History, Ticket, Globe, ShieldCheck, CalendarCheck, Clock } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { APP_VERSION, LAST_UPDATE_DATE, RELEASE_HISTORY } from '../../version';
 import { cn, getXPForLevel, getDefaultRewardForLevel } from '../../lib/utils';
@@ -741,6 +741,53 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
 
       <div className="space-y-6 pt-6 border-t border-slate-800">
         <ActivityTimeSettings state={state} setState={setState} />
+      </div>
+
+      <div className="space-y-6 pt-6 border-t border-slate-800">
+        <div className="space-y-4">
+           <div className="flex items-center justify-between p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
+             <div className="flex items-center gap-3">
+               <div className={cn("p-2 rounded-xl", state.timeBasedMode ? "bg-indigo-500/10 text-indigo-400" : "bg-slate-800 text-slate-500")}>
+                 <Clock size={20} />
+               </div>
+               <div className="flex-1 pr-4">
+                 <div className="text-sm font-bold text-white mb-0.5">Compute Tasks by Time</div>
+                 <div className="text-[11px] text-slate-500 leading-relaxed">
+                   Convert requirements into Time. Stats and Tasks will be tracked by time.
+                 </div>
+               </div>
+             </div>
+             <button
+               onClick={() => setState(prev => ({ ...prev, timeBasedMode: !prev.timeBasedMode }))}
+               className={cn(
+                 "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors",
+                 state.timeBasedMode ? "bg-indigo-500" : "bg-slate-700"
+               )}
+             >
+               <span
+                 className={cn(
+                   "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+                   state.timeBasedMode ? "translate-x-6" : "translate-x-1"
+                 )}
+               />
+             </button>
+           </div>
+
+           {state.timeBasedMode && (
+             <div className="p-4 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 space-y-4">
+               <label className="text-xs font-bold text-indigo-400 uppercase tracking-widest">Standard Session Duration (Minutes)</label>
+               <p className="text-xs text-slate-400 italic mb-2">Used as a unit converter between Session counts and Time. e.g. 3 Sessions = 75 minutes.</p>
+               <input
+                 type="number"
+                 min="1"
+                 max="1440"
+                 value={state.standardSessionMinutes || 25}
+                 onChange={(e) => setState(prev => ({ ...prev, standardSessionMinutes: Math.max(1, parseInt(e.target.value) || 25) }))}
+                 className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500"
+               />
+             </div>
+           )}
+        </div>
       </div>
 
       <div className="space-y-6 pt-6 border-t border-slate-800">

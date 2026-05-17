@@ -233,6 +233,8 @@ export interface AppState {
   heatmapScaleMax?: number; // 0-8 or 0-16 for heatmap max range
   timerBannerShortcuts?: string[];
   requireFocusConfirmation?: boolean;
+  timeBasedMode?: boolean;
+  standardSessionMinutes?: number;
   pendingRewardChest?: { session: StudySession; choices: RewardCard[]; }[];
   // Editable Pools
   rewardPool: RewardCard[];

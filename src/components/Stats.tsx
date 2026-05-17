@@ -43,7 +43,8 @@ const SharedPopoverContent = ({
   efficiency,
   mood,
   dateTimestamp,
-  period
+  period,
+  timeBasedMode
 }: any) => {
   const moodObj = mood ? MOOD_OPTIONS.find(m => m.id === mood) : null;
   const MoodIcon = moodObj ? moodObj.icon : null;
@@ -54,7 +55,7 @@ const SharedPopoverContent = ({
       <div className="space-y-1.5 text-xs text-slate-300">
         {totalSessions > 0 ? (
           <>
-            <div className="flex justify-between gap-4"><span className="text-slate-500">Sessions</span> <span className="text-slate-50 font-bold">{totalSessions}</span></div>
+            <div className="flex justify-between gap-4"><span className="text-slate-500">{timeBasedMode ? 'Time (min)' : 'Sessions'}</span> <span className="text-slate-50 font-bold">{totalSessions}</span></div>
             {morning > 0 && <div className="flex justify-between gap-4"><span className="text-amber-400">Morning</span> <span className="text-slate-200">{morning}</span></div>}
             {afternoon > 0 && <div className="flex justify-between gap-4"><span className="text-orange-400">Afternoon</span> <span className="text-slate-200">{afternoon}</span></div>}
             {night > 0 && <div className="flex justify-between gap-4"><span className="text-indigo-400">Night</span> <span className="text-slate-200">{night}</span></div>}
@@ -101,7 +102,7 @@ const SharedPopoverContent = ({
 };
 
 // Moved outside to avoid redefining on every render, which causes extreme lag
-const CustomWeeklyTooltip = ({ active, payload, label }: any) => {
+const CustomWeeklyTooltip = ({ active, payload, label, timeBasedMode }: any) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
@@ -117,20 +118,21 @@ const CustomWeeklyTooltip = ({ active, payload, label }: any) => {
         efficiency={data.efficiency}
         mood={data.mood}
         dateTimestamp={data.timestamp}
+        timeBasedMode={timeBasedMode}
       />
     );
   }
   return null;
 };
 
-const CustomDailyTooltip = ({ active, payload, label, dateTimestamp }: any) => {
+const CustomDailyTooltip = ({ active, payload, label, dateTimestamp, timeBasedMode }: any) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
       <div className="bg-slate-900/95 backdrop-blur-md border border-slate-700/50 shadow-xl shadow-indigo-500/10 rounded-xl p-3 z-50 min-w-[120px]">
         <p className="text-slate-50 font-bold mb-1.5 pb-1.5 border-b border-slate-800/50">{label}</p>
         <div className="flex justify-between gap-4 text-xs mb-3">
-          <span className="text-slate-400">Sessions</span>
+          <span className="text-slate-400">{timeBasedMode ? 'Time (min)' : 'Sessions'}</span>
           <span className="text-indigo-400 font-bold">{data.sessions}</span>
         </div>
         {dateTimestamp && (
@@ -327,18 +329,28 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
     const counts = { Morning: 0, Afternoon: 0, Night: 0, Other: 0 };
     daySessions.forEach(s => {
       const p = s.period || getPeriod(new Date(s.timestamp));
+      const amount = state.timeBasedMode ? Math.max(1, s.focusDuration || s.duration) : 1;
       if (p in counts) {
-        counts[p as keyof typeof counts]++;
+        counts[p as keyof typeof counts] += amount;
       } else {
-        counts.Other++;
+        counts.Other += amount;
       }
     });
+
+    if (state.timeBasedMode) {
+      counts.Morning = Math.floor(counts.Morning);
+      counts.Afternoon = Math.floor(counts.Afternoon);
+      counts.Night = Math.floor(counts.Night);
+      counts.Other = Math.floor(counts.Other);
+    }
+    
+    const totalCount = counts.Morning + counts.Afternoon + counts.Night + counts.Other;
 
     return (
       <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 pointer-events-auto z-[100]">
         <SharedPopoverContent 
             label={format(date, 'EEE, MMM d, yyyy')}
-            totalSessions={daySessions.length}
+            totalSessions={totalCount}
             morning={counts.Morning}
             afternoon={counts.Afternoon}
             night={counts.Night}
@@ -348,6 +360,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
             efficiency={log?.rating}
             mood={log?.mood}
             dateTimestamp={date.getTime()}
+            timeBasedMode={state.timeBasedMode}
         />
       </div>
     );
@@ -690,7 +703,11 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
     );
     const uniqueQuests = new Set(questRewards.map(r => r.timestamp)).size;
     
-    return { coins, xp, tasks: periodSessions.length + uniqueQuests };
+    const tasks = state.timeBasedMode 
+      ? Math.floor(periodSessions.reduce((acc, s) => acc + (s.focusDuration || s.duration), 0))
+      : periodSessions.length + uniqueQuests;
+
+    return { coins, xp, tasks };
   };
 
   const dailyGains = useMemo(() => {
@@ -712,13 +729,17 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
     );
     const uniqueQuests = new Set(questRewards.map(r => r.timestamp)).size;
     
-    return { coins, xp, tasks: sessions.length + uniqueQuests };
-  }, [history, state.rewardHistory, dailyDate, ts]);
+    const tasks = state.timeBasedMode 
+      ? Math.floor(sessions.reduce((acc, s) => acc + (s.focusDuration || s.duration), 0))
+      : sessions.length + uniqueQuests;
+
+    return { coins, xp, tasks };
+  }, [history, state.rewardHistory, dailyDate, ts, state.timeBasedMode]);
 
   const weeklyGains = useMemo(() => {
     const interval = { start: weekStart, end: weekEnd };
     return getGainsForPeriod(history, state.rewardHistory || [], interval);
-  }, [history, state.rewardHistory, weekStart, weekEnd, ts]);
+  }, [history, state.rewardHistory, weekStart, weekEnd, ts, state.timeBasedMode]);
 
   const getPeriod = (date: Date) => {
     return getPeriodInfo(date).period;
@@ -729,12 +750,20 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
     const dailyCounts = { Morning: 0, Afternoon: 0, Night: 0, Other: 0 };
     dailySessions.forEach(s => {
       const p = s.period || getPeriod(new Date(s.timestamp));
+      const amount = state.timeBasedMode ? Math.max(1, s.focusDuration || s.duration) : 1;
       if (p in dailyCounts) {
-        dailyCounts[p as keyof typeof dailyCounts]++;
+        dailyCounts[p as keyof typeof dailyCounts] += amount;
       } else {
-        dailyCounts.Other++;
+        dailyCounts.Other += amount;
       }
     });
+
+    if (state.timeBasedMode) {
+      dailyCounts.Morning = Math.floor(dailyCounts.Morning);
+      dailyCounts.Afternoon = Math.floor(dailyCounts.Afternoon);
+      dailyCounts.Night = Math.floor(dailyCounts.Night);
+      dailyCounts.Other = Math.floor(dailyCounts.Other);
+    }
 
     return [
       { name: `Morning (${ts.morning.start}-${ts.morning.end})`, sessions: dailyCounts.Morning, fill: '#fde047', periodKey: 'Morning' },
@@ -742,7 +771,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
       { name: `Night (${ts.night.start}-${ts.night.end})`, sessions: dailyCounts.Night, fill: '#6366f1', periodKey: 'Night' },
       ...(state.showOtherInActivityLog !== false ? [{ name: 'Other', sessions: dailyCounts.Other, fill: '#64748b', periodKey: 'Other' }] : [])
     ];
-  }, [dailyDate, getSessionsForDate, ts, state.showOtherInActivityLog]);
+  }, [dailyDate, getSessionsForDate, ts, state.showOtherInActivityLog, state.timeBasedMode]);
 
   const dailySessions = getSessionsForDate(dailyDate);
   const dailyCounts = { Morning: 0, Afternoon: 0, Night: 0, Other: 0 };
@@ -793,12 +822,19 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
       const counts = { Morning: 0, Afternoon: 0, Night: 0, Other: 0 };
       daySessions.forEach(s => {
         const p = s.period || getPeriod(new Date(s.timestamp));
+        const amount = state.timeBasedMode ? Math.max(1, s.focusDuration || s.duration) : 1;
         if (p in counts) {
-          counts[p as keyof typeof counts]++;
+          counts[p as keyof typeof counts] += amount;
         } else {
-          counts.Other++;
+          counts.Other += amount;
         }
       });
+      if (state.timeBasedMode) {
+        counts.Morning = Math.floor(counts.Morning);
+        counts.Afternoon = Math.floor(counts.Afternoon);
+        counts.Night = Math.floor(counts.Night);
+        counts.Other = Math.floor(counts.Other);
+      }
       const total = counts.Morning + counts.Afternoon + counts.Night + counts.Other;
       return {
         name: format(date, 'EEE').toUpperCase(),
@@ -816,7 +852,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
         timestamp: date.getTime(),
       };
     });
-  }, [weeklyDays, dailyLogs, getSessionsForDate, getRewardsForDate]);
+  }, [weeklyDays, dailyLogs, getSessionsForDate, getRewardsForDate, state.timeBasedMode]);
 
   // --- Heatmap Data ---
   const heatmapDays = useMemo(() => {
@@ -952,7 +988,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
               </div>
             </div>
             <div className="bg-slate-950/40 border border-slate-800/60 rounded-2xl p-3 flex flex-col items-center justify-center text-center">
-              <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Tasks</span>
+              <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1.5">{state.timeBasedMode ? 'Time (min)' : 'Tasks'}</span>
               <div className="flex items-center gap-1.5 text-emerald-400">
                 <Sword size={12} className="sm:w-4 sm:h-4 shrink-0" />
                 <span className="text-sm sm:text-lg font-black font-mono">{dailyGains.tasks}</span>
@@ -967,7 +1003,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
                 <Tooltip 
                   key={chartKeys.daily}
                   trigger="click"
-                  content={<CustomDailyTooltip dateTimestamp={dailyDate.getTime()} />}
+                  content={<CustomDailyTooltip dateTimestamp={dailyDate.getTime()} timeBasedMode={state.timeBasedMode} />}
                   cursor={{ fill: 'rgba(100, 116, 139, 0.2)' }}
                   wrapperStyle={{ zIndex: 100, pointerEvents: 'auto' }}
                 />
@@ -1232,7 +1268,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
               </div>
             </div>
             <div className="bg-slate-950/40 border border-slate-800/60 rounded-2xl p-3 flex flex-col items-center justify-center text-center">
-              <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Daily Avg Tasks</span>
+              <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1.5">{state.timeBasedMode ? 'Avg Time (min)' : 'Daily Avg Tasks'}</span>
               <div className="flex items-center gap-1.5 text-emerald-400">
                 <Sword size={12} className="sm:w-4 sm:h-4 shrink-0" />
                 <span className="text-sm sm:text-lg font-black font-mono">{(weeklyGains.tasks / weeklyActiveDaysCount).toFixed(1)}</span>
@@ -1248,7 +1284,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
                   <Tooltip 
                     key={chartKeys.weeklyBar}
                     trigger="click"
-                    content={<CustomWeeklyTooltip />}
+                    content={<CustomWeeklyTooltip timeBasedMode={state.timeBasedMode} />}
                     cursor={{ fill: 'rgba(100, 116, 139, 0.2)' }}
                     wrapperStyle={{ zIndex: 100, pointerEvents: 'auto' }}
                   />
@@ -1280,7 +1316,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
                     <Tooltip 
                       key={chartKeys.weeklyLine}
                       trigger="click"
-                      content={<CustomWeeklyTooltip />}
+                      content={<CustomWeeklyTooltip timeBasedMode={state.timeBasedMode} />}
                       wrapperStyle={{ zIndex: 100, pointerEvents: 'auto' }}
                     />
                     <Line 

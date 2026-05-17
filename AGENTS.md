@@ -23,7 +23,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v6.12.4
+- **Current Version:** v7.0.1
 - **Last Update Date:** 2026-05-17
 
 ## Dark Themes Definition
@@ -49,6 +49,15 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v7.0.1 (2026-05-17):** Daily Progress Synchronization.
+  - *Bug Fix:* Fixed an issue where deleting a session from Explore (Recent Sessions) failed to synchronize and decrement the Daily Progress bar on the Dashboard.
+  - *Data Sync:* When a session is manually deleted, the system now automatically retracts the Gold and XP earned from that session, and removes any unredeemed chest rewards associated with it.
+
+- **v7.0.0 (2026-05-17):** Time-Based Sessions Calculation.
+  - *Feature:* Added "Time-Based Calculation" settings under General Settings. When enabled, task requirements and rewards scales are converted from fixed session numbers to time equivalents using a customizable standard session duration.
+  - *Feature:* Dungeons natively present target times (e.g. 75 mins instead of 3 sessions).
+  - *UI:* Stats layout and Record dashboard updated to present Tasks and Sessions in calculated minutes.
 
 - **v6.12.4 (2026-05-17):** Heatmap Range Configuration.
   - *Feature:* Added settings interface to configure heatmap saturation range, allowing users with high session counts to switch to a [0-16] max mode for better visualization.

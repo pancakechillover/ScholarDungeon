@@ -57,6 +57,8 @@ interface DungeonManagerProps {
   dungeons: Dungeon[];
   majorDungeons: MajorDungeon[];
   currentDungeonId: string | null;
+  timeBasedMode?: boolean;
+  standardSessionMinutes?: number;
   isAddingMajor: boolean;
   setIsAddingMajor: (val: boolean) => void;
   onSelect: (id: string) => void;
@@ -84,6 +86,8 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
   dungeons,
   majorDungeons,
   currentDungeonId,
+  timeBasedMode,
+  standardSessionMinutes = 25,
   isAddingMajor,
   setIsAddingMajor,
   onSelect,
@@ -491,10 +495,16 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                     <div className="h-1.5 w-16 bg-slate-900 rounded-full overflow-hidden border border-slate-800/50">
                       <div 
                         className={cn("h-full transition-all", sub.status === 'completed' ? "bg-emerald-500" : "bg-indigo-500")}
-                        style={{ width: `${(sub.completedSessions/sub.totalSessions)*100}%` }}
+                        style={{ width: `${Math.min(100, (sub.completedSessions/sub.totalSessions)*100)}%` }}
                       />
                     </div>
-                    <span className="text-[10px] font-bold text-slate-500 tabular-nums inline-block w-14 text-right">{sub.completedSessions}/{sub.totalSessions}</span>
+                    {timeBasedMode ? (
+                      <span className="text-[10px] font-bold text-slate-400 tabular-nums inline-block w-16 text-right whitespace-nowrap">
+                        {Math.floor(sub.completedSessions * (standardSessionMinutes || 25))}<span className="text-[9px] opacity-70 ml-[1px]">m</span> <span className="opacity-50 text-[9px] mx-[1px]">/</span> {sub.totalSessions * (standardSessionMinutes || 25)}<span className="text-[9px] opacity-70 ml-[1px]">m</span>
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-bold text-slate-400 tabular-nums inline-block w-14 text-right">{Math.floor(sub.completedSessions)}/{sub.totalSessions}</span>
+                    )}
                   </div>
 
                   <div className="shrink-0 order-2 flex items-center ml-1">

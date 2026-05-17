@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v6.12.4';
+export const APP_VERSION = 'v7.0.1';
 export const LAST_UPDATE_DATE = '2026-05-17';
-export const LAST_UPDATE_TIME = '09:00:00';
+export const LAST_UPDATE_TIME = '22:08:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,27 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v7.0.1',
+    date: '2026-05-17',
+    time: '22:08:00',
+    title: 'Daily Progress Synchronization',
+    items: [
+      { category: 'Bug Fix', description: 'Fixed an issue where deleting a session from Explore (Recent Sessions) failed to synchronize and decrement the Daily Progress bar on the Dashboard.' },
+      { category: 'Data Sync', description: 'When a session is manually deleted, the system now automatically retracts the Gold and XP earned from that session, and removes any unredeemed chest rewards associated with it without penalizing the current level.' }
+    ]
+  },
+  {
+    version: 'v7.0.0',
+    date: '2026-05-17',
+    time: '21:37:00',
+    title: 'Time-Based Sessions Calculation',
+    items: [
+      { category: 'Feature', description: 'Added "Time-Based Calculation" settings under General Settings. When enabled, task requirements and rewards scales are converted from fixed session numbers to time equivalents using a customizable standard session duration.' },
+      { category: 'Feature', description: 'Dungeons now natively present target times (e.g. 75 mins instead of 3 sessions).' },
+      { category: 'UI', description: 'The Stats layout and Record dashboard have been updated to present Tasks and Sessions in calculated minutes.' }
+    ]
+  },
   {
     version: 'v6.12.4',
     date: '2026-05-17',

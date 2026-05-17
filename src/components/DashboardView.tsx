@@ -154,7 +154,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <div className="bg-slate-950/50 p-4 sm:p-6 rounded-2xl border border-indigo-500/20">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 mb-3 sm:mb-4">
                 <span className="text-[10px] sm:text-xs font-bold text-indigo-400 uppercase tracking-widest">Current Quest</span>
-                <span className="text-[9px] sm:text-xs text-slate-500">{currentDungeon.completedSessions}/{currentDungeon.totalSessions} Sessions Cleared</span>
+                {state.timeBasedMode ? (
+                  <span className="text-[9px] sm:text-xs font-bold text-slate-400 tabular-nums">
+                    {Math.floor(currentDungeon.completedSessions * (state.standardSessionMinutes || 25))}<span className="text-[8px] sm:text-[10px] opacity-70 ml-[1px]">m</span> <span className="opacity-50 text-[8px] sm:text-[10px] mx-[1px]">/</span> {currentDungeon.totalSessions * (state.standardSessionMinutes || 25)}<span className="text-[8px] sm:text-[10px] opacity-70 ml-[1px]">m</span>
+                  </span>
+                ) : (
+                  <span className="text-[9px] sm:text-xs font-bold text-slate-400 tabular-nums">{currentDungeon.completedSessions}/{currentDungeon.totalSessions} Sessions</span>
+                )}
               </div>
               <h3 className="font-bold text-slate-50 mb-4 truncate pr-2" style={{ fontSize: 'clamp(1rem, 4vw, 1.25rem)' }}>{currentDungeon.name}</h3>
               <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden mb-6">
@@ -219,7 +225,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </div>
             </div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-2xl font-bold text-slate-50">{state.dailySessions}</span>
+              <span className="text-2xl font-bold text-slate-50">
+                {state.timeBasedMode 
+                  ? `${Math.floor(state.dailySessions * (state.standardSessionMinutes || 25))}m` 
+                  : state.dailySessions}
+              </span>
               {(() => {
                 const timezone = state.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
                 let now = new Date();
@@ -238,7 +248,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 const dailyGoal = state.useSameDailyProgressGoalEveryDay ?? true 
                   ? (state.dailyProgressGoal ?? 8) 
                   : (state.dailyProgressGoalConfig?.[day] ?? 8);
-                return <span className="text-slate-500 text-xs">/ {dailyGoal} Sessions</span>;
+
+                return state.timeBasedMode ? (
+                  <span className="text-slate-500 text-xs text-right">
+                    <span className="opacity-50 mx-1">/</span> {dailyGoal * (state.standardSessionMinutes || 25)}m
+                  </span>
+                ) : (
+                  <span className="text-slate-500 text-xs">/ {dailyGoal} Sessions</span>
+                );
               })()}
             </div>
             <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden mb-6">
