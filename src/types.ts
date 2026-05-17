@@ -230,6 +230,7 @@ export interface AppState {
   defaultMarkdownEnabled?: boolean;
   timerBannerCompactMode?: boolean;
   timerSkipVictoryMode?: 'none' | 'auto_pick_highest' | 'skip_rewards' | 'defer_to_chest';
+  heatmapScaleMax?: number; // 0-8 or 0-16 for heatmap max range
   timerBannerShortcuts?: string[];
   requireFocusConfirmation?: boolean;
   pendingRewardChest?: { session: StudySession; choices: RewardCard[]; }[];

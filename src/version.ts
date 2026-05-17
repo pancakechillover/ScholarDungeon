@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v6.12.3';
-export const LAST_UPDATE_DATE = '2026-05-16';
-export const LAST_UPDATE_TIME = '11:51:00';
+export const APP_VERSION = 'v6.12.4';
+export const LAST_UPDATE_DATE = '2026-05-17';
+export const LAST_UPDATE_TIME = '09:00:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,15 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v6.12.4',
+    date: '2026-05-17',
+    time: '09:00:00',
+    title: 'Heatmap Range Configuration',
+    items: [
+      { category: 'Feature', description: 'Added the ability to customize the heatmap saturation range in Settings -> General, supporting both [0-8] and [0-16] modes for users with higher daily session counts.' }
+    ]
+  },
   {
     version: 'v6.12.3',
     date: '2026-05-16',

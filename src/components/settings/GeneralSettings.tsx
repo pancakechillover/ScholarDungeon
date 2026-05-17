@@ -746,6 +746,55 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
       <div className="space-y-6 pt-6 border-t border-slate-800">
         <div className="flex items-center gap-2.5 text-indigo-400 mb-6 pb-2">
           <CalendarCheck size={20} />
+          <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Performance Heatmap</h4>
+        </div>
+
+        <div className="space-y-4">
+          <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Heatmap Saturation Range</label>
+          <p className="text-xs text-slate-500 italic">Adjusts the maximum session count required to reach the darkest color on the heatmap.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <button
+              onClick={() => setState(prev => ({ ...prev, heatmapScaleMax: 8 }))}
+              className={cn(
+                "flex items-center gap-4 p-4 rounded-2xl border-2 transition-all text-left",
+                (state.heatmapScaleMax ?? 8) === 8 
+                  ? "bg-indigo-500/10 border-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.2)]" 
+                  : "bg-slate-900 border-slate-800 hover:border-slate-700"
+              )}
+            >
+              <div className="relative p-2 bg-slate-800 rounded-xl text-slate-400">
+                <Target size={20} />
+              </div>
+              <div>
+                <div className={cn("font-bold", (state.heatmapScaleMax ?? 8) === 8 ? "text-indigo-400" : "text-white")}>[0-8] Mode</div>
+                <div className="text-[10px] text-slate-500">8 sessions = darkest color</div>
+              </div>
+            </button>
+
+            <button
+              onClick={() => setState(prev => ({ ...prev, heatmapScaleMax: 16 }))}
+              className={cn(
+                "flex items-center gap-4 p-4 rounded-2xl border-2 transition-all text-left",
+                state.heatmapScaleMax === 16 
+                  ? "bg-indigo-500/10 border-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.2)]" 
+                  : "bg-slate-900 border-slate-800 hover:border-slate-700"
+              )}
+            >
+              <div className="p-2 bg-slate-800 rounded-xl text-slate-400">
+                <Globe size={20} />
+              </div>
+              <div>
+                <div className={cn("font-bold", state.heatmapScaleMax === 16 ? "text-indigo-400" : "text-white")}>[0-16] Mode</div>
+                <div className="text-[10px] text-slate-500">16 sessions = darkest color</div>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-6 pt-6 border-t border-slate-800">
+        <div className="flex items-center gap-2.5 text-indigo-400 mb-6 pb-2">
+          <CalendarCheck size={20} />
           <h4 className="text-lg font-bold uppercase tracking-widest pr-1">End of the day</h4>
         </div>
 

@@ -58,6 +58,7 @@ export function useGameState() {
       nightTheme: 'night',
       autoThemeDayStart: '08:00',
       autoThemeNightStart: '20:00',
+      heatmapScaleMax: 8,
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       gachaAnimation: 'card',
       ichibanAnimation: 'scratch',

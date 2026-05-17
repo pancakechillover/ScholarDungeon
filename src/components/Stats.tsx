@@ -835,9 +835,12 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
     if (heatmapMetric === 'time') {
       const count = getSessionsForDate(date).length;
       if (count === 0) return 'bg-slate-800/50';
-      if (count < 2) return 'bg-indigo-500/20';
-      if (count < 4) return 'bg-indigo-500/40';
-      if (count < 8) return 'bg-indigo-500/70';
+      
+      const max = state.heatmapScaleMax ?? 8;
+      
+      if (count < (max * 0.25)) return 'bg-indigo-500/20';
+      if (count < (max * 0.5)) return 'bg-indigo-500/40';
+      if (count < max) return 'bg-indigo-500/70';
       return 'bg-indigo-500';
     } else {
       const log = dailyLogs[format(date, 'yyyy-MM-dd')];
