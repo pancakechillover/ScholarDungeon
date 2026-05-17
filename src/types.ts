@@ -303,6 +303,7 @@ export interface AppState {
   dailyProgressGoalConfig?: Record<number, number>;
   useSameDailyProgressGoalEveryDay?: boolean;
   dailyProgressGoal?: number;
+  limitedMentalEffort?: boolean;
   // Custom Time Mocking
   customTimeEnabled?: boolean;
   customTimeOffset?: number; // Difference in milliseconds (SimulatedTime - RealTime)

@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v7.0.1';
+export const APP_VERSION = 'v7.0.2';
 export const LAST_UPDATE_DATE = '2026-05-17';
-export const LAST_UPDATE_TIME = '22:08:00';
+export const LAST_UPDATE_TIME = '22:30:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,15 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v7.0.2',
+    date: '2026-05-17',
+    time: '22:30:00',
+    title: 'Limited Mental Effort Mode',
+    items: [
+      { category: 'Feature', description: 'Added a "Limited Mental Effort Mode" toggle in General Settings. When enabled, reaching the Daily Progress Goal automatically replaces the timer interface with an "End the Day" prompt, actively preventing further sessions and encouraging rest.' }
+    ]
+  },
   {
     version: 'v7.0.1',
     date: '2026-05-17',

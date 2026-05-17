@@ -1344,6 +1344,7 @@ function App() {
                    setActiveSettingsSection('timer');
                    setActiveTab('settings');
                  }}
+                 setShowDailySummary={setShowDailySummary}
                />
              )}
 

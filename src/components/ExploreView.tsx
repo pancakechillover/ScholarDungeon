@@ -18,7 +18,8 @@ import {
   BarChart3,
   X,
   Settings as SettingsIcon,
-  Archive
+  Archive,
+  Calendar
 } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { useScrollLock } from '../hooks/useScrollLock';
@@ -93,6 +94,7 @@ interface ExploreViewProps {
   unclaimedQuestsCount: number;
   unclaimedAchievementsCount: number;
   openTimerSettings: () => void;
+  setShowDailySummary: (show: boolean) => void;
 }
 
 export const ExploreView: React.FC<ExploreViewProps> = ({
@@ -153,7 +155,8 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
   isDesktop,
   unclaimedQuestsCount,
   unclaimedAchievementsCount,
-  openTimerSettings
+  openTimerSettings,
+  setShowDailySummary
 }) => {
   const [showChestModal, setShowChestModal] = React.useState(false);
   const [activeTooltipId, setActiveTooltipId] = React.useState<string | null>(null);
@@ -234,6 +237,130 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
     return () => window.removeEventListener('statsJumpToRecentSessions', handleJump);
   }, [activeTab, isFullscreenExplore, setActiveTab, setIsFullscreenExplore]);
   
+  const isMentalLimitReached = React.useMemo(() => {
+    if (!state.limitedMentalEffort) return false;
+    const timezone = state.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+    let now = new Date();
+    if (timezone) {
+      try {
+        const str = now.toLocaleString('en-US', { timeZone: timezone });
+        now = new Date(str);
+      } catch (e) {}
+    }
+    const ts = state.timeSettings || { morning: { start: 8, end: 12 }, afternoon: { start: 14, end: 18 }, night: { start: 20, end: 24 } };
+    if (now.getHours() < ts.morning.start) {
+      now.setDate(now.getDate() - 1);
+    }
+    const day = now.getDay();
+    const dailyGoal = state.useSameDailyProgressGoalEveryDay ?? true 
+      ? (state.dailyProgressGoal ?? 8) 
+      : (state.dailyProgressGoalConfig?.[day] ?? 8);
+    
+    return state.dailySessions >= dailyGoal;
+  }, [state]);
+
+  const renderTimerContent = () => {
+    if (isMentalLimitReached && !isTimerActive) {
+      return (
+        <div className="flex flex-col items-center justify-center p-8 bg-slate-900/50 rounded-3xl border border-slate-800/50 backdrop-blur-sm text-center max-w-sm mx-auto shadow-2xl">
+          <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mb-4">
+            <Calendar size={32} className="text-emerald-500" />
+          </div>
+          <h3 className="text-xl font-bold text-slate-50 mb-2">Goal Reached</h3>
+          <p className="text-sm text-slate-400 mb-6 leading-relaxed">
+            You've completed your daily progress goal. Limited Mental Effort mode is enabled, so it's time to rest and recharge.
+          </p>
+          <button
+            onClick={() => {
+              setShowDailySummary(true);
+              playSound('success', state.soundVolume, state.soundEnabled);
+            }}
+            className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-black uppercase tracking-widest text-sm transition-all shadow-lg shadow-emerald-500/20 active:scale-95 flex items-center justify-center gap-2"
+          >
+            <Calendar size={18} fill="currentColor" />
+            End the Day
+          </button>
+        </div>
+      );
+    }
+
+    return (
+      <Timer 
+        currentDungeon={currentDungeon || null}
+        rewardPool={state.rewardPool || []}
+        activeTalents={state.activeTalents}
+        timerSkipVictoryMode={state.timerSkipVictoryMode}
+        dailyRerollUsed={state.dailyRerollUsed}
+        history={state.history}
+        critChance={state.devModeEnabled ? (state.devCritChance ?? 0.05) : 0.05}
+        critMultiplier={state.devModeEnabled ? (state.devCritMultiplier ?? 5) : 5}
+        onComplete={(duration, fDur, rDur) => {
+          const result = completeSession(state.currentDungeonId || null, duration, fDur, rDur);
+          playSound('success', state.soundVolume, state.soundEnabled);
+          if (result && state.secretCode) {
+            syncToCloud(true, undefined, 'Manual');
+          }
+          
+          if (result) {
+            setPipVictorySummary({
+              xp: result.xpEarned,
+              coins: result.coinsEarned,
+              ts: Date.now()
+            });
+          }
+          
+          return result;
+        }}
+        onRestComplete={() => {
+          playSound('success', state.soundVolume, state.soundEnabled);
+        }}
+        onInventoryAdd={(id) => setState(prev => ({ ...prev, inventory: [...prev.inventory, id] }))}
+        onReroll={() => setState(prev => ({ ...prev, dailyRerollUsed: true }))}
+        onRewardSelect={(reward, sessionId) => {
+          selectReward(reward, sessionId);
+          playSound('reward', state.soundVolume, state.soundEnabled);
+          if (state.secretCode) {
+            syncToCloud(true, undefined, 'Manual');
+          }
+          setState(prev => ({
+            ...prev,
+            pendingRewardChest: prev.pendingRewardChest?.filter(item => item.session.id !== sessionId) || []
+          }));
+        }}
+        onDeferReward={(session, choices) => {
+          setState(prev => ({
+            ...prev,
+            pendingRewardChest: [...(prev.pendingRewardChest || []), { session, choices }]
+          }));
+        }}
+        setShowCoinRain={setShowCoinRain}
+        isFullscreen={isFullscreenExplore}
+        pipWindow={pipWindow}
+        secretCode={state.secretCode}
+        pushEnabled={state.pushEnabled}
+        onTogglePip={togglePip}
+        requireFocusConfirmation={state.requireFocusConfirmation}
+        focusDuration={focusDuration}
+        restDuration={restDuration}
+        enableRest={enableRest}
+        isLooping={isLooping}
+        loopTarget={loopTarget}
+        loopCount={loopCount}
+        setLoopCount={setLoopCount}
+        setIsResting={setIsResting}
+        isResting={isResting}
+        setDuration={setDuration}
+        duration={duration}
+        setTimeLeft={setTimeLeft}
+        timeLeft={timeLeft}
+        setIsActive={setIsTimerActive}
+        isActive={isTimerActive}
+        setEndTime={setEndTime}
+        endTime={endTime}
+      />
+    );
+  };
+
   return (
     <motion.div
       key="explore"
@@ -401,79 +528,7 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
                 <div className="flex-1 relative p-4 sm:p-8 flex flex-col items-center justify-center">
                 
                 <div className="w-full max-w-md aspect-square sm:aspect-auto flex items-center justify-center scale-90 sm:scale-100">
-                  <Timer 
-                    currentDungeon={currentDungeon || null}
-                    rewardPool={state.rewardPool || []}
-                    activeTalents={state.activeTalents}
-                    timerSkipVictoryMode={state.timerSkipVictoryMode}
-                    dailyRerollUsed={state.dailyRerollUsed}
-                    history={state.history}
-                    critChance={state.devModeEnabled ? (state.devCritChance ?? 0.05) : 0.05}
-                    critMultiplier={state.devModeEnabled ? (state.devCritMultiplier ?? 5) : 5}
-                    onComplete={(duration, fDur, rDur) => {
-                      const result = completeSession(state.currentDungeonId || null, duration, fDur, rDur);
-                      playSound('success', state.soundVolume, state.soundEnabled);
-                      if (result && state.secretCode) {
-                        syncToCloud(true, undefined, 'Manual');
-                      }
-                      
-                      if (result) {
-                        setPipVictorySummary({
-                          xp: result.xpEarned,
-                          coins: result.coinsEarned,
-                          ts: Date.now()
-                        });
-                      }
-                      
-                      return result;
-                    }}
-                    onRestComplete={() => {
-                      playSound('success', state.soundVolume, state.soundEnabled);
-                    }}
-                    onInventoryAdd={(id) => setState(prev => ({ ...prev, inventory: [...prev.inventory, id] }))}
-                    onReroll={() => setState(prev => ({ ...prev, dailyRerollUsed: true }))}
-                    onRewardSelect={(reward, sessionId) => {
-                      selectReward(reward, sessionId);
-                      playSound('reward', state.soundVolume, state.soundEnabled);
-                      if (state.secretCode) {
-                        syncToCloud(true, undefined, 'Manual');
-                      }
-                      setState(prev => ({
-                        ...prev,
-                        pendingRewardChest: prev.pendingRewardChest?.filter(item => item.session.id !== sessionId) || []
-                      }));
-                    }}
-                    onDeferReward={(session, choices) => {
-                      setState(prev => ({
-                        ...prev,
-                        pendingRewardChest: [...(prev.pendingRewardChest || []), { session, choices }]
-                      }));
-                    }}
-                    setShowCoinRain={setShowCoinRain}
-                    isFullscreen={isFullscreenExplore}
-                    pipWindow={pipWindow}
-                    secretCode={state.secretCode}
-                    pushEnabled={state.pushEnabled}
-                    onTogglePip={togglePip}
-                    requireFocusConfirmation={state.requireFocusConfirmation}
-                    focusDuration={focusDuration}
-                    restDuration={restDuration}
-                    enableRest={enableRest}
-                    isLooping={isLooping}
-                    loopTarget={loopTarget}
-                    loopCount={loopCount}
-                    setLoopCount={setLoopCount}
-                    setIsResting={setIsResting}
-                    isResting={isResting}
-                    setDuration={setDuration}
-                    duration={duration}
-                    setTimeLeft={setTimeLeft}
-                    timeLeft={timeLeft}
-                    setIsActive={setIsTimerActive}
-                    isActive={isTimerActive}
-                    setEndTime={setEndTime}
-                    endTime={endTime}
-                  />
+                  {renderTimerContent()}
                 </div>
               </div>
               </div>
@@ -510,83 +565,11 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
 
                   {/* Scaled Timer for Fullscreen Experience */}
                  <div className="scale-100 sm:scale-110 md:scale-125 lg:scale-[1.35] origin-center transform transition-transform [@media(orientation:landscape)_and_(max-height:600px)]:scale-[0.70] [@media(orientation:landscape)_and_(max-height:600px)]:-mt-8">
-                   <Timer 
-                      currentDungeon={currentDungeon || null}
-                      rewardPool={state.rewardPool || []}
-                      activeTalents={state.activeTalents}
-                      timerSkipVictoryMode={state.timerSkipVictoryMode}
-                      dailyRerollUsed={state.dailyRerollUsed}
-                      history={state.history}
-                      critChance={state.devModeEnabled ? (state.devCritChance ?? 0.05) : 0.05}
-                      critMultiplier={state.devModeEnabled ? (state.devCritMultiplier ?? 5) : 5}
-                      onComplete={(duration, fDur, rDur) => {
-                        const result = completeSession(state.currentDungeonId || null, duration, fDur, rDur);
-                        playSound('success', state.soundVolume, state.soundEnabled);
-                        if (result && state.secretCode) {
-                          syncToCloud(true, undefined, 'Manual');
-                        }
-                        
-                        if (result) {
-                          setPipVictorySummary({
-                            xp: result.xpEarned,
-                            coins: result.coinsEarned,
-                            ts: Date.now()
-                          });
-                        }
-
-                        return result;
-                      }}
-                      onRestComplete={() => {
-                        playSound('success', state.soundVolume, state.soundEnabled);
-                      }}
-                      onInventoryAdd={(id) => setState(prev => ({ ...prev, inventory: [...prev.inventory, id] }))}
-                      onReroll={() => setState(prev => ({ ...prev, dailyRerollUsed: true }))}
-                      onRewardSelect={(reward, sessionId) => {
-                        selectReward(reward, sessionId);
-                        playSound('reward', state.soundVolume, state.soundEnabled);
-                        if (state.secretCode) {
-                          syncToCloud(true, undefined, 'Manual');
-                        }
-                        setState(prev => ({
-                          ...prev,
-                          pendingRewardChest: prev.pendingRewardChest?.filter(item => item.session.id !== sessionId) || []
-                        }));
-                      }}
-                      onDeferReward={(session, choices) => {
-                        setState(prev => ({
-                          ...prev,
-                          pendingRewardChest: [...(prev.pendingRewardChest || []), { session, choices }]
-                        }));
-                      }}
-                      setShowCoinRain={setShowCoinRain}
-                      isFullscreen={isFullscreenExplore}
-                      pipWindow={pipWindow}
-                      secretCode={state.secretCode}
-                      pushEnabled={state.pushEnabled}
-                      onTogglePip={togglePip}
-                      requireFocusConfirmation={state.requireFocusConfirmation}
-                      focusDuration={focusDuration}
-                      restDuration={restDuration}
-                      enableRest={enableRest}
-                      isLooping={isLooping}
-                      loopTarget={loopTarget}
-                      loopCount={loopCount}
-                      setLoopCount={setLoopCount}
-                      setIsResting={setIsResting}
-                      isResting={isResting}
-                      setDuration={setDuration}
-                      duration={duration}
-                      setTimeLeft={setTimeLeft}
-                      timeLeft={timeLeft}
-                      setIsActive={setIsTimerActive}
-                      isActive={isTimerActive}
-                      setEndTime={setEndTime}
-                      endTime={endTime}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
+                   {renderTimerContent()}
+                 </div>
+               </div>
+             )}
+           </div>
 
           {/* Right Column: Active Talents & Current Build */}
           {!isFullscreenExplore && (

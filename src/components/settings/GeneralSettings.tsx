@@ -982,6 +982,27 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
                   ))}
                 </div>
               )}
+              
+              <div className="pt-4 mt-4 border-t border-slate-800 flex items-center justify-between">
+                <div className="max-w-[70%]">
+                  <h6 className="text-[11px] font-bold text-slate-300 mb-1">Limited Mental Effort Mode</h6>
+                  <p className="text-[10px] text-slate-500 leading-snug">When enabled, the app will prevent you from starting new sessions and prompt you to rest once you reach your daily progress goal.</p>
+                </div>
+                 <button
+                   onClick={() => setState(prev => ({ ...prev, limitedMentalEffort: !prev.limitedMentalEffort }))}
+                   className={cn(
+                     "relative inline-flex h-6 w-11 items-center rounded-full transition-colors shrink-0",
+                     state.limitedMentalEffort ? "bg-amber-500" : "bg-slate-700"
+                   )}
+                 >
+                   <span
+                     className={cn(
+                       "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+                       state.limitedMentalEffort ? "translate-x-6" : "translate-x-1"
+                     )}
+                   />
+                 </button>
+              </div>
             </div>
           </div>
         </div>
