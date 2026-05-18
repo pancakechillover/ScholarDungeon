@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v7.0.2';
+export const APP_VERSION = 'v7.0.5';
 export const LAST_UPDATE_DATE = '2026-05-17';
-export const LAST_UPDATE_TIME = '22:30:00';
+export const LAST_UPDATE_TIME = '23:05:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,34 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v7.0.5',
+    date: '2026-05-17',
+    time: '23:05:00',
+    title: 'Time-Based Reward Multipliers',
+    items: [
+      { category: 'Feature', description: 'In Time-Based mode, completing a focus session that is a multiple of the standard session size now triggers the reward generation recursively, granting multiple reward chests at once.' },
+      { category: 'UI', description: 'Updated the "End of the Day" rest prompt to accurately display the Daily Progress tracker in time format when Time-Based mode is active.' }
+    ]
+  },
+  {
+    version: 'v7.0.4',
+    date: '2026-05-17',
+    time: '22:50:00',
+    title: 'Time-Based Progress Synchronization Fix',
+    items: [
+      { category: 'Bug Fix', description: 'Fixed the underlying `dailySessions` state calculation for Time-Based Mode, ensuring that real-time timer durations accurately translate into proportional dashboard progress, instead of only counting single physical sessions.' }
+    ]
+  },
+  {
+    version: 'v7.0.3',
+    date: '2026-05-17',
+    time: '22:45:00',
+    title: 'Delete Session Fix',
+    items: [
+      { category: 'Bug Fix', description: 'Replaced native window.confirm with custom ConfirmModal in Recent Sessions. This fixes an issue where the delete session button failed to execute due to restricted environment policies.' }
+    ]
+  },
   {
     version: 'v7.0.2',
     date: '2026-05-17',

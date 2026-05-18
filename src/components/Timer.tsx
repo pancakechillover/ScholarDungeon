@@ -16,6 +16,8 @@ interface TimerProps {
   timerSkipVictoryMode?: 'none' | 'auto_pick_highest' | 'skip_rewards' | 'defer_to_chest';
   dailyRerollUsed: boolean;
   history: StudySession[];
+  timeBasedMode?: boolean;
+  standardSessionMinutes?: number;
   onComplete: (duration: number, focusDuration?: number, restDuration?: number) => StudySession | null;
   onRestComplete?: () => void;
   onInventoryAdd: (id: string) => void;
@@ -66,6 +68,8 @@ export const Timer = React.memo<TimerProps>(({
   timerSkipVictoryMode,
   dailyRerollUsed,
   history,
+  timeBasedMode,
+  standardSessionMinutes,
   onComplete, 
   onRestComplete,
   onInventoryAdd,
@@ -234,10 +238,15 @@ export const Timer = React.memo<TimerProps>(({
       // Finished focus
       const session = onComplete(duration, focusDuration, restDuration);
       if (session) {
+        let drawCount = 1;
+        if (timeBasedMode) {
+           const actualDur = focusDuration || duration;
+           drawCount = Math.floor(Math.max(1, actualDur) / (standardSessionMinutes || 25));
+        }
+
         // Generate choices from rewardPool
-        const choices: RewardCard[] = [];
         const now = Date.now();
-        const pool = (rewardPool || []).filter(card => {
+        const basePool = (rewardPool || []).filter(card => {
           if (card.limitCount && card.limitPeriodDays) {
             const periodMs = card.limitPeriodDays * 24 * 60 * 60 * 1000;
             const claimsInPeriod = (card.claimHistory || []).filter(ts => (now - new Date(ts).getTime()) < periodMs).length;
@@ -245,25 +254,33 @@ export const Timer = React.memo<TimerProps>(({
           }
           return true;
         });
-        const selectedPool = [...pool];
-        const count = activeTalents.includes('c1') ? 4 : 3; // Extra Chance
 
-        for (let i = 0; i < Math.min(count, selectedPool.length); i++) {
-          const totalWeight = selectedPool.reduce((acc, r) => acc + r.weight, 0);
-          let rand = Math.random() * totalWeight;
-          for (let j = 0; j < selectedPool.length; j++) {
-            rand -= selectedPool[j].weight;
-            if (rand <= 0) {
-              choices.push(selectedPool[j]);
-              selectedPool.splice(j, 1);
-              break;
+        const choicesList: { session: typeof session, choices: RewardCard[] }[] = [];
+        const count = activeTalents.includes('c1') ? 4 : 3; // Extra Chance
+        
+        for (let d = 0; d < drawCount; d++) {
+          const pseudoSession = d === 0 ? session : { ...session, id: `${session.id}-${d}` };
+          const choices: RewardCard[] = [];
+          const selectedPool = [...basePool];
+
+          for (let i = 0; i < Math.min(count, selectedPool.length); i++) {
+            const totalWeight = selectedPool.reduce((acc, r) => acc + r.weight, 0);
+            let rand = Math.random() * totalWeight;
+            for (let j = 0; j < selectedPool.length; j++) {
+              rand -= selectedPool[j].weight;
+              if (rand <= 0) {
+                choices.push(selectedPool[j]);
+                selectedPool.splice(j, 1);
+                break;
+              }
             }
           }
+          choicesList.push({ session: pseudoSession, choices });
         }
 
         if (timerSkipVictoryMode && timerSkipVictoryMode !== 'none') {
-          if (timerSkipVictoryMode === 'auto_pick_highest' && choices.length > 0) {
-            const getRarityValue = (r: typeof choices[0]['rarity']) => {
+          if (timerSkipVictoryMode === 'auto_pick_highest') {
+            const getRarityValue = (r: any) => {
               switch(r) {
                 case 'mythic': return 6;
                 case 'legendary': return 5;
@@ -273,21 +290,38 @@ export const Timer = React.memo<TimerProps>(({
                 default: return 1;
               }
             };
-            const sortedChoices = [...choices].sort((a, b) => getRarityValue(b.rarity) - getRarityValue(a.rarity));
-            handleRewardSelection(sortedChoices[0], session);
-          } else if (timerSkipVictoryMode === 'defer_to_chest' && choices.length > 0) {
-            onDeferReward(session, choices);
-            handleRewardSelection(null, session);
+            for (const item of choicesList) {
+               if (item.choices.length > 0) {
+                 const sortedChoices = [...item.choices].sort((a, b) => getRarityValue(b.rarity) - getRarityValue(a.rarity));
+                 handleRewardSelection(sortedChoices[0], item.session);
+               } else {
+                 handleRewardSelection(null, item.session);
+               }
+            }
+          } else if (timerSkipVictoryMode === 'defer_to_chest') {
+            for (const item of choicesList) {
+               if (item.choices.length > 0) {
+                 onDeferReward(item.session, item.choices);
+               }
+               handleRewardSelection(null, item.session);
+            }
           } else {
-            handleRewardSelection(null, session);
+            for (const item of choicesList) {
+               handleRewardSelection(null, item.session);
+            }
           }
         } else {
-          // Unconditionally defer to chest first so it's not lost if user refreshes
-          onDeferReward(session, choices);
-          setShowRewards({ session, choices });
-          triggerSimpleConfetti();
-          if (session.isCrit) {
-            setShowCoinRain(true);
+          // Unconditionally defer ALL to chest first so they are not lost if user refreshes
+          for (const item of choicesList) {
+            onDeferReward(item.session, item.choices);
+          }
+          if (choicesList.length > 0) {
+            // Only popup the first one directly. The others can be opened from the chest sequentially.
+            setShowRewards(choicesList[0]);
+            triggerSimpleConfetti();
+            if (session.isCrit) {
+              setShowCoinRain(true);
+            }
           }
         }
       }

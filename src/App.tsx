@@ -635,7 +635,10 @@ function App() {
     }
     
     // Daily 16
-    if (state.dailySessions === 15) {
+    const predictedAddedProgress = state.timeBasedMode ? 1 : 1; 
+    // In nextSession prediction we usually assume 1 standard session is being played roughly. So 1 fractional progress matches the actual amount?
+    // Let's just assume +1 progress for prediction purposes, which represents 1 standard session equivalent.
+    if (Math.floor(state.dailySessions) < 16 && Math.floor(state.dailySessions + predictedAddedProgress) >= 16) {
       if (state.activeTalents.includes('a2')) {
         xp += 200;
         breakdown.push({ source: 'Talent: Deep Focus (16th Session)', xpEffect: '+200' });
@@ -648,7 +651,7 @@ function App() {
     }
 
     // Streak
-    if (state.streak >= 2 && state.streak <= 10 && state.dailySessions === 7) {
+    if (state.streak >= 2 && state.streak <= 10 && Math.floor(state.dailySessions) < 8 && Math.floor(state.dailySessions + predictedAddedProgress) >= 8) {
       if (state.activeTalents.includes('a3')) {
         xp += 20 * state.streak;
         breakdown.push({ source: `Talent: Consistency (Streak ${state.streak})`, xpEffect: `+${20 * state.streak}` });

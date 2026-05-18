@@ -6,6 +6,7 @@ import { cn } from '../lib/utils';
 import { format, parseISO, isAfter, isBefore, startOfDay, endOfDay } from 'date-fns';
 import { SpinnerInput } from './SpinnerInput';
 import { BulkSessionModal } from './BulkSessionModal';
+import { ConfirmModal } from './ConfirmModal';
 
 interface RecentSessionsProps {
   history: StudySession[];
@@ -32,6 +33,7 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
 }) => {
   const [showPeriodicSplits, setShowPeriodicSplits] = useState(true);
   const [editingSession, setEditingSession] = useState<StudySession | null>(null);
+  const [sessionToDelete, setSessionToDelete] = useState<StudySession | null>(null);
   const [viewingRewardName, setViewingRewardName] = useState<string | null>(null);
   const [showBulkModal, setShowBulkModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -694,9 +696,7 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
                             </button>
                             <button
                               onClick={() => {
-                                if (confirm('Are you sure you want to delete this session? This will revert dungeon progress.')) {
-                                  deleteSession(session.id);
-                                }
+                                setSessionToDelete(session);
                               }}
                               className="p-1.5 sm:p-2 text-slate-500 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all"
                               title="Delete Session"
@@ -893,6 +893,21 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
           </div>
         )}
       </AnimatePresence>
+      
+      <ConfirmModal 
+        isOpen={!!sessionToDelete}
+        onClose={() => setSessionToDelete(null)}
+        onConfirm={() => {
+          if (sessionToDelete) {
+            deleteSession(sessionToDelete.id);
+            setSessionToDelete(null);
+          }
+        }}
+        title="Delete Session"
+        message="Are you sure you want to delete this session? This will revert dungeon progress, XP, and Gold."
+        confirmText="Delete Session"
+        type="danger"
+      />
     </div>
   );
 };

@@ -815,8 +815,11 @@ export function useGameState() {
       }
     });
 
+    const sessionDurationVal = focusDuration || duration;
+    const addedProgress = state.timeBasedMode ? (Math.max(1, sessionDurationVal) / (state.standardSessionMinutes || 25)) : 1;
+
     // Daily 16 session bonuses
-    const is16th = state.dailySessions === 15; // 15 because we haven't incremented yet
+    const is16th = Math.floor(state.dailySessions) < 16 && Math.floor(state.dailySessions + addedProgress) >= 16;
     const triggeredTalents: StudySession['triggeredTalents'] = {};
 
     if (is16th) {
@@ -837,7 +840,7 @@ export function useGameState() {
 
     // Streak bonuses (Perfect Theory / Bounty Decree)
     // These are complex (20*n and 10*n). We'll apply them if streak >= 2
-    if (state.streak >= 2 && state.streak <= 10 && state.dailySessions === 7) { // 8th session of the day
+    if (state.streak >= 2 && state.streak <= 10 && Math.floor(state.dailySessions) < 8 && Math.floor(state.dailySessions + addedProgress) >= 8) { // 8th session of the day
       const a3Active = state.activeTalents.includes('a3');
       const b3Active = state.activeTalents.includes('b3');
       if (a3Active || b3Active) {
@@ -885,7 +888,7 @@ export function useGameState() {
         history: [...prev.history, session],
         lastStudyDate: todayStr,
         streak: newStreak,
-        dailySessions: prev.dailySessions + 1,
+        dailySessions: prev.dailySessions + addedProgress,
         coins: prev.coins + Math.floor(baseCoins),
         inventory: [], // Clear inventory after session
         shopItems: newShopItems
@@ -1556,7 +1559,8 @@ export function useGameState() {
       const sessionDay = getSettlementDay(new Date(session.timestamp));
 
       if (sessionDay === todayStr) {
-        newState.dailySessions = Math.max(0, newState.dailySessions - 1);
+        const addedProgress = prev.timeBasedMode ? (Math.max(1, session.focusDuration || session.duration) / (prev.standardSessionMinutes || 25)) : 1;
+        newState.dailySessions = Math.max(0, newState.dailySessions - addedProgress);
       }
 
       return newState;

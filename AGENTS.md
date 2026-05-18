@@ -23,7 +23,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v7.0.2
+- **Current Version:** v7.0.5
 - **Last Update Date:** 2026-05-17
 
 ## Dark Themes Definition
@@ -49,6 +49,16 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v7.0.5 (2026-05-17):** Time-Based Reward Multipliers.
+  - *Feature:* In Time-Based mode, completing a focus session that is a multiple of the standard session size now recursively triggers the reward selection logic, granting multiple reward chests simultaneously.
+  - *UI:* Fixed the "End of the Day" prompt to correctly respect the Time-Based format for the "Daily Progress" statistics card.
+
+- **v7.0.4 (2026-05-17):** Time-Based Progress Synchronization Fix.
+  - *Bug Fix:* Fixed the underlying `dailySessions` state calculation for Time-Based Mode, ensuring that real-time timer durations accurately translate into proportional dashboard progress, instead of only counting single physical sessions.
+
+- **v7.0.3 (2026-05-17):** Delete Session Fix.
+  - *Bug Fix:* Replaced native `window.confirm` with custom `ConfirmModal` in Recent Sessions. This fixes an issue where the delete session button failed to execute due to restricted environment policies (iFrames blocking JavaScript modals).
 
 - **v7.0.2 (2026-05-17):** Limited Mental Effort Mode.
   - *Feature:* Added a "Limited Mental Effort Mode" toggle in General Settings. When enabled, reaching the Daily Progress Goal automatically replaces the timer interface with an "End the Day" prompt, actively preventing further sessions and encouraging rest.

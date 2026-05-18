@@ -292,6 +292,8 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
         timerSkipVictoryMode={state.timerSkipVictoryMode}
         dailyRerollUsed={state.dailyRerollUsed}
         history={state.history}
+        timeBasedMode={state.timeBasedMode}
+        standardSessionMinutes={state.standardSessionMinutes}
         critChance={state.devModeEnabled ? (state.devCritChance ?? 0.05) : 0.05}
         critMultiplier={state.devModeEnabled ? (state.devCritMultiplier ?? 5) : 5}
         onComplete={(duration, fDur, rDur) => {
@@ -708,7 +710,9 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
                 <div className="space-y-4 mt-6">
                   <div className="flex justify-between items-center">
                     <span className="text-xs text-slate-400">Daily Sessions</span>
-                    <span className="text-sm font-bold text-white">{state.dailySessions}</span>
+                    <span className="text-sm font-bold text-white">
+                      {state.timeBasedMode ? `${Math.floor(state.dailySessions * (state.standardSessionMinutes || 25))}m` : state.dailySessions}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-xs text-slate-400">No-Damage Streak</span>
