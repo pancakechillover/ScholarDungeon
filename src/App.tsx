@@ -733,11 +733,29 @@ function App() {
   };
 
   const handleUpdateMajor = (id: string, updates: Partial<MajorDungeon>) => {
-    setMajorDungeons(prev => prev.map(m => m.id === id ? { ...m, ...updates } : m));
+    setMajorDungeons(prev => prev.map(m => {
+      if (m.id === id) {
+        const newMajor = { ...m, ...updates };
+        if (newMajor.isRoutine && !m.isRoutine) {
+          newMajor.lastRoutineReset = new Date().toISOString();
+        }
+        return newMajor;
+      }
+      return m;
+    }));
   };
 
   const handleUpdateSub = (id: string, updates: Partial<Dungeon>) => {
-    setDungeons(prev => prev.map(d => d.id === id ? { ...d, ...updates } : d));
+    setDungeons(prev => prev.map(d => {
+      if (d.id === id) {
+        const newSub = { ...d, ...updates };
+        if (newSub.isRoutine && !d.isRoutine) {
+          newSub.lastRoutineReset = new Date().toISOString();
+        }
+        return newSub;
+      }
+      return d;
+    }));
   };
 
   const handleCreateSub = (dungeon: Omit<Dungeon, 'id' | 'completedSessions' | 'status'>) => {
@@ -868,7 +886,7 @@ function App() {
         isResetting = true;
       }
       // 2. Direct routine reset
-      else if (d.isRoutine && d.routineType && d.lastRoutineReset && d.status === 'completed') {
+      else if (d.isRoutine && d.routineType && d.lastRoutineReset) {
         const lastReset = new Date(d.lastRoutineReset);
         const resetHour = state.timeSettings?.night.end || 0;
         

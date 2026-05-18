@@ -23,8 +23,8 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v7.0.5
-- **Last Update Date:** 2026-05-17
+- **Current Version:** v7.0.6
+- **Last Update Date:** 2026-05-18
 
 ## Dark Themes Definition
 The following themes are considered "Dark Themes" and form the baseline for vibrant visual effects and high-contrast glowing elements:
@@ -49,6 +49,9 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v7.0.6 (2026-05-18):** Routine Refresh Logic Update.
+  - *Bug Fix:* Routine Tasks (Tiers/Expeditions) now actively reset their session progress recursively to 0 during cyclic refreshes even if the goal was not completed in the prior cycle. Previously, only "completed" status routines would reset their progress.
 
 - **v7.0.5 (2026-05-17):** Time-Based Reward Multipliers.
   - *Feature:* In Time-Based mode, completing a focus session that is a multiple of the standard session size now recursively triggers the reward selection logic, granting multiple reward chests simultaneously.

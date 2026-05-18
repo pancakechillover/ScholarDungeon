@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v7.0.5';
-export const LAST_UPDATE_DATE = '2026-05-17';
-export const LAST_UPDATE_TIME = '23:05:00';
+export const APP_VERSION = 'v7.0.6';
+export const LAST_UPDATE_DATE = '2026-05-18';
+export const LAST_UPDATE_TIME = '11:15:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,15 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v7.0.6',
+    date: '2026-05-18',
+    time: '11:15:00',
+    title: 'Routine Refresh Logic Update',
+    items: [
+      { category: 'Bug Fix', description: 'Routine Tasks (Tiers/Expeditions) now actively reset their session progress recursively to 0 during cyclic refreshes even if the goal was not completed in the prior cycle. Previously, only "completed" status routines would reset their progress.' }
+    ]
+  },
   {
     version: 'v7.0.5',
     date: '2026-05-17',
