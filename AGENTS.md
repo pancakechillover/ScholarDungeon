@@ -23,8 +23,8 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v7.0.6
-- **Last Update Date:** 2026-05-18
+- **Current Version:** v7.0.12
+- **Last Update Date:** 2026-05-24
 
 ## Dark Themes Definition
 The following themes are considered "Dark Themes" and form the baseline for vibrant visual effects and high-contrast glowing elements:
@@ -49,6 +49,25 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v7.0.12 (2026-05-24):** Vault UI Clean up.
+  - *UI:* Removed legacy explicit quantity displays (x100) for "Double Coins" or "Double XP" items in the Reward History table.
+
+- **v7.0.11 (2026-05-24):** Top Bar & PIP Time-Based Support.
+  - *Feature:* Top Bar and Picture-in-Picture window active dungeon progress bar now natively display requirements correctly when "Compute Tasks by Time" is enabled.
+
+- **v7.0.10 (2026-05-24):** Settings UI Refinement.
+  - *UI:* Extracted "Compute Tasks by Time" functionality into a dedicated standalone section with a proper header in the General Settings page for better discoverability.
+
+- **v7.0.9 (2026-05-24):** Chestbox Auto-Pick Summary.
+  - *Feature:* In the pending Reward Chest, clicking "Auto-Pick Best" now displays an organized summary modal detailing all rewards obtained, instead of immediately closing.
+  - *UI:* Added a shortcut button in the Auto-Pick Summary to directly jump to the Vault screen.
+
+- **v7.0.8 (2026-05-24):** Chestbox Reward Limit Display.
+  - *UI:* Added reward frequency limit display to the cards within the pending Reward Chest modal to match the standard victory interface.
+
+- **v7.0.7 (2026-05-24):** Chestbox Loot Limit Fix.
+  - *Bug Fix:* Rewards that have usage limits (e.g., 1 per day) will now correctly factor in occurrences where they have been drawn but are sitting unchosen inside the pending Reward Chest. This prevents limited items from being infinitely drawn if they aren't explicitly consumed.
 
 - **v7.0.6 (2026-05-18):** Routine Refresh Logic Update.
   - *Bug Fix:* Routine Tasks (Tiers/Expeditions) now actively reset their session progress recursively to 0 during cyclic refreshes even if the goal was not completed in the prior cycle. Previously, only "completed" status routines would reset their progress.

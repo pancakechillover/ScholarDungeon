@@ -337,7 +337,7 @@ export const RewardHistory: React.FC<RewardHistoryProps> = ({ history, transacti
                           <span className="font-bold text-slate-100 group-hover:text-indigo-400 transition-colors text-sm">
                             {item.name}
                           </span>
-                          {item.amount && item.amount > 1 && item.type !== 'coins' && item.type !== 'xp' && item.itemType !== 'xp_bonus_percent' && item.itemType !== 'coin_bonus_percent' && (
+                          {item.amount && item.amount > 1 && item.type !== 'coins' && item.type !== 'xp' && item.itemType !== 'xp_bonus_percent' && item.itemType !== 'coin_bonus_percent' && item.itemType !== 'double_xp' && item.itemType !== 'double_coin' && (
                             <span className="text-[10px] font-black text-indigo-400">x{item.amount}</span>
                           )}
                         </div>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { RewardCard, StudySession, Rarity } from '../types';
 import { cn } from '../lib/utils';
@@ -11,13 +11,15 @@ import { format } from 'date-fns';
 
 interface RewardChestModalProps {
   chest: { session: StudySession; choices: RewardCard[] }[];
-  onSelect: (reward: RewardCard | null, sessionId: string) => void;
+  onSelect: (reward: RewardCard | null, sessionId: string, isAutoPick?: boolean) => void;
   onClose: () => void;
   getDungeonName: (id: string) => string;
+  onNavigateToVault?: () => void;
 }
 
-export const RewardChestModal: React.FC<RewardChestModalProps> = ({ chest, onSelect, onClose, getDungeonName }) => {
+export const RewardChestModal: React.FC<RewardChestModalProps> = ({ chest, onSelect, onClose, getDungeonName, onNavigateToVault }) => {
   useScrollLock(true);
+  const [autoPickSummary, setAutoPickSummary] = useState<{reward: RewardCard | null, session: StudySession}[] | null>(null);
   
   const getRarityValue = (r: Rarity) => {
     switch(r) {
@@ -31,16 +33,83 @@ export const RewardChestModal: React.FC<RewardChestModalProps> = ({ chest, onSel
   };
 
   const handleAutoPickBest = () => {
+    const picked: { reward: RewardCard | null, session: StudySession }[] = [];
     chest.forEach(item => {
       if (item.choices.length > 0) {
         const sorted = [...item.choices].sort((a, b) => getRarityValue(b.rarity) - getRarityValue(a.rarity));
-        onSelect(sorted[0], item.session.id);
+        picked.push({ reward: sorted[0], session: item.session });
+        onSelect(sorted[0], item.session.id, true);
       } else {
-        onSelect(null, item.session.id);
+        picked.push({ reward: null, session: item.session });
+        onSelect(null, item.session.id, true);
       }
     });
+    setAutoPickSummary(picked);
     triggerSimpleConfetti();
   };
+
+  if (autoPickSummary) {
+    const pickedRewards = autoPickSummary.filter(p => p.reward) as { reward: RewardCard, session: StudySession }[];
+    
+    return createPortal(
+      <AnimatePresence>
+        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-950/70 backdrop-blur-sm px-4 overflow-y-auto overflow-x-hidden border-0 m-0 p-0">
+          <motion.div
+             initial={{ scale: 0.95, opacity: 0 }}
+             animate={{ scale: 1, opacity: 1 }}
+             exit={{ scale: 0.95, opacity: 0 }}
+             className="bg-slate-900 border border-slate-700/50 rounded-3xl w-full max-w-xl shadow-2xl relative my-8"
+          >
+             <div className="p-6 border-b border-slate-800 flex items-center justify-between">
+                <h3 className="text-xl font-bold flex items-center gap-2 text-white">
+                  <Sparkles className="text-amber-400" /> Auto-Pick Summary
+                </h3>
+                <button onClick={onClose} className="p-2 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-colors">
+                  <X size={20} />
+                </button>
+             </div>
+             <div className="p-6 max-h-[50vh] overflow-y-auto custom-scrollbar flex flex-col gap-3">
+               {pickedRewards.length === 0 ? (
+                 <div className="text-center text-slate-500 py-8">
+                   No rewards obtained.
+                 </div>
+               ) : (
+                 pickedRewards.map((item, idx) => (
+                   <div key={idx} className="flex items-center gap-4 bg-slate-800/40 p-4 rounded-xl border border-slate-700/50">
+                      <div className={cn("px-2 py-1 text-[10px] uppercase font-black rounded-sm tracking-widest flex-shrink-0",
+                           item.reward.rarity === 'mythic' ? "bg-rose-500/20 text-rose-400" :
+                           item.reward.rarity === 'legendary' ? "bg-amber-400/20 text-amber-400" :
+                           item.reward.rarity === 'epic' ? "bg-purple-500/20 text-purple-400" :
+                           item.reward.rarity === 'rare' ? "bg-blue-400/20 text-blue-400" :
+                           item.reward.rarity === 'uncommon' ? "bg-emerald-500/20 text-emerald-400" :
+                           "bg-slate-700 text-slate-300"
+                      )}>
+                        {item.reward.rarity}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-white font-bold truncate text-sm">{item.reward.name}</h4>
+                        <p className="text-[10px] text-slate-400 truncate">{getDungeonName(item.session.dungeonId)}</p>
+                      </div>
+                   </div>
+                 ))
+               )}
+             </div>
+             <div className="p-6 border-t border-slate-800 flex sm:flex-row flex-col gap-3">
+               <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-700 hover:bg-slate-800 text-slate-300 font-bold transition-all text-sm">
+                 Confirm
+               </button>
+               {onNavigateToVault && (
+                 <button onClick={onNavigateToVault} className="flex-1 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition-all text-sm">
+                   Go to Vault
+                 </button>
+               )}
+             </div>
+          </motion.div>
+        </div>
+      </AnimatePresence>,
+      document.body
+    );
+  }
 
   const modalContent = (
     <AnimatePresence>
@@ -109,7 +178,12 @@ export const RewardChestModal: React.FC<RewardChestModalProps> = ({ chest, onSel
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pb-4">
-                    {item.choices.map((card, cIdx) => (
+                    {item.choices.map((card, cIdx) => {
+                      const now = Date.now();
+                      const periodMs = (card.limitPeriodDays || 1) * 24 * 60 * 60 * 1000;
+                      const claimsInPeriod = (card.claimHistory || []).filter(ts => (now - new Date(ts).getTime()) < periodMs).length;
+                      
+                      return (
                       <button
                         key={cIdx}
                         onClick={() => { triggerSimpleConfetti(); onSelect(card, item.session.id); }}
@@ -124,21 +198,29 @@ export const RewardChestModal: React.FC<RewardChestModalProps> = ({ chest, onSel
                         )}
                       >
                          <div>
-                          <div className={cn("text-[10px] font-black uppercase tracking-widest mb-2 inline-block px-2 py-0.5 rounded-sm",
-                               card.rarity === 'mythic' ? "bg-rose-500/20 text-rose-400" :
-                               card.rarity === 'legendary' ? "bg-amber-400/20 text-amber-400" :
-                               card.rarity === 'epic' ? "bg-purple-500/20 text-purple-400" :
-                               card.rarity === 'rare' ? "bg-blue-400/20 text-blue-400" :
-                               card.rarity === 'uncommon' ? "bg-emerald-500/20 text-emerald-400" :
-                               "bg-slate-800 text-slate-400"
-                          )}>
-                            {card.rarity}
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className={cn("text-[10px] font-black uppercase tracking-widest inline-block px-2 py-0.5 rounded-sm",
+                                 card.rarity === 'mythic' ? "bg-rose-500/20 text-rose-400" :
+                                 card.rarity === 'legendary' ? "bg-amber-400/20 text-amber-400" :
+                                 card.rarity === 'epic' ? "bg-purple-500/20 text-purple-400" :
+                                 card.rarity === 'rare' ? "bg-blue-400/20 text-blue-400" :
+                                 card.rarity === 'uncommon' ? "bg-emerald-500/20 text-emerald-400" :
+                                 "bg-slate-800 text-slate-400"
+                            )}>
+                              {card.rarity}
+                            </div>
+                            
+                            {card.limitCount && card.limitCount > 0 ? (
+                              <span className="text-xs font-bold text-slate-500 uppercase tracking-tighter">
+                                {claimsInPeriod}/{card.limitCount} Lmt
+                              </span>
+                            ) : null}
                           </div>
                           <h4 className="text-white font-bold mb-2 leading-tight">{card.name}</h4>
                           <p className="text-xs text-slate-400 line-clamp-3">{card.description}</p>
                          </div>
                       </button>
-                    ))}
+                    )})}
                   </div>
                 </div>
               ))

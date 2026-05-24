@@ -18,6 +18,7 @@ interface TimerProps {
   history: StudySession[];
   timeBasedMode?: boolean;
   standardSessionMinutes?: number;
+  pendingRewardChest?: { session: StudySession; choices: RewardCard[]; }[];
   onComplete: (duration: number, focusDuration?: number, restDuration?: number) => StudySession | null;
   onRestComplete?: () => void;
   onInventoryAdd: (id: string) => void;
@@ -70,6 +71,7 @@ export const Timer = React.memo<TimerProps>(({
   history,
   timeBasedMode,
   standardSessionMinutes,
+  pendingRewardChest,
   onComplete, 
   onRestComplete,
   onInventoryAdd,
@@ -246,22 +248,35 @@ export const Timer = React.memo<TimerProps>(({
 
         // Generate choices from rewardPool
         const now = Date.now();
-        const basePool = (rewardPool || []).filter(card => {
-          if (card.limitCount && card.limitPeriodDays) {
-            const periodMs = card.limitPeriodDays * 24 * 60 * 60 * 1000;
-            const claimsInPeriod = (card.claimHistory || []).filter(ts => (now - new Date(ts).getTime()) < periodMs).length;
-            return claimsInPeriod < card.limitCount;
-          }
-          return true;
-        });
-
         const choicesList: { session: typeof session, choices: RewardCard[] }[] = [];
         const count = activeTalents.includes('c1') ? 4 : 3; // Extra Chance
         
         for (let d = 0; d < drawCount; d++) {
           const pseudoSession = d === 0 ? session : { ...session, id: `${session.id}-${d}` };
           const choices: RewardCard[] = [];
-          const selectedPool = [...basePool];
+          
+          // Re-evaluate pool for each chest to account for limits
+          const selectedPool = (rewardPool || []).filter(card => {
+            if (card.limitCount && card.limitPeriodDays) {
+              const periodMs = card.limitPeriodDays * 24 * 60 * 60 * 1000;
+              const claimsInPeriod = (card.claimHistory || []).filter(ts => (now - new Date(ts).getTime()) < periodMs).length;
+              
+              let pendingOccurrences = 0;
+              if (pendingRewardChest) {
+                for (const chest of pendingRewardChest) {
+                  if (chest.choices.some(c => c.name === card.name)) pendingOccurrences++;
+                }
+              }
+              
+              let drawnOccurrences = 0;
+              for (const currentChest of choicesList) {
+                if (currentChest.choices.some(c => c.name === card.name)) drawnOccurrences++;
+              }
+              
+              return (claimsInPeriod + pendingOccurrences + drawnOccurrences) < card.limitCount;
+            }
+            return true;
+          });
 
           for (let i = 0; i < Math.min(count, selectedPool.length); i++) {
             const totalWeight = selectedPool.reduce((acc, r) => acc + r.weight, 0);

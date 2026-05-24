@@ -985,6 +985,8 @@ function App() {
           requireFocusConfirmation={state.requireFocusConfirmation}
           lastCompletionRewards={state.lastCompletionRewards}
           pipVictorySummary={pipVictorySummary}
+          timeBasedMode={state.timeBasedMode}
+          standardSessionMinutes={state.standardSessionMinutes}
         />,
         pipWindow.document.body
       )}
@@ -1095,7 +1097,11 @@ function App() {
                     {currentDungeon.name}
                   </span>
                   <span className="text-[9px] font-black text-slate-600 tabular-nums shrink-0">
-                    {currentDungeon.completedSessions}/{currentDungeon.totalSessions}
+                    {state.timeBasedMode ? (
+                      <>{Math.floor(currentDungeon.completedSessions * (state.standardSessionMinutes || 25))}m/{currentDungeon.totalSessions * (state.standardSessionMinutes || 25)}m</>
+                    ) : (
+                      <>{currentDungeon.completedSessions}/{currentDungeon.totalSessions}</>
+                    )}
                   </span>
                 </div>
                 <div className="w-16 sm:w-24 h-0.5 sm:h-1 bg-slate-800 rounded-full overflow-hidden mt-0.5">

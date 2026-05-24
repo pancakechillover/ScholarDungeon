@@ -18,6 +18,8 @@ interface CompactTimerProps {
   requireFocusConfirmation?: boolean;
   lastCompletionRewards?: any | null;
   pipVictorySummary?: { xp: number, coins: number, ts: number } | null;
+  timeBasedMode?: boolean;
+  standardSessionMinutes?: number;
 }
 
 const PIP_STYLE = `
@@ -79,7 +81,9 @@ export const CompactTimer: React.FC<CompactTimerProps> = ({
   timerSkipVictoryMode,
   requireFocusConfirmation,
   lastCompletionRewards,
-  pipVictorySummary
+  pipVictorySummary,
+  timeBasedMode,
+  standardSessionMinutes
 }) => {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [displayTime, setDisplayTime] = React.useState(timeLeft);
@@ -213,7 +217,11 @@ export const CompactTimer: React.FC<CompactTimerProps> = ({
               <span className="pip-title font-black truncate tracking-tight">{currentDungeon.name}</span>
             </div>
             <span className="pip-stats font-black text-slate-500 tabular-nums shrink-0">
-              {currentDungeon.completedSessions}/{currentDungeon.totalSessions}
+              {timeBasedMode ? (
+                <>{Math.floor(currentDungeon.completedSessions * (standardSessionMinutes || 25))}m/{currentDungeon.totalSessions * (standardSessionMinutes || 25)}m</>
+              ) : (
+                <>{currentDungeon.completedSessions}/{currentDungeon.totalSessions}</>
+              )}
             </span>
           </div>
           <div className="pip-bar w-full bg-slate-900 rounded-full overflow-hidden border border-slate-800">

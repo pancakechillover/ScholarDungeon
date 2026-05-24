@@ -744,6 +744,11 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
       </div>
 
       <div className="space-y-6 pt-6 border-t border-slate-800">
+        <div className="flex items-center gap-2.5 text-indigo-400 mb-6 pb-2">
+          <Clock size={20} />
+          <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Time-Based Calculation</h4>
+        </div>
+
         <div className="space-y-4">
            <div className="flex items-center justify-between p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
              <div className="flex items-center gap-3">

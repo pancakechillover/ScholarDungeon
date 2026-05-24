@@ -294,6 +294,7 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
         history={state.history}
         timeBasedMode={state.timeBasedMode}
         standardSessionMinutes={state.standardSessionMinutes}
+        pendingRewardChest={state.pendingRewardChest}
         critChance={state.devModeEnabled ? (state.devCritChance ?? 0.05) : 0.05}
         critMultiplier={state.devModeEnabled ? (state.devCritMultiplier ?? 5) : 5}
         onComplete={(duration, fDur, rDur) => {
@@ -812,7 +813,7 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
           getDungeonName={(dlId) => {
              return dungeons.find(d => d.id === dlId)?.name || 'Free Study';
           }}
-          onSelect={(reward, sessionId) => {
+          onSelect={(reward, sessionId, isAutoPick) => {
             if (reward) {
               selectReward(reward, sessionId);
               if (reward.type === 'item' && reward.itemType !== 'talent_shard' && reward.itemType !== 'death_defying_medal') {
@@ -825,13 +826,17 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
               pendingRewardChest: prev.pendingRewardChest?.filter(item => item.session.id !== sessionId) || []
             }));
             
-            // if empty, close it
+            // if empty, close it ONLY IF NOT AUTOPICK
             setState(prev => {
-              if (prev.pendingRewardChest?.length === 0) setShowChestModal(false);
+              if (prev.pendingRewardChest?.length === 0 && !isAutoPick) setShowChestModal(false);
               return prev;
             });
           }}
           onClose={() => setShowChestModal(false)}
+          onNavigateToVault={() => {
+            setShowChestModal(false);
+            setActiveTab('vault');
+          }}
         />
       )}
     </motion.div>

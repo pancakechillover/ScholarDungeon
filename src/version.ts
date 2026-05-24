@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v7.0.6';
-export const LAST_UPDATE_DATE = '2026-05-18';
-export const LAST_UPDATE_TIME = '11:15:00';
+export const APP_VERSION = 'v7.0.12';
+export const LAST_UPDATE_DATE = '2026-05-24';
+export const LAST_UPDATE_TIME = '14:10:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,61 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v7.0.12',
+    date: '2026-05-24',
+    time: '14:10:00',
+    title: 'Vault UI Clean up',
+    items: [
+      { category: 'UI', description: 'Removed legacy explicit quantity displays (x100) for "Double Coins" or "Double XP" items in the Reward History table.' }
+    ]
+  },
+  {
+    version: 'v7.0.11',
+    date: '2026-05-24',
+    time: '14:03:00',
+    title: 'Top Bar & PIP Time-Based Support',
+    items: [
+      { category: 'Feature', description: 'Top Bar and Picture-in-Picture window active dungeon progress bar now natively display requirements correctly when "Compute Tasks by Time" is enabled.' }
+    ]
+  },
+  {
+    version: 'v7.0.10',
+    date: '2026-05-24',
+    time: '13:58:00',
+    title: 'Settings UI Refinement',
+    items: [
+      { category: 'UI', description: 'Extracted "Compute Tasks by Time" functionality into a dedicated standalone section with a proper header in the General Settings page for better discoverability.' }
+    ]
+  },
+  {
+    version: 'v7.0.9',
+    date: '2026-05-24',
+    time: '13:51:00',
+    title: 'Chestbox Auto-Pick Summary',
+    items: [
+      { category: 'Feature', description: 'In the pending Reward Chest, clicking "Auto-Pick Best" now displays an organized summary modal detailing all rewards obtained, instead of immediately closing.' },
+      { category: 'UI', description: 'Added a shortcut button in the Auto-Pick Summary to directly jump to the Vault screen.' }
+    ]
+  },
+  {
+    version: 'v7.0.8',
+    date: '2026-05-24',
+    time: '13:45:00',
+    title: 'Chestbox Reward Limit Display',
+    items: [
+      { category: 'UI', description: 'Added reward frequency limit display to the cards within the pending Reward Chest modal to match the standard victory interface.' }
+    ]
+  },
+  {
+    version: 'v7.0.7',
+    date: '2026-05-24',
+    time: '13:40:00',
+    title: 'Chestbox Loot Limit Fix',
+    items: [
+      { category: 'Bug Fix', description: 'Rewards with usage limits (e.g., 1 per day) will now correctly factor in occurrences where they have been drawn but are sitting unchosen inside the pending Reward Chest.' }
+    ]
+  },
   {
     version: 'v7.0.6',
     date: '2026-05-18',
