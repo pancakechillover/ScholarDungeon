@@ -423,10 +423,10 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({
             </div>
           ) : (
             <div className={cn(
-              "px-4 max-w-7xl mx-auto pb-12 w-full overflow-y-auto custom-scrollbar max-h-full",
+              "px-2 sm:px-6 max-w-7xl mx-auto pb-12 w-full overflow-y-auto custom-scrollbar max-h-full",
               normalResults.length >= 10 
-                ? "grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-4" 
-                : "flex flex-wrap gap-4 sm:gap-8 justify-center items-center",
+                ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6 mt-4" 
+                : "flex flex-wrap gap-4 sm:gap-8 justify-center items-center mt-4",
             )}>
               {normalResults.map((res, idx) => {
                 const styles = getRarityStyles(res, normalResults.length >= 10);
@@ -434,40 +434,40 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({
                   <div className={cn(
                     "h-full w-full flex flex-col items-center relative overflow-hidden transition-all",
                     isTenPull 
-                      ? "rounded-[calc(0.75rem-1px)] sm:rounded-[1.5rem] p-2 sm:p-4" 
+                      ? "rounded-[1rem] sm:rounded-[1.5rem] p-3 sm:p-5" 
                       : gachaEffect === 'card' ? "rounded-[1.5rem] p-6" : "rounded-[1.5rem] p-4",
                     styles.bg
                   )}>
                     <div className={cn("absolute inset-0 opacity-30 bg-gradient-to-br", styles.gradient)} />
                     <div className="absolute inset-0 opacity-5 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
                     <div className={cn(
-                      "px-1.5 sm:px-3 py-0.5 rounded-full text-[8px] sm:text-[10px] font-black tracking-widest uppercase border relative z-10 mb-1 sm:mb-2",
+                      "px-2 sm:px-3 py-0.5 rounded-full text-[10px] sm:text-xs font-black tracking-widest uppercase border relative z-10 mb-2 sm:mb-4",
                       styles.text, styles.border
                     )}>
                       {res.rarity}
                     </div>
                     <div className={cn(
-                      "flex-1 flex flex-col items-center w-full relative z-10",
-                      isTenPull ? "pt-1" : "pt-2"
+                      "flex-1 flex flex-col items-center justify-center w-full relative z-10 space-y-4"
                     )}>
-                      <div className={cn("relative", isTenPull ? "mb-1 sm:mb-2" : "mb-3")}>
+                      <div className="relative">
                         <motion.div
                           animate={{ y: [0, -4, 0], filter: ["brightness(1)", "brightness(1.4)", "brightness(1)"] }}
                           transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                          className={isTenPull ? "scale-125" : "scale-150"}
                         >
                           {styles.icon}
                         </motion.div>
-                        <div className={cn("absolute inset-0 blur-xl opacity-20 rounded-full -z-10", styles.accent)} />
+                        <div className={cn("absolute inset-0 blur-2xl opacity-30 rounded-full -z-10", styles.accent)} />
                       </div>
-                      <div className="w-full text-center px-0.5">
+                      <div className="w-full text-center px-1">
                         <h3 className={cn(
-                          "font-black leading-tight uppercase italic pr-1 mb-1 line-clamp-3",
-                          isTenPull ? "text-[10px] sm:text-xs" : "text-xs sm:text-sm",
+                          "font-black leading-snug uppercase italic pr-1 mb-2 max-h-[3rem] overflow-hidden line-clamp-2",
+                          isTenPull ? "text-xs sm:text-sm md:text-base" : "text-sm sm:text-lg",
                           styles.text
                         )}>
                           {res.item}
                         </h3>
-                        <div className={cn("h-0.5 w-4 mx-auto rounded-full", styles.accent)} />
+                        <div className={cn("h-0.5 w-6 mx-auto rounded-full", styles.accent)} />
                       </div>
                     </div>
                   </div>
@@ -482,10 +482,10 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({
                     className={cn(
                       "relative group transition-none",
                       isTenPull 
-                        ? "w-full aspect-[4/3] rounded-lg sm:rounded-[1.5rem] p-[1px] sm:p-[1.5px]" 
+                        ? "w-full aspect-[4/5] sm:aspect-square rounded-2xl sm:rounded-[1.5rem] p-[2px]" 
                         : gachaEffect === 'card' 
-                          ? "w-[min(180px,40vw)] sm:w-[min(240px,40vw)] aspect-[2/3] rounded-[1.5rem] p-[2px]" 
-                          : "w-[min(240px,70vw)] sm:w-[min(300px,70vw)] aspect-[16/9] rounded-[1.5rem] p-[2px]",
+                          ? "w-[min(200px,45vw)] sm:w-[min(260px,45vw)] aspect-[2/3] rounded-[1.5rem] p-[2px]" 
+                          : "w-[min(260px,80vw)] sm:w-[min(320px,80vw)] aspect-[16/9] rounded-[1.5rem] p-[2px]",
                       (gachaEffect !== 'scratch' || revealedIndices.includes(idx)) ? styles.accent : "bg-slate-400",
                       (gachaEffect !== 'scratch' || revealedIndices.includes(idx)) ? styles.glow : "shadow-none",
                     )}
@@ -493,8 +493,8 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({
                     {gachaEffect === 'scratch' ? (
                       <ScratchCard 
                         onComplete={() => handleScratchComplete(idx)}
-                        containerClassName="h-full w-full rounded-[calc(0.75rem-1px)] sm:rounded-[1.4rem]"
-                        scratchRadius={isTenPull ? 30 : 60}
+                        containerClassName="h-full w-full rounded-[calc(1rem-2px)] sm:rounded-[calc(1.5rem-2px)]"
+                        scratchRadius={isTenPull ? 40 : 60}
                       >
                         {cardContent}
                       </ScratchCard>

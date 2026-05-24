@@ -23,7 +23,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v7.0.12
+- **Current Version:** v7.1.3
 - **Last Update Date:** 2026-05-24
 
 ## Dark Themes Definition
@@ -49,6 +49,20 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v7.1.3 (2026-05-24):** Ichiban Box Gacha UI Polish.
+  - *UI:* Aligned the "Ichiban" section of the shop with the recent Gacha View redesign, expanding it into a complete two-column layout with a highly visual aesthetic.
+  - *UI:* Improved visibility of prize quantity, lineup structure, and integrated themed accent styling to better differentiate standard rewards from the 'Last One' prize.
+
+- **v7.1.2 (2026-05-24):** Gacha Summoning UI Polish.
+  - *UI:* Increased the size of Draw 1x and Draw 10x buttons in the Gacha View for better accessibility.
+  - *UI:* Fixed an issue in the Summoning Results screen where element cards overlapped across screens by introducing dynamic scaling and adaptive aspect ratios (`aspect-square` up to widescreen layouts).
+
+- **v7.1.1 (2026-05-24):** Gacha View Redesign.
+  - *UI:* Redesigned the Gacha view for better aesthetics, placing the visual draw interface on the left and prominently displaying precise pool probabilities and contents on the right side.
+
+- **v7.1.0 (2026-05-24):** Merchant Shop Shelf UX Redesign.
+  - *UI:* Redesigned the Merchant Shop display to a minimalistic, flat shelf aesthetic, adapting seamlessly to active themes.
 
 - **v7.0.12 (2026-05-24):** Vault UI Clean up.
   - *UI:* Removed legacy explicit quantity displays (x100) for "Double Coins" or "Double XP" items in the Reward History table.

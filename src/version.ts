@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v7.0.12';
+export const APP_VERSION = 'v7.1.3';
 export const LAST_UPDATE_DATE = '2026-05-24';
-export const LAST_UPDATE_TIME = '14:10:00';
+export const LAST_UPDATE_TIME = '15:10:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,44 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v7.1.3',
+    date: '2026-05-24',
+    time: '15:10:00',
+    title: 'Ichiban Box Gacha UI Polish',
+    items: [
+      { category: 'UI', description: 'Aligned the "Ichiban" section of the shop with the recent Gacha View redesign, expanding it into a complete two-column layout with a highly visual aesthetic.' },
+      { category: 'UI', description: 'Improved visibility of prize quantity, lineup structure, and integrated themed accent styling to better differentiate standard rewards from the \'Last One\' prize.' }
+    ]
+  },
+  {
+    version: 'v7.1.2',
+    date: '2026-05-24',
+    time: '14:58:00',
+    title: 'Gacha Summoning UI Polish',
+    items: [
+      { category: 'UI', description: 'Increased the size of Draw 1x and Draw 10x buttons in the Gacha View for better accessibility.' },
+      { category: 'UI', description: 'Fixed an issue in the Summoning Results screen where element cards overlapped across screens by introducing dynamic scaling and adaptive aspect ratios.' }
+    ]
+  },
+  {
+    version: 'v7.1.1',
+    date: '2026-05-24',
+    time: '14:52:00',
+    title: 'Gacha View Redesign',
+    items: [
+      { category: 'UI', description: 'Redesigned the Gacha view for better aesthetics, placing the visual draw interface on the left and prominently displaying precise pool probabilities and contents on the right side.' }
+    ]
+  },
+  {
+    version: 'v7.1.0',
+    date: '2026-05-24',
+    time: '14:20:00',
+    title: 'Merchant Shop Shelf UX Redesign',
+    items: [
+      { category: 'UI', description: 'Redesigned the Merchant Shop display to a minimalistic, flat shelf aesthetic, adapting seamlessly to active themes.' }
+    ]
+  },
   {
     version: 'v7.0.12',
     date: '2026-05-24',

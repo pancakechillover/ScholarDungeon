@@ -91,47 +91,59 @@ export const Shop = React.memo<ShopProps>(({
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="w-full grid grid-cols-1 md:grid-cols-3 gap-6"
+            className="w-full border-[8px] border-slate-800 rounded-3xl overflow-hidden bg-slate-800"
           >
+            <div className="w-full grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2">
             {shopItems.map(item => {
               const IconComponent = (item.icon && ICON_MAP[item.icon]) || ShoppingBag;
               const isOutOfStock = item.stock !== undefined && item.stock === 0;
 
               return (
                 <div key={item.id} className={cn(
-                  "bg-slate-900 p-6 rounded-2xl border flex flex-col h-full transition-all",
-                  isOutOfStock ? "opacity-50 grayscale border-slate-800" : "border-slate-800 hover:border-slate-700"
+                  "relative flex flex-col group transition-all bg-slate-950",
+                  isOutOfStock ? "opacity-50 grayscale" : ""
                 )}>
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="p-3 bg-indigo-500/10 text-indigo-400 rounded-xl w-fit">
-                      <IconComponent size={24} />
+                  {/* Item Display on Shelf */}
+                  <div className="w-full relative pt-8 pb-3 border-b-[4px] border-slate-800 group-hover:border-indigo-500/50 transition-colors flex flex-col items-center justify-end z-10">
+                    <div className="relative z-10 p-3 bg-indigo-500/10 text-indigo-400 rounded-xl group-hover:-translate-y-2 transition-transform duration-300">
+                      <IconComponent size={32} />
                     </div>
-                    {item.stock !== undefined && item.stock !== -1 && (
-                      <div className="px-2 py-1 bg-slate-800 rounded-lg border border-slate-700">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                          Stock: {item.stock}
-                        </span>
-                      </div>
-                    )}
                   </div>
-                  <h3 className="text-lg font-bold text-slate-100 mb-2">{item.name}</h3>
-                  <p className="text-sm text-slate-400 mb-6 flex-grow">{item.description}</p>
-                  <button
-                    onClick={() => onPurchase(item.id)}
-                    disabled={coins < item.price || isOutOfStock}
-                    className={cn(
-                      "w-full py-3 rounded-xl font-bold transition-all flex items-center justify-center space-x-2",
-                      (coins >= item.price && !isOutOfStock)
-                        ? "bg-amber-500 hover:bg-amber-600 text-slate-900" 
-                        : "bg-slate-800 text-slate-500 cursor-not-allowed"
-                    )}
-                  >
-                    <Coins size={18} />
-                    <span>{isOutOfStock ? 'Out of Stock' : `${item.price.toLocaleString()} Gold`}</span>
-                  </button>
+                  
+                  {/* Details as Hanging Sign */}
+                  <div className="w-full flex-grow relative bg-slate-900/50 pt-3 pb-6 flex flex-col">
+                    <div className="w-[85%] mx-auto relative pt-4 flex flex-col flex-grow text-center px-2 sm:px-3 pb-3 bg-slate-800 border-2 border-slate-700/50 rounded-b-xl group-hover:border-indigo-500/50 transition-colors">
+                      {/* Hanging Chains */}
+                      <div className="absolute -top-[14px] left-3 sm:left-4 w-[2px] h-[14px] bg-slate-600 group-hover:bg-indigo-500/50 transition-colors"></div>
+                      <div className="absolute -top-[14px] right-3 sm:right-4 w-[2px] h-[14px] bg-slate-600 group-hover:bg-indigo-500/50 transition-colors"></div>
+
+                      <h3 className="text-sm font-bold text-slate-100 mb-1 truncate mt-1">{item.name}</h3>
+                      <p className="text-[10px] text-slate-400 mb-4 flex-grow line-clamp-2 leading-relaxed">{item.description}</p>
+                      
+                      <div className="flex items-center gap-1 mt-auto">
+                        <div className="flex-none px-1.5 sm:px-2 py-1.5 bg-slate-900 border border-slate-700/50 rounded-lg text-[10px] font-black text-slate-400 uppercase tracking-widest shrink-0">
+                          {item.stock !== undefined && item.stock !== -1 ? `Lmt ${item.stock}` : '∞'} 
+                        </div>
+                        <button
+                          onClick={() => onPurchase(item.id)}
+                          disabled={coins < item.price || isOutOfStock}
+                          className={cn(
+                            "flex-1 py-1.5 px-1.5 sm:px-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 min-w-0 border",
+                            (coins >= item.price && !isOutOfStock)
+                              ? "bg-indigo-500/20 border-indigo-500/30 hover:bg-indigo-500 text-indigo-300 group-hover:text-white" 
+                              : "bg-slate-900 border-slate-800 text-slate-600 cursor-not-allowed"
+                          )}
+                        >
+                          <Coins size={12} className={cn("opacity-70 shrink-0", (coins >= item.price && !isOutOfStock) && "group-hover:opacity-100")} />
+                          <span className="truncate">{isOutOfStock ? 'Sold' : item.price}</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               );
             })}
+            </div>
           </motion.div>
         )}
 
@@ -141,17 +153,17 @@ export const Shop = React.memo<ShopProps>(({
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="w-full flex flex-col items-center space-y-12"
+            className="w-full flex flex-col items-center space-y-8"
           >
             {gachaPoolsList.length > 1 && (
-              <div className="flex flex-wrap items-center justify-center gap-2 p-1 bg-slate-900 rounded-xl overflow-x-auto max-w-full">
+              <div className="flex flex-wrap items-center justify-center gap-2 p-1.5 bg-slate-900 rounded-xl overflow-x-auto max-w-full">
                 {gachaPoolsList.map(p => (
                   <button
                     key={p.id}
                     onClick={() => onSetActivePool?.('gacha', p.id)}
                     className={cn(
-                      "px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all whitespace-nowrap",
-                      gachaPool?.id === p.id ? "bg-indigo-600 text-white shadow-lg" : "text-slate-500 hover:text-slate-300"
+                      "px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-widest transition-all whitespace-nowrap",
+                      gachaPool?.id === p.id ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/30" : "text-slate-400 hover:text-slate-200 hover:bg-slate-800"
                     )}
                   >
                     {p.name}
@@ -161,111 +173,132 @@ export const Shop = React.memo<ShopProps>(({
             )}
 
             {gachaPool && (
-              <div key={gachaPool.id} className="max-w-md w-full bg-slate-900 p-8 rounded-3xl border border-indigo-500/30 text-center space-y-6 relative">
-                <div className="relative mx-auto w-32 h-32 flex items-center justify-center bg-indigo-500/20 rounded-full border-2 border-indigo-500 animate-pulse">
-                  <SlotMachine size={64} className="text-indigo-400" />
-                </div>
-                <div className="flex items-center justify-center gap-3">
-                  <h3 className="text-2xl font-bold text-slate-50">{gachaPool.name}</h3>
-                  <button 
-                    onClick={() => setShowProbabilities(!showProbabilities)}
-                    className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 rounded-full transition-colors"
-                  >
-                    <HelpCircle size={18} />
-                  </button>
-                </div>
-                <p className="text-slate-400">Try your luck for high-tier rewards!</p>
-              
-                <AnimatePresence>
-                  {showProbabilities && (
-                    <motion.div 
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="overflow-hidden"
+              <div key={gachaPool.id} className="w-full max-w-5xl bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row">
+                
+                {/* Visual Area (Left) */}
+                <div className="flex-1 p-8 sm:p-12 flex flex-col items-center justify-center relative min-h-[400px]">
+                  {/* Decorative Background */}
+                  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl"></div>
+                  </div>
+
+                  <div className="relative mb-8 group perspective-1000">
+                    <div className="w-40 h-40 bg-slate-800/80 rounded-3xl border border-slate-700/50 shadow-2xl flex items-center justify-center group-hover:scale-105 transition-transform duration-500 relative z-10 backdrop-blur-sm">
+                      <SlotMachine size={80} className="text-indigo-400 group-hover:text-amber-400 transition-colors duration-500" />
+                      <div className="absolute inset-0 rounded-3xl border-[3px] border-indigo-500/20 group-hover:border-amber-400/50 animate-pulse transition-colors duration-500 p-2"></div>
+                    </div>
+                  </div>
+
+                  <h3 className="text-3xl font-black text-slate-50 mb-3 text-center">{gachaPool.name}</h3>
+                  <p className="text-slate-400 text-sm text-center mb-10 max-w-xs leading-relaxed">
+                    Test your luck and win fabulous rewards. Will fortune favor you today?
+                  </p>
+
+                  <div className="flex w-full gap-5 max-w-md mt-auto z-10 relative pb-2">
+                    <button
+                      onClick={() => onDrawGacha(gachaPool.id, 1)}
+                      disabled={coins < gachaPool.cost}
+                      className={cn(
+                        "flex-1 py-5 px-3 rounded-2xl font-bold transition-all flex flex-col items-center justify-center gap-1.5",
+                        coins >= gachaPool.cost 
+                          ? "bg-slate-800 hover:bg-slate-700 border-2 border-slate-700 hover:border-slate-600 text-slate-200" 
+                          : "bg-slate-900 border-2 border-slate-800 text-slate-600 cursor-not-allowed"
+                      )}
                     >
-                      <div className="space-y-4 pb-6">
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-[10px] font-bold uppercase tracking-widest">
-                          {(() => {
-                             const rarities = gachaPool.rarities || [];
-                            const totalWeight = rarities.reduce((sum, r) => sum + r.weight, 0);
-                            
-                            return rarities.map(rarity => {
-                              const prob = totalWeight > 0 ? ((rarity.weight / totalWeight) * 100).toFixed(1) : '0';
-                              const colors = getColorClass(rarity.color);
-                              return (
-                                <div key={rarity.id} className={cn("p-2 rounded border transition-colors", colors.bgClass, colors.borderClass, colors.textClass)}>
-                                  {rarity.name}: {prob}%
-                                </div>
-                              );
-                            });
-                          })()}
-                        </div>
-                        
-                        <div className="text-left bg-slate-950/50 rounded-2xl p-4 border border-slate-800">
-                          <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Available Rewards</h4>
-                          <div className="space-y-2">
-                            {(gachaPool.rarities || []).map(rarity => {
-                              const items = gachaPool.items.filter(i => i.rarity === rarity.id);
-                              if (items.length === 0) return null;
-                              const colors = getColorClass(rarity.color);
-                              const vibrantMapping: Record<string, string> = {
-                                'rose': 'bg-rose-600 text-white',
-                                'amber': 'bg-amber-500 text-slate-900',
-                                'purple': 'bg-purple-600 text-white',
-                                'blue': 'bg-blue-600 text-white',
-                                'emerald': 'bg-emerald-600 text-white',
-                                'slate': 'bg-slate-600 text-white'
-                              };
-                              const badgeBg = rarity.color && vibrantMapping[rarity.color] ? vibrantMapping[rarity.color] : colors.bgClass;
-
-                              return (
-                                <div key={rarity.id} className="flex flex-wrap gap-1.5 items-center">
-                                  <span className={cn(
-                                    "text-[9px] font-black px-1.5 py-0.5 rounded uppercase border",
-                                    badgeBg, colors.borderClass, rarity.color === 'amber' ? 'text-slate-900' : 'text-white'
-                                  )}>
-                                    {rarity.name}
-                                  </span>
-                                  <span className="text-xs text-slate-300">
-                                    {items.map(i => i.name).join(', ')}
-                                  </span>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                <div className="flex gap-4">
-                  <button
-                    onClick={() => onDrawGacha(gachaPool.id, 1)}
-                    disabled={coins < gachaPool.cost}
-                    className={cn(
-                      "flex-1 py-4 rounded-2xl font-bold text-lg transition-all flex items-center justify-center space-x-2",
-                      coins >= gachaPool.cost 
-                        ? "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-[#ffffff] shadow-lg shadow-indigo-500/20" 
-                        : "bg-slate-800 text-slate-600 cursor-not-allowed"
-                    )}
-                  >
-                    <span>Pull 1x ({gachaPool.cost.toLocaleString()})</span>
-                  </button>
-                  <button
-                    onClick={() => onDrawGacha(gachaPool.id, 10)}
-                    disabled={coins < gachaPool.cost * 10}
-                    className={cn(
-                      "flex-1 py-4 rounded-2xl font-bold text-lg transition-all flex items-center justify-center space-x-2",
-                      coins >= gachaPool.cost * 10
-                        ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-[#ffffff] shadow-lg shadow-amber-500/20" 
-                        : "bg-slate-800 text-slate-600 cursor-not-allowed"
-                    )}
-                  >
-                    <span>Pull 10x ({(gachaPool.cost * 10).toLocaleString()})</span>
-                  </button>
+                      <span className="text-xs sm:text-sm text-slate-400 uppercase tracking-widest">Draw 1x</span>
+                      <span className="text-base sm:text-lg font-black flex items-center gap-1.5">
+                         <Coins size={16} className={coins >= gachaPool.cost ? "text-amber-400" : ""} />
+                         {gachaPool.cost.toLocaleString()}
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => onDrawGacha(gachaPool.id, 10)}
+                      disabled={coins < gachaPool.cost * 10}
+                      className={cn(
+                        "flex-1 py-5 px-3 rounded-2xl font-bold transition-all flex flex-col items-center justify-center gap-1.5",
+                        coins >= gachaPool.cost * 10
+                          ? "bg-indigo-600 hover:bg-indigo-500 border-2 border-indigo-500 shadow-xl shadow-indigo-600/30 text-white" 
+                          : "bg-slate-900 border-2 border-slate-800 text-slate-600 cursor-not-allowed"
+                      )}
+                    >
+                       <span className="text-xs sm:text-sm text-indigo-200 uppercase tracking-widest opacity-90">Draw 10x</span>
+                       <span className="text-base sm:text-lg font-black flex items-center gap-1.5">
+                         <Coins size={16} className={coins >= gachaPool.cost * 10 ? "text-amber-300" : ""} />
+                         {(gachaPool.cost * 10).toLocaleString()}
+                      </span>
+                    </button>
+                  </div>
                 </div>
+
+                {/* Probability Details (Right) */}
+                <div className="w-full md:w-80 lg:w-96 bg-slate-950/50 border-t md:border-t-0 md:border-l border-slate-800/80 p-6 sm:p-8 flex flex-col">
+                  <div className="flex items-center gap-2 mb-6 pb-4 border-b border-slate-800">
+                    <HelpCircle size={18} className="text-indigo-400" />
+                    <h4 className="text-sm font-black text-slate-300 uppercase tracking-widest">Rates & Contents</h4>
+                  </div>
+                  
+                  <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-6">
+                     <div className="space-y-2">
+                       {(() => {
+                          const rarities = gachaPool.rarities || [];
+                         const totalWeight = rarities.reduce((sum, r) => sum + r.weight, 0);
+                         
+                         return rarities.map(rarity => {
+                           const prob = totalWeight > 0 ? ((rarity.weight / totalWeight) * 100).toFixed(1) : '0';
+                           const colors = getColorClass(rarity.color);
+                           return (
+                             <div key={rarity.id} className="flex items-center justify-between p-2.5 rounded-lg border border-slate-800/50 bg-slate-900/50">
+                               <span className={cn("text-xs font-black uppercase tracking-wider", colors.textClass)}>{rarity.name}</span>
+                               <span className="text-xs font-bold text-slate-400">{prob}%</span>
+                             </div>
+                           );
+                         });
+                       })()}
+                     </div>
+
+                     <div>
+                        <h5 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Pool Contents</h5>
+                        <div className="space-y-4">
+                           {(gachaPool.rarities || []).map(rarity => {
+                             const items = gachaPool.items.filter(i => i.rarity === rarity.id);
+                             if (items.length === 0) return null;
+                             const colors = getColorClass(rarity.color);
+                             const vibrantMapping: Record<string, string> = {
+                               'rose': 'bg-rose-600 border-rose-500',
+                               'amber': 'bg-amber-500 border-amber-400',
+                               'purple': 'bg-purple-600 border-purple-500',
+                               'blue': 'bg-blue-600 border-blue-500',
+                               'emerald': 'bg-emerald-600 border-emerald-500',
+                               'slate': 'bg-slate-700 border-slate-600'
+                             };
+                             const badgeBg = rarity.color && vibrantMapping[rarity.color] ? vibrantMapping[rarity.color] : colors.bgClass;
+
+                             return (
+                               <div key={rarity.id} className="bg-slate-900 rounded-xl p-3 border border-slate-800/50">
+                                 <div className="flex items-center gap-2 mb-2">
+                                     <div className={cn("w-2 h-2 rounded-full", colors.bgClass)}></div>
+                                     <span className={cn(
+                                       "text-[10px] font-black uppercase tracking-widest",
+                                       colors.textClass
+                                     )}>
+                                       {rarity.name}
+                                     </span>
+                                 </div>
+                                 <div className="flex flex-wrap gap-1">
+                                    {items.map(i => (
+                                       <span key={i.name} className="text-[11px] font-medium text-slate-400 bg-slate-950 px-2 py-1 rounded border border-slate-800">
+                                          {i.name}
+                                       </span>
+                                    ))}
+                                 </div>
+                               </div>
+                             );
+                           })}
+                        </div>
+                     </div>
+                  </div>
+                </div>
+
               </div>
             )}
           </motion.div>
@@ -297,79 +330,132 @@ export const Shop = React.memo<ShopProps>(({
             )}
 
             {ichibanPool && (
-              <div key={ichibanPool.id} className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-12 border-b border-slate-800/50 last:border-0">
-                <div className="lg:col-span-1 bg-slate-900 p-8 rounded-3xl border border-emerald-500/30 space-y-6 relative h-fit">
-                  <h3 className="text-2xl font-bold text-slate-50">{ichibanPool.name}</h3>
-                  <p className="text-slate-400 text-sm">Limited pool. Draw all to get the Last One prize!</p>
+              <div key={ichibanPool.id} className="w-full max-w-6xl mx-auto bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl flex flex-col lg:flex-row">
+                
+                {/* Visual Area (Left) */}
+                <div className="flex-1 p-8 sm:p-12 flex flex-col items-center justify-center relative border-b lg:border-b-0 lg:border-r border-slate-800/80 min-h-[400px]">
+                  {/* Decorative Background */}
+                  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl"></div>
+                  </div>
+
+                  <div className="relative mb-8 group perspective-1000">
+                    <div className="w-40 h-40 bg-slate-800/80 rounded-3xl border border-slate-700/50 shadow-2xl flex items-center justify-center group-hover:scale-105 transition-transform duration-500 relative z-10 backdrop-blur-sm">
+                      <Gift size={80} className="text-emerald-400 group-hover:text-amber-400 transition-colors duration-500" />
+                      <div className="absolute inset-0 rounded-3xl border-[3px] border-emerald-500/20 group-hover:border-amber-400/50 animate-pulse transition-colors duration-500 p-2"></div>
+                    </div>
+                  </div>
+
+                  <h3 className="text-3xl font-black text-slate-50 mb-3 text-center">{ichibanPool.name}</h3>
+                  <p className="text-slate-400 text-sm text-center mb-10 max-w-xs leading-relaxed">
+                    Box Gacha pool. Draw all items to claim the exclusive Last One prize!
+                  </p>
                   
-                  <div className="flex flex-col gap-3">
+                  <div className="flex flex-col w-full gap-3 max-w-md mt-auto z-10 relative">
                     {remainingIchibanItems > 0 ? (
-                      <>
+                      <div className="flex gap-4 w-full pb-2">
                         <button
                           onClick={() => onDrawGacha(ichibanPool.id, 1)}
                           disabled={coins < ichibanPool.cost}
                           className={cn(
-                            "w-full py-4 rounded-2xl font-bold transition-all flex items-center justify-center space-x-2",
+                            "flex-1 py-5 px-3 rounded-2xl font-bold transition-all flex flex-col items-center justify-center gap-1.5",
                             coins >= ichibanPool.cost 
-                              ? "bg-emerald-600 hover:bg-emerald-500 text-white" 
-                              : "bg-slate-800 text-slate-600 cursor-not-allowed"
+                              ? "bg-slate-800 hover:bg-slate-700 border-2 border-slate-700 hover:border-slate-600 text-slate-200" 
+                              : "bg-slate-900 border-2 border-slate-800 text-slate-600 cursor-not-allowed"
                           )}
                         >
-                          <span>Draw 1x ({ichibanPool.cost.toLocaleString()} Gold)</span>
+                          <span className="text-xs sm:text-sm text-slate-400 uppercase tracking-widest">Draw 1x</span>
+                          <span className="text-base sm:text-lg font-black flex items-center gap-1.5">
+                             <Coins size={16} className={coins >= ichibanPool.cost ? "text-amber-400" : ""} />
+                             {ichibanPool.cost.toLocaleString()}
+                          </span>
                         </button>
                         <button
                           onClick={() => onDrawGacha(ichibanPool.id, remainingIchibanItems < 10 ? remainingIchibanItems : 10)}
                           disabled={coins < ichibanPool.cost * (remainingIchibanItems < 10 ? remainingIchibanItems : 10)}
                           className={cn(
-                            "w-full py-4 rounded-2xl font-bold transition-all flex items-center justify-center space-x-2",
+                            "flex-1 py-5 px-3 rounded-2xl font-bold transition-all flex flex-col items-center justify-center gap-1.5",
                             coins >= ichibanPool.cost * (remainingIchibanItems < 10 ? remainingIchibanItems : 10)
-                              ? "bg-amber-500 hover:bg-amber-400 text-slate-900 shadow-lg shadow-amber-500/20" 
-                              : "bg-slate-800 text-slate-600 cursor-not-allowed"
+                              ? remainingIchibanItems < 10 
+                                 ? "bg-amber-600 hover:bg-amber-500 border-2 border-amber-500 text-amber-50 shadow-xl shadow-amber-600/30" 
+                                 : "bg-emerald-600 hover:bg-emerald-500 border-2 border-emerald-500 text-white shadow-xl shadow-emerald-600/30" 
+                              : "bg-slate-900 border-2 border-slate-800 text-slate-600 cursor-not-allowed"
                           )}
                         >
                           {remainingIchibanItems < 10 ? (
-                            <span>Take All Remaining ({(ichibanPool.cost * remainingIchibanItems).toLocaleString()} Gold)</span>
+                             <>
+                                <span className="text-xs sm:text-sm text-amber-200 uppercase tracking-widest opacity-90">Take All</span>
+                                <span className="text-base sm:text-lg font-black flex items-center gap-1.5">
+                                   <Coins size={16} className={coins >= ichibanPool.cost * remainingIchibanItems ? "text-amber-300" : ""} />
+                                   {(ichibanPool.cost * remainingIchibanItems).toLocaleString()}
+                                </span>
+                             </>
                           ) : (
-                            <span>Draw 10x ({(ichibanPool.cost * 10).toLocaleString()} Gold)</span>
+                             <>
+                                <span className="text-xs sm:text-sm text-emerald-200 uppercase tracking-widest opacity-90">Draw 10x</span>
+                                <span className="text-base sm:text-lg font-black flex items-center gap-1.5">
+                                   <Coins size={16} className={coins >= ichibanPool.cost * 10 ? "text-amber-300" : ""} />
+                                   {(ichibanPool.cost * 10).toLocaleString()}
+                                </span>
+                             </>
                           )}
                         </button>
-                      </>
+                      </div>
                     ) : (
                       <button
                         onClick={() => setConfirmResetId(ichibanPool.id)}
-                        className="w-full py-4 rounded-2xl font-bold bg-indigo-600 hover:bg-indigo-500 text-white transition-all flex items-center justify-center space-x-2"
+                        className="w-full py-5 rounded-2xl font-bold bg-indigo-600 hover:bg-indigo-500 border-2 border-indigo-500 text-white shadow-xl shadow-indigo-600/30 transition-all flex flex-col items-center justify-center gap-1.5"
                       >
-                        <RefreshCw size={18} />
-                        <span>Reset Pool</span>
+                         <span className="text-sm font-black flex items-center gap-2">
+                           <RefreshCw size={18} />
+                           RESET POOL
+                         </span>
+                         <span className="text-xs text-indigo-200 uppercase tracking-widest opacity-90">New Box Available</span>
                       </button>
                     )}
                   </div>
                 </div>
 
-                <div className="lg:col-span-2 space-y-4 h-fit content-start">
-                  {[...ichibanPool.items].sort((a, b) => {
-                    if (a.rarity === 'LastOne') return -1;
-                    if (b.rarity === 'LastOne') return 1;
-                    return 0;
-                  }).map(item => {
+                {/* Right Area: List of Rewards */}
+                <div className="w-full lg:w-[500px] xl:w-[600px] bg-slate-950/50 p-6 sm:p-8 flex flex-col relative max-h-[1000px] lg:max-h-[800px]">
+                  <div className="flex items-center justify-between mb-4 pb-4 border-b border-slate-800 relative z-10 shrink-0">
+                    <div className="flex items-center gap-2">
+                       <Package size={18} className="text-emerald-400" />
+                       <h4 className="text-sm font-black text-slate-300 uppercase tracking-widest">Prize Lineup</h4>
+                    </div>
+                    <div className="text-xs font-bold text-slate-500 bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800 flex items-center gap-2">
+                      Remaining: <span className={cn("font-black ml-1 text-sm leading-none", remainingIchibanItems > 0 ? "text-emerald-400" : "text-amber-400")}>{remainingIchibanItems}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-3 relative z-10">
+                    {[...ichibanPool.items].sort((a, b) => {
+                      if (a.rarity === 'LastOne') return -1;
+                      if (b.rarity === 'LastOne') return 1;
+                      return 0;
+                    }).map(item => {
                       const subItems = item.name.split('/').map(s => s.trim()).filter(s => s.length > 0);
                       const isExhausted = item.count === 0;
+                      const isLastOne = item.rarity.toUpperCase() === 'LASTONE';
                       
                       return (
                         <div 
                           key={item.rarity + item.name} 
                           className={cn(
-                            "p-4 bg-slate-900 rounded-2xl border transition-all",
-                            isExhausted ? "opacity-40 grayscale border-slate-800" : "border-slate-800 hover:border-slate-700 shadow-lg shadow-black/20"
+                            "p-3 sm:p-4 bg-slate-900 rounded-2xl border transition-all relative overflow-hidden",
+                            isExhausted ? "opacity-50 grayscale border-slate-800" : isLastOne ? "border-rose-500/50 shadow-[0_0_15px_rgba(244,63,94,0.1)]" : "border-slate-700 hover:border-slate-600 shadow-lg shadow-black/20"
                           )}
                         >
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                            <div className="flex items-center gap-3">
+                          {isExhausted && (
+                             <div className="absolute inset-0 bg-slate-950/40 z-20 flex items-center justify-center backdrop-blur-[1px]">
+                                <div className="text-3xl font-black text-rose-500/70 border-4 border-rose-500/70 py-2 px-6 rounded-xl transform -rotate-12 uppercase tracking-widest bg-slate-950/50">Empty</div>
+                             </div>
+                          )}
+                          <div className={cn("flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 relative z-10", isExhausted ? "opacity-30" : "")}>
+                            <div className="flex items-center gap-3 overflow-hidden">
                               <span className={cn(
-                                "text-xs font-black px-3 py-1 rounded-lg uppercase tracking-widest shrink-0 shadow-[0_0_15px_rgba(0,0,0,0.2)]",
+                                "text-xs font-black px-3 py-1.5 rounded-lg uppercase tracking-widest shrink-0 shadow-lg border",
                                 (() => {
-                                  const isLastOne = item.rarity.toUpperCase() === 'LASTONE';
-                                  // Prefer color from data, fallback to mapping based on rarityValue, or rose for LastOne
                                   let colorId = item.color;
                                   if (!colorId) {
                                     if (isLastOne) colorId = 'rose';
@@ -381,14 +467,13 @@ export const Shop = React.memo<ShopProps>(({
                                   
                                   const { bgClass, textClass, borderClass } = getColorClass(colorId || 'slate');
                                   
-                                  // Use vibrant backgrounds for the label badges
                                   const vibrantMapping: Record<string, string> = {
-                                    'rose': 'bg-rose-600 text-white shadow-rose-500/30',
-                                    'amber': 'bg-amber-500 text-slate-900 shadow-amber-500/30',
-                                    'purple': 'bg-purple-600 text-white shadow-purple-500/30',
-                                    'blue': 'bg-blue-600 text-white shadow-blue-500/30',
-                                    'emerald': 'bg-emerald-600 text-white shadow-emerald-500/30',
-                                    'slate': 'bg-slate-600 text-white shadow-slate-500/30'
+                                    'rose': 'bg-rose-600 text-white border-rose-500',
+                                    'amber': 'bg-amber-500 text-slate-900 border-amber-400',
+                                    'purple': 'bg-purple-600 text-white border-purple-500',
+                                    'blue': 'bg-blue-600 text-white border-blue-500',
+                                    'emerald': 'bg-emerald-600 text-white border-emerald-500',
+                                    'slate': 'bg-slate-600 text-white border-slate-500'
                                   };
                                   
                                   const vibrantBg = colorId && vibrantMapping[colorId] ? vibrantMapping[colorId] : bgClass;
@@ -399,35 +484,44 @@ export const Shop = React.memo<ShopProps>(({
                               )}>
                                 {item.rarity}
                               </span>
-                              <div className="flex flex-wrap gap-2">
+                              <div className="flex flex-wrap gap-1.5">
                                 {subItems.map((sub, sIdx) => (
-                                  <span key={sIdx} className="text-sm text-slate-100 font-bold bg-slate-800 px-3 py-1 rounded-lg border border-slate-700/50">
+                                  <span key={sIdx} className="text-[11px] sm:text-xs text-slate-100 font-bold bg-slate-950 px-2.5 py-1 rounded-md border border-slate-700/50 shadow-sm leading-tight whitespace-nowrap overflow-hidden text-ellipsis max-w-full">
                                     {sub}
                                   </span>
                                 ))}
                               </div>
                             </div>
-                            <div className="flex items-center gap-3 bg-slate-950 px-4 py-2 rounded-xl border border-slate-800 self-end sm:self-auto">
-                              <div className="text-right">
-                                <div className="text-xs font-bold text-slate-400 uppercase tracking-tighter leading-none">Remaining</div>
-                                <div className="text-lg font-black text-slate-100 leading-none mt-1">{item.count}</div>
-                              </div>
-                              {item.initialCount !== undefined && (
-                                <div className="h-8 w-px bg-slate-800" />
-                              )}
-                              {item.initialCount !== undefined && (
-                                <div className="text-left">
-                                  <div className="text-xs font-bold text-slate-600 uppercase tracking-tighter leading-none">Total</div>
-                                  <div className="text-sm font-bold text-slate-500 leading-none mt-1">{item.initialCount}</div>
-                                </div>
-                              )}
-                            </div>
+                            
+                            {!isLastOne && (
+                               <div className="flex items-center gap-3 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 self-end sm:self-auto shrink-0">
+                                 <div className="text-right">
+                                   <div className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter leading-none">Left</div>
+                                   <div className="text-lg font-black text-slate-100 leading-none mt-1">{item.count}</div>
+                                 </div>
+                                 {item.initialCount !== undefined && (
+                                   <div className="h-6 w-px bg-slate-800 mt-1" />
+                                 )}
+                                 {item.initialCount !== undefined && (
+                                   <div className="text-left">
+                                     <div className="text-[10px] font-bold text-slate-600 uppercase tracking-tighter leading-none">Total</div>
+                                     <div className="text-sm font-bold text-slate-500 leading-none mt-1">{item.initialCount}</div>
+                                   </div>
+                                 )}
+                               </div>
+                            )}
+                            {isLastOne && (
+                               <div className="flex items-center justify-center shrink-0 w-[4.5rem]">
+                                  <Crown size={24} className={cn("drop-shadow-lg", isExhausted ? "text-slate-600" : "text-rose-500 animate-pulse")} />
+                               </div>
+                            )}
                           </div>
                         </div>
                       );
                     })}
                   </div>
                 </div>
+              </div>
             )}
           </motion.div>
         )}
