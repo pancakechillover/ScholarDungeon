@@ -8,6 +8,7 @@ import { cn } from '../lib/utils';
 import { triggerSimpleConfetti } from '../lib/effects';
 import { createWorkerTimer } from '../lib/workerTimer';
 import { useBackgroundKeepAlive } from '../lib/keepAlive';
+import { generateRewardChoicesForSession } from '../lib/rewardLogic';
 
 interface TimerProps {
   currentDungeon: Dungeon | null;
@@ -108,6 +109,7 @@ export const Timer = React.memo<TimerProps>(({
   const [showRewards, setShowRewards] = useState<{ session: StudySession; choices: RewardCard[] } | null>(null);
   const [showTalentPopup, setShowTalentPopup] = useState<StudySession['triggeredTalents'] | null>(null);
   const [showFocusPrompt, setShowFocusPrompt] = useState(false);
+  const [hasRerolled, setHasRerolled] = useState(false);
 
   useBackgroundKeepAlive(isActive, isResting, duration, timeLeft);
 
@@ -240,58 +242,14 @@ export const Timer = React.memo<TimerProps>(({
       // Finished focus
       const session = onComplete(duration, focusDuration, restDuration);
       if (session) {
-        let drawCount = 1;
-        if (timeBasedMode) {
-           const actualDur = focusDuration || duration;
-           drawCount = Math.floor(Math.max(1, actualDur) / (standardSessionMinutes || 25));
-        }
-
-        // Generate choices from rewardPool
-        const now = Date.now();
-        const choicesList: { session: typeof session, choices: RewardCard[] }[] = [];
-        const count = activeTalents.includes('c1') ? 4 : 3; // Extra Chance
-        
-        for (let d = 0; d < drawCount; d++) {
-          const pseudoSession = d === 0 ? session : { ...session, id: `${session.id}-${d}` };
-          const choices: RewardCard[] = [];
-          
-          // Re-evaluate pool for each chest to account for limits
-          const selectedPool = (rewardPool || []).filter(card => {
-            if (card.limitCount && card.limitPeriodDays) {
-              const periodMs = card.limitPeriodDays * 24 * 60 * 60 * 1000;
-              const claimsInPeriod = (card.claimHistory || []).filter(ts => (now - new Date(ts).getTime()) < periodMs).length;
-              
-              let pendingOccurrences = 0;
-              if (pendingRewardChest) {
-                for (const chest of pendingRewardChest) {
-                  if (chest.choices.some(c => c.name === card.name)) pendingOccurrences++;
-                }
-              }
-              
-              let drawnOccurrences = 0;
-              for (const currentChest of choicesList) {
-                if (currentChest.choices.some(c => c.name === card.name)) drawnOccurrences++;
-              }
-              
-              return (claimsInPeriod + pendingOccurrences + drawnOccurrences) < card.limitCount;
-            }
-            return true;
-          });
-
-          for (let i = 0; i < Math.min(count, selectedPool.length); i++) {
-            const totalWeight = selectedPool.reduce((acc, r) => acc + r.weight, 0);
-            let rand = Math.random() * totalWeight;
-            for (let j = 0; j < selectedPool.length; j++) {
-              rand -= selectedPool[j].weight;
-              if (rand <= 0) {
-                choices.push(selectedPool[j]);
-                selectedPool.splice(j, 1);
-                break;
-              }
-            }
-          }
-          choicesList.push({ session: pseudoSession, choices });
-        }
+        const generated = generateRewardChoicesForSession(session, {
+          rewardPool,
+          activeTalents,
+          pendingRewardChest,
+          timeBasedMode,
+          standardSessionMinutes
+        });
+        const choicesList = generated;
 
         if (timerSkipVictoryMode && timerSkipVictoryMode !== 'none') {
           if (timerSkipVictoryMode === 'auto_pick_highest') {
@@ -333,6 +291,7 @@ export const Timer = React.memo<TimerProps>(({
           if (choicesList.length > 0) {
             // Only popup the first one directly. The others can be opened from the chest sequentially.
             setShowRewards(choicesList[0]);
+            setHasRerolled(false);
             triggerSimpleConfetti();
             if (session.isCrit) {
               setShowCoinRain(true);
@@ -707,13 +666,30 @@ export const Timer = React.memo<TimerProps>(({
                       <TreasureChestIcon size={14} />
                       Defer to Chest
                     </button>
-                    {activeTalents.includes('c2') && !dailyRerollUsed && (
+                    {activeTalents.includes('c2') && !hasRerolled && (
                       <button
-                        onClick={onReroll}
-                        className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-full font-bold uppercase text-[10px] md:text-xs hover:bg-indigo-500 transition-all"
+                        onClick={() => {
+                          if (showRewards) {
+                            const newChoices = generateRewardChoicesForSession(showRewards.session, {
+                              rewardPool,
+                              activeTalents,
+                              pendingRewardChest,
+                              timeBasedMode,
+                              standardSessionMinutes
+                            });
+                            if (newChoices && newChoices.length > 0) {
+                              setShowRewards({
+                                session: showRewards.session,
+                                choices: newChoices[0].choices
+                              });
+                            }
+                            setHasRerolled(true);
+                          }
+                        }}
+                        className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-full font-bold uppercase text-[10px] md:text-xs hover:bg-indigo-500 transition-all shadow-[0_0_15px_rgba(79,70,229,0.3)] hover:shadow-[0_0_20px_rgba(79,70,229,0.5)]"
                       >
                         <RotateCcw size={14} />
-                        Reroll (1 Daily)
+                        Reroll
                       </button>
                     )}
                   </div>

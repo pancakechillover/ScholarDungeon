@@ -23,8 +23,8 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v7.1.3
-- **Last Update Date:** 2026-05-24
+- **Current Version:** v7.3.2
+- **Last Update Date:** 2026-06-01
 
 ## Dark Themes Definition
 The following themes are considered "Dark Themes" and form the baseline for vibrant visual effects and high-contrast glowing elements:
@@ -49,6 +49,59 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v7.3.2 (2026-06-01):** Profile Modal UI Polish.
+  - *UI:* Renamed the Talent attribute card to Scroll and updated the visual icon to match the broader system.
+
+- **v7.3.1 (2026-06-01):** Inventory Ledger Enhancements.
+  - *Feature:* Advanced logging implemented across the application to track all physical usages of Death Defying Medals, Talent Scrolls, and Shard forgings.
+  - *UI:* Upgraded the Inventory history tabs to feature an Economy-Log style quantity modifier badge (+1/-1), specifically tracking both acquisitions and direct consumptions with descriptive metadata notes.
+
+- **v7.3.0 (2026-06-01):** Vault Inventory Storage System.
+  - *Feature:* Added an "Inventory" tab inside the Vault interface to manage and track active held items.
+  - *Feature:* Transformed Double XP Cards and Double Gold Cards from auto-use queue behaviors into stackable, manually activated items within the user's Inventory.
+  - *UI:* Added an immersive 5-card layout showcasing held Talent Scrolls, Talent Shards, Death Defying Medals, and Double Buff Cards.
+  - *UX:* Clicking on items displays a detailed table of specific acquisition and usage history strictly for that item type.
+
+- **v7.2.0 (2026-06-01):** Profile Modal UI Cleanup.
+  - *UI:* Removed the redundant streak badge next to the level title in the Profile Modal.
+
+- **v7.1.13 (2026-06-01):** Streak Reminder Badge.
+  - *UI:* Added an exclamation mark (!) notification badge to the bottom right of the Streak icon in the Profile Dashboard if the user hasn't studied today, prompting them to keep the streak going.
+
+- **v7.1.12 (2026-06-01):** Profile Modal Bug Fix.
+  - *Bug Fix:* Fixed an issue in `ProfileModal.tsx` where the "Next Reward" block displayed standard generic text instead of connecting to the custom level-up rewards logic established in the `LevelRewardsSettings`. Custom text, dynamically adjusted Gold, and Talent scrolls will now display accurately based on the user's config.
+  - *Bug Fix:* Resolved a `unique key` warning triggered within `streakData.map` in the 7-Day Activity Record by migrating away from array indices to unique timestamp markers.
+
+- **v7.1.11 (2026-06-01):** Fate Dice: Shuffler Enhancement.
+  - *Feature:* Upgraded the "Shuffler" talent effect from 1 daily reroll to 1 free reroll per chest draw.
+  - *UI:* Integrated individual Reroll buttons natively into the delayed Reward Chest interface.
+  - *Refactor:* Migrated reroll limitation flag from the global game state to native context, enabling persistent per-draw tracking.
+
+- **v7.1.10 (2026-06-01):** Streak Timezone Bug Fix.
+  - *Bug Fix:* Fixed an underlying timezone discrepancy where UTC string slicing (`substring(0, 10)`) incorrectly shifted historical check-ins backwards globally. This resolves the bug where using patch cards would falsely connect with the mathematically shifted 'fake' prior sessions, resulting in a streak count inflated by exactly +1 day.
+
+- **v7.1.9 (2026-06-01):** Streak Modal UI Polish.
+  - *UI:* Removed the medal count badge from the top right corner of the Streak stat card to keep the design cleaner.
+  - *UX:* In the 7-Day Activity Record, the "X" marker directly behaves as the patch button (instead of a hover menu), triggering a confirmation double-check before using a Death Defying Medal.
+  - *UI:* Added the short date (MM/dd) above the weekday label in the 7-Day Activity Record.
+
+- **v7.1.8 (2026-06-01):** Streak Repair System.
+  - *Feature:* Transformed the Medal counter in the Profile Modal to a "Streak Status" button.
+  - *Feature:* Clicking the Streak badge opens an interactive 7-Day Activity Record, allowing the user to seamlessly use their "Death Defying Gold Medals" to patch manually missed days (Duolingo-style retroactive check-ins).
+  - *Logic:* Implemented dynamic `patchedDays` integration into the underlying `useGameState` logic to recalculate and secure continuous streaks without fabricating dummy history records.
+
+- **v7.1.7 (2026-06-01):** Timer Bulk Advanced Configuration.
+  - *Feature:* In Timer Bulk Session creation, added the ability to define custom 'Focus' and 'Rest' durations, as well as an option to auto-calculate the appropriate number of bulk sessions directly based on a specific time range.
+
+- **v7.1.6 (2026-06-01):** Timer Bulk Session Rewards.
+  - *Bug Fix:* Unified the chest reward logic used during normal session clears and Timer Bulk Manage operations. Bulk added sessions will now accurately consider talent effects and limits checks.
+
+- **v7.1.5 (2026-06-01):** Ichiban Box Theme-Aware Polish.
+  - *UI:* Exchanged hardcoded green (emerald) styling in the Box Gacha "Ichiban" view for theme-adaptive indigo classes to maintain perfect continuity with light and dark themes.
+
+- **v7.1.4 (2026-06-01):** Shop UI Polish.
+  - *UI:* Made the active purchase button in the Merchant Shop much more prominent with solid theme colors, dynamic scale hovers, and shadows when items are affordable.
 
 - **v7.1.3 (2026-05-24):** Ichiban Box Gacha UI Polish.
   - *UI:* Aligned the "Ichiban" section of the shop with the recent Gacha View redesign, expanding it into a complete two-column layout with a highly visual aesthetic.

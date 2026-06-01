@@ -16,27 +16,29 @@ import {
   History,
   Tag
 } from 'lucide-react';
-import { RewardHistoryItem } from '../types';
+import { AppState, RewardHistoryItem, Transaction } from '../types';
 import { cn } from '../lib/utils';
 import { PageHeader } from './PageHeader';
 import { format, isWithinInterval, subDays, startOfDay, endOfDay } from 'date-fns';
 import { getColorClass } from '../lib/colors';
 import { EconomyLog } from './EconomyLog';
-import { Transaction } from '../types';
+import { InventoryTab } from './InventoryTab';
 
 interface RewardHistoryProps {
   history: RewardHistoryItem[];
   transactionHistory?: Transaction[];
+  appState: AppState;
   onToggleRedeemed: (id: string) => void;
+  useInventoryItem: (id: string) => void;
 }
 
-type FilterTab = 'all' | 'treasures' | 'custom' | 'economy';
+type FilterTab = 'all' | 'treasures' | 'custom' | 'economy' | 'inventory';
 type TimeRange = 'all' | 'today' | '7d' | '30d';
 type SourceFilter = 'all' | 'Explore' | 'Gacha' | 'Shop' | 'LevelUp';
 type StatusFilter = 'all' | 'redeemed' | 'pending';
 type RarityFilter = 'all' | 'COMMON' | 'RARE' | 'EPIC' | 'LASTONE';
 
-export const RewardHistory: React.FC<RewardHistoryProps> = ({ history, transactionHistory = [], onToggleRedeemed }) => {
+export const RewardHistory: React.FC<RewardHistoryProps> = ({ history, transactionHistory = [], appState, onToggleRedeemed, useInventoryItem }) => {
   const [activeTab, setActiveTab] = useState<FilterTab>('all');
   const [timeRange, setTimeRange] = useState<TimeRange>('all');
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>('all');
@@ -104,6 +106,12 @@ export const RewardHistory: React.FC<RewardHistoryProps> = ({ history, transacti
           description="Comprehensive history of all Gold Coins and Experience Points acquired and spent."
           icon={Coins}
         />
+      ) : activeTab === 'inventory' ? (
+        <PageHeader 
+          title="Item Inventory"
+          description="View and manage your active consumable items, shards, and special medals."
+          icon={Package}
+        />
       ) : (
         <PageHeader 
           title="Reward Vault"
@@ -159,9 +167,20 @@ export const RewardHistory: React.FC<RewardHistoryProps> = ({ history, transacti
             <Coins size={14} />
             Economy Log
           </button>
+          
+          <button
+            onClick={() => setActiveTab('inventory')}
+            className={cn(
+              "px-6 py-2 rounded-xl text-xs font-bold flex items-center gap-2 uppercase tracking-widest transition-all",
+              activeTab === 'inventory' ? "bg-indigo-600 text-white shadow-lg" : "text-slate-500 hover:text-slate-300"
+            )}
+          >
+            <Package size={14} />
+            Inventory
+          </button>
         </div>
 
-        {activeTab !== 'economy' && (
+        {activeTab !== 'economy' && activeTab !== 'inventory' && (
           <div className="flex-grow flex gap-2">
             <div className="relative flex-grow">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
@@ -189,7 +208,7 @@ export const RewardHistory: React.FC<RewardHistoryProps> = ({ history, transacti
 
       {/* Advanced Filters */}
       <AnimatePresence>
-        {showFilters && activeTab !== 'economy' && (
+        {showFilters && activeTab !== 'economy' && activeTab !== 'inventory' && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
@@ -271,6 +290,14 @@ export const RewardHistory: React.FC<RewardHistoryProps> = ({ history, transacti
           animate={{ opacity: 1, y: 0 }}
         >
           <EconomyLog history={transactionHistory} />
+        </motion.div>
+      ) : activeTab === 'inventory' ? (
+        <motion.div
+          key="inventory-tab"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <InventoryTab appState={appState} history={history} useInventoryItem={useInventoryItem} />
         </motion.div>
       ) : (
         <div className="bg-slate-900 rounded-3xl border border-slate-800 overflow-hidden">

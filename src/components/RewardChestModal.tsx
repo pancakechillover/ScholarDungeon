@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { RewardCard, StudySession, Rarity } from '../types';
 import { cn } from '../lib/utils';
 import { triggerSimpleConfetti } from '../lib/effects';
-import { X, Sparkles, Trophy, Zap, Coins, Clock, Target, Calendar } from 'lucide-react';
+import { X, Sparkles, Trophy, Zap, Coins, Clock, Target, Calendar, RotateCcw } from 'lucide-react';
 import { TreasureChestIcon } from './icons/TreasureChestIcon';
 import { createPortal } from 'react-dom';
 import { useScrollLock } from '../hooks/useScrollLock';
@@ -15,11 +15,14 @@ interface RewardChestModalProps {
   onClose: () => void;
   getDungeonName: (id: string) => string;
   onNavigateToVault?: () => void;
+  activeTalents?: string[];
+  onRerollItem?: (index: number) => void;
 }
 
-export const RewardChestModal: React.FC<RewardChestModalProps> = ({ chest, onSelect, onClose, getDungeonName, onNavigateToVault }) => {
+export const RewardChestModal: React.FC<RewardChestModalProps> = ({ chest, onSelect, onClose, getDungeonName, onNavigateToVault, activeTalents = [], onRerollItem }) => {
   useScrollLock(true);
   const [autoPickSummary, setAutoPickSummary] = useState<{reward: RewardCard | null, session: StudySession}[] | null>(null);
+  const [rerolledSessions, setRerolledSessions] = useState<Set<string>>(new Set());
   
   const getRarityValue = (r: Rarity) => {
     switch(r) {
@@ -158,7 +161,7 @@ export const RewardChestModal: React.FC<RewardChestModalProps> = ({ chest, onSel
             ) : (
               chest.map((item, idx) => (
                 <div key={item.session.id} className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 md:p-6 pb-2">
-                  <div className="flex items-center gap-4 mb-4">
+                  <div className="flex flex-wrap items-center gap-4 mb-4">
                     <div className={cn("p-2 rounded-full border", item.session.isCrit ? "bg-amber-500/10 border-amber-500/30 text-amber-400" : "bg-indigo-500/10 border-indigo-500/30 text-indigo-400")}>
                        <Trophy size={20} />
                     </div>
@@ -175,6 +178,18 @@ export const RewardChestModal: React.FC<RewardChestModalProps> = ({ chest, onSel
                         <span className="flex items-center gap-1"><Target size={12} className="text-rose-400" /> {item.session.focusDuration || '??'}m Goal</span>
                       </div>
                     </div>
+                    {activeTalents.includes('c2') && onRerollItem && !rerolledSessions.has(item.session.id) && (
+                      <button
+                        onClick={() => {
+                           setRerolledSessions(prev => new Set(prev).add(item.session.id));
+                           onRerollItem(idx);
+                        }}
+                        className="ml-auto flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold uppercase text-[10px] sm:text-xs hover:bg-indigo-500 transition-all"
+                      >
+                        <RotateCcw size={14} />
+                        Reroll
+                      </button>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pb-4">

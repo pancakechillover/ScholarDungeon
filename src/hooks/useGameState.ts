@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { AppState, Dungeon, StudySession, Talent, RewardCard, MajorDungeon, RewardHistoryItem, DungeonReward, Quest } from '../types';
 import { TALENTS, INITIAL_REWARD_POOL, INITIAL_GACHA, DEFAULT_QUESTS, DEFAULT_SAGE_PROMPTS } from '../constants';
-import { format, isSameDay, parseISO, differenceInDays } from 'date-fns';
+import { format, isSameDay, parseISO, differenceInDays, subDays } from 'date-fns';
 
 import { getXPForLevel, getDefaultRewardForLevel, getDeviceType, getDeviceCode } from '../lib/utils';
+import { generateRewardChoicesForSession } from '../lib/rewardLogic';
 
 const STORAGE_KEY = 'scholars_dungeon_state';
 
@@ -17,6 +18,8 @@ export function useGameState() {
       talentPoints: 0,
       talentShards: 0,
       deathDefyingMedals: 0,
+      doubleXpCards: 0,
+      doubleGoldCards: 0,
       unlockedTalents: [],
       activeTalents: [],
       currentDungeonId: null,
@@ -639,13 +642,38 @@ export function useGameState() {
   const processShards = (state: AppState, amount: number): AppState => {
     let newShards = state.talentShards + amount;
     let newTalentPoints = state.talentPoints;
+    let newHistory = [...state.rewardHistory];
 
     while (newShards >= 3) {
       newShards -= 3;
       newTalentPoints += 1;
+      
+      newHistory = [{
+        id: Math.random().toString(36).substr(2, 9),
+        name: 'Combined 3 Shards',
+        type: 'item',
+        itemType: 'talent_shard',
+        rarity: 'epic',
+        source: 'System',
+        amount: -3,
+        timestamp: getNow().toISOString(),
+        redeemed: true,
+        note: 'Combine into 1 Talent Scroll'
+      }, {
+        id: Math.random().toString(36).substr(2, 9),
+        name: 'Forged Talent Scroll',
+        type: 'item',
+        itemType: 'talentPoint',
+        rarity: 'epic',
+        source: 'System',
+        amount: 1,
+        timestamp: getNow().toISOString(),
+        redeemed: true,
+        note: 'From shards'
+      }, ...newHistory];
     }
 
-    return { ...state, talentShards: newShards, talentPoints: newTalentPoints };
+    return { ...state, talentShards: newShards, talentPoints: newTalentPoints, rewardHistory: newHistory };
   };
 
   const addXP = useCallback((amount: number) => {
@@ -704,6 +732,12 @@ export function useGameState() {
           newItem.redeemed = true;
         } else if (reward.itemType === 'death_defying_medal') {
           newState.deathDefyingMedals += reward.amount || 1;
+          newItem.redeemed = true;
+        } else if (reward.itemType === 'double_xp') {
+          newState.doubleXpCards = (newState.doubleXpCards || 0) + (reward.amount || 1);
+          newItem.redeemed = true;
+        } else if (reward.itemType === 'double_coin') {
+          newState.doubleGoldCards = (newState.doubleGoldCards || 0) + (reward.amount || 1);
           newItem.redeemed = true;
         }
       }
@@ -815,6 +849,10 @@ export function useGameState() {
       }
     });
 
+    // Apply direct active buffs
+    if (state.doubleXpActive) baseXP *= 2;
+    if (state.doubleGoldActive) baseCoins *= 2;
+
     const sessionDurationVal = focusDuration || duration;
     const addedProgress = state.timeBasedMode ? (Math.max(1, sessionDurationVal) / (state.standardSessionMinutes || 25)) : 1;
 
@@ -891,6 +929,8 @@ export function useGameState() {
         dailySessions: prev.dailySessions + addedProgress,
         coins: prev.coins + Math.floor(baseCoins),
         inventory: [], // Clear inventory after session
+        doubleXpActive: false, // Reset active buffs
+        doubleGoldActive: false, // Reset active buffs
         shopItems: newShopItems
       }, 'coins', Math.floor(baseCoins), 'Study Session Reward');
 
@@ -983,11 +1023,22 @@ export function useGameState() {
                     newState = processXP(newState, r.amount);
                   } else if (r.type === 'talentPoint') {
                     newState.talentPoints += r.amount;
-                  } else if (r.type === 'item') {
+                  }
+
+                  let itemRedeemed = false;
+                  if (r.type === 'item') {
                     if (r.itemName === 'Talent Shard') {
                       newState = processShards(newState, r.amount);
+                      itemRedeemed = true;
                     } else if (r.itemName === 'Death Defying Gold Medal') {
                       newState.deathDefyingMedals += r.amount;
+                      itemRedeemed = true;
+                    } else if (r.itemType === 'double_xp') {
+                      newState.doubleXpCards = (newState.doubleXpCards || 0) + r.amount;
+                      itemRedeemed = true;
+                    } else if (r.itemType === 'double_coin') {
+                      newState.doubleGoldCards = (newState.doubleGoldCards || 0) + r.amount;
+                      itemRedeemed = true;
                     }
                   }
                   
@@ -1004,7 +1055,7 @@ export function useGameState() {
                     timestamp: getNow().toISOString(),
                     type: r.type === 'text' ? 'text' : (r.type === 'coins' ? 'coins' : (r.type === 'xp' ? 'xp' : 'item')),
                     amount: r.amount,
-                    redeemed: r.type !== 'item' && r.type !== 'text'
+                    redeemed: itemRedeemed ? true : (r.type !== 'item' && r.type !== 'text')
                   }, ...newState.rewardHistory];
                 });
 
@@ -1377,11 +1428,25 @@ export function useGameState() {
 
     setState(prev => {
       if (prev.talentPoints >= talent.cost && !prev.unlockedTalents.includes(talentId)) {
+        const historyItem: RewardHistoryItem = {
+          id: Math.random().toString(36).substr(2, 9),
+          name: 'Talent Scroll',
+          type: 'item',
+          itemType: 'talentPoint',
+          rarity: 'epic',
+          source: 'System',
+          timestamp: getNow().toISOString(),
+          amount: -talent.cost,
+          redeemed: true,
+          note: `Unlocked Talent: ${talent.name}`
+        };
+
         return {
           ...prev,
           talentPoints: prev.talentPoints - talent.cost,
           unlockedTalents: [...prev.unlockedTalents, talentId],
-          activeTalents: [...prev.activeTalents, talentId]
+          activeTalents: [...prev.activeTalents, talentId],
+          rewardHistory: [historyItem, ...prev.rewardHistory]
         };
       }
       return prev;
@@ -1409,6 +1474,46 @@ export function useGameState() {
         item.id === rewardId ? { ...item, redeemed: !item.redeemed } : item
       )
     }));
+  }, []);
+
+  const useInventoryItem = useCallback((itemId: string) => {
+    setState(prev => {
+      let newState = { ...prev };
+      let itemName = '';
+      let itemType: 'double_xp' | 'double_coin' = 'double_xp';
+      
+      if (itemId === 'doubleXpCards' && (newState.doubleXpCards || 0) > 0) {
+        if (newState.doubleXpActive) return prev; // Already active
+        newState.doubleXpCards = (newState.doubleXpCards || 1) - 1;
+        newState.doubleXpActive = true;
+        itemName = 'Double XP Card';
+        itemType = 'double_xp';
+      } else if (itemId === 'doubleGoldCards' && (newState.doubleGoldCards || 0) > 0) {
+        if (newState.doubleGoldActive) return prev; // Already active
+        newState.doubleGoldCards = (newState.doubleGoldCards || 1) - 1;
+        newState.doubleGoldActive = true;
+        itemName = 'Double Gold Card';
+        itemType = 'double_coin';
+      } else {
+        return prev;
+      }
+
+      // Add to history
+      newState.rewardHistory = [{
+        id: Math.random().toString(36).substr(2, 9),
+        name: itemName,
+        type: 'item',
+        itemType,
+        rarity: 'epic',
+        source: 'Vault',
+        timestamp: getNow().toISOString(),
+        redeemed: true,
+        amount: -1,
+        note: 'Activated Buff'
+      }, ...newState.rewardHistory];
+
+      return newState;
+    });
   }, []);
 
   const reorderMajorDungeon = useCallback((id: string, direction: 'up' | 'down') => {
@@ -1803,6 +1908,64 @@ export function useGameState() {
     });
   }, [dungeons, majorDungeons]);
 
+  const repairStreak = useCallback((dateStr: string) => {
+    setState(prev => {
+      if (prev.deathDefyingMedals <= 0) return prev;
+      
+      const newPatchedDays = [...(prev.patchedDays || []), dateStr];
+      const dates = new Set<string>();
+      prev.history.forEach(session => {
+        dates.add(format(parseISO(session.timestamp), 'yyyy-MM-dd'));
+      });
+      newPatchedDays.forEach(d => dates.add(d));
+
+      const now = getNow();
+      const todayStr = format(now, 'yyyy-MM-dd');
+      let currTarget = todayStr;
+      let newStreak = 0;
+
+      if (dates.has(currTarget)) {
+        newStreak = 1;
+        currTarget = format(subDays(parseISO(currTarget), 1), 'yyyy-MM-dd');
+      } else {
+        const yesterday = format(subDays(parseISO(currTarget), 1), 'yyyy-MM-dd');
+        currTarget = yesterday;
+      }
+
+      while (dates.has(currTarget)) {
+        newStreak++;
+        currTarget = format(subDays(parseISO(currTarget), 1), 'yyyy-MM-dd');
+      }
+
+      let newLastStudyDate = prev.lastStudyDate;
+      const yesterday = format(subDays(now, 1), 'yyyy-MM-dd');
+      if (dates.has(todayStr)) newLastStudyDate = todayStr;
+      else if (dates.has(yesterday)) newLastStudyDate = yesterday;
+
+      const historyItem: RewardHistoryItem = {
+        id: Math.random().toString(36).substr(2, 9),
+        name: 'Death Defying Medal',
+        type: 'item',
+        itemType: 'death_defying_medal',
+        rarity: 'epic',
+        source: 'System',
+        timestamp: getNow().toISOString(),
+        amount: -1,
+        redeemed: true,
+        note: `Patched day: ${dateStr}`
+      };
+
+      return {
+        ...prev,
+        patchedDays: newPatchedDays,
+        deathDefyingMedals: prev.deathDefyingMedals - 1,
+        streak: newStreak,
+        lastStudyDate: newLastStudyDate,
+        rewardHistory: [historyItem, ...prev.rewardHistory]
+      };
+    });
+  }, [getNow]);
+
   const undoDungeonDrag = useCallback(() => {
     setDungeonHistory(prev => {
       if (prev.length === 0) return prev;
@@ -1892,7 +2055,7 @@ export function useGameState() {
   }, [majorDungeons]);
 
 
-  const bulkCreateSessions = useCallback((data: { count: number, objectiveId: string, startTime: string, endTime: string }) => {
+  const bulkCreateSessions = useCallback((data: { count: number, objectiveId: string, startTime: string, endTime: string, focusDuration?: number, restDuration?: number }) => {
     const start = new Date(data.startTime).getTime();
     const end = new Date(data.endTime).getTime();
     const count = data.count;
@@ -1904,8 +2067,8 @@ export function useGameState() {
       
       for (let i = 0; i < count; i++) {
         const randomTimestamp = new Date(start + Math.random() * (end - start)).toISOString();
-        const focus = 25;
-        const rest = 5;
+        const focus = data.focusDuration ?? 25;
+        const rest = data.restDuration ?? 5;
         const duration = focus + rest;
         const xp = Math.floor(100 * (focus / 25));
         const coins = Math.floor(10 * (focus / 25));
@@ -1922,12 +2085,16 @@ export function useGameState() {
         };
         
         newSessions.push(session);
-        const choices: RewardCard[] = [];
-        const pool = [...prev.rewardPool];
-        const shuffled = pool.sort(() => 0.5 - Math.random());
-        choices.push(...shuffled.slice(0, 3));
         
-        newPendingChests.push({ session, choices });
+        const generated = generateRewardChoicesForSession(session, {
+          rewardPool: prev.rewardPool,
+          activeTalents: prev.activeTalents || [],
+          pendingRewardChest: newPendingChests,
+          timeBasedMode: prev.timeBasedMode,
+          standardSessionMinutes: prev.standardSessionMinutes
+        });
+        
+        newPendingChests.push(...generated);
 
         if (data.objectiveId && data.objectiveId !== 'free_study') {
           setDungeons(prevD => prevD.map(d => {
@@ -1973,6 +2140,7 @@ export function useGameState() {
     setActivePool,
     addRewardToHistory,
     toggleRewardRedeemed,
+    useInventoryItem,
     resetLootPool,
     completeSession,
     selectReward,
@@ -1994,6 +2162,7 @@ export function useGameState() {
     claimAllQuestRewards,
     saveDailyLog,
     undoDungeonDrag,
+    repairStreak,
     saveDungeonHistory,
     dungeonHistory,
     bulkCreateSessions,

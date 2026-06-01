@@ -293,6 +293,7 @@ function App() {
     addCoins,
     addRewardToHistory,
     toggleRewardRedeemed,
+    useInventoryItem,
     completeSession, 
     drawGacha,
     resetIchibanPool,
@@ -316,6 +317,7 @@ function App() {
     dungeonHistory,
     bulkCreateSessions,
     bulkDeleteSessions,
+    repairStreak,
     selectReward,
     resetLootPool,
     setActivePool,
@@ -1379,6 +1381,7 @@ function App() {
               <VaultView 
                 state={state}
                 toggleRewardRedeemed={toggleRewardRedeemed}
+                useInventoryItem={useInventoryItem}
               />
             )}
 
@@ -1521,6 +1524,7 @@ function App() {
         triggerSyncCheck={() => checkCloudSync(true)}
         isTalentLevel={isTalentLevel}
         getNextTalentLevel={getNextTalentLevel}
+        repairStreak={repairStreak}
       />
 
       {/* Reward Completion Popup */}

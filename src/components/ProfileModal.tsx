@@ -12,11 +12,14 @@ import {
   RefreshCw,
   Cloud,
   CheckCircle2,
-  WifiOff
+  WifiOff,
+  Flame
 } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { AppState } from '../types';
-import { cn, getXPForLevel } from '../lib/utils';
+import { cn, getXPForLevel, getDefaultRewardForLevel } from '../lib/utils';
+import { format, subDays, parseISO } from 'date-fns';
+import { ConfirmModal } from './ConfirmModal';
 
 interface ProfileModalProps {
   isOpen: boolean;
@@ -36,6 +39,7 @@ interface ProfileModalProps {
   triggerSyncCheck?: (forceModal?: boolean) => void;
   isTalentLevel: (lvl: number) => boolean;
   getNextTalentLevel: (lvl: number, rewards?: any[]) => number;
+  repairStreak: (dateStr: string) => void;
 }
 
 export const ProfileModal: React.FC<ProfileModalProps> = ({
@@ -55,9 +59,12 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   hasUnsyncedChanges,
   triggerSyncCheck,
   isTalentLevel,
-  getNextTalentLevel
+  getNextTalentLevel,
+  repairStreak
 }) => {
   const [isOnline, setIsOnline] = useState(typeof window !== 'undefined' ? window.navigator.onLine : true);
+  const [showStreakModal, setShowStreakModal] = useState(false);
+  const [patchCandidate, setPatchCandidate] = useState<string | null>(null);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -70,11 +77,48 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
     };
   }, []);
 
+  const hasStudiedToday = (() => {
+    const dates = new Set<string>();
+    state.history.forEach(session => {
+      dates.add(format(parseISO(session.timestamp), 'yyyy-MM-dd'));
+    });
+    (state.patchedDays || []).forEach(d => dates.add(d));
+    const todayStr = format(new Date(), 'yyyy-MM-dd');
+    return dates.has(todayStr);
+  })();
+
+  const streakData = showStreakModal ? (() => {
+    const dates = new Set<string>();
+    state.history.forEach(session => {
+      dates.add(format(parseISO(session.timestamp), 'yyyy-MM-dd'));
+    });
+    (state.patchedDays || []).forEach(d => dates.add(d));
+
+    const result = [];
+    const now = new Date();
+    for (let i = 6; i >= 0; i--) {
+      const d = subDays(now, i);
+      const str = format(d, 'yyyy-MM-dd');
+      const isCompleted = dates.has(str);
+      const isPatched = (state.patchedDays || []).includes(str);
+      result.push({
+        dateStr: str,
+        shortDate: format(d, 'MM/dd'),
+        displayLabel: format(d, 'eee'), // Mon, Tue, etc.
+        isCompleted,
+        isPatched,
+        isToday: i === 0,
+        canPatch: !isCompleted && i !== 0 // Can patch if not completed and not today
+      });
+    }
+    return result;
+  })() : [];
+
   if (!isOpen) return null;
 
   return createPortal(
     <AnimatePresence>
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+      <div key="main-profile" className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
         <motion.div
           initial={{ scale: 0.9, opacity: 0, y: 20 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -134,9 +178,6 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                       <span className="px-2 py-0.5 bg-indigo-500/10 text-indigo-400 text-[9px] sm:text-[10px] font-black uppercase tracking-widest rounded-md border border-indigo-500/20">
                         {state.level >= 20 ? 'Grandmaster' : state.level >= 10 ? 'Veteran' : 'Novice'} Explorer
                       </span>
-                      <span className="px-2 py-0.5 bg-amber-500/10 text-amber-400 text-[9px] sm:text-[10px] font-black uppercase tracking-widest rounded-md border border-amber-500/20">
-                        {state.streak} Day Streak
-                      </span>
                     </div>
                   </div>
                 )}
@@ -166,27 +207,35 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                 </div>
               </div>
               
-              <div className="p-3 sm:p-5 bg-slate-900/50 rounded-2xl sm:rounded-[2rem] border border-slate-800 hover:border-emerald-500/30 transition-colors group">
+              <div className="p-3 sm:p-5 bg-slate-900/50 rounded-2xl sm:rounded-[2rem] border border-slate-800 hover:border-indigo-500/30 transition-colors group">
                 <div className="flex flex-col sm:flex-row items-center sm:justify-between mb-1 sm:mb-3 gap-1 sm:gap-0">
-                  <div className="p-1.5 sm:p-2 bg-emerald-500/10 rounded-lg sm:rounded-xl text-emerald-400 group-hover:scale-110 transition-transform">
-                    <Zap size={16} className="sm:w-5 sm:h-5" />
+                  <div className="p-1.5 sm:p-2 bg-indigo-500/10 rounded-lg sm:rounded-xl text-indigo-400 group-hover:scale-110 transition-transform">
+                    <Scroll size={16} className="sm:w-5 sm:h-5" />
                   </div>
-                  <span className="text-[8px] sm:text-[10px] font-black text-slate-500 uppercase tracking-widest">Talent</span>
+                  <span className="text-[8px] sm:text-[10px] font-black text-slate-500 uppercase tracking-widest">Scroll</span>
                 </div>
                 <div className="text-lg sm:text-2xl font-black text-white tracking-tight text-center sm:text-left">
                   {state.talentPoints}
                 </div>
               </div>
 
-              <div className="p-3 sm:p-5 bg-slate-900/50 rounded-2xl sm:rounded-[2rem] border border-slate-800 hover:border-indigo-500/30 transition-colors group">
+              <div 
+                onClick={() => setShowStreakModal(true)}
+                className="p-3 sm:p-5 bg-slate-900/50 rounded-2xl sm:rounded-[2rem] border border-slate-800 hover:border-orange-500/30 transition-colors group cursor-pointer relative"
+              >
                 <div className="flex flex-col sm:flex-row items-center sm:justify-between mb-1 sm:mb-3 gap-1 sm:gap-0">
-                  <div className="p-1.5 sm:p-2 bg-indigo-500/10 rounded-lg sm:rounded-xl text-indigo-400 group-hover:scale-110 transition-transform">
-                    <Trophy size={16} className="sm:w-5 sm:h-5" />
+                  <div className="relative p-1.5 sm:p-2 bg-orange-500/10 rounded-lg sm:rounded-xl text-orange-400 group-hover:scale-110 transition-transform">
+                    <Flame size={16} className="sm:w-5 sm:h-5" />
+                    {!hasStudiedToday && (
+                      <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-rose-500 border-2 border-slate-900 shadow-sm rounded-full flex items-center justify-center text-[9px] font-black text-white">
+                        !
+                      </div>
+                    )}
                   </div>
-                  <span className="text-[8px] sm:text-[10px] font-black text-slate-500 uppercase tracking-widest">Medals</span>
+                  <span className="text-[8px] sm:text-[10px] font-black text-slate-500 uppercase tracking-widest">Streak</span>
                 </div>
                 <div className="text-lg sm:text-2xl font-black text-white tracking-tight text-center sm:text-left">
-                  {state.deathDefyingMedals}
+                  {state.streak}
                 </div>
               </div>
             </div>
@@ -226,11 +275,17 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                   <div>
                     <p className="text-[8px] sm:text-[10px] font-black text-indigo-400 uppercase tracking-widest">Next Reward</p>
                     <p className="text-xs sm:text-sm font-bold text-white">
-                      {state.levelRewards?.find(r => r.level === state.level + 1) ? (
-                        `+${state.levelRewards.find(r => r.level === state.level + 1)?.amount} ${state.levelRewards.find(r => r.level === state.level + 1)?.type === 'talentPoint' ? 'Talent Scroll' : 'Gold'}`
-                      ) : (
-                        ((state.level + 1) <= 3 || ((state.level + 1) <= 9 && ((state.level + 1) - 3) % 2 === 0) || ((state.level + 1) > 9 && ((state.level + 1) - 9) % 3 === 0)) ? '+1 Talent Scroll' : 'New Dungeon Access'
-                      )}
+                      {(() => {
+                        const nextLevel = state.level + 1;
+                        const customReward = state.levelRewards?.find(r => r.level === nextLevel);
+                        const defaultReward = getDefaultRewardForLevel(nextLevel);
+                        const rewardToUse = customReward || defaultReward;
+                        if (!rewardToUse) return 'No specific reward';
+                        if (rewardToUse.type === 'text') return (rewardToUse as any).rewardText;
+                        if (rewardToUse.type === 'talentPoint') return `+${rewardToUse.amount} Talent Scroll${rewardToUse.amount > 1 ? 's' : ''}`;
+                        if (rewardToUse.type === 'coins') return `+${rewardToUse.amount} Gold`;
+                        return 'Unknown Reward';
+                      })()}
                     </p>
                   </div>
                 </div>
@@ -323,6 +378,103 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
           </div>
         </motion.div>
       </div>
+
+      {showStreakModal && (
+        <div key="streak-modal" className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+            className="bg-slate-900 w-full max-w-sm rounded-[2rem] border border-slate-800 overflow-hidden shadow-2xl relative"
+          >
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h3 className="text-xl font-black text-white italic uppercase tracking-tight flex items-center gap-2">
+                    <Flame className="text-orange-500" size={24} />
+                    Streak <span className="text-orange-500">{state.streak}</span>
+                  </h3>
+                  <p className="text-xs text-slate-400 font-medium mt-1">7-Day Activity Record</p>
+                </div>
+                <button 
+                  onClick={() => setShowStreakModal(false)}
+                  className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-xl transition-all"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <div className="bg-slate-950 p-4 rounded-3xl border border-slate-800 flex justify-between mb-6">
+                {streakData.map((day) => (
+                  <div key={day.dateStr} className="flex flex-col items-center gap-1">
+                    <span className="text-[9px] font-medium text-slate-500 mb-0.5 tracking-wider">
+                      {day.shortDate}
+                    </span>
+                    <span className={cn("text-[10px] font-bold uppercase", day.isToday ? "text-white" : "text-slate-400")}>
+                      {day.displayLabel}
+                    </span>
+                    <div className="relative group mt-1">
+                      {day.isCompleted ? (
+                        <div className={cn("w-8 h-8 rounded-full flex items-center justify-center shadow-lg", day.isPatched ? "bg-indigo-500/20 text-indigo-400 border border-indigo-500/30" : "bg-orange-500 text-white")}>
+                          <CheckCircle2 size={16} />
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            if (day.canPatch && state.deathDefyingMedals > 0) {
+                              setPatchCandidate(day.dateStr);
+                            }
+                          }}
+                          disabled={!day.canPatch || state.deathDefyingMedals <= 0}
+                          className={cn(
+                            "w-8 h-8 rounded-full flex items-center justify-center border transition-all duration-200",
+                            day.canPatch && state.deathDefyingMedals > 0
+                              ? "bg-slate-800 text-slate-400 border-slate-700 hover:border-indigo-500/50 hover:bg-indigo-500/10 hover:text-indigo-400 cursor-pointer active:scale-95"
+                              : "bg-slate-800/50 text-slate-600 border-slate-800/50 cursor-default"
+                          )}
+                        >
+                          <X size={14} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="p-4 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center text-indigo-400 shrink-0">
+                    <Trophy size={20} />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-black text-indigo-400 uppercase tracking-widest">Death Defying Medals</h4>
+                    <p className="text-[10px] text-indigo-400/70 font-medium">Use to patch a missed day.</p>
+                  </div>
+                </div>
+                <div className="text-xl font-black text-white px-3">
+                  x{state.deathDefyingMedals}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+      
+      <ConfirmModal
+        key="patch-confirm"
+        isOpen={!!patchCandidate}
+        onClose={() => setPatchCandidate(null)}
+        onConfirm={() => {
+          if (patchCandidate) {
+            repairStreak(patchCandidate);
+            setPatchCandidate(null);
+          }
+        }}
+        title="Use Death Defying Medal?"
+        message={`Are you sure you want to use 1 Death Defying Medal to patch your streak for ${patchCandidate ? format(parseISO(patchCandidate), 'MMM d, yyyy') : ''}?`}
+        confirmText="Patch Streak"
+        type="info"
+      />
     </AnimatePresence>,
     document.body
   );

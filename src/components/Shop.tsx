@@ -130,11 +130,11 @@ export const Shop = React.memo<ShopProps>(({
                           className={cn(
                             "flex-1 py-1.5 px-1.5 sm:px-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 min-w-0 border",
                             (coins >= item.price && !isOutOfStock)
-                              ? "bg-indigo-500/20 border-indigo-500/30 hover:bg-indigo-500 text-indigo-300 group-hover:text-white" 
+                              ? "bg-indigo-600 hover:bg-indigo-500 border-indigo-500 text-white shadow-lg shadow-indigo-500/30 group-hover:bg-indigo-500 group-hover:scale-105" 
                               : "bg-slate-900 border-slate-800 text-slate-600 cursor-not-allowed"
                           )}
                         >
-                          <Coins size={12} className={cn("opacity-70 shrink-0", (coins >= item.price && !isOutOfStock) && "group-hover:opacity-100")} />
+                          <Coins size={12} className={cn("opacity-90 shrink-0", (coins >= item.price && !isOutOfStock) && "text-amber-300 group-hover:text-amber-200")} />
                           <span className="truncate">{isOutOfStock ? 'Sold' : item.price}</span>
                         </button>
                       </div>
@@ -320,7 +320,7 @@ export const Shop = React.memo<ShopProps>(({
                     onClick={() => onSetActivePool?.('ichiban', p.id)}
                     className={cn(
                       "px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all whitespace-nowrap",
-                      ichibanPool?.id === p.id ? "bg-emerald-600 text-white shadow-lg" : "text-slate-500 hover:text-slate-300"
+                      ichibanPool?.id === p.id ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/30" : "text-slate-400 hover:text-slate-200 hover:bg-slate-800"
                     )}
                   >
                     {p.name}
@@ -336,13 +336,13 @@ export const Shop = React.memo<ShopProps>(({
                 <div className="flex-1 p-8 sm:p-12 flex flex-col items-center justify-center relative border-b lg:border-b-0 lg:border-r border-slate-800/80 min-h-[400px]">
                   {/* Decorative Background */}
                   <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl"></div>
+                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl"></div>
                   </div>
 
                   <div className="relative mb-8 group perspective-1000">
                     <div className="w-40 h-40 bg-slate-800/80 rounded-3xl border border-slate-700/50 shadow-2xl flex items-center justify-center group-hover:scale-105 transition-transform duration-500 relative z-10 backdrop-blur-sm">
-                      <Gift size={80} className="text-emerald-400 group-hover:text-amber-400 transition-colors duration-500" />
-                      <div className="absolute inset-0 rounded-3xl border-[3px] border-emerald-500/20 group-hover:border-amber-400/50 animate-pulse transition-colors duration-500 p-2"></div>
+                      <Gift size={80} className="text-indigo-400 group-hover:text-amber-400 transition-colors duration-500" />
+                      <div className="absolute inset-0 rounded-3xl border-[3px] border-indigo-500/20 group-hover:border-amber-400/50 animate-pulse transition-colors duration-500 p-2"></div>
                     </div>
                   </div>
 
@@ -378,7 +378,7 @@ export const Shop = React.memo<ShopProps>(({
                             coins >= ichibanPool.cost * (remainingIchibanItems < 10 ? remainingIchibanItems : 10)
                               ? remainingIchibanItems < 10 
                                  ? "bg-amber-600 hover:bg-amber-500 border-2 border-amber-500 text-amber-50 shadow-xl shadow-amber-600/30" 
-                                 : "bg-emerald-600 hover:bg-emerald-500 border-2 border-emerald-500 text-white shadow-xl shadow-emerald-600/30" 
+                                 : "bg-indigo-600 hover:bg-indigo-500 border-2 border-indigo-500 text-white shadow-xl shadow-indigo-600/30" 
                               : "bg-slate-900 border-2 border-slate-800 text-slate-600 cursor-not-allowed"
                           )}
                         >
@@ -392,7 +392,7 @@ export const Shop = React.memo<ShopProps>(({
                              </>
                           ) : (
                              <>
-                                <span className="text-xs sm:text-sm text-emerald-200 uppercase tracking-widest opacity-90">Draw 10x</span>
+                                <span className="text-xs sm:text-sm text-indigo-200 uppercase tracking-widest opacity-90">Draw 10x</span>
                                 <span className="text-base sm:text-lg font-black flex items-center gap-1.5">
                                    <Coins size={16} className={coins >= ichibanPool.cost * 10 ? "text-amber-300" : ""} />
                                    {(ichibanPool.cost * 10).toLocaleString()}
@@ -420,11 +420,11 @@ export const Shop = React.memo<ShopProps>(({
                 <div className="w-full lg:w-[500px] xl:w-[600px] bg-slate-950/50 p-6 sm:p-8 flex flex-col relative max-h-[1000px] lg:max-h-[800px]">
                   <div className="flex items-center justify-between mb-4 pb-4 border-b border-slate-800 relative z-10 shrink-0">
                     <div className="flex items-center gap-2">
-                       <Package size={18} className="text-emerald-400" />
+                       <Package size={18} className="text-indigo-400" />
                        <h4 className="text-sm font-black text-slate-300 uppercase tracking-widest">Prize Lineup</h4>
                     </div>
                     <div className="text-xs font-bold text-slate-500 bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800 flex items-center gap-2">
-                      Remaining: <span className={cn("font-black ml-1 text-sm leading-none", remainingIchibanItems > 0 ? "text-emerald-400" : "text-amber-400")}>{remainingIchibanItems}</span>
+                      Remaining: <span className={cn("font-black ml-1 text-sm leading-none", remainingIchibanItems > 0 ? "text-indigo-400" : "text-amber-400")}>{remainingIchibanItems}</span>
                     </div>
                   </div>
 

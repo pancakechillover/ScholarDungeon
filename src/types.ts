@@ -74,12 +74,14 @@ export interface RewardHistoryItem {
   name: string;
   rarity: string;
   color?: string;
-  source: 'Explore' | 'Gacha' | 'Shop' | 'LevelUp';
+  source: 'Explore' | 'Gacha' | 'Shop' | 'LevelUp' | 'Vault' | 'System';
   timestamp: string;
   type: 'coins' | 'xp' | 'item' | 'text';
   amount?: number;
-  itemType?: 'double_xp' | 'double_coin' | 'talent_shard' | 'death_defying_medal' | 'xp_bonus_percent' | 'coin_bonus_percent';
+  itemType?: 'double_xp' | 'double_coin' | 'talent_shard' | 'death_defying_medal' | 'xp_bonus_percent' | 'coin_bonus_percent' | 'talentPoint';
   redeemed: boolean;
+  rewardText?: string;
+  note?: string;
   sessionGoal?: number; 
   sessionDuration?: number;
 }
@@ -181,6 +183,10 @@ export interface AppState {
   talentPoints: number;
   talentShards: number;
   deathDefyingMedals: number;
+  doubleXpCards?: number; // Added
+  doubleGoldCards?: number; // Added
+  doubleXpActive?: boolean; // Added
+  doubleGoldActive?: boolean; // Added
   unlockedTalents: string[];
   activeTalents: string[];
   currentDungeonId: string | null;
@@ -194,6 +200,7 @@ export interface AppState {
   lastDailyReset: string | null;
   lastWeeklyReset?: string | null;
   lastMonthlyReset?: string | null;
+  patchedDays?: string[];
   dailyRerollUsed: boolean; // Track if Shuffler reroll was used today
   inventory: string[]; // IDs of functional cards active for next session
   userName?: string;

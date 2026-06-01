@@ -148,7 +148,7 @@ export const TALENTS: Talent[] = [
 
   // Branch C: Fate Dice
   { id: 'c1', name: 'Extra Chance', description: 'Loot choice becomes 4-of-1', branch: 'C', tier: 1, cost: 1, effect: 'loot_4', icon: 'HeartPlus', unlocked: false, active: false },
-  { id: 'c2', name: 'Shuffler', description: '1 reroll for loot per day', branch: 'C', tier: 2, cost: 2, effect: 'loot_reroll', icon: 'Dices', unlocked: false, active: false },
+  { id: 'c2', name: 'Shuffler', description: '1 free reroll per chest draw', branch: 'C', tier: 2, cost: 2, effect: 'loot_reroll', icon: 'Dices', unlocked: false, active: false },
   { id: 'c3', name: 'Critical Intuition', description: '5% chance for 5x coins', branch: 'C', tier: 3, cost: 3, effect: 'coin_crit', icon: 'HandCoins', unlocked: false, active: false },
 ];
 

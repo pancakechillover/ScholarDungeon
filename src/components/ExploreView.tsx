@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { useScrollLock } from '../hooks/useScrollLock';
+import { generateRewardChoicesForSession } from '../lib/rewardLogic';
 import { PageHeader } from './PageHeader';
 import { Timer } from './Timer';
 import { TimerSettings } from './TimerSettings';
@@ -83,7 +84,7 @@ interface ExploreViewProps {
   syncToCloud: (forceOverwrite?: boolean, specificState?: AppState, syncMethod?: 'Manual' | 'Immediate' | 'Interval polling' | 'Visibility API Active') => void;
   updateSession: (id: string, updates: any) => void;
   deleteSession: (id: string) => void;
-  bulkCreateSessions: (data: { count: number, objectiveId: string, startTime: string, endTime: string }) => void;
+  bulkCreateSessions: (data: { count: number, objectiveId: string, startTime: string, endTime: string, focusDuration?: number, restDuration?: number }) => void;
   bulkDeleteSessions: (data: { startTime: string, endTime: string }) => void;
   setPipVictorySummary: (val: { xp: number, coins: number, ts: number } | null) => void;
   togglePip: () => void;
@@ -810,6 +811,24 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
       {showChestModal && state.pendingRewardChest && (
         <RewardChestModal
           chest={state.pendingRewardChest}
+          activeTalents={state.activeTalents}
+          onRerollItem={(index) => {
+            if (state.pendingRewardChest) {
+              const newChest = [...state.pendingRewardChest];
+              const session = newChest[index].session;
+              const generated = generateRewardChoicesForSession(session, {
+                rewardPool: state.rewardPool || [],
+                activeTalents: state.activeTalents,
+                pendingRewardChest: newChest,
+                timeBasedMode: state.timeBasedMode,
+                standardSessionMinutes: state.standardSessionMinutes
+              });
+              if (generated.length > 0) {
+                newChest[index].choices = generated[0].choices;
+                setState(prev => ({ ...prev, pendingRewardChest: newChest }));
+              }
+            }
+          }}
           getDungeonName={(dlId) => {
              return dungeons.find(d => d.id === dlId)?.name || 'Free Study';
           }}

@@ -13,6 +13,8 @@ interface BulkSessionModalProps {
     objectiveId: string;
     startTime: string;
     endTime: string;
+    focusDuration?: number;
+    restDuration?: number;
   }) => void;
   onBulkDelete: (data: {
     startTime: string;
@@ -29,7 +31,6 @@ export const BulkSessionModal: React.FC<BulkSessionModalProps> = ({
   dungeons
 }) => {
   const [activeTab, setActiveTab] = useState<'create' | 'delete'>('create');
-  const [count, setCount] = useState(5);
   const [objectiveId, setObjectiveId] = useState('');
   
   // Default to today
@@ -39,12 +40,36 @@ export const BulkSessionModal: React.FC<BulkSessionModalProps> = ({
   const [startTime, setStartTime] = useState('09:00');
   const [endTime, setEndTime] = useState('18:00');
 
+  const [countMode, setCountMode] = useState<'fixed' | 'auto'>('auto');
+  const [fixedCount, setFixedCount] = useState<number | ''>(5);
+  const [focusDuration, setFocusDuration] = useState<number | ''>(25);
+  const [restDuration, setRestDuration] = useState<number | ''>(5);
+
+  const calculateAutoCount = () => {
+    const parsedStartDate = new Date(startDate);
+    const parsedEndDate = new Date(endDate);
+    const days = Math.max(1, Math.floor((parsedEndDate.getTime() - parsedStartDate.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+
+    const [startH, startM] = startTime.split(':').map(Number);
+    const [endH, endM] = endTime.split(':').map(Number);
+    let dailyMinutes = (endH * 60 + endM) - (startH * 60 + startM);
+    if (dailyMinutes < 0) dailyMinutes += 24 * 60;
+
+    const totalMinutes = days * dailyMinutes;
+    const cycle = (Number(focusDuration) || 25) + (Number(restDuration) || 5);
+    return Math.max(1, Math.floor(totalMinutes / cycle));
+  };
+
+  const currentCount = countMode === 'fixed' ? (Number(fixedCount) || 5) : calculateAutoCount();
+
   const handleCreate = () => {
     onBulkCreate({
-      count,
+      count: currentCount,
       objectiveId,
       startTime: `${startDate}T${startTime}:00`,
-      endTime: `${endDate}T${endTime}:00`
+      endTime: `${endDate}T${endTime}:00`,
+      focusDuration: Number(focusDuration) || 25,
+      restDuration: Number(restDuration) || 5
     });
     onClose();
   };
@@ -167,18 +192,79 @@ export const BulkSessionModal: React.FC<BulkSessionModalProps> = ({
 
             {activeTab === 'create' ? (
               <div className="space-y-5 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <div className="space-y-1.5">
-                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Session Count</label>
-                   <div className="flex items-center gap-3">
+                <div className="space-y-4 bg-slate-950/50 p-4 rounded-2xl border border-slate-800">
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Session Count</label>
+                    <div className="flex bg-slate-900 rounded-lg border border-slate-700/50 p-1">
+                      <button
+                        onClick={() => setCountMode('auto')}
+                        className={cn(
+                          "px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all",
+                          countMode === 'auto' ? "bg-indigo-600 text-white shadow" : "text-slate-500 hover:text-slate-300"
+                        )}
+                      >
+                        Auto
+                      </button>
+                      <button
+                        onClick={() => setCountMode('fixed')}
+                        className={cn(
+                          "px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all",
+                          countMode === 'fixed' ? "bg-indigo-600 text-white shadow" : "text-slate-500 hover:text-slate-300"
+                        )}
+                      >
+                        Fixed
+                      </button>
+                    </div>
+                  </div>
+
+                  {countMode === 'fixed' ? (
+                    <div className="flex items-center gap-3">
                       <input 
-                        type="range" 
-                        min="1" max="50" 
-                        value={count}
-                        onChange={(e) => setCount(parseInt(e.target.value))}
-                        className="flex-1 accent-indigo-500 h-2 bg-slate-800 rounded-full appearance-none cursor-pointer"
+                        type="number" 
+                        min="1" max="1000" 
+                        value={fixedCount}
+                        onChange={(e) => setFixedCount(e.target.value === '' ? '' : parseInt(e.target.value))}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 pl-4 pr-3 text-sm text-white focus:outline-none focus:border-indigo-500/50 transition-colors font-bold"
                       />
-                      <span className="w-12 text-center text-lg font-black text-indigo-400 italic pr-1">{count}</span>
-                   </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between p-3 bg-slate-900 border border-slate-800 rounded-xl">
+                      <div className="flex flex-col">
+                        <span className="text-xs text-slate-400">Calculated Sessions</span>
+                        <span className="text-[10px] text-slate-500 mt-0.5">Based on selected time range</span>
+                      </div>
+                      <span className="text-2xl font-black text-indigo-400 italic pr-1">{currentCount}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Duration (min)</label>
+                    <div className="relative">
+                      <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={14} />
+                      <input 
+                        type="number" 
+                        min="1"
+                        value={focusDuration}
+                        onChange={(e) => setFocusDuration(e.target.value === '' ? '' : parseInt(e.target.value))}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2.5 pl-9 pr-3 text-sm text-white focus:outline-none focus:border-indigo-500/50 transition-colors"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Rest (min)</label>
+                    <div className="relative">
+                      <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={14} />
+                      <input 
+                        type="number" 
+                        min="0"
+                        value={restDuration === '' ? '' : restDuration}
+                        onChange={(e) => setRestDuration(e.target.value === '' ? '' : parseInt(e.target.value))}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2.5 pl-9 pr-3 text-sm text-white focus:outline-none focus:border-indigo-500/50 transition-colors"
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 <div className="space-y-1.5">

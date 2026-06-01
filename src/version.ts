@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v7.1.3';
-export const LAST_UPDATE_DATE = '2026-05-24';
-export const LAST_UPDATE_TIME = '15:10:00';
+export const APP_VERSION = 'v7.3.2';
+export const LAST_UPDATE_DATE = '2026-06-01';
+export const LAST_UPDATE_TIME = '16:21:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,138 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v7.3.2',
+    date: '2026-06-01',
+    time: '16:21:00',
+    title: 'Profile Modal UI Polish',
+    items: [
+      { category: 'UI', description: 'Renamed the Talent attribute card to Scroll and updated the visual icon to match the broader system.' }
+    ]
+  },
+  {
+    version: 'v7.3.1',
+    date: '2026-06-01',
+    time: '16:15:00',
+    title: 'Inventory Ledger Enhancements',
+    items: [
+      { category: 'Feature', description: 'Advanced logging implemented to track physical usages of Talent Scrolls, Medals, and Buff cards.' },
+      { category: 'UI', description: 'Upgraded the Inventory history tabs to feature an Economy-Log style quantity modifier badge (+1/-1).' }
+    ]
+  },
+  {
+    version: 'v7.3.0',
+    date: '2026-06-01',
+    time: '16:04:00',
+    title: 'Vault Inventory Storage System',
+    items: [
+      { category: 'Feature', description: 'Added an Inventory tab inside the Vault interface to track active held items.' },
+      { category: 'Feature', description: 'Transformed Double Buffs into manually activated consumable items.' },
+      { category: 'UX', description: 'Added item acquisition and usage historical grid.' }
+    ]
+  },
+  {
+    version: 'v7.2.0',
+    date: '2026-06-01',
+    time: '15:50:00',
+    title: 'Profile Modal UI Cleanup',
+    items: [
+      { category: 'UI', description: 'Removed the redundant streak badge next to the level title in the Profile Modal.' }
+    ]
+  },
+  {
+    version: 'v7.1.13',
+    date: '2026-06-01',
+    time: '15:46:00',
+    title: 'Streak Reminder Notification',
+    items: [
+      { category: 'UI', description: 'Added a highly visible notification badge directly to the Streak widget on the Profile Dashboard, displaying an exclamation mark when the daily session has not yet been completed.' }
+    ]
+  },
+  {
+    version: 'v7.1.12',
+    date: '2026-06-01',
+    time: '15:40:00',
+    title: 'Profile Modal Next Reward Bug Fix',
+    items: [
+      { category: 'Bug Fix', description: 'Fixed an issue where the Profile Modal Next Reward always showed the default generic text instead of correctly calculating and displaying custom Leveling Rewards configured in settings.' },
+    ]
+  },
+  {
+    version: 'v7.1.11',
+    date: '2026-06-01',
+    time: '15:35:00',
+    title: 'Fate Dice: Shuffler Enhancement',
+    items: [
+      { category: 'Feature', description: 'Upgraded the "Shuffler" talent effect from 1 daily reroll to 1 free reroll per chest draw, greatly expanding flexibility.' },
+      { category: 'UI', description: 'Integrated individual reroll buttons natively into the delayed Reward Chest interface for Shuffler owners.' }
+    ]
+  },
+  {
+    version: 'v7.1.10',
+    date: '2026-06-01',
+    time: '15:20:00',
+    title: 'Streak Timezone Bug Fix',
+    items: [
+      { category: 'Bug Fix', description: 'Fixed a timezone discrepancy in the streak patch system that caused patched days to incorrectly connect with mathematically shifted prior sessions, inflating the streak by +1 day incorrectly.' }
+    ]
+  },
+  {
+    version: 'v7.1.9',
+    date: '2026-06-01',
+    time: '15:10:00',
+    title: 'Streak Modal UI Polish',
+    items: [
+      { category: 'UI', description: 'Removed the medal count badge from the top right corner of the Streak stat card to keep the design cleaner.' },
+      { category: 'UX', description: 'In the 7-Day Activity Record, the "X" marker directly behaves as the patch button (instead of a hover menu), triggering a confirmation double-check before using a Death Defying Medal.' },
+      { category: 'UI', description: 'Added the short date (MM/dd) above the weekday label in the 7-Day Activity Record.' }
+    ]
+  },
+  {
+    version: 'v7.1.8',
+    date: '2026-06-01',
+    time: '14:55:00',
+    title: 'Streak Repair System',
+    items: [
+      { category: 'Feature', description: 'Transformed the Medal counter in the Profile Modal to a "Streak Status" button. Clicking the Streak badge opens an interactive 7-Day Activity Record, allowing the user to seamlessly use their "Death Defying Gold Medals" to patch manually missed days (Duolingo-style retroactive check-ins).' }
+    ]
+  },
+  {
+    version: 'v7.1.7',
+    date: '2026-06-01',
+    time: '14:34:00',
+    title: 'Timer Bulk Advanced Configuration',
+    items: [
+      { category: 'Feature', description: 'In Timer Bulk Session creation, added the ability to define custom \'Focus\' and \'Rest\' durations, as well as an option to auto-calculate the appropriate number of bulk sessions directly based on a specific time range.' }
+    ]
+  },
+  {
+    version: 'v7.1.6',
+    date: '2026-06-01',
+    time: '14:26:00',
+    title: 'Timer Bulk Session Rewards',
+    items: [
+      { category: 'Bug Fix', description: 'Unified the chest reward logic used during normal session clears and Timer Bulk Manage operations. Bulk added sessions will now accurately consider talent effects and limits checks.' }
+    ]
+  },
+  {
+    version: 'v7.1.5',
+    date: '2026-06-01',
+    time: '14:11:00',
+    title: 'Ichiban Box Theme-Aware Polish',
+    items: [
+      { category: 'UI', description: 'Exchanged hardcoded green (emerald) styling in the Box Gacha "Ichiban" view for theme-adaptive indigo classes to maintain perfect continuity with light and dark themes.' }
+    ]
+  },
+  {
+    version: 'v7.1.4',
+    date: '2026-06-01',
+    time: '14:04:00',
+    title: 'Shop UI Polish',
+    items: [
+      { category: 'UI', description: 'Made the active purchase button in the Merchant Shop much more prominent with solid theme colors, dynamic scale hovers, and shadows when items are affordable.' }
+    ]
+  },
   {
     version: 'v7.1.3',
     date: '2026-05-24',

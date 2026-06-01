@@ -14,7 +14,7 @@ interface RecentSessionsProps {
   majorDungeons: MajorDungeon[];
   updateSession: (id: string, updates: Partial<StudySession>) => void;
   deleteSession: (id: string) => void;
-  bulkCreateSessions?: (data: { count: number, objectiveId: string, startTime: string, endTime: string }) => void;
+  bulkCreateSessions?: (data: { count: number, objectiveId: string, startTime: string, endTime: string, focusDuration?: number, restDuration?: number }) => void;
   bulkDeleteSessions?: (data: { startTime: string, endTime: string }) => void;
   rewardPool: RewardCard[];
   timeSettings?: TimeSettings;
