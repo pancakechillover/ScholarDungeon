@@ -1299,7 +1299,7 @@ function App() {
                 >
                   <User size={16} />
                 </button>
-                {(state.secretCode || state.syncProvider) && (
+                {(state.secretCode || state.syncProvider) && (hasUnsyncedChanges || isSyncing || isVerifying || syncError) && (
                   <button
                     onClick={(e) => { e.stopPropagation(); checkCloudSync(true); }}
                     disabled={isSyncing || isVerifying}
@@ -1309,7 +1309,9 @@ function App() {
                         ? "bg-amber-500 hover:bg-amber-400 text-slate-900" 
                         : isSyncing || isVerifying 
                           ? "bg-indigo-400 text-white" 
-                          : "bg-slate-500 hover:bg-indigo-400 text-white"
+                          : syncError
+                            ? "bg-rose-500 hover:bg-rose-400 text-white"
+                            : "bg-slate-500 hover:bg-indigo-400 text-white"
                     )}
                   >
                     {(isSyncing || isVerifying) && (
