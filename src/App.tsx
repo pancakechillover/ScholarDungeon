@@ -1299,14 +1299,25 @@ function App() {
                 >
                   <User size={16} />
                 </button>
-                {(state.secretCode || state.syncProvider) && hasUnsyncedChanges && (
+                {(state.secretCode || state.syncProvider) && (
                   <button
                     onClick={(e) => { e.stopPropagation(); checkCloudSync(true); }}
+                    disabled={isSyncing || isVerifying}
                     className={cn(
-                      "absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full flex items-center justify-center border-2 border-slate-900 z-10 text-white bg-rose-500 hover:bg-rose-400"
+                      "absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full flex items-center justify-center border-2 border-slate-900 z-10 transition-all",
+                      hasUnsyncedChanges 
+                        ? "bg-amber-500 hover:bg-amber-400 text-slate-900" 
+                        : isSyncing || isVerifying 
+                          ? "bg-indigo-400 text-white" 
+                          : "bg-slate-500 hover:bg-indigo-400 text-white"
                     )}
                   >
-                    <RefreshCw size={8} className={isSyncing || isVerifying ? "animate-spin" : ""} />
+                    {(isSyncing || isVerifying) && (
+                      <RefreshCw size={8} className="animate-spin" />
+                    )}
+                    {hasUnsyncedChanges && (
+                      <span className="absolute inset-0 rounded-full animate-ping bg-amber-400 opacity-75"></span>
+                    )}
                   </button>
                 )}
               </div>
