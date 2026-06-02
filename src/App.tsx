@@ -1241,7 +1241,7 @@ function App() {
                       e.stopPropagation();
                       if (state.talentShards >= 3) {
                          combineShards();
-                         playSound('toggle', state.soundVolume, state.soundEnabled);
+                         playSound('redeem', state.soundVolume, state.soundEnabled);
                       }
                     }}
                     disabled={state.talentShards < 3}
@@ -1282,7 +1282,7 @@ function App() {
                 >
                   <User size={16} />
                 </button>
-                {state.cloudSync.enabled && state.cloudSync.userId && hasUnsyncedChanges && (
+                {(state.secretCode || state.syncProvider) && hasUnsyncedChanges && (
                   <button
                     onClick={(e) => { e.stopPropagation(); checkCloudSync(true); }}
                     className={cn(
