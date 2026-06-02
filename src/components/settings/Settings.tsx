@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { RewardCard, ShopItem, GachaPool, Rarity } from '../../types';
 import { INITIAL_GACHA } from '../../constants';
-import { Plus, Trash2, Save, Edit2, X, ChevronRight, Coins, Zap, Sparkles, Trophy, Timer as TimerIcon, Package, Flame, AlertTriangle, Scroll, Volume2, VolumeX, Sun, Moon, Settings as SettingsIcon, ShoppingBag, Trees, Waves, Database, Download, Upload, Target, Gift, User, Sword, Eye, Palette, Check, Bell, BellOff, RefreshCw, Key, Layers, Sunrise, Cloud, CloudSun, Lollipop, Wrench, History, Ticket } from 'lucide-react';
+import { Plus, Trash2, Save, Edit2, X, ChevronRight, Coins, Zap, Sparkles, Trophy, Timer as TimerIcon, Package, Flame, AlertTriangle, Scroll, Volume2, VolumeX, Sun, Moon, Settings as SettingsIcon, ShoppingBag, Trees, Waves, Database, Download, Upload, Target, Gift, User, Sword, Eye, Palette, Check, Bell, BellOff, RefreshCw, Key, Layers, Sunrise, Cloud, CloudSun, Lollipop, Wrench, History, Ticket, ArrowLeft } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { APP_VERSION, LAST_UPDATE_DATE, RELEASE_HISTORY } from '../../version';
 import { cn, getXPForLevel, getDefaultRewardForLevel } from '../../lib/utils';
@@ -129,6 +129,90 @@ const VersionGroup: React.FC<VersionGroupProps> = ({ group, logs, isInitialExpan
   );
 };
 
+const SETTINGS_COMPARTMENTS = [
+  {
+    id: 'general' as const,
+    title: 'General Settings',
+    desc: 'Configure notification sounds, theme modes, routine refresh cycles, and system data resets.',
+    icon: SettingsIcon,
+    borderColor: 'hover:border-indigo-500',
+    iconColor: 'text-indigo-400',
+    bgColor: 'bg-indigo-300/10 border-indigo-500/20'
+  },
+  {
+    id: 'timer' as const,
+    title: 'Timer Settings',
+    desc: 'Adjust focus and rest intervals, manage dungeon sessions bulk generation, and edit chest loot pool.',
+    icon: TimerIcon,
+    borderColor: 'hover:border-amber-500',
+    iconColor: 'text-amber-400',
+    bgColor: 'bg-amber-300/10 border-amber-500/20'
+  },
+  {
+    id: 'level' as const,
+    title: 'Level & Milestones',
+    desc: 'Customize milestone level-up bonuses, Gold Coin values, XP requirements, and bonus talent scrolls.',
+    icon: Trophy,
+    borderColor: 'hover:border-purple-500',
+    iconColor: 'text-purple-400',
+    bgColor: 'bg-purple-300/10 border-purple-500/20'
+  },
+  {
+    id: 'merchant' as const,
+    title: 'Merchant & Gacha',
+    desc: 'Edit merchant shop listing shelves, summon pool draw rates, and card flip gacha animations.',
+    icon: ShoppingBag,
+    borderColor: 'hover:border-emerald-500',
+    iconColor: 'text-emerald-400',
+    bgColor: 'bg-emerald-300/10 border-emerald-500/20'
+  },
+  {
+    id: 'calculator' as const,
+    title: 'Balance Calculator',
+    desc: 'Run mathematical simulations over your custom loot drops to compute session economy expectations.',
+    icon: Target,
+    borderColor: 'hover:border-pink-500',
+    iconColor: 'text-pink-400',
+    bgColor: 'bg-pink-300/10 border-pink-500/20'
+  },
+  {
+    id: 'sage' as const,
+    title: 'Sage AI Assistant',
+    desc: 'Select Sage personality modes, configure AI behavior styles, and edit interactive prompt engines.',
+    icon: Sparkles,
+    borderColor: 'hover:border-rose-500',
+    iconColor: 'text-rose-400',
+    bgColor: 'bg-rose-300/10 border-rose-500/20'
+  },
+  {
+    id: 'cloud' as const,
+    title: 'Cloud Archives',
+    desc: 'Sync game progression to Astral Archives, import JSON backup files, and check cloud connection status.',
+    icon: Cloud,
+    borderColor: 'hover:border-blue-500',
+    iconColor: 'text-blue-400',
+    bgColor: 'bg-blue-300/10 border-blue-500/20'
+  },
+  {
+    id: 'dev' as const,
+    title: 'Developer Panel',
+    desc: 'Access developer console commands, instantly edit active stats, test notifications, and trigger level ups.',
+    icon: Wrench,
+    borderColor: 'hover:border-red-500',
+    iconColor: 'text-red-400',
+    bgColor: 'bg-red-300/10 border-red-500/20'
+  },
+  {
+    id: 'about' as const,
+    title: 'About Scholar\'s Dungeon',
+    desc: 'Check current version metadata release history log, email social links, and external documentation.',
+    icon: Scroll,
+    borderColor: 'hover:border-slate-500',
+    iconColor: 'text-slate-400',
+    bgColor: 'bg-slate-300/10 border-slate-500/20'
+  }
+];
+
 export interface SettingsProps {
   state: any;
   setState: React.Dispatch<React.SetStateAction<any>>;
@@ -173,6 +257,28 @@ export const Settings = React.memo<SettingsProps & { onOpenAstralArchives?: () =
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
 
+  const [activeTab, setActiveTab ] = useState<string>(() => {
+    return localStorage.getItem('settings_last_view') || 'menu';
+  });
+
+  const [lastPropSection, setLastPropSection] = useState(activeSection);
+
+  if (activeSection !== lastPropSection) {
+    setLastPropSection(activeSection);
+    setActiveTab(activeSection);
+  }
+
+  const setTabAndSave = (tab: string) => {
+    setActiveTab(tab);
+    localStorage.setItem('settings_last_view', tab);
+    if (tab !== 'menu') {
+      setActiveSection(tab as any);
+    }
+  };
+
+  const currentCompartment = SETTINGS_COMPARTMENTS.find(c => c.id === activeTab);
+  const CurrentIcon = currentCompartment?.icon;
+
   const handleExportData = () => {
     const data = {
       state: state,
@@ -195,307 +301,343 @@ export const Settings = React.memo<SettingsProps & { onOpenAstralArchives?: () =
 
   return (
     <div className="p-6 space-y-8">
-      <div className="flex flex-wrap items-center justify-center gap-1.5 p-1.5 bg-slate-900/80 backdrop-blur rounded-3xl w-full border border-slate-800">
-        {(['general', 'timer', 'level', 'merchant', 'calculator', 'sage', 'cloud', 'dev', 'about'] as const).map(tab => {
-          return (
-            <button
-              key={tab}
-              onClick={() => setActiveSection(tab)}
-              className={cn(
-                "px-4 py-2 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap",
-                activeSection === tab 
-                  ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20 scale-105 z-10" 
-                  : "text-slate-500 hover:text-slate-300 hover:bg-slate-800/30"
-              )}
-            >
-              {tab === 'dev' ? 'Developer' : tab === 'level' ? 'LV.' : tab === 'merchant' ? 'Merchant' : tab === 'about' ? 'About' : tab === 'cloud' ? 'Cloud' : tab === 'calculator' ? 'Calc' : tab === 'sage' ? 'Sage' : tab}
-            </button>
-          );
-        })}
-      </div>
-
-      <div className="bg-slate-900/50 rounded-3xl border border-slate-800 p-8 backdrop-blur-sm">
-        {activeSection === 'general' && (
-          <GeneralSettings state={state} setState={setState} setShowClearConfirm={setShowClearConfirm} />
-        )}
-        {activeSection === 'timer' && (
-          <TimerSettingsSection 
-            state={state} 
-            setState={setState} 
-            rewardPool={rewardPool}
-            onUpdateRewards={onUpdateRewards}
-            onResetRewards={onResetRewards}
-            onTabChange={onTabChange}
-          />
-        )}
-        {activeSection === 'cloud' && (
-          <CloudSettingsSection 
-            state={state}
-            setState={setState}
-            setActiveSection={setActiveSection}
-            onOpenAstralArchives={onOpenAstralArchives || (() => {})}
-            triggerSyncCheck={triggerSyncCheck}
-            isSyncing={isSyncing}
-            hasUnsyncedChanges={hasUnsyncedChanges}
-          />
-        )}
-        {(activeSection === 'level' as any || activeSection === 'levelRewards' as any) && (
-          <LevelRewardsSettings state={state} setState={setState} />
-        )}
-        {activeSection === 'merchant' && (
-          <div className="space-y-12">
-            <ShopSettings items={shopItems} onUpdate={onUpdateShop} />
-            
-            <div className="pt-12 border-t border-slate-800">
-              <GachaSettings pools={gachaPools} onUpdate={onUpdateGacha} />
+      <div className="bg-slate-900/50 rounded-3xl border border-slate-800 p-6 sm:p-8 backdrop-blur-sm">
+        {activeTab === 'menu' ? (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-xl sm:text-2xl font-black text-slate-100 tracking-tighter uppercase italic flex items-center gap-3">
+                <SettingsIcon className="text-indigo-500 w-6 h-6 sm:w-8 sm:h-8" />
+                <span>Settings Panel</span>
+              </h2>
+              <p className="text-slate-400 text-xs sm:text-sm mt-1 font-medium">Select a settings compartment below to customize your dungeons, mechanics, and economy integrations.</p>
             </div>
 
-            {/* Draw Animation Section at the very end */}
-            <div className="pt-12 border-t border-slate-800 space-y-6">
-              <div className="flex items-center gap-2.5 text-indigo-400 mb-6 pb-2">
-                <Sparkles size={20} />
-                <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Draw Animation</h4>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4 p-5 bg-slate-900/50 rounded-3xl border border-indigo-500/10 shadow-inner">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Package size={16} className="text-indigo-400" />
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Gacha Draw</label>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    {[
-                      { id: 'card', name: 'Classic Flip', icon: Layers, desc: 'Vertical flip' },
-                      { id: 'scratch', name: 'Scratch-off', icon: Scroll, desc: 'Reveal' }
-                    ].map(effect => {
-                      const isActive = (state.gachaAnimation || 'card') === effect.id;
-                      return (
-                        <button
-                          key={effect.id}
-                          onClick={() => setState((prev: any) => ({ ...prev, gachaAnimation: effect.id as 'card' | 'scratch' }))}
-                          className={cn(
-                            "flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all relative overflow-hidden group text-left",
-                            isActive 
-                              ? "bg-indigo-500/10 border-indigo-500" 
-                              : "bg-slate-950 border-slate-800 text-slate-500 hover:border-slate-700"
-                          )}
-                        >
-                          <effect.icon size={20} className={cn("transition-transform group-hover:scale-110", isActive ? "text-indigo-400" : "text-slate-600")} />
-                          <div>
-                            <div className={cn("text-[9px] font-black uppercase tracking-widest leading-none mb-0.5", isActive ? "text-white" : "text-slate-500")}>
-                              {effect.name}
-                            </div>
-                            <div className="text-[8px] opacity-60 font-medium whitespace-nowrap">{effect.desc}</div>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div className="space-y-4 p-5 bg-slate-900/50 rounded-3xl border border-indigo-500/10 shadow-inner">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Ticket size={16} className="text-indigo-400" />
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Ichiban Draw</label>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    {[
-                      { id: 'card', name: 'Classic Flip', icon: Layers, desc: 'Vertical flip' },
-                      { id: 'scratch', name: 'Scratch-off', icon: Scroll, desc: 'Reveal' }
-                    ].map(effect => {
-                      const isActive = (state.ichibanAnimation || 'scratch') === effect.id;
-                      return (
-                        <button
-                          key={effect.id}
-                          onClick={() => setState((prev: any) => ({ ...prev, ichibanAnimation: effect.id as 'card' | 'scratch' }))}
-                          className={cn(
-                            "flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all relative overflow-hidden group text-left",
-                            isActive 
-                              ? "bg-indigo-500/10 border-indigo-500" 
-                              : "bg-slate-950 border-slate-800 text-slate-500 hover:border-slate-700"
-                          )}
-                        >
-                          <effect.icon size={20} className={cn("transition-transform group-hover:scale-110", isActive ? "text-indigo-400" : "text-slate-600")} />
-                          <div>
-                            <div className={cn("text-[9px] font-black uppercase tracking-widest leading-none mb-0.5", isActive ? "text-white" : "text-slate-500")}>
-                              {effect.name}
-                            </div>
-                            <div className="text-[8px] opacity-60 font-medium whitespace-nowrap">{effect.desc}</div>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-
-              {/* Allow Overlap Toggle */}
-              <div className="flex items-center justify-between p-4 bg-slate-900/50 rounded-2xl border border-slate-800 mt-6">
-                <div className="flex items-center gap-3">
-                  <div className={cn("p-2 rounded-xl", state.gachaAllowOverlap ? "bg-indigo-500/10 text-indigo-400" : "bg-slate-800 text-slate-500")}>
-                    <Layers size={20} />
-                  </div>
-                  <div>
-                    <div className="font-bold text-white uppercase text-xs tracking-widest">Overlap Mode</div>
-                    <div className="text-[10px] text-slate-500">Show cards one by one with navigation</div>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setState((prev: any) => ({ ...prev, gachaAllowOverlap: !prev.gachaAllowOverlap }))}
+            <div className="grid grid-cols-1 gap-4 max-w-4xl">
+              {SETTINGS_COMPARTMENTS.map(compartment => (
+                <button 
+                  key={compartment.id}
+                  onClick={() => setTabAndSave(compartment.id)} 
                   className={cn(
-                    "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
-                    state.gachaAllowOverlap ? "bg-indigo-500" : "bg-slate-700"
+                    "flex items-center gap-4 p-5 bg-slate-900/40 hover:bg-slate-900/80 rounded-3xl border border-slate-800/80 transition-all text-left group w-full",
+                    compartment.borderColor
                   )}
                 >
-                  <span
-                    className={cn(
-                      "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
-                      state.gachaAllowOverlap ? "translate-x-6" : "translate-x-1"
-                    )}
-                  />
+                  <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center border group-hover:scale-105 transition-transform shrink-0", compartment.bgColor)}>
+                    <compartment.icon size={22} className={compartment.iconColor} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-bold text-white uppercase tracking-widest text-xs sm:text-sm truncate">{compartment.title}</h3>
+                    <p className="text-xs text-slate-500 font-medium mt-1 leading-normal sm:line-clamp-1 line-clamp-2">{compartment.desc}</p>
+                  </div>
+                  <div className="ml-auto w-8 h-8 shrink-0 rounded-full bg-white/5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <ChevronRight className={compartment.iconColor} size={16} />
+                  </div>
                 </button>
-              </div>
+              ))}
             </div>
           </div>
-        )}
-        {(activeSection === 'shop' as any) && (
-          <ShopSettings items={shopItems} onUpdate={onUpdateShop} />
-        )}
-        {(activeSection === 'gacha' as any) && (
-          <GachaSettings pools={gachaPools} onUpdate={onUpdateGacha} />
-        )}
-        {activeSection === 'calculator' && (
-          <CalcSettingsSection state={state} setState={setState} />
-        )}
-        {activeSection === 'sage' && (
-          <SageSettingsSection state={state} setState={setState} />
-        )}
-        
-        {activeSection === 'dev' && (
-          <DeveloperSettings state={state} setState={setState} addXP={addXP} getNow={getNow} />
-        )}
-
-        {activeSection === 'about' && (
-          <div className="space-y-8 py-4">
-            <div className="flex flex-col items-center text-center space-y-4">
-              <div className="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center shadow-2xl shadow-indigo-600/20">
-                <SettingsIcon size={40} className="text-white-pure" />
-              </div>
-              <div>
-                <h3 className="text-3xl font-black text-white tracking-tight">Scholar's Dungeon</h3>
-                <div className="flex flex-col items-center gap-1 mt-2">
-                  <span className="px-3 py-1 bg-indigo-500/20 text-indigo-400 rounded-full font-bold tracking-widest uppercase text-xs border border-indigo-500/30">
-                    Version {APP_VERSION}
-                  </span>
-                  <span className="text-slate-500 text-xs font-medium">
-                    Updated: {LAST_UPDATE_DATE}
-                  </span>
+        ) : (
+          <div className="space-y-8">
+            {/* Header style matching our active custom compartments */}
+            <div className="flex flex-row items-center justify-between gap-4 border-b border-slate-800/80 pb-6 mb-8">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className={cn("w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center border shrink-0", currentCompartment?.bgColor || "bg-indigo-500/10 border-indigo-500/20")}>
+                  {CurrentIcon && <CurrentIcon className={currentCompartment?.iconColor || "text-indigo-400"} size={22} />}
+                </div>
+                <div className="min-w-0">
+                  <h2 className="text-base sm:text-xl font-black text-slate-55 tracking-tight uppercase italic truncate">
+                    {currentCompartment?.title || "Settings"}
+                  </h2>
+                  <p className="text-slate-500 text-[10px] sm:text-xs font-medium sm:line-clamp-1 line-clamp-2">{currentCompartment?.desc || "Tune the parameters of this compartment."}</p>
                 </div>
               </div>
+              <button 
+                onClick={() => setTabAndSave('menu')}
+                className="p-2 sm:px-4 sm:py-2 bg-slate-900 rounded-xl border border-slate-800 text-slate-400 hover:text-white hover:border-indigo-500 transition-all flex items-center gap-2 group shrink-0"
+              >
+                <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+                <span className="hidden sm:block text-xs font-bold uppercase tracking-widest">Back to Menu</span>
+              </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-slate-800/30 p-8 rounded-3xl border border-slate-700/50 space-y-4">
-                <div className="flex items-center gap-2.5 text-indigo-400 mb-6 pb-2">
-                  <Scroll size={20} />
-                  <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Project Info</h4>
-                </div>
-                <p className="text-slate-400 leading-relaxed">
-                  Scholar's Dungeon is a gamified learning system designed to turn study sessions into an immersive Roguelike adventure. 
-                  By combining the Pomodoro technique with RPG progression, it helps students and lifelong learners maintain focus and motivation.
-                </p>
-              </div>
-
-              <div className="bg-slate-800/30 p-8 rounded-3xl border border-slate-700/50 space-y-6">
-                <div className="flex items-center gap-2.5 text-indigo-400 mb-6 pb-2">
-                  <User size={20} />
-                  <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Author & Links</h4>
-                </div>
-                
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-500 text-sm font-bold uppercase tracking-wider">Author</span>
-                    <span className="text-white font-bold">Karakn</span>
+            {/* Sub-Contents rendering */}
+            <div>
+              {activeTab === 'general' && (
+                <GeneralSettings state={state} setState={setState} setShowClearConfirm={setShowClearConfirm} />
+              )}
+              {activeTab === 'timer' && (
+                <TimerSettingsSection 
+                  state={state} 
+                  setState={setState} 
+                  rewardPool={rewardPool}
+                  onUpdateRewards={onUpdateRewards}
+                  onResetRewards={onResetRewards}
+                  onTabChange={onTabChange}
+                />
+              )}
+              {activeTab === 'cloud' && (
+                <CloudSettingsSection 
+                  state={state}
+                  setState={setState}
+                  setActiveSection={setActiveSection}
+                  onOpenAstralArchives={onOpenAstralArchives || (() => {})}
+                  triggerSyncCheck={triggerSyncCheck}
+                  isSyncing={isSyncing}
+                  hasUnsyncedChanges={hasUnsyncedChanges}
+                />
+              )}
+              {(activeTab === 'level' || activeTab === 'levelRewards') && (
+                <LevelRewardsSettings state={state} setState={setState} />
+              )}
+              {activeTab === 'merchant' && (
+                <div className="space-y-12">
+                  <ShopSettings items={shopItems} onUpdate={onUpdateShop} />
+                  
+                  <div className="pt-12 border-t border-slate-800">
+                    <GachaSettings pools={gachaPools} onUpdate={onUpdateGacha} />
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-500 text-sm font-bold uppercase tracking-wider">Email</span>
-                    <a href="mailto:pankechill@outlool.com" className="text-indigo-400 hover:text-indigo-300 transition-colors font-mono text-sm">pankechill@outlool.com</a>
-                  </div>
-                  <div className="pt-4 space-y-3">
-                    <a 
-                      href="https://github.com/pancakechillover/ScholarDungeon" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-between p-3 bg-slate-900 rounded-xl border border-slate-700 hover:border-indigo-500 transition-all group"
-                    >
-                      <span className="text-slate-300 text-sm font-bold">GitHub Repository</span>
-                      <ChevronRight size={16} className="text-slate-500 group-hover:text-indigo-400 transition-colors" />
-                    </a>
-                    <a 
-                      href="https://github.com/pancakechillover/ScholarDungeon/blob/main/README.md" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-between p-3 bg-slate-900 rounded-xl border border-slate-700 hover:border-indigo-500 transition-all group"
-                    >
-                      <span className="text-slate-300 text-sm font-bold">Documentation (README)</span>
-                      <ChevronRight size={16} className="text-slate-500 group-hover:text-indigo-400 transition-colors" />
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
 
-            <div className="bg-slate-800/30 p-8 rounded-3xl border border-slate-700/50 space-y-6">
-              <div className="flex items-center gap-2.5 text-indigo-400 mb-6 pb-2">
-                <History size={20} />
-                <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Release History</h4>
-              </div>
-              
-              <div className="space-y-6 relative ml-3">
-                {(() => {
-                  // Group history by Minor Version (e.g., v4.5, v4.4)
-                  const grouped = RELEASE_HISTORY.reduce((acc, log) => {
-                    const parts = log.version.replace('v', '').split('.');
-                    const groupKey = `v${parts[0]}.${parts[1]}`;
-                    if (!acc[groupKey]) acc[groupKey] = [];
-                    acc[groupKey].push(log);
-                    return acc;
-                  }, {} as Record<string, typeof RELEASE_HISTORY>);
+                  {/* Draw Animation Section at the very end */}
+                  <div className="pt-12 border-t border-slate-800 space-y-6">
+                    <div className="flex items-center gap-2.5 text-indigo-400 mb-6 pb-2">
+                      <Sparkles size={20} />
+                      <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Draw Animation</h4>
+                    </div>
 
-                  return Object.entries(grouped).map(([group, logs], index, array) => {
-                    const isLast = index === array.length - 1;
-                    return (
-                      <div key={group} className="relative pl-8">
-                        {/* Connecting branch to the box */}
-                        <div className="absolute top-[26px] left-0 w-8 h-[2px] bg-slate-800" />
-                        
-                        {/* Vertical line connecting to the next item */}
-                        {!isLast && (
-                          <div className="absolute top-[27px] -left-px w-[2px] h-[calc(100%+24px)] bg-slate-800" />
-                        )}
-
-                        {/* Node point */}
-                        <div className={cn(
-                          "absolute top-[21px] -left-1.5 w-3 h-3 rounded-full border-2 border-slate-900 z-10",
-                          logs.some(l => l.version === APP_VERSION) ? "bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]" : "bg-slate-600"
-                        )} />
-                        
-                        <VersionGroup 
-                          group={group} 
-                          logs={logs} 
-                          isInitialExpanded={logs.some(l => l.version === APP_VERSION)} 
-                        />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4 p-5 bg-slate-900/50 rounded-3xl border border-indigo-500/10 shadow-inner">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Package size={16} className="text-indigo-400" />
+                          <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Gacha Draw</label>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          {[
+                            { id: 'card', name: 'Classic Flip', icon: Layers, desc: 'Vertical flip' },
+                            { id: 'scratch', name: 'Scratch-off', icon: Scroll, desc: 'Reveal' }
+                          ].map(effect => {
+                            const isActive = (state.gachaAnimation || 'card') === effect.id;
+                            return (
+                              <button
+                                key={effect.id}
+                                onClick={() => setState((prev: any) => ({ ...prev, gachaAnimation: effect.id as 'card' | 'scratch' }))}
+                                className={cn(
+                                  "flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all relative overflow-hidden group text-left",
+                                  isActive 
+                                    ? "bg-indigo-500/10 border-indigo-500" 
+                                    : "bg-slate-950 border-slate-800 text-slate-500 hover:border-slate-700"
+                                )}
+                              >
+                                <effect.icon size={20} className={cn("transition-transform group-hover:scale-110", isActive ? "text-indigo-400" : "text-slate-600")} />
+                                <div>
+                                  <div className={cn("text-[9px] font-black uppercase tracking-widest leading-none mb-0.5", isActive ? "text-white" : "text-slate-500")}>
+                                    {effect.name}
+                                  </div>
+                                  <div className="text-[8px] opacity-60 font-medium whitespace-nowrap">{effect.desc}</div>
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
-                    );
-                  });
-                })()}
-              </div>
-            </div>
 
-            <div className="text-center pt-4">
-              <p className="text-slate-600 text-[10px] uppercase tracking-[0.3em] font-bold">
-                Built with Passion for Learning & Gaming
-              </p>
+                      <div className="space-y-4 p-5 bg-slate-900/50 rounded-3xl border border-indigo-500/10 shadow-inner">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Ticket size={16} className="text-indigo-400" />
+                          <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Ichiban Draw</label>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          {[
+                            { id: 'card', name: 'Classic Flip', icon: Layers, desc: 'Vertical flip' },
+                            { id: 'scratch', name: 'Scratch-off', icon: Scroll, desc: 'Reveal' }
+                          ].map(effect => {
+                            const isActive = (state.ichibanAnimation || 'scratch') === effect.id;
+                            return (
+                              <button
+                                key={effect.id}
+                                onClick={() => setState((prev: any) => ({ ...prev, ichibanAnimation: effect.id as 'card' | 'scratch' }))}
+                                className={cn(
+                                  "flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all relative overflow-hidden group text-left",
+                                  isActive 
+                                    ? "bg-indigo-500/10 border-indigo-500" 
+                                    : "bg-slate-950 border-slate-800 text-slate-500 hover:border-slate-700"
+                                )}
+                              >
+                                <effect.icon size={20} className={cn("transition-transform group-hover:scale-110", isActive ? "text-indigo-400" : "text-slate-600")} />
+                                <div>
+                                  <div className={cn("text-[9px] font-black uppercase tracking-widest leading-none mb-0.5", isActive ? "text-white" : "text-slate-500")}>
+                                    {effect.name}
+                                  </div>
+                                  <div className="text-[8px] opacity-60 font-medium whitespace-nowrap">{effect.desc}</div>
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Allow Overlap Toggle */}
+                    <div className="flex items-center justify-between p-4 bg-slate-900/50 rounded-2xl border border-slate-800 mt-6">
+                      <div className="flex items-center gap-3">
+                        <div className={cn("p-2 rounded-xl", state.gachaAllowOverlap ? "bg-indigo-500/10 text-indigo-400" : "bg-slate-800 text-slate-500")}>
+                          <Layers size={20} />
+                        </div>
+                        <div>
+                          <div className="font-bold text-white uppercase text-xs tracking-widest">Overlap Mode</div>
+                          <div className="text-[10px] text-slate-500">Show cards one by one with navigation</div>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setState((prev: any) => ({ ...prev, gachaAllowOverlap: !prev.gachaAllowOverlap }))}
+                        className={cn(
+                          "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
+                          state.gachaAllowOverlap ? "bg-indigo-500" : "bg-slate-700"
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+                            state.gachaAllowOverlap ? "translate-x-6" : "translate-x-1"
+                          )}
+                        />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {activeTab === 'calculator' && (
+                <CalcSettingsSection state={state} setState={setState} />
+              )}
+              {activeTab === 'sage' && (
+                <SageSettingsSection state={state} setState={setState} />
+              )}
+              {activeTab === 'dev' && (
+                <DeveloperSettings state={state} setState={setState} addXP={addXP} getNow={getNow} />
+              )}
+              {activeTab === 'about' && (
+                <div className="space-y-8 py-4">
+                  <div className="flex flex-col items-center text-center space-y-4">
+                    <div className="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center shadow-2xl shadow-indigo-600/20">
+                      <SettingsIcon size={40} className="text-white-pure" />
+                    </div>
+                    <div>
+                      <h3 className="text-3xl font-black text-white tracking-tight">Scholar's Dungeon</h3>
+                      <div className="flex flex-col items-center gap-1 mt-2">
+                        <span className="px-3 py-1 bg-indigo-500/20 text-indigo-400 rounded-full font-bold tracking-widest uppercase text-xs border border-indigo-500/30">
+                          Version {APP_VERSION}
+                        </span>
+                        <span className="text-slate-500 text-xs font-medium">
+                          Updated: {LAST_UPDATE_DATE}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="bg-slate-800/30 p-8 rounded-3xl border border-slate-700/50 space-y-4">
+                      <div className="flex items-center gap-2.5 text-indigo-400 mb-6 pb-2">
+                        <Scroll size={20} />
+                        <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Project Info</h4>
+                      </div>
+                      <p className="text-slate-400 leading-relaxed">
+                        Scholar's Dungeon is a gamified learning system designed to turn study sessions into an immersive Roguelike adventure. 
+                        By combining the Pomodoro technique with RPG progression, it helps students and lifelong learners maintain focus and motivation.
+                      </p>
+                    </div>
+
+                    <div className="bg-slate-800/30 p-8 rounded-3xl border border-slate-700/50 space-y-6">
+                      <div className="flex items-center gap-2.5 text-indigo-400 mb-6 pb-2">
+                        <User size={20} />
+                        <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Author & Links</h4>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-500 text-sm font-bold uppercase tracking-wider">Author</span>
+                          <span className="text-white font-bold">Karakn</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-500 text-sm font-bold uppercase tracking-wider">Email</span>
+                          <a href="mailto:pankechill@outlool.com" className="text-indigo-400 hover:text-indigo-300 transition-colors font-mono text-sm">pankechill@outlool.com</a>
+                        </div>
+                        <div className="pt-4 space-y-3">
+                          <a 
+                            href="https://github.com/pancakechillover/ScholarDungeon" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-between p-3 bg-slate-900 rounded-xl border border-slate-700 hover:border-indigo-500 transition-all group"
+                          >
+                            <span className="text-slate-300 text-sm font-bold">GitHub Repository</span>
+                            <ChevronRight size={16} className="text-slate-500 group-hover:text-indigo-400 transition-colors" />
+                          </a>
+                          <a 
+                            href="https://github.com/pancakechillover/ScholarDungeon/blob/main/README.md" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-between p-3 bg-slate-900 rounded-xl border border-slate-700 hover:border-indigo-500 transition-all group"
+                          >
+                            <span className="text-slate-300 text-sm font-bold">Documentation (README)</span>
+                            <ChevronRight size={16} className="text-slate-500 group-hover:text-indigo-400 transition-colors" />
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-slate-800/30 p-8 rounded-3xl border border-slate-700/50 space-y-6">
+                    <div className="flex items-center gap-2.5 text-indigo-400 mb-6 pb-2">
+                      <History size={20} />
+                      <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Release History</h4>
+                    </div>
+                    
+                    <div className="space-y-6 relative ml-3">
+                      {(() => {
+                        // Group history by Minor Version (e.g., v4.5, v4.4)
+                        const grouped = RELEASE_HISTORY.reduce((acc, log) => {
+                          const parts = log.version.replace('v', '').split('.');
+                          const groupKey = `v${parts[0]}.${parts[1]}`;
+                          if (!acc[groupKey]) acc[groupKey] = [];
+                          acc[groupKey].push(log);
+                          return acc;
+                        }, {} as Record<string, typeof RELEASE_HISTORY>);
+
+                        return Object.entries(grouped).map(([group, logs], index, array) => {
+                          const isLast = index === array.length - 1;
+                          return (
+                            <div key={group} className="relative pl-8">
+                              {/* Connecting branch to the box */}
+                              <div className="absolute top-[26px] left-0 w-8 h-[2px] bg-slate-800" />
+                              
+                              {/* Vertical line connecting to the next item */}
+                              {!isLast && (
+                                <div className="absolute top-[27px] -left-px w-[2px] h-[calc(100%+24px)] bg-slate-800" />
+                              )}
+
+                              {/* Node point */}
+                              <div className={cn(
+                                "absolute top-[21px] -left-1.5 w-3 h-3 rounded-full border-2 border-slate-900 z-10",
+                                logs.some(l => l.version === APP_VERSION) ? "bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]" : "bg-slate-600"
+                              )} />
+                              
+                              <VersionGroup 
+                                group={group} 
+                                logs={logs} 
+                                isInitialExpanded={logs.some(l => l.version === APP_VERSION)} 
+                              />
+                            </div>
+                          );
+                        });
+                      })()}
+                    </div>
+                  </div>
+
+                  <div className="text-center pt-4">
+                    <p className="text-slate-600 text-[10px] uppercase tracking-[0.3em] font-bold">
+                      Built with Passion for Learning & Gaming
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}

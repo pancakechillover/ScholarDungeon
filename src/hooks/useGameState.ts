@@ -599,21 +599,28 @@ export function useGameState() {
       
       const customReward = state.levelRewards?.find(r => r.level === newLevel);
       if (customReward) {
-        if (customReward.type === 'talentPoint') newTalentPoints += customReward.amount;
-        else if (customReward.type === 'coins') {
-          newCoins += customReward.amount;
-          newState = processTransaction(newState, 'coins', customReward.amount, `Level ${newLevel} Reward`);
+        const subRewards = customReward.rewards && customReward.rewards.length > 0
+          ? customReward.rewards
+          : [{ type: customReward.type, amount: customReward.amount, rewardText: customReward.rewardText }];
+
+        for (const reward of subRewards) {
+          if (reward.type === 'talentPoint') {
+            newTalentPoints += (reward.amount || 0);
+          } else if (reward.type === 'coins') {
+            newCoins += (reward.amount || 0);
+            newState = processTransaction(newState, 'coins', reward.amount || 0, `Level ${newLevel} Reward`);
+          }
+          
+          newRewardHistory.unshift({
+            id: Math.random().toString(36).substr(2, 9),
+            name: reward.type === 'text' ? (reward.rewardText || 'Custom Reward') : `${reward.amount} ${reward.type === 'talentPoint' ? 'Talent Scroll' : 'Gold'}`,
+            rarity: 'common',
+            source: 'LevelUp',
+            timestamp: getNow().toISOString(),
+            type: reward.type === 'text' ? 'text' : (reward.type === 'coins' ? 'coins' : 'item'),
+            redeemed: true
+          });
         }
-        
-        newRewardHistory.unshift({
-          id: Math.random().toString(36).substr(2, 9),
-          name: customReward.type === 'text' ? (customReward.rewardText || 'Custom Reward') : `${customReward.amount} ${customReward.type}`,
-          rarity: 'common',
-          source: 'LevelUp',
-          timestamp: getNow().toISOString(),
-          type: customReward.type === 'text' ? 'text' : (customReward.type === 'coins' ? 'coins' : 'item'),
-          redeemed: true
-        });
       } else {
         const defaultReward = getDefaultRewardForLevel(newLevel);
         if (defaultReward) {

@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v7.4.8';
+export const APP_VERSION = 'v7.5.1';
 export const LAST_UPDATE_DATE = '2026-06-02';
-export const LAST_UPDATE_TIME = '13:25:00';
+export const LAST_UPDATE_TIME = '15:00:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,86 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v7.5.1',
+    date: '2026-06-02',
+    time: '15:00:00',
+    title: 'XP Table Multi-Reward Architecture',
+    items: [
+      { category: 'Feature', description: 'Upgraded Level Up rewards to support setting and granting multiple different rewards per milestone level.' },
+      { category: 'UI', description: 'Redesigned the custom Level Rewards manager inside Settings to display an interactive modular sub-rewards list constructor.' },
+      { category: 'UI', description: 'Changed Talent point rewards representation to green Talent Scroll icons throughout the XP lists, Modals, and Settings.' }
+    ]
+  },
+  {
+    version: 'v7.5.0',
+    date: '2026-06-02',
+    time: '14:50:00',
+    title: 'XP Tied Epithet Customization',
+    items: [
+      { category: 'Feature', description: 'Re-linked title (称号) milestones to level progression achievements directly integrated within the XP list.' },
+      { category: 'UI', description: 'Employed high-contrast horizontal divider rows to separate rank tiers (Novice: 1-3, Veteran: 4-15, Master: 16-47, Grandmaster: 48+).' },
+      { category: 'UX', description: 'Removed the previous manual title setting form from Settings, making player badges earned purely as level-up reward milestones.' }
+    ]
+  },
+  {
+    version: 'v7.4.14',
+    date: '2026-06-02',
+    time: '14:20:00',
+    title: 'Settings Navigation Redesign',
+    items: [
+      { category: 'UX', description: 'Redesigned the Settings tabs into a compact row-by-row navigation menu layout, improving scannability and structure.' },
+      { category: 'UI', description: 'Moved the "Back to Menu" action button to the far-right of settings sub-page headers on all devices.' },
+      { category: 'Feature', description: 'The settings screen persistently remembers the last opened tab compartment between user sessions using localStorage.' }
+    ]
+  },
+  {
+    version: 'v7.4.13',
+    date: '2026-06-02',
+    time: '14:00:00',
+    title: 'Reward Vault Navigation Polish',
+    items: [
+      { category: 'Feature', description: 'Merged Treasures and Custom Rewards channels into All Rewards sub-tabs for simplified layout.' },
+      { category: 'UI', description: 'Relocated the "Back to Vault" action button to the rightmost side of sub-page headers across all compartments.' },
+    ]
+  },
+  {
+    version: 'v7.4.12',
+    date: '2026-06-02',
+    time: '13:45:00',
+    title: 'Reward Vault Navigation Redesign',
+    items: [
+      { category: 'UX', description: 'Redesigned the Reward Vault into a nested menu structure, showing one distinct compartment per row on the root screen.' },
+      { category: 'Feature', description: 'The Vault now persistently remembers the last opened compartment between sessions using local storage.' },
+    ]
+  },
+  {
+    version: 'v7.4.11',
+    date: '2026-06-02',
+    time: '13:40:00',
+    title: 'Reward Vault Mobile Polish',
+    items: [
+      { category: 'UI', description: 'Modified the Reward Vault tabs container to be horizontally scrollable on mobile devices, ensuring all options remain fully accessible even on narrow screens.' }
+    ]
+  },
+  {
+    version: 'v7.4.10',
+    date: '2026-06-02',
+    time: '13:35:00',
+    title: 'Reward Vault UI Cleanup',
+    items: [
+      { category: 'UI', description: 'Removed redundant "Treasures" and "Custom" counter blocks in the Reward Vault header to declutter the interface and maintain visual consistency.' }
+    ]
+  },
+  {
+    version: 'v7.4.9',
+    date: '2026-06-02',
+    time: '13:30:00',
+    title: 'Talent Tree UI Cleanup',
+    items: [
+      { category: 'UI', description: 'Removed redundant point and shard trackers strictly within the Talent Tree header to avoid overlapping with the universal Top Bar indicators.' }
+    ]
+  },
   {
     version: 'v7.4.8',
     date: '2026-06-02',

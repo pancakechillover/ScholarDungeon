@@ -61,29 +61,39 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                   <div className="w-full space-y-3">
                     {(() => {
                       const reward = state.levelRewards.find(r => r.level === currentLevelUp);
-                      if (reward?.type === 'text') {
-                        return (
-                          <div className="flex flex-col items-center gap-3 py-2">
-                            <div className="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center">
-                              <Scroll className="text-emerald-400" size={24} />
-                            </div>
-                            <span className="text-xl font-black text-slate-50 text-center leading-tight">
-                              {reward.rewardText}
-                            </span>
-                          </div>
-                        );
-                      }
+                      const subRewards = reward.rewards && reward.rewards.length > 0
+                        ? reward.rewards
+                        : [{ type: reward.type, amount: reward.amount, rewardText: reward.rewardText }];
+
                       return (
-                        <>
-                          <div className="flex items-center justify-center gap-2">
-                            {reward?.type === 'talentPoint' && <Scroll size={20} className="text-emerald-400" />}
-                            {reward?.type === 'coins' && <Coins size={20} className="text-amber-400" />}
-                            <span>+{reward?.amount} {reward?.type === 'talentPoint' ? 'Talent Scroll' : 'Gold'}</span>
-                          </div>
-                          {reward?.type === 'talentPoint' && (
-                            <p className="text-xs text-slate-500 mt-2">Check the Talents tab to spend it!</p>
-                          )}
-                        </>
+                        <div className="space-y-4">
+                          {subRewards.map((sub: any, idx: number) => {
+                            if (sub.type === 'text') {
+                              return (
+                                <div key={idx} className="flex flex-col items-center gap-2 py-1">
+                                  <div className="w-10 h-10 bg-emerald-500/20 rounded-xl flex items-center justify-center">
+                                    <Scroll className="text-emerald-400" size={20} />
+                                  </div>
+                                  <span className="text-base font-black text-slate-50 text-center leading-tight">
+                                    {sub.rewardText}
+                                  </span>
+                                </div>
+                              );
+                            }
+                            return (
+                              <div key={idx} className="flex flex-col items-center justify-center gap-1">
+                                <div className="flex items-center justify-center gap-2 text-base font-bold text-white">
+                                  {sub.type === 'talentPoint' && <Scroll size={20} className="text-emerald-400" />}
+                                  {sub.type === 'coins' && <Coins size={20} className="text-amber-400" />}
+                                  <span>+{sub.amount} {sub.type === 'talentPoint' ? 'Talent Scroll' : 'Gold'}</span>
+                                </div>
+                                {sub.type === 'talentPoint' && (
+                                  <p className="text-[10px] text-slate-500">Check the Talents tab to spend it!</p>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
                       );
                     })()}
                   </div>

@@ -23,7 +23,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v7.4.8
+- **Current Version:** v7.5.1
 - **Last Update Date:** 2026-06-02
 
 ## Dark Themes Definition
@@ -49,6 +49,38 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v7.5.1 (2026-06-02):** XP Table Multi-Reward Architecture.
+  - *Feature:* Upgraded leveling up rewards to support setting and receiving multiple custom different rewards per level.
+  - *UI:* Created a beautiful, rich multi-reward custom list controller in the Level-Up settings modal with interactive additions and deletions.
+  - *UI:* Changed all "Talent point" rewards to use green "Talent Scroll" icons across levels lists, modals, and settings.
+
+- **v7.5.0 (2026-06-02):** XP Tied Epithet Customization.
+  - *Feature:* Linked dynamic titles (称号) directly to level achievements in the XP list.
+  - *UI:* Added smooth horizontal dividing separator columns inside the level checklist representing the major ranges (Novice: 1-3, Veteran: 4-15, Master: 16-47, Grandmaster: 48+).
+  - *UX:* Reconstructed the profile modal badge structure and purged legacy form overrides.
+
+- **v7.4.14 (2026-06-02):** Settings Navigation Redesign.
+  - *UX:* Redesigned the Settings tab selector into an elegant nested row menu, presenting details for one distinct settings compartment per row for clean, concise layout.
+  - *UI:* Moved "Back to Menu" subpage actions to the rightmost side of settings compartment headers on all screens to stay architecturally consistent with the new Vault.
+  - *Feature:* Enabled persistent localStorage state tracking (`settings_last_view`) to remember and return the user to the last viewed settings compartment between focus sessions.
+
+- **v7.4.13 (2026-06-02):** Reward Vault Navigation Polish.
+  - *Feature:* Merged Treasures and Custom Rewards channels into All Rewards sub-tabs for simplified layout.
+  - *UI:* Moved "Back to Vault" action button to the rightmost side of sub-page headers across all compartments (Economy log, Item Inventory, All Rewards) to make the layout clean and intuitive.
+
+- **v7.4.12 (2026-06-02):** Reward Vault Navigation Redesign.
+  - *UX:* Redesigned the Reward Vault into a nested menu navigation structure, showing one distinct compartment per row on the root screen.
+  - *Feature:* The Vault now persistently remembers the last opened compartment between sessions using `localStorage`.
+
+- **v7.4.11 (2026-06-02):** Reward Vault Mobile Polish.
+  - *UI:* Made the Reward Vault tabs (All, Treasures, Custom, Economy Log, Inventory) scrollable horizontally on mobile to prevent the options from being cut off on narrow screens.
+
+- **v7.4.10 (2026-06-02):** Reward Vault UI Cleanup.
+  - *UI:* Removed redundant "Treasures" and "Custom" counter blocks in the Reward Vault header to declutter the interface and maintain visual consistency with the other tabs.
+
+- **v7.4.9 (2026-06-02):** Talent Tree UI Cleanup.
+  - *UI:* Removed redundant "Talent Scrolls" and "Talent Shards" display card panels directly inside the Talent Tree to keep the interface cleaner, relying on the unified top navigation bar instead.
 
 - **v7.4.8 (2026-06-02):** Top Bar Polish & Logic Fixes.
   - *Fix:* Separated the Talent Scrolls tooltip from its parent container's active pseudo-class to fix click jittering.

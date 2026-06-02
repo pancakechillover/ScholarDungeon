@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { AppState } from '../types';
-import { cn, getXPForLevel, getDefaultRewardForLevel } from '../lib/utils';
+import { cn, getXPForLevel, getDefaultRewardForLevel, getTitleForLevel } from '../lib/utils';
 import { format, subDays, parseISO } from 'date-fns';
 import { ConfirmModal } from './ConfirmModal';
 import { StreakRecordModal } from './StreakRecordModal';
@@ -223,8 +223,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                     </div>
                     <p className="text-xs sm:text-sm text-slate-400 font-medium line-clamp-2">{state.userBio || 'Master of the Study Dungeon'}</p>
                     <div className="flex flex-wrap items-center gap-2 mt-2">
-                      <span className="px-2 py-0.5 bg-indigo-500/10 text-indigo-400 text-[9px] sm:text-[10px] font-black uppercase tracking-widest rounded-md border border-indigo-500/20">
-                        {state.level >= 20 ? 'Grandmaster' : state.level >= 10 ? 'Veteran' : 'Novice'} Explorer
+                      <span className="px-2 py-0.5 bg-indigo-500/10 text-indigo-400 text-[9px] sm:text-[10px] font-black uppercase tracking-widest rounded-md border border-indigo-500/20 pr-1">
+                        {getTitleForLevel(state.level)}
                       </span>
                     </div>
                   </div>

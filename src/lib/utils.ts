@@ -7,6 +7,18 @@ export function cn(...inputs: ClassValue[]) {
 
 export const getXPForLevel = (lvl: number) => 1000 + Math.floor((lvl - 1) / 10) * 100;
 
+export function getTitleForLevel(level: number): string {
+  if (level >= 1 && level < 4) {
+    return 'Novice';
+  } else if (level >= 4 && level < 16) {
+    return 'Veteran';
+  } else if (level >= 16 && level < 48) {
+    return 'Master';
+  } else {
+    return 'Grandmaster';
+  }
+}
+
 export const getDefaultRewardForLevel = (lvl: number) => {
   if (lvl <= 1) return null;
   if (lvl <= 4) return { type: 'talentPoint', amount: 1 };

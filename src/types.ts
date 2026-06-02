@@ -88,10 +88,15 @@ export interface RewardHistoryItem {
 
 export interface LevelReward {
   level: number;
-  type: 'talentPoint' | 'coins' | 'item' | 'text';
-  amount: number;
+  type?: 'talentPoint' | 'coins' | 'item' | 'text';
+  amount?: number;
   itemName?: string;
   rewardText?: string;
+  rewards?: {
+    type: 'talentPoint' | 'coins' | 'text';
+    amount?: number;
+    rewardText?: string;
+  }[];
 }
 
 export type QuestType = 'daily_sessions' | 'weekly_sessions' | 'monthly_sessions' | 'consecutive_days' | 'total_sessions';
@@ -206,6 +211,7 @@ export interface AppState {
   userName?: string;
   userBio?: string;
   userAvatar?: string;
+  userTitle?: string;
   // Quests & Achievements
   quests: Quest[];
   questNotificationStyle: 'red_dot' | 'popup';

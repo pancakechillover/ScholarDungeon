@@ -1,0 +1,25 @@
+{
+  "version": "v7.5.1",
+  "date": "2026-06-02",
+  "latestRelease": {
+    "version": "v7.5.1",
+    "date": "2026-06-02",
+    "time": "15:00:00",
+    "title": "XP Table Multi-Reward Architecture",
+    "items": [
+      {
+        "category": "Feature",
+        "description": "Upgraded Level Up rewards to support setting and granting multiple different rewards per milestone level."
+      },
+      {
+        "category": "UI",
+        "description": "Redesigned the custom Level Rewards manager inside Settings to display an interactive modular sub-rewards list constructor."
+      },
+      {
+        "category": "UI",
+        "description": "Changed Talent point rewards representation to green Talent Scroll icons throughout the XP lists, Modals, and Settings."
+      }
+    ]
+  },
+  "timestamp": 1780384966120
+}

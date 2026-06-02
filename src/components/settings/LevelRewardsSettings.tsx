@@ -6,7 +6,7 @@ import { INITIAL_GACHA } from '../../constants';
 import { Plus, Trash2, Save, Edit2, X, ChevronRight, Coins, Zap, Sparkles, Trophy, Timer as TimerIcon, Package, Flame, AlertTriangle, Scroll, Volume2, VolumeX, Sun, Moon, Settings as SettingsIcon, ShoppingBag, Trees, Waves, Database, Download, Upload, Target, Gift, User, Sword, Eye, Palette, Check, Bell, BellOff, RefreshCw, Key, Layers, Sunrise, Cloud, CloudSun, Lollipop, Wrench, History, Ticket } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { APP_VERSION, LAST_UPDATE_DATE, RELEASE_HISTORY } from '../../version';
-import { cn, getXPForLevel, getDefaultRewardForLevel } from '../../lib/utils';
+import { cn, getXPForLevel, getDefaultRewardForLevel, getTitleForLevel } from '../../lib/utils';
 import { playSound } from '../../lib/sound';
 import { SpinnerInput } from '../SpinnerInput';
 import { ConfirmModal } from '../ConfirmModal';
@@ -40,9 +40,32 @@ export const LevelRewardsSettings = ({ state, setState }: { state: any, setState
     confirmText?: string;
     type?: 'danger' | 'warning' | 'info';
     isAlert?: boolean;
+    onConfirm?: () => void;
   }>({ isOpen: false, title: '', message: '' });
 
   const currentLevel = state.level;
+
+  const openEditModal = (lvl: number, existingReward: any) => {
+    let rewardsList: any[] = [];
+    if (existingReward) {
+      if (existingReward.rewards && existingReward.rewards.length > 0) {
+        rewardsList = existingReward.rewards.map((r: any) => ({ ...r }));
+      } else {
+        rewardsList = [{
+          type: existingReward.type || 'talentPoint',
+          amount: existingReward.amount || 1,
+          rewardText: existingReward.rewardText || ''
+        }];
+      }
+    } else {
+      rewardsList = [{ type: 'talentPoint', amount: 1, rewardText: '' }];
+    }
+
+    setEditing({
+      level: lvl,
+      rewards: rewardsList
+    });
+  };
 
   // Get all levels that have custom rewards
   const customRewardLevels = (state.levelRewards || []).map((r: any) => r.level);
@@ -62,14 +85,13 @@ export const LevelRewardsSettings = ({ state, setState }: { state: any, setState
     ? displayLevels 
     : displayLevels.filter(lvl => lvl > currentLevel);
 
-  const formatReward = (reward: any) => {
+  const formatIndividualReward = (reward: any, index?: number) => {
     if (!reward) return <span className="text-slate-600 italic">None</span>;
-    
     const { type, amount, rewardText } = reward;
     
     if (type === 'text') {
       return (
-        <div className="flex items-center gap-2">
+        <div key={index} className="flex items-center gap-2">
           <Scroll size={14} className="text-emerald-400" />
           <span className="font-bold text-white">{rewardText}</span>
         </div>
@@ -79,23 +101,35 @@ export const LevelRewardsSettings = ({ state, setState }: { state: any, setState
     let icon = null;
     let unit = "";
     if (type === 'talentPoint') {
-      icon = <Zap size={14} className="text-indigo-400" />;
-      unit = amount === 1 ? "TalentPoint" : "TalentPoints";
+      icon = <Scroll size={14} className="text-emerald-400" />;
+      unit = amount === 1 ? "Talent Scroll" : "Talent Scrolls";
     } else if (type === 'coins') {
       icon = <Coins size={14} className="text-amber-400" />;
       unit = amount === 1 ? "Coin" : "Coins";
     }
 
     return (
-      <div className="flex items-center gap-2">
+      <div key={index} className="flex items-center gap-2">
         {icon}
         <span className="font-bold text-white">{amount} {unit}</span>
       </div>
     );
   };
 
+  const formatReward = (reward: any) => {
+    if (!reward) return <span className="text-slate-600 italic">None</span>;
+    if (reward.rewards && reward.rewards.length > 0) {
+      return (
+        <div className="flex flex-col gap-1.5 py-0.5">
+          {reward.rewards.map((sub: any, idx: number) => formatIndividualReward(sub, idx))}
+        </div>
+      );
+    }
+    return formatIndividualReward(reward);
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-center justify-between gap-2.5 text-emerald-400 mb-6 pb-2">
         <div className="flex items-center gap-2.5">
           <Trophy size={20} />
@@ -134,43 +168,71 @@ export const LevelRewardsSettings = ({ state, setState }: { state: any, setState
               const defaultReward = getDefaultRewardForLevel(nextLvl);
               const isCurrent = currentLevel === currentLvl;
               
+              // Title levels boundary lines
+              const showDivider = nextLvl === 4 || nextLvl === 16 || nextLvl === 48;
+              const titleName = getTitleForLevel(nextLvl);
+              const rankRange = nextLvl === 4 ? "4 - 15" : nextLvl === 16 ? "16 - 47" : "48+";
+
               return (
-                <tr 
-                  key={nextLvl} 
-                  className={cn(
-                    "border-b border-slate-800/50 transition-colors",
-                    isCurrent ? "bg-indigo-500/10" : "hover:bg-slate-800/30"
+                <React.Fragment key={nextLvl}>
+                  <tr 
+                    className={cn(
+                      "border-b border-slate-800/50 transition-colors",
+                      isCurrent ? "bg-indigo-500/10" : "hover:bg-slate-800/30"
+                    )}
+                  >
+                    <td className="px-4 py-4 font-bold w-24">
+                      <div className="flex items-center gap-2 w-fit">
+                        <span className={cn("text-xs", isCurrent ? "text-indigo-400" : "text-slate-500")}>{currentLvl}</span>
+                        <ChevronRight size={10} className="text-indigo-500" />
+                        <span className="text-white text-base">{nextLvl}</span>
+                        {isCurrent && (
+                          <span className="ml-2 px-2 py-0.5 bg-indigo-500 text-[8px] text-white rounded-full uppercase tracking-tighter font-black">Current</span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-4 py-4 hidden sm:table-cell font-mono text-xs text-slate-500">
+                      {getXPForLevel(currentLvl).toLocaleString()}
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="scale-90 sm:scale-100 origin-left space-y-1.5 flex flex-col items-start">
+                        <div>
+                          {reward ? formatReward(reward) : formatReward(defaultReward)}
+                        </div>
+                        {showDivider && (
+                          <div className="flex items-center gap-1 px-1.5 py-0.5 bg-indigo-500/10 text-indigo-400 text-[8px] font-black uppercase tracking-widest rounded-md border border-indigo-500/20 w-fit">
+                            Unlock Title: {titleName}
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-4 py-4 text-right">
+                      <button
+                        onClick={() => {
+                          openEditModal(nextLvl, reward);
+                        }}
+                        className="px-3 py-1 bg-slate-800 hover:bg-indigo-600 text-slate-400 hover:text-white rounded-lg text-xs font-bold transition-all"
+                      >
+                        {reward ? 'Edit' : 'Add'}
+                      </button>
+                    </td>
+                  </tr>
+
+                  {showDivider && (
+                    <tr className="border-none bg-slate-950/20">
+                      <td colSpan={4} className="px-4 py-2 border-none">
+                        <div className="flex items-center gap-3">
+                          <div className="h-[1px] bg-indigo-500/20 flex-1" />
+                          <span className="text-[9px] font-black uppercase tracking-widest text-indigo-400/80 flex items-center gap-1 shrink-0">
+                            <Sparkles size={10} className="text-indigo-400" />
+                            <span>{titleName} Rank (Lv. {rankRange})</span>
+                          </span>
+                          <div className="h-[1px] bg-indigo-500/20 flex-1" />
+                        </div>
+                      </td>
+                    </tr>
                   )}
-                >
-                  <td className="px-4 py-4 font-bold w-24">
-                    <div className="flex items-center gap-2 w-fit">
-                      <span className={cn("text-xs", isCurrent ? "text-indigo-400" : "text-slate-500")}>{currentLvl}</span>
-                      <ChevronRight size={10} className="text-indigo-500" />
-                      <span className="text-white text-base">{nextLvl}</span>
-                      {isCurrent && (
-                        <span className="ml-2 px-2 py-0.5 bg-indigo-500 text-[8px] text-white rounded-full uppercase tracking-tighter font-black">Current</span>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-4 py-4 hidden sm:table-cell font-mono text-xs text-slate-500">
-                    {getXPForLevel(currentLvl).toLocaleString()}
-                  </td>
-                  <td className="px-4 py-4">
-                    <div className="scale-90 sm:scale-100 origin-left">
-                      {reward ? formatReward(reward) : formatReward(defaultReward)}
-                    </div>
-                  </td>
-                  <td className="px-4 py-4 text-right">
-                    <button
-                      onClick={() => {
-                        setEditing(reward || { level: nextLvl, type: 'talentPoint', amount: 1 });
-                      }}
-                      className="px-3 py-1 bg-slate-800 hover:bg-indigo-600 text-slate-400 hover:text-white rounded-lg text-xs font-bold transition-all"
-                    >
-                      {reward ? 'Edit' : 'Add'}
-                    </button>
-                  </td>
-                </tr>
+                </React.Fragment>
               );
             })}
           </tbody>
@@ -214,7 +276,10 @@ export const LevelRewardsSettings = ({ state, setState }: { state: any, setState
                         });
                         return;
                       }
-                      setEditing({ level: newLevel, type: 'talentPoint', amount: 1 });
+                      setEditing({
+                        level: newLevel,
+                        rewards: [{ type: 'talentPoint', amount: 1, rewardText: '' }]
+                      });
                       setIsAddingNew(false);
                     }}
                     className="px-6 py-2 bg-indigo-600 text-white rounded-xl font-bold"
@@ -237,77 +302,185 @@ export const LevelRewardsSettings = ({ state, setState }: { state: any, setState
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
-                className="bg-slate-900 p-8 rounded-3xl border border-slate-700 w-full max-w-md space-y-4 shadow-2xl"
+                className="bg-slate-900 p-6 sm:p-8 rounded-3xl border border-slate-700 w-full max-w-lg space-y-4 shadow-2xl flex flex-col max-h-[90vh]"
               >
-                <div className="flex justify-between items-center">
-                  <h4 className="text-xl font-bold text-white">Edit Reward for Level {editing.level}</h4>
-                  <button onClick={() => setEditing(null)} className="text-slate-500 hover:text-white"><X size={20} /></button>
-                </div>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-slate-500 uppercase">Reward Type</label>
-                    <select
-                      value={editing.type}
-                      onChange={e => setEditing({ ...editing, type: e.target.value })}
-                      className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white"
-                    >
-                      <option value="talentPoint">Talent Scroll</option>
-                      <option value="coins">Gold</option>
-                      <option value="text">Text Reward</option>
-                    </select>
+                {/* Header */}
+                <div className="flex justify-between items-center bg-slate-900 border-b border-slate-800 pb-3 shrink-0">
+                  <div>
+                    <h4 className="text-lg sm:text-xl font-bold text-white">Edit Rewards (Level {editing.level})</h4>
+                    <p className="text-[10px] sm:text-xs text-slate-500 font-medium font-sans">You can configure one or multiple custom rewards for this level up milestone.</p>
                   </div>
-                  
-                  {editing.type !== 'text' && (
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-slate-500 uppercase">Amount</label>
-                      <SpinnerInput
-                        value={editing.amount === undefined || editing.amount === null ? '' : editing.amount}
-                        onChange={(val) => setEditing({ ...editing, amount: typeof val === 'number' ? val : ('' as any) })}
-                      />
-                    </div>
-                  )}
-                  
-                  {editing.type === 'text' && (
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-slate-500 uppercase">Reward Text</label>
-                      <input
-                        type="text"
-                        value={editing.rewardText || ''}
-                        onChange={e => setEditing({ ...editing, rewardText: e.target.value })}
-                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white"
-                        placeholder="e.g. Unlock Secret Dungeon"
-                      />
-                    </div>
-                  )}
+                  <button onClick={() => setEditing(null)} className="text-slate-500 hover:text-white shrink-0"><X size={20} /></button>
                 </div>
-                <div className="flex justify-end gap-3 pt-4">
-                  <button 
-                    onClick={() => setEditing(null)} 
-                    className="px-4 py-2 text-slate-400 font-bold hover:text-white transition-colors"
-                  >
-                    Cancel
-                  </button>
+
+                {/* Rewards List Scrollable Area */}
+                <div className="flex-1 overflow-y-auto space-y-4 py-2 pr-1 max-h-[360px] custom-scrollbar">
+                  {editing.rewards.map((rew: any, idx: number) => (
+                    <div key={idx} className="bg-slate-950/60 p-4 rounded-2xl border border-slate-800/80 space-y-3 relative group">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-indigo-400">Reward #{idx + 1}</span>
+                        {editing.rewards.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const list = [...editing.rewards];
+                              list.splice(idx, 1);
+                              setEditing({ ...editing, rewards: list });
+                            }}
+                            className="text-slate-500 hover:text-rose-400 transition-colors flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider"
+                          >
+                            <Trash2 size={12} /> Remove
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <label className="text-[9px] font-black uppercase tracking-wider text-slate-500">Reward Type</label>
+                          <select
+                            value={rew.type}
+                            onChange={e => {
+                              const list = [...editing.rewards];
+                              list[idx] = { 
+                                ...list[idx], 
+                                type: e.target.value, 
+                                amount: e.target.value === 'text' ? undefined : 1, 
+                                rewardText: e.target.value === 'text' ? '' : undefined 
+                              };
+                              setEditing({ ...editing, rewards: list });
+                            }}
+                            className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-indigo-500 focus:outline-none"
+                          >
+                            <option value="talentPoint">Talent Scroll</option>
+                            <option value="coins">Gold</option>
+                            <option value="text">Text Reward</option>
+                          </select>
+                        </div>
+
+                        {rew.type !== 'text' ? (
+                          <div className="space-y-1">
+                            <label className="text-[9px] font-black uppercase tracking-wider text-slate-500">Amount</label>
+                            <SpinnerInput
+                              value={rew.amount === undefined || rew.amount === null ? '' : rew.amount}
+                              onChange={(val) => {
+                                const list = [...editing.rewards];
+                                list[idx] = { ...list[idx], amount: typeof val === 'number' ? val : ('' as any) };
+                                setEditing({ ...editing, rewards: list });
+                              }}
+                            />
+                          </div>
+                        ) : (
+                          <div className="space-y-1">
+                            <label className="text-[9px] font-black uppercase tracking-wider text-slate-500">Reward Text</label>
+                            <input
+                              type="text"
+                              value={rew.rewardText || ''}
+                              onChange={e => {
+                                const list = [...editing.rewards];
+                                list[idx] = { ...list[idx], rewardText: e.target.value };
+                                setEditing({ ...editing, rewards: list });
+                              }}
+                              className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 font-bold focus:border-indigo-500 focus:outline-none"
+                              placeholder="e.g. Unlock Secret Dungeon"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+
                   <button
+                    type="button"
                     onClick={() => {
-                      if (editing.type !== 'text' && (editing.amount === '' as any || isNaN(editing.amount as number) || (editing.amount as number) < 0)) {
-                        setModalConfig({
-                          isOpen: true,
-                          title: "Invalid Amount",
-                          message: "Please enter a valid non-negative amount.",
-                          confirmText: "Got it",
-                          type: "warning",
-                          isAlert: true
-                        });
-                        return;
-                      }
-                      const newRewards = [...(state.levelRewards || [])].filter((r: any) => r.level !== editing.level);
-                      setState(prev => ({ ...prev, levelRewards: [...newRewards, editing] }));
-                      setEditing(null);
+                      setEditing({
+                        ...editing,
+                        rewards: [...editing.rewards, { type: 'talentPoint', amount: 1, rewardText: '' }]
+                      });
                     }}
-                    className="px-6 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-500 transition-colors shadow-lg shadow-indigo-500/20"
+                    className="w-full py-2.5 bg-slate-800/40 hover:bg-slate-800 border border-dashed border-slate-700/60 rounded-2xl text-[10px] sm:text-xs font-bold text-slate-400 hover:text-white uppercase tracking-widest flex items-center justify-center gap-1.5 transition-all"
                   >
-                    Save Reward
+                    <Plus size={14} /> Add Another Reward
                   </button>
+                </div>
+
+                {/* Footer buttons */}
+                <div className="flex justify-between items-center pt-3 border-t border-slate-800 bg-slate-900 shrink-0">
+                  <div>
+                    {state.levelRewards?.some((r: any) => r.level === editing.level) && (
+                      <button
+                        onClick={() => {
+                          setModalConfig({
+                            isOpen: true,
+                            title: "Delete Custom Reward",
+                            message: `Are you sure you want to completely clear and delete custom rewards for Level ${editing.level}? It will revert to the default academic rewards.`,
+                            confirmText: "Delete",
+                            type: "danger",
+                            isAlert: false,
+                            onConfirm: () => {
+                              const newRewards = [...(state.levelRewards || [])].filter((r: any) => r.level !== editing.level);
+                              setState(prev => ({ ...prev, levelRewards: newRewards }));
+                              setEditing(null);
+                            }
+                          });
+                        }}
+                        className="px-3 py-2 bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white transition-all text-[10px] font-black uppercase tracking-widest rounded-xl border border-rose-500/20"
+                      >
+                        Delete Custom
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="flex gap-3">
+                    <button 
+                      onClick={() => setEditing(null)} 
+                      className="px-4 py-2 text-slate-400 hover:text-white font-bold text-xs uppercase tracking-widest transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={() => {
+                        for (let i = 0; i < editing.rewards.length; i++) {
+                          const rew = editing.rewards[i];
+                          if (rew.type !== 'text' && (rew.amount === '' as any || isNaN(rew.amount as number) || (rew.amount as number) < 0)) {
+                            setModalConfig({
+                              isOpen: true,
+                              title: "Invalid Amount",
+                              message: `Please enter a valid non-negative amount for Reward #${i + 1}.`,
+                              confirmText: "Got it",
+                              type: "warning",
+                              isAlert: true
+                            });
+                            return;
+                          }
+                          if (rew.type === 'text' && !rew.rewardText?.trim()) {
+                            setModalConfig({
+                              isOpen: true,
+                              title: "Missing Reward Text",
+                              message: `Please enter description text for Reward #${i + 1}.`,
+                              confirmText: "Got it",
+                              type: "warning",
+                              isAlert: true
+                            });
+                            return;
+                          }
+                        }
+
+                        // Remove from list and append editing with rewards array
+                        const newRewards = [...(state.levelRewards || [])].filter((r: any) => r.level !== editing.level);
+                        setState(prev => ({ 
+                          ...prev, 
+                          levelRewards: [...newRewards, {
+                            level: editing.level,
+                            rewards: editing.rewards
+                          }] 
+                        }));
+                        setEditing(null);
+                      }}
+                      className="px-6 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-500 transition-colors text-xs uppercase tracking-widest shadow-lg shadow-indigo-500/20"
+                    >
+                      Save Rewards
+                    </button>
+                  </div>
                 </div>
               </motion.div>
             </div>
@@ -319,7 +492,12 @@ export const LevelRewardsSettings = ({ state, setState }: { state: any, setState
       <ConfirmModal 
         isOpen={modalConfig.isOpen}
         onClose={() => setModalConfig({ ...modalConfig, isOpen: false })}
-        onConfirm={() => {}} // No confirm callback needed for alerts
+        onConfirm={() => {
+          if (modalConfig.onConfirm) {
+            modalConfig.onConfirm();
+          }
+          setModalConfig({ ...modalConfig, isOpen: false });
+        }}
         title={modalConfig.title}
         message={modalConfig.message}
         confirmText={modalConfig.confirmText}

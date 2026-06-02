@@ -127,10 +127,6 @@ export const TalentTree = React.memo<TalentTreeProps>(({
         title="Talent Tree"
         description="Customize your learning build"
         icon={Network}
-        stats={[
-          { label: 'Talent Scrolls', value: points, icon: Scroll, color: 'text-emerald-400' },
-          { label: 'Talent Shards', value: `${shards}/3`, icon: Puzzle, color: 'text-amber-400' }
-        ]}
       >
         <div className="flex items-center gap-4 mt-4">
           <button 

@@ -50,6 +50,7 @@ import { Dungeon, MajorDungeon, DungeonReward } from './types';
 import { CloudSyncModal } from './components/CloudSyncModal';
 import { SplashScreen } from './components/SplashScreen';
 import { CompactTimer } from './components/CompactTimer';
+import { UpdateChecker } from './components/UpdateChecker';
 
 const isTalentLevel = (lvl: number) => {
   if (lvl <= 4) return true;
@@ -62,8 +63,15 @@ const getNextTalentLevel = (currentLvl: number, levelRewards?: any[]) => {
   let nextLvl = currentLvl + 1;
   while (true) {
     const customReward = levelRewards?.find(r => r.level === nextLvl);
-    if (customReward && customReward.type === 'talentPoint') return nextLvl;
-    if (!customReward && isTalentLevel(nextLvl)) return nextLvl;
+    if (customReward) {
+      const subRewards = customReward.rewards && customReward.rewards.length > 0
+        ? customReward.rewards
+        : [{ type: customReward.type, amount: customReward.amount }];
+      const hasTalent = subRewards.some((sub: any) => sub.type === 'talentPoint');
+      if (hasTalent) return nextLvl;
+    } else {
+      if (isTalentLevel(nextLvl)) return nextLvl;
+    }
     nextLvl++;
     if (nextLvl > 1000) return nextLvl;
   }
@@ -1001,7 +1009,7 @@ function App() {
         pipWindow.document.body
       )}
 
-
+      <UpdateChecker />
 
       <div className="min-h-[100dvh] bg-slate-950 text-slate-200 font-sans selection:bg-indigo-500/30">
       {/* Sidebar Navigation - Hidden on mobile, visible on tablet/desktop */}

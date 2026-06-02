@@ -10,6 +10,8 @@ import {
   Calendar, 
   Search,
   ChevronDown,
+  ChevronRight,
+  ArrowLeft,
   Coins,
   Zap,
   Circle,
@@ -39,7 +41,36 @@ type StatusFilter = 'all' | 'redeemed' | 'pending';
 type RarityFilter = 'all' | 'COMMON' | 'RARE' | 'EPIC' | 'LASTONE';
 
 export const RewardHistory: React.FC<RewardHistoryProps> = ({ history, transactionHistory = [], appState, onToggleRedeemed, useInventoryItem }) => {
-  const [activeTab, setActiveTab] = useState<FilterTab>('all');
+  const [activeTab, setActiveTab] = useState<FilterTab | 'menu'>(() => {
+    const saved = localStorage.getItem('vault_last_view');
+    if (saved === 'treasures' || saved === 'custom') {
+      return 'all';
+    }
+    return (saved as FilterTab | 'menu') || 'menu';
+  });
+
+  const [subTab, setSubTab] = useState<'all' | 'treasures' | 'custom'>(() => {
+    const saved = localStorage.getItem('vault_last_view');
+    if (saved === 'treasures' || saved === 'custom' || saved === 'all') {
+      return saved as 'all' | 'treasures' | 'custom';
+    }
+    return 'all';
+  });
+
+  const setTabAndSave = (tab: FilterTab | 'menu' | 'treasures' | 'custom') => {
+    if (tab === 'treasures' || tab === 'custom') {
+      setActiveTab('all');
+      setSubTab(tab);
+      localStorage.setItem('vault_last_view', tab);
+    } else if (tab === 'all') {
+      setActiveTab('all');
+      setSubTab('all');
+      localStorage.setItem('vault_last_view', 'all');
+    } else {
+      setActiveTab(tab);
+      localStorage.setItem('vault_last_view', tab);
+    }
+  };
   const [timeRange, setTimeRange] = useState<TimeRange>('all');
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>('all');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
@@ -50,8 +81,10 @@ export const RewardHistory: React.FC<RewardHistoryProps> = ({ history, transacti
   const filteredHistory = useMemo(() => {
     return history.filter(item => {
       // Tab Filtering
-      if (activeTab === 'treasures' && item.type === 'text') return false;
-      if (activeTab === 'custom' && item.type !== 'text') return false;
+      if (activeTab === 'all') {
+        if (subTab === 'treasures' && item.type === 'text') return false;
+        if (subTab === 'custom' && item.type !== 'text') return false;
+      }
 
       // Search Filtering
       if (searchQuery && !item.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
@@ -89,7 +122,7 @@ export const RewardHistory: React.FC<RewardHistoryProps> = ({ history, transacti
 
       return true;
     });
-  }, [history, activeTab, timeRange, sourceFilter, statusFilter, rarityFilter, searchQuery]);
+  }, [history, activeTab, subTab, timeRange, sourceFilter, statusFilter, rarityFilter, searchQuery]);
 
   const stats = useMemo(() => {
     const treasures = history.filter(i => i.type !== 'text').length;
@@ -98,6 +131,58 @@ export const RewardHistory: React.FC<RewardHistoryProps> = ({ history, transacti
     return { treasures, custom, pending };
   }, [history]);
 
+  if (activeTab === 'menu') {
+    return (
+      <div className="space-y-6">
+        <PageHeader 
+          title="Reward Vault"
+          description="Select a vault compartment to view."
+          icon={History}
+        />
+        <div className="grid grid-cols-1 gap-4 max-w-3xl">
+          <button onClick={() => setTabAndSave('all')} className="flex items-center gap-4 p-5 bg-slate-900/50 hover:bg-slate-900 rounded-3xl border border-slate-800 hover:border-indigo-500 transition-all text-left group">
+            <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20 text-indigo-400 group-hover:scale-110 transition-transform shrink-0">
+              <History size={24} />
+            </div>
+            <div>
+              <h3 className="font-black text-white uppercase tracking-widest text-sm">All Rewards</h3>
+              <p className="text-xs text-slate-500 font-medium mt-1">View the complete history of all acquisitions.</p>
+            </div>
+            <div className="ml-auto w-8 h-8 shrink-0 rounded-full bg-white/5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <ChevronRight className="text-indigo-400" size={16} />
+            </div>
+          </button>
+
+          <button onClick={() => setTabAndSave('economy')} className="flex items-center gap-4 p-5 bg-slate-900/50 hover:bg-slate-900 rounded-3xl border border-slate-800 hover:border-emerald-500 transition-all text-left group">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 text-emerald-400 group-hover:scale-110 transition-transform shrink-0">
+              <Coins size={24} />
+            </div>
+            <div>
+              <h3 className="font-black text-white uppercase tracking-widest text-sm">Economy Log</h3>
+              <p className="text-xs text-slate-500 font-medium mt-1">Comprehensive transaction history of Gold and XP.</p>
+            </div>
+            <div className="ml-auto w-8 h-8 shrink-0 rounded-full bg-white/5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <ChevronRight className="text-emerald-400" size={16} />
+            </div>
+          </button>
+
+          <button onClick={() => setTabAndSave('inventory')} className="flex items-center gap-4 p-5 bg-slate-900/50 hover:bg-slate-900 rounded-3xl border border-slate-800 hover:border-blue-500 transition-all text-left group">
+            <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20 text-blue-400 group-hover:scale-110 transition-transform shrink-0">
+              <Package size={24} />
+            </div>
+            <div>
+              <h3 className="font-black text-white uppercase tracking-widest text-sm">Item Inventory</h3>
+              <p className="text-xs text-slate-500 font-medium mt-1">Manage your consumable items, shards, and special medals.</p>
+            </div>
+            <div className="ml-auto w-8 h-8 shrink-0 rounded-full bg-white/5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <ChevronRight className="text-blue-400" size={16} />
+            </div>
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {activeTab === 'economy' ? (
@@ -105,80 +190,81 @@ export const RewardHistory: React.FC<RewardHistoryProps> = ({ history, transacti
           title="Economy Log"
           description="Comprehensive history of all Gold Coins and Experience Points acquired and spent."
           icon={Coins}
+          action={
+            <button 
+              onClick={() => setTabAndSave('menu')}
+              className="p-2 sm:px-4 sm:py-2.5 bg-slate-900 rounded-xl border border-slate-800 text-slate-400 hover:text-white hover:border-indigo-500 transition-all flex items-center gap-2 group shrink-0"
+            >
+              <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+              <span className="hidden sm:block text-xs font-bold uppercase tracking-widest">Back to Vault</span>
+            </button>
+          }
         />
       ) : activeTab === 'inventory' ? (
         <PageHeader 
           title="Item Inventory"
           description="View and manage your active consumable items, shards, and special medals."
           icon={Package}
+          action={
+            <button 
+              onClick={() => setTabAndSave('menu')}
+              className="p-2 sm:px-4 sm:py-2.5 bg-slate-900 rounded-xl border border-slate-800 text-slate-400 hover:text-white hover:border-indigo-500 transition-all flex items-center gap-2 group shrink-0"
+            >
+              <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+              <span className="hidden sm:block text-xs font-bold uppercase tracking-widest">Back to Vault</span>
+            </button>
+          }
         />
       ) : (
         <PageHeader 
-          title="Reward Vault"
-          description="Manage your treasures and custom rewards."
+          title="All Rewards"
+          description="Manage your complete reward history including system-granted items and custom text rewards."
           icon={History}
-          stats={[
-            { label: 'Treasures', value: stats.treasures, icon: Trophy, color: 'text-amber-400' },
-            { label: 'Custom', value: stats.custom, icon: Scroll, color: 'text-indigo-400' }
-          ]}
+          action={
+            <button 
+              onClick={() => setTabAndSave('menu')}
+              className="p-2 sm:px-4 sm:py-2.5 bg-slate-900 rounded-xl border border-slate-800 text-slate-400 hover:text-white hover:border-indigo-500 transition-all flex items-center gap-2 group shrink-0"
+            >
+              <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+              <span className="hidden sm:block text-xs font-bold uppercase tracking-widest">Back to Vault</span>
+            </button>
+          }
         />
       )}
 
       {/* Tabs & Search */}
-      <div className="flex flex-col lg:flex-row gap-4">
-        <div className="flex p-1 bg-slate-900 rounded-2xl border border-slate-800 w-fit">
-          <button
-            onClick={() => setActiveTab('all')}
-            className={cn(
-              "px-6 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all",
-              activeTab === 'all' ? "bg-indigo-600 text-white shadow-lg" : "text-slate-500 hover:text-slate-300"
-            )}
-          >
-            All
-          </button>
-          <button
-            onClick={() => setActiveTab('treasures')}
-            className={cn(
-              "px-6 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all",
-              activeTab === 'treasures' ? "bg-indigo-600 text-white shadow-lg" : "text-slate-500 hover:text-slate-300"
-            )}
-          >
-            Treasures
-          </button>
-          <button
-            onClick={() => setActiveTab('custom')}
-            className={cn(
-              "px-6 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all",
-              activeTab === 'custom' ? "bg-indigo-600 text-white shadow-lg" : "text-slate-500 hover:text-slate-300"
-            )}
-          >
-            Custom
-          </button>
-          
-          <div className="w-px bg-slate-800 my-1 mx-1"></div>
-
-          <button
-            onClick={() => setActiveTab('economy')}
-            className={cn(
-              "px-6 py-2 rounded-xl text-xs font-bold flex items-center gap-2 uppercase tracking-widest transition-all",
-              activeTab === 'economy' ? "bg-indigo-600 text-white shadow-lg" : "text-slate-500 hover:text-slate-300"
-            )}
-          >
-            <Coins size={14} />
-            Economy Log
-          </button>
-          
-          <button
-            onClick={() => setActiveTab('inventory')}
-            className={cn(
-              "px-6 py-2 rounded-xl text-xs font-bold flex items-center gap-2 uppercase tracking-widest transition-all",
-              activeTab === 'inventory' ? "bg-indigo-600 text-white shadow-lg" : "text-slate-500 hover:text-slate-300"
-            )}
-          >
-            <Package size={14} />
-            Inventory
-          </button>
-        </div>
+      <div className="flex flex-col lg:flex-row gap-4 max-w-full">
+        {activeTab === 'all' && (
+          <div className="flex p-1 bg-slate-900 rounded-2xl border border-slate-800 w-full lg:w-fit overflow-x-auto flex-nowrap shrink-0 snap-x">
+            <button
+              onClick={() => setTabAndSave('all')}
+              className={cn(
+                "px-6 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all shrink-0 snap-start",
+                subTab === 'all' ? "bg-indigo-600 text-white shadow-lg" : "text-slate-500 hover:text-slate-300"
+              )}
+            >
+              All
+            </button>
+            <button
+              onClick={() => setTabAndSave('treasures')}
+              className={cn(
+                "px-6 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all shrink-0 snap-start",
+                subTab === 'treasures' ? "bg-indigo-600 text-white shadow-lg" : "text-slate-500 hover:text-slate-300"
+              )}
+            >
+              Treasures
+            </button>
+            <button
+              onClick={() => setTabAndSave('custom')}
+              className={cn(
+                "px-6 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all shrink-0 snap-start",
+                subTab === 'custom' ? "bg-indigo-600 text-white shadow-lg" : "text-slate-500 hover:text-slate-300"
+              )}
+            >
+              Custom
+            </button>
+          </div>
+        )}
 
         {activeTab !== 'economy' && activeTab !== 'inventory' && (
           <div className="flex-grow flex gap-2">
