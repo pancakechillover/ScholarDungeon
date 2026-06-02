@@ -143,7 +143,7 @@ export const TalentTree = React.memo<TalentTreeProps>(({
           <button 
             onClick={(e) => {
               e.stopPropagation();
-              openGuideBook?.(5);
+              openGuideBook?.(7);
             }}
             className={cn(
               "flex items-center gap-2 px-4 py-2 rounded-xl transition-all text-sm font-bold uppercase tracking-widest border",

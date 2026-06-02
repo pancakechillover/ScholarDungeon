@@ -640,41 +640,50 @@ export function useGameState() {
   };
 
   const processShards = (state: AppState, amount: number): AppState => {
-    let newShards = state.talentShards + amount;
-    let newTalentPoints = state.talentPoints;
+    let newShards = Math.max(0, state.talentShards + amount);
     let newHistory = [...state.rewardHistory];
-
-    while (newShards >= 3) {
-      newShards -= 3;
-      newTalentPoints += 1;
-      
-      newHistory = [{
-        id: Math.random().toString(36).substr(2, 9),
-        name: 'Combined 3 Shards',
-        type: 'item',
-        itemType: 'talent_shard',
-        rarity: 'epic',
-        source: 'System',
-        amount: -3,
-        timestamp: getNow().toISOString(),
-        redeemed: true,
-        note: 'Combine into 1 Talent Scroll'
-      }, {
-        id: Math.random().toString(36).substr(2, 9),
-        name: 'Forged Talent Scroll',
-        type: 'item',
-        itemType: 'talentPoint',
-        rarity: 'epic',
-        source: 'System',
-        amount: 1,
-        timestamp: getNow().toISOString(),
-        redeemed: true,
-        note: 'From shards'
-      }, ...newHistory];
-    }
-
-    return { ...state, talentShards: newShards, talentPoints: newTalentPoints, rewardHistory: newHistory };
+    return { ...state, talentShards: newShards, rewardHistory: newHistory };
   };
+
+  const combineShards = useCallback(() => {
+    setState(prev => {
+      let state = { ...prev };
+      let newShards = state.talentShards;
+      let newTalentPoints = state.talentPoints;
+      let newHistory = [...state.rewardHistory];
+
+      if (newShards >= 3) {
+        newShards -= 3;
+        newTalentPoints += 1;
+        
+        newHistory = [{
+          id: Math.random().toString(36).substr(2, 9),
+          name: 'Combined 3 Shards',
+          type: 'item',
+          itemType: 'talent_shard',
+          rarity: 'epic',
+          source: 'System',
+          amount: -3,
+          timestamp: getNow().toISOString(),
+          redeemed: true,
+          note: 'Combine into 1 Talent Scroll'
+        }, {
+          id: Math.random().toString(36).substr(2, 9),
+          name: 'Forged Talent Scroll',
+          type: 'item',
+          itemType: 'talentPoint',
+          rarity: 'epic',
+          source: 'System',
+          amount: 1,
+          timestamp: getNow().toISOString(),
+          redeemed: true,
+          note: 'From shards'
+        }, ...newHistory];
+      }
+
+      return { ...state, talentShards: newShards, talentPoints: newTalentPoints, rewardHistory: newHistory };
+    });
+  }, []);
 
   const addXP = useCallback((amount: number) => {
     setState(prev => processXP(prev, amount));
@@ -2167,6 +2176,7 @@ export function useGameState() {
     dungeonHistory,
     bulkCreateSessions,
     bulkDeleteSessions,
+    combineShards,
     getNow
   };
 }

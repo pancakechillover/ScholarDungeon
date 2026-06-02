@@ -23,7 +23,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v7.4.2
+- **Current Version:** v7.4.7
 - **Last Update Date:** 2026-06-02
 
 ## Dark Themes Definition
@@ -49,6 +49,25 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v7.4.7 (2026-06-02):** Top Bar Layout & Sync Enhancements.
+  - *UI:* Talent Shards in the top bar now strictly display only at 1280px+ width regardless of the sidebar state.
+  - *Feature:* Disabled automatic Talent Shard conversion. Grouped Shards and Scrolls in the top bar with a click-to-open manual "Combine" tooltip interface.
+  - *UX:* On mobile devices, the Cloud Sync button takes the form of a small red dot attached to the bottom-right of the User Profile button in the top bar, appearing instantly when local changes haven't synchronized to the cloud.
+
+- **v7.4.6 (2026-06-02):** Guidebook UX Polishing.
+  - *UX/Audio:* Added a physical page-turning sound effect when directly jumping to specific Guidebook chapters from external interface prompts.
+
+- **v7.4.5 (2026-06-02):** Guidebook Mapping Refactor & Bug Fix.
+  - *Bug Fix:* Fixed the guidebook internal chapter mapping index that was applying manual offset hacks. 
+  - *Bug Fix:* Corrected the target index passed by the Streak Repair Modules 'Help' button to properly load the Sanctum Items Adv chapter where the Death Defying Medal is documented.
+
+- **v7.4.4 (2026-06-02):** Streak Record UX Improvements.
+  - *UX:* The 7-Day Activity Record modal now explicitly reminds the user if they haven't completed today's study session, or congratulates them if they have.
+  - *UX:* Added a Help button next to the "Streak Repair Modules" to quickly jump to the Guidebook's Streak & Recovery chapter.
+
+- **v7.4.3 (2026-06-02):** Streak UI Refinements.
+  - *UI:* Simplified the top bar streak reminder by removing the exclamation mark badge and directly turning the text and icon red if the daily session is incomplete.
 
 - **v7.4.2 (2026-06-02):** UI/UX Polishing & Economy Expectations.
   - *UI:* Aligned the top bar Streak reminder badge's design exactly with the one in the Profile UI (red background, white exclamation mark, smaller size).

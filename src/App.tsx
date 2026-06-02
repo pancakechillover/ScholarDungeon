@@ -243,6 +243,7 @@ function App() {
   const [showProfile, setShowProfile] = useState(false);
   const [showTopStreakModal, setShowTopStreakModal] = useState(false);
   const [showXpTooltip, setShowXpTooltip] = useState(false);
+  const [showTalentTooltip, setShowTalentTooltip] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
     return localStorage.getItem('sidebar_collapsed') === 'true';
   });
@@ -321,6 +322,7 @@ function App() {
     dungeonHistory,
     bulkCreateSessions,
     bulkDeleteSessions,
+    combineShards,
     repairStreak,
     selectReward,
     resetLootPool,
@@ -1145,7 +1147,7 @@ function App() {
                 onClick={() => checkCloudSync(true)}
                 disabled={isSyncing || isVerifying}
                 className={cn(
-                  "flex items-center justify-center transition-all group relative shrink-0",
+                  "hidden md:flex items-center justify-center transition-all group relative shrink-0",
                   hasUnsyncedChanges 
                     ? "text-amber-500 hover:text-amber-400" 
                     : (isSyncing || isVerifying)
@@ -1211,19 +1213,44 @@ function App() {
               </div>
             </div>
 
-            {/* Talent Shards */}
-            <div className={cn(
-              "items-center space-x-1.5",
-              isSidebarCollapsed ? "hidden md:flex" : "hidden xl:flex"
-            )} title="Talent Shards">
-              <Puzzle className="text-amber-400" size={14} />
-              <span className="font-bold text-white text-sm">{state.talentShards}<span className="text-slate-500 text-xs">/3</span></span>
-            </div>
+            {/* Talent Shards and Scrolls */}
+            <div 
+              className="relative flex items-center shrink-0 cursor-pointer hover:bg-white/5 active:scale-95 transition-all p-1 -m-1 rounded-lg space-x-3" 
+              onClick={() => setShowTalentTooltip(!showTalentTooltip)}
+              onMouseEnter={() => setShowTalentTooltip(true)}
+              onMouseLeave={() => setShowTalentTooltip(false)}
+            >
+              <div className="hidden xl:flex items-center space-x-1.5 shrink-0" title="Talent Shards">
+                <Puzzle className="text-amber-400" size={14} />
+                <span className="font-bold text-white text-sm">{state.talentShards}<span className="text-slate-500 text-xs">/3</span></span>
+              </div>
+              <div className="flex items-center space-x-1 sm:space-x-1.5 shrink-0" title="Talent Scrolls">
+                <Scroll className="text-emerald-400 shrink-0" size={14} />
+                <span className="font-bold text-white text-xs sm:text-sm">{state.talentPoints}</span>
+              </div>
 
-            {/* Talent Scrolls */}
-            <div className="flex items-center space-x-1 sm:space-x-1.5 shrink-0" title="Talent Scrolls">
-              <Scroll className="text-emerald-400 shrink-0" size={14} />
-              <span className="font-bold text-white text-xs sm:text-sm">{state.talentPoints}</span>
+              {/* Tooltip on Click */}
+              <div className={cn(
+                "absolute top-full right-0 sm:left-1/2 sm:-translate-x-1/2 mt-2 p-3 bg-slate-900/95 backdrop-blur-md border border-slate-700 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] transition-all duration-200 z-50 origin-top min-w-[200px]",
+                showTalentTooltip ? "opacity-100 scale-100 pointer-events-auto" : "opacity-0 scale-95 pointer-events-none"
+              )}>
+                <div className="flex flex-col gap-3">
+                  <span className="text-xs font-bold text-slate-300">3 Talent Shards can be combined into 1 Talent Scroll.</span>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (state.talentShards >= 3) {
+                         combineShards();
+                         playSound('toggle', state.soundVolume, state.soundEnabled);
+                      }
+                    }}
+                    disabled={state.talentShards < 3}
+                    className={cn("w-full py-2 rounded-lg text-xs font-bold transition-all", state.talentShards >= 3 ? "bg-indigo-600 text-white hover:bg-indigo-500 active:scale-95" : "bg-slate-800 text-slate-500 cursor-not-allowed")}
+                  >
+                    Combine Shards
+                  </button>
+                </div>
+              </div>
             </div>
 
             {/* Coins */}
@@ -1239,24 +1266,33 @@ function App() {
               title="View 7-Day Activity Record"
             >
               <div className="relative flex items-center justify-center">
-                <Flame className="text-orange-500 shrink-0" size={14} />
-                {state.lastStudyDate !== `${getNow().getFullYear()}-${String(getNow().getMonth() + 1).padStart(2, '0')}-${String(getNow().getDate()).padStart(2, '0')}` && (
-                  <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-rose-500 rounded-full flex items-center justify-center border-2 border-slate-900 shadow-sm z-10 overflow-hidden">
-                    <span className="text-[9px] font-black pointer-events-none text-white pb-[0.5px]">!</span>
-                  </div>
-                )}
+                <Flame className={cn("shrink-0", state.lastStudyDate === `${getNow().getFullYear()}-${String(getNow().getMonth() + 1).padStart(2, '0')}-${String(getNow().getDate()).padStart(2, '0')}` ? "text-orange-500" : "text-rose-500")} size={14} />
               </div>
-              <span className="font-bold text-white text-xs sm:text-sm">{state.streak} <span className="hidden lg:inline text-[10px] text-slate-500">{state.streak === 1 ? 'Day' : 'Days'}</span></span>
+              <span className={cn("font-bold text-xs sm:text-sm", state.lastStudyDate === `${getNow().getFullYear()}-${String(getNow().getMonth() + 1).padStart(2, '0')}-${String(getNow().getDate()).padStart(2, '0')}` ? "text-white" : "text-rose-500")}>
+                {state.streak} <span className={cn("hidden lg:inline text-[10px]", state.lastStudyDate === `${getNow().getFullYear()}-${String(getNow().getMonth() + 1).padStart(2, '0')}-${String(getNow().getDate()).padStart(2, '0')}` ? "text-slate-500" : "text-rose-500/70")}>{state.streak === 1 ? 'Day' : 'Days'}</span>
+              </span>
             </div>
             
             {/* Mobile-only Profile and Settings */}
             <div className="flex items-center space-x-2 md:hidden">
-              <button 
-                onClick={openProfile}
-                className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-800 flex items-center justify-center text-indigo-400 border border-slate-700 hover:bg-slate-700 transition-all"
-              >
-                <User size={16} />
-              </button>
+              <div className="relative">
+                <button 
+                  onClick={openProfile}
+                  className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-800 flex items-center justify-center text-indigo-400 border border-slate-700 hover:bg-slate-700 transition-all"
+                >
+                  <User size={16} />
+                </button>
+                {state.cloudSync.enabled && state.cloudSync.userId && hasUnsyncedChanges && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); checkCloudSync(true); }}
+                    className={cn(
+                      "absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full flex items-center justify-center border-2 border-slate-900 z-10 text-white bg-rose-500 hover:bg-rose-400"
+                    )}
+                  >
+                    <RefreshCw size={8} className={isSyncing || isVerifying ? "animate-spin" : ""} />
+                  </button>
+                )}
+              </div>
               <button 
                 onClick={() => setActiveTab('settings')}
                 className={cn(
@@ -1551,6 +1587,10 @@ function App() {
         isTalentLevel={isTalentLevel}
         getNextTalentLevel={getNextTalentLevel}
         repairStreak={repairStreak}
+        openGuideBook={(chapter) => {
+          setGuideInitialPage(chapter);
+          setShowGuideBook(true);
+        }}
       />
 
       <AnimatePresence>
@@ -1559,6 +1599,11 @@ function App() {
             state={state}
             onClose={() => setShowTopStreakModal(false)}
             repairStreak={repairStreak}
+            openGuideBook={(chapter) => {
+              setShowTopStreakModal(false);
+              setGuideInitialPage(chapter);
+              setShowGuideBook(true);
+            }}
           />
         )}
       </AnimatePresence>

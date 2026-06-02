@@ -42,7 +42,7 @@ export const ShopView: React.FC<ShopViewProps> = ({
           resetIchibanPool(id);
           setTimeout(() => setDrawResult(null), 50);
         }}
-        onShowCoinGuide={() => openGuideBook(3)}
+        onShowCoinGuide={() => openGuideBook(5)}
         onSetActivePool={onSetActivePool}
       />
     </motion.div>

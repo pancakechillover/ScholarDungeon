@@ -49,6 +49,7 @@ interface ProfileModalProps {
   isTalentLevel: (lvl: number) => boolean;
   getNextTalentLevel: (lvl: number, rewards?: any[]) => number;
   repairStreak: (dateStr: string) => void;
+  openGuideBook?: (chapter: number) => void;
 }
 
 export const ProfileModal: React.FC<ProfileModalProps> = ({
@@ -71,7 +72,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   triggerSyncCheck,
   isTalentLevel,
   getNextTalentLevel,
-  repairStreak
+  repairStreak,
+  openGuideBook
 }) => {
   const [isOnline, setIsOnline] = useState(typeof window !== 'undefined' ? window.navigator.onLine : true);
   const [showStreakModal, setShowStreakModal] = useState(false);
@@ -430,6 +432,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
           state={state}
           onClose={() => setShowStreakModal(false)}
           repairStreak={repairStreak}
+          openGuideBook={openGuideBook}
         />
       )}
       

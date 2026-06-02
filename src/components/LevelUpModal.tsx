@@ -49,7 +49,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest">Rewards</h3>
                 <button 
-                  onClick={() => { onClose(); openGuideBook(4); }}
+                  onClick={() => { onClose(); openGuideBook(6); }}
                   className="text-[10px] font-bold text-slate-500 hover:text-indigo-400 flex items-center gap-1 uppercase tracking-widest transition-colors"
                 >
                   <HelpCircle size={12} />

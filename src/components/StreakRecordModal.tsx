@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { X, Flame, Search } from 'lucide-react';
+import { X, Flame, Search, HelpCircle } from 'lucide-react';
 import { AppState } from '../types';
 import { format, subDays, parseISO } from 'date-fns';
 import { cn } from '../lib/utils';
@@ -10,9 +10,10 @@ interface StreakRecordModalProps {
   state: AppState;
   onClose: () => void;
   repairStreak: (dateStr: string) => void;
+  openGuideBook?: (chapter: number) => void;
 }
 
-export const StreakRecordModal: React.FC<StreakRecordModalProps> = ({ state, onClose, repairStreak }) => {
+export const StreakRecordModal: React.FC<StreakRecordModalProps> = ({ state, onClose, repairStreak, openGuideBook }) => {
   const [confirmRepairDate, setConfirmRepairDate] = React.useState<string | null>(null);
 
   const streakData = (() => {
@@ -46,6 +47,8 @@ export const StreakRecordModal: React.FC<StreakRecordModalProps> = ({ state, onC
   const usedMedals = (state.patchedDays || []).length;
   const availableMedals = Math.max(0, medalCount - usedMedals);
 
+  const hasStudiedToday = streakData.find(d => d.isToday)?.isCompleted;
+
   return (
     <>
       <div key="streak-modal" className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
@@ -56,7 +59,7 @@ export const StreakRecordModal: React.FC<StreakRecordModalProps> = ({ state, onC
           className="bg-slate-900 w-full max-w-sm rounded-[2rem] border border-slate-800 overflow-hidden shadow-2xl relative"
         >
           <div className="p-6">
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex justify-between items-center mb-4">
               <div>
                 <h3 className="text-xl font-black text-white italic uppercase tracking-tight flex items-center gap-2">
                   <Flame className="text-orange-500" size={24} />
@@ -70,6 +73,14 @@ export const StreakRecordModal: React.FC<StreakRecordModalProps> = ({ state, onC
               >
                 <X size={18} />
               </button>
+            </div>
+
+            <div className={cn("text-xs font-bold mb-4 px-3 py-2 rounded-xl flex items-center justify-center border",
+              hasStudiedToday 
+                ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" 
+                : "bg-rose-500/10 text-rose-400 border-rose-500/20"
+            )}>
+              {hasStudiedToday ? "You have studied today! Keep up the momentum." : "You haven't studied today yet. Keep the streak going!"}
             </div>
 
             <div className="bg-slate-950 p-4 rounded-3xl border border-slate-800 flex justify-between mb-6">
@@ -110,14 +121,24 @@ export const StreakRecordModal: React.FC<StreakRecordModalProps> = ({ state, onC
               ))}
             </div>
 
-            <div className="flex items-center gap-3 p-4 bg-indigo-500/10 rounded-2xl border border-indigo-500/20">
-              <div className="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center shrink-0">
-                <Search className="text-indigo-400" size={20} />
+            <div className="flex items-center justify-between p-4 bg-indigo-500/10 rounded-2xl border border-indigo-500/20">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center shrink-0">
+                  <Search className="text-indigo-400" size={20} />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-white mb-0.5 whitespace-nowrap overflow-hidden text-ellipsis">Streak Repair Modules</h4>
+                  <p className="text-xs text-indigo-300 font-medium whitespace-nowrap overflow-hidden text-ellipsis"><span className="text-white font-bold">{availableMedals}</span> Death Defying Gold Medal{availableMedals !== 1 ? 's' : ''} stored</p>
+                </div>
               </div>
-              <div>
-                <h4 className="text-sm font-bold text-white mb-0.5 whitespace-nowrap overflow-hidden text-ellipsis">Streak Repair Modules</h4>
-                <p className="text-xs text-indigo-300 font-medium whitespace-nowrap overflow-hidden text-ellipsis"><span className="text-white font-bold">{availableMedals}</span> Death Defying Gold Medal{availableMedals !== 1 ? 's' : ''} stored</p>
-              </div>
+              {openGuideBook && (
+                <button 
+                  onClick={() => openGuideBook(4)}
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-800 hover:bg-indigo-600 text-slate-400 hover:text-white transition-all shrink-0 ml-2"
+                >
+                  <HelpCircle size={16} />
+                </button>
+              )}
             </div>
             {(state.patchedDays || []).length > 0 && (
               <p className="text-[10px] text-slate-500 text-center mt-3 font-medium uppercase tracking-widest">

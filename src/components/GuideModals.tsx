@@ -39,14 +39,9 @@ export const GuideBookModal: React.FC<GuideBookModalProps> = ({
   if (isOpen !== prevIsOpen) {
     setPrevIsOpen(isOpen);
     if (isOpen) {
-      let targetChapter = initialPage;
-      if (initialPage > 0) {
-        // External: 1=Coins, 2=XP, 3=Talents
-        // Internal: 1=TOC, 2=Coins, 3=XP, 4=Talents
-        targetChapter = initialPage + 1;
-      }
-      setPageIndex(targetChapter * 2 + (isMobile ? 1 : 0));
+      setPageIndex(initialPage * 2 + (isMobile ? 1 : 0));
       setIsFlipping(false);
+      playSound('pageTurn', soundVolume, soundEnabled);
     }
   }
 

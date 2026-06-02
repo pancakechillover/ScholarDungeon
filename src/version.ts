@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v7.4.2';
+export const APP_VERSION = 'v7.4.7';
 export const LAST_UPDATE_DATE = '2026-06-02';
-export const LAST_UPDATE_TIME = '11:15:00';
+export const LAST_UPDATE_TIME = '13:00:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,55 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v7.4.7',
+    date: '2026-06-02',
+    time: '13:00:00',
+    title: 'Top Bar Sync & Resource Upgrades',
+    items: [
+      { category: 'UI', description: 'Talent Shards strictly render at 1280px screen widths, independent of the sidebar state.' },
+      { category: 'Feature', description: 'Retired auto-conversion of Shards into Scrolls. They are now combined side-by-side physically in a dedicated click-to-open manual interaction popover.' },
+      { category: 'UX', description: 'Cloud Sync button on mobile devices transitioned cleanly to a minimal red dot attached globally to the User Profile.' }
+    ]
+  },
+  {
+    version: 'v7.4.6',
+    date: '2026-06-02',
+    time: '12:50:00',
+    title: 'Guidebook Audio Update',
+    items: [
+      { category: 'UX', description: 'Added a physical page-turning sound effect when directly jumping to specific Guidebook chapters from external shortcuts.' }
+    ]
+  },
+  {
+    version: 'v7.4.5',
+    date: '2026-06-02',
+    time: '12:47:00',
+    title: 'Guidebook Indexing Bug Fix',
+    items: [
+      { category: 'Bug Fix', description: 'Rebuilt Guidebook sub-chapter mapping to fix a legacy offset issue that caused buttons to load the wrong chapter.' },
+      { category: 'Bug Fix', description: 'Repaired the Streak Record modal Help button so it now accurately targets the Death Defying Medal guidebook page.' }
+    ]
+  },
+  {
+    version: 'v7.4.4',
+    date: '2026-06-02',
+    time: '11:28:00',
+    title: 'Streak Record UX Improvements',
+    items: [
+      { category: 'UX', description: 'The 7-Day Activity Record modal now includes an explicit reminder banner detailing if you have studied today.' },
+      { category: 'UX', description: 'Added a Help icon to the Streak Repair Modules section to directly open the Guidebook.' }
+    ]
+  },
+  {
+    version: 'v7.4.3',
+    date: '2026-06-02',
+    time: '11:20:00',
+    title: 'Streak UI Refinement',
+    items: [
+      { category: 'UI', description: 'Simplified the top bar streak reminder by removing the exclamation mark badge and directly turning the text and icon red if the daily session is incomplete.' }
+    ]
+  },
   {
     version: 'v7.4.2',
     date: '2026-06-02',
