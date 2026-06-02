@@ -26,6 +26,7 @@ import { AppState } from '../types';
 import { cn, getXPForLevel, getDefaultRewardForLevel } from '../lib/utils';
 import { format, subDays, parseISO } from 'date-fns';
 import { ConfirmModal } from './ConfirmModal';
+import { StreakRecordModal } from './StreakRecordModal';
 
 interface ProfileModalProps {
   isOpen: boolean;
@@ -425,101 +426,13 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
       </div>
 
       {showStreakModal && (
-        <div key="streak-modal" className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0, y: 20 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.9, opacity: 0, y: 20 }}
-            className="bg-slate-900 w-full max-w-sm rounded-[2rem] border border-slate-800 overflow-hidden shadow-2xl relative"
-          >
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <div>
-                  <h3 className="text-xl font-black text-white italic uppercase tracking-tight flex items-center gap-2">
-                    <Flame className="text-orange-500" size={24} />
-                    Streak <span className="text-orange-500">{state.streak}</span>
-                  </h3>
-                  <p className="text-xs text-slate-400 font-medium mt-1">7-Day Activity Record</p>
-                </div>
-                <button 
-                  onClick={() => setShowStreakModal(false)}
-                  className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-xl transition-all"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              <div className="bg-slate-950 p-4 rounded-3xl border border-slate-800 flex justify-between mb-6">
-                {streakData.map((day) => (
-                  <div key={day.dateStr} className="flex flex-col items-center gap-1">
-                    <span className="text-[9px] font-medium text-slate-500 mb-0.5 tracking-wider">
-                      {day.shortDate}
-                    </span>
-                    <span className={cn("text-[10px] font-bold uppercase", day.isToday ? "text-white" : "text-slate-400")}>
-                      {day.displayLabel}
-                    </span>
-                    <div className="relative group mt-1">
-                      {day.isCompleted ? (
-                        <div className={cn("w-8 h-8 rounded-full flex items-center justify-center shadow-lg", day.isPatched ? "bg-indigo-500/20 text-indigo-400 border border-indigo-500/30" : "bg-orange-500 text-white")}>
-                          <CheckCircle2 size={16} />
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => {
-                            if (day.canPatch && state.deathDefyingMedals > 0) {
-                              setPatchCandidate(day.dateStr);
-                            }
-                          }}
-                          disabled={!day.canPatch || state.deathDefyingMedals <= 0}
-                          className={cn(
-                            "w-8 h-8 rounded-full flex items-center justify-center border transition-all duration-200",
-                            day.canPatch && state.deathDefyingMedals > 0
-                              ? "bg-slate-800 text-slate-400 border-slate-700 hover:border-indigo-500/50 hover:bg-indigo-500/10 hover:text-indigo-400 cursor-pointer active:scale-95"
-                              : "bg-slate-800/50 text-slate-600 border-slate-800/50 cursor-default"
-                          )}
-                        >
-                          <X size={14} />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="p-4 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center text-indigo-400 shrink-0">
-                    <Trophy size={20} />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-black text-indigo-400 uppercase tracking-widest">Death Defying Medals</h4>
-                    <p className="text-[10px] text-indigo-400/70 font-medium">Use to patch a missed day.</p>
-                  </div>
-                </div>
-                <div className="text-xl font-black text-white px-3">
-                  x{state.deathDefyingMedals}
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        </div>
+        <StreakRecordModal
+          state={state}
+          onClose={() => setShowStreakModal(false)}
+          repairStreak={repairStreak}
+        />
       )}
       
-      <ConfirmModal
-        key="patch-confirm"
-        isOpen={!!patchCandidate}
-        onClose={() => setPatchCandidate(null)}
-        onConfirm={() => {
-          if (patchCandidate) {
-            repairStreak(patchCandidate);
-            setPatchCandidate(null);
-          }
-        }}
-        title="Use Death Defying Medal?"
-        message={`Are you sure you want to use 1 Death Defying Medal to patch your streak for ${patchCandidate ? format(parseISO(patchCandidate), 'MMM d, yyyy') : ''}?`}
-        confirmText="Patch Streak"
-        type="info"
-      />
     </AnimatePresence>,
     document.body
   );

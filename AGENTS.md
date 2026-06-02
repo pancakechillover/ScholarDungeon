@@ -23,8 +23,8 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v7.4.0
-- **Last Update Date:** 2026-06-01
+- **Current Version:** v7.4.2
+- **Last Update Date:** 2026-06-02
 
 ## Dark Themes Definition
 The following themes are considered "Dark Themes" and form the baseline for vibrant visual effects and high-contrast glowing elements:
@@ -49,6 +49,16 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v7.4.2 (2026-06-02):** UI/UX Polishing & Economy Expectations.
+  - *UI:* Aligned the top bar Streak reminder badge's design exactly with the one in the Profile UI (red background, white exclamation mark, smaller size).
+  - *UX:* Replaced the top bar Experience Bar hover tooltip with a direct click-to-toggle popover.
+  - *UX:* Clicking the Streak badge on the top bar now directly opens the 7-Day Activity Record modal.
+  - *UI:* Explicitly outlined the names and calculation roles of Talents A1 (Mind Lubrication) and B1 (Alchemy) within the Session Economy Expectation modal to increase transparency.
+
+- **v7.4.1 (2026-06-02):** Streak Indicator Enhancements.
+  - *UI:* Added a small red exclamation mark notification badge to the bottom right of the Streak icon in the top bar to alert the user if they haven't completed a session yet today.
+  - *Math:* Refined the Economy Expectation calculations using a more accurate without-replacement probability model (`1 - (1 - rate)^draws`) specifically factoring in multiple draws per chest.
 
 - **v7.4.0 (2026-06-01):** Reward Economy Stats Integration.
   - *Feature:* Added a standalone 'Info' modal in the Reward Pool Management settings to provide full transparency on economy scaling.

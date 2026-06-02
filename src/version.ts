@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v7.4.0';
-export const LAST_UPDATE_DATE = '2026-06-01';
-export const LAST_UPDATE_TIME = '16:35:00';
+export const APP_VERSION = 'v7.4.2';
+export const LAST_UPDATE_DATE = '2026-06-02';
+export const LAST_UPDATE_TIME = '11:15:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,28 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v7.4.2',
+    date: '2026-06-02',
+    time: '11:15:00',
+    title: 'UI Polishing & Detailed Expectations',
+    items: [
+      { category: 'UI', description: 'Matched the top bar unread session (!)-badge to identical styling as the main system profile indicator.' },
+      { category: 'UX', description: 'Experience bar tooltips on the top bar now require a direct click to toggle.' },
+      { category: 'UX', description: 'Clicking the streak icon on the top bar now directly summons the 1-Week Activity Record modal.' },
+      { category: 'Math', description: 'Updated reward expectation displays to explicitly note the multipliers applied by Talent A1 (Mind Lubrication) and Talent B1 (Alchemy).' }
+    ]
+  },
+  {
+    version: 'v7.4.1',
+    date: '2026-06-02',
+    time: '10:55:00',
+    title: 'Streak & Probability Model Enhancements',
+    items: [
+      { category: 'UI', description: 'Added a small red exclamation mark to the top bar Streak icon to remind you to complete today\'s session.' },
+      { category: 'Math', description: 'Refined Economy Expectation modal to use multi-draw occurrence probabilities combining Base stats, Pool drop tables, and Talent limits.' }
+    ]
+  },
   {
     version: 'v7.4.0',
     date: '2026-06-01',

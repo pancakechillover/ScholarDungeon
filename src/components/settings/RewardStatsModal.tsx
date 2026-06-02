@@ -106,7 +106,7 @@ export const RewardStatsModal = ({ pool, appState, onClose }: { pool: RewardCard
             </div>
 
             <div className="bg-slate-950/50 rounded-xl p-3 text-xs font-mono text-slate-400 space-y-1">
-              <div className="flex justify-between"><span>Base (incl. Setup {b1Active?'+b1':''} {c3Active?'+c3':''}):</span> <span className="text-white">{expectedBaseCoins.toFixed(2)}</span></div>
+              <div className="flex justify-between"><span>Base Calculation {b1Active?'(+2 Alchemy)':''} {c3Active?'(Crit Mode)':''}:</span> <span className="text-white">{expectedBaseCoins.toFixed(2)}</span></div>
               <div className="flex justify-between"><span>Pool Direct Drops:</span> <span className="text-white">+{directCoinsAvg.toFixed(2)}</span></div>
               <div className="flex justify-between border-b border-slate-800 pb-1 mb-1"><span>Pool Item Multipliers:</span> <span className="text-white">+{bonusCoinsAvg.toFixed(2)}</span></div>
               <div className="flex justify-between text-amber-400 font-bold pt-1"><span>Total Expected = </span> <span>{totalExpectedCoins.toFixed(2)}</span></div>
@@ -137,7 +137,7 @@ export const RewardStatsModal = ({ pool, appState, onClose }: { pool: RewardCard
             </div>
 
             <div className="bg-slate-950/50 rounded-xl p-3 text-xs font-mono text-slate-400 space-y-1">
-              <div className="flex justify-between"><span>Base Engine {a1Active?'+a1':''}:</span> <span className="text-white">{expectedBaseXP.toFixed(2)}</span></div>
+              <div className="flex justify-between"><span>Base Engine {a1Active?'+10% (Mind Lubrication)':''}:</span> <span className="text-white">{expectedBaseXP.toFixed(2)}</span></div>
               <div className="flex justify-between"><span>Pool Direct Drops:</span> <span className="text-white">+{directXPAvg.toFixed(2)}</span></div>
               <div className="flex justify-between"><span>Pool Item Multipliers:</span> <span className="text-white">+{bonusXPAvg.toFixed(2)}</span></div>
             </div>

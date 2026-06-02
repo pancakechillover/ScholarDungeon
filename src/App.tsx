@@ -35,6 +35,7 @@ import { ShopView } from './components/ShopView';
 import { StatsView } from './components/StatsView';
 import { SettingsView } from './components/SettingsView';
 import { ProfileModal } from './components/ProfileModal';
+import { StreakRecordModal } from './components/StreakRecordModal';
 import { GuideBookModal } from './components/GuideModals';
 import { LevelUpModal } from './components/LevelUpModal';
 import { RewardCompletionModal } from './components/RewardCompletionModal';
@@ -240,6 +241,8 @@ function App() {
   const [isDungeonEditMode, setIsDungeonEditMode] = useState(false);
   const [isAddingQuest, setIsAddingQuest] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [showTopStreakModal, setShowTopStreakModal] = useState(false);
+  const [showXpTooltip, setShowXpTooltip] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
     return localStorage.getItem('sidebar_collapsed') === 'true';
   });
@@ -1164,7 +1167,11 @@ function App() {
             )}
 
             {/* XP Bar */}
-            <div className="flex flex-col sm:flex-row items-center sm:items-center gap-0.5 sm:gap-2 group relative" title="Experience">
+            <div 
+              className="flex flex-col sm:flex-row items-center sm:items-center gap-0.5 sm:gap-2 relative cursor-pointer" 
+              onClick={() => setShowXpTooltip(!showXpTooltip)}
+              title="Experience"
+            >
               <span className={cn(
                 "text-[11px] sm:text-xs font-black italic pr-1 leading-none shrink-0 shadow-none sm:shadow-lg bg-transparent sm:bg-indigo-600 px-0 sm:px-2 py-0 sm:py-0.5 rounded-none sm:rounded-lg text-white sm:text-white-pure opacity-100",
               )}>
@@ -1185,8 +1192,11 @@ function App() {
                 </div>
               </div>
 
-              {/* Tooltip on Hover */}
-              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-3 py-2 bg-slate-900/95 backdrop-blur-md border border-slate-700 rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 z-50 whitespace-nowrap scale-95 group-hover:scale-100 origin-top">
+              {/* Tooltip on Click */}
+              <div className={cn(
+                "absolute top-full left-1/2 -translate-x-1/2 mt-2 px-3 py-2 bg-slate-900/95 backdrop-blur-md border border-slate-700 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] transition-all duration-200 z-50 whitespace-nowrap origin-top",
+                showXpTooltip ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"
+              )}>
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center justify-between gap-6">
                     <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Next Level</span>
@@ -1223,8 +1233,19 @@ function App() {
             </div>
 
             {/* Streak */}
-            <div className="hidden sm:flex items-center space-x-1 sm:space-x-1.5 shrink-0">
-              <Flame className="text-orange-500 shrink-0" size={14} />
+            <div 
+              className="hidden sm:flex items-center space-x-1 sm:space-x-1.5 shrink-0 cursor-pointer hover:bg-white/5 active:scale-95 transition-all p-1 -m-1 rounded-lg"
+              onClick={() => setShowTopStreakModal(true)}
+              title="View 7-Day Activity Record"
+            >
+              <div className="relative flex items-center justify-center">
+                <Flame className="text-orange-500 shrink-0" size={14} />
+                {state.lastStudyDate !== `${getNow().getFullYear()}-${String(getNow().getMonth() + 1).padStart(2, '0')}-${String(getNow().getDate()).padStart(2, '0')}` && (
+                  <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-rose-500 rounded-full flex items-center justify-center border-2 border-slate-900 shadow-sm z-10 overflow-hidden">
+                    <span className="text-[9px] font-black pointer-events-none text-white pb-[0.5px]">!</span>
+                  </div>
+                )}
+              </div>
               <span className="font-bold text-white text-xs sm:text-sm">{state.streak} <span className="hidden lg:inline text-[10px] text-slate-500">{state.streak === 1 ? 'Day' : 'Days'}</span></span>
             </div>
             
@@ -1531,6 +1552,16 @@ function App() {
         getNextTalentLevel={getNextTalentLevel}
         repairStreak={repairStreak}
       />
+
+      <AnimatePresence>
+        {showTopStreakModal && (
+          <StreakRecordModal
+            state={state}
+            onClose={() => setShowTopStreakModal(false)}
+            repairStreak={repairStreak}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Reward Completion Popup */}
       <RewardCompletionModal 
