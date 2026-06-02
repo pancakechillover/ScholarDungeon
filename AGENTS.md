@@ -23,7 +23,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v7.4.7
+- **Current Version:** v7.4.8
 - **Last Update Date:** 2026-06-02
 
 ## Dark Themes Definition
@@ -49,6 +49,12 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v7.4.8 (2026-06-02):** Top Bar Polish & Logic Fixes.
+  - *Fix:* Separated the Talent Scrolls tooltip from its parent container's active pseudo-class to fix click jittering.
+  - *UI:* Added exact Shards count ("X/3") explicitly inside the Talent interaction tooltip.
+  - *UI:* Realigned spacing symmetrically so the gap between Talent Scrolls and Coins explicitly matches the gap between Coins and Streak.
+  - *UI:* Restricted the top bar gold coin display to a maximum of 6 digits (`999,999+`).
 
 - **v7.4.7 (2026-06-02):** Top Bar Layout & Sync Enhancements.
   - *UI:* Talent Shards in the top bar now strictly display only at 1280px+ width regardless of the sidebar state.

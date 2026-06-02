@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v7.4.7';
+export const APP_VERSION = 'v7.4.8';
 export const LAST_UPDATE_DATE = '2026-06-02';
-export const LAST_UPDATE_TIME = '13:00:00';
+export const LAST_UPDATE_TIME = '13:25:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,18 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v7.4.8',
+    date: '2026-06-02',
+    time: '13:25:00',
+    title: 'Top Bar Polish & Talent Logic',
+    items: [
+      { category: 'Fix', description: 'Fixed Talent Scrolls tooltip opening animation jitter by isolating hover/active bounds out of the absolute wrapper.' },
+      { category: 'UI', description: 'Added proper "X/3" Shards indicator within the Talent Forge tooltip.' },
+      { category: 'UI', description: 'Capped displayed Top Bar Gold Coin amount strictly to 6 digits (using a 999,999+ maximum).' },
+      { category: 'UI', description: 'Realigned flex-box gaps between Talent, Coins, and Streak to be perfectly symmetrical.' }
+    ]
+  },
   {
     version: 'v7.4.7',
     date: '2026-06-02',

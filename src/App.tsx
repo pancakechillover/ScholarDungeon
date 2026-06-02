@@ -1214,28 +1214,37 @@ function App() {
             </div>
 
             {/* Talent Shards and Scrolls */}
-            <div 
-              className="relative flex items-center shrink-0 cursor-pointer hover:bg-white/5 active:scale-95 transition-all p-1 -m-1 rounded-lg space-x-3" 
-              onClick={() => setShowTalentTooltip(!showTalentTooltip)}
-              onMouseEnter={() => setShowTalentTooltip(true)}
-              onMouseLeave={() => setShowTalentTooltip(false)}
-            >
-              <div className="hidden xl:flex items-center space-x-1.5 shrink-0" title="Talent Shards">
-                <Puzzle className="text-amber-400" size={14} />
-                <span className="font-bold text-white text-sm">{state.talentShards}<span className="text-slate-500 text-xs">/3</span></span>
-              </div>
-              <div className="flex items-center space-x-1 sm:space-x-1.5 shrink-0" title="Talent Scrolls">
-                <Scroll className="text-emerald-400 shrink-0" size={14} />
-                <span className="font-bold text-white text-xs sm:text-sm">{state.talentPoints}</span>
+            <div className="relative flex items-center shrink-0">
+              <div 
+                className="flex items-center cursor-pointer hover:bg-white/5 active:scale-95 transition-all p-1 -m-1 rounded-lg space-x-2 sm:space-x-3" 
+                onClick={() => setShowTalentTooltip(!showTalentTooltip)}
+              >
+                <div className="hidden xl:flex items-center space-x-1.5 shrink-0" title="Talent Shards">
+                  <Puzzle className="text-amber-400" size={14} />
+                  <span className="font-bold text-white text-sm">{state.talentShards}<span className="text-slate-500 text-xs">/3</span></span>
+                </div>
+                <div className="flex items-center space-x-1 sm:space-x-1.5 shrink-0" title="Talent Scrolls">
+                  <Scroll className="text-emerald-400 shrink-0" size={14} />
+                  <span className="font-bold text-white text-xs sm:text-sm">{state.talentPoints}</span>
+                </div>
               </div>
 
               {/* Tooltip on Click */}
               <div className={cn(
-                "absolute top-full right-0 sm:left-1/2 sm:-translate-x-1/2 mt-2 p-3 bg-slate-900/95 backdrop-blur-md border border-slate-700 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] transition-all duration-200 z-50 origin-top min-w-[200px]",
+                "absolute top-[calc(100%+0.5rem)] right-0 sm:left-1/2 sm:-translate-x-1/2 p-3 bg-slate-900/95 backdrop-blur-md border border-slate-700 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] transition-all duration-200 z-50 origin-top min-w-[200px]",
                 showTalentTooltip ? "opacity-100 scale-100 pointer-events-auto" : "opacity-0 scale-95 pointer-events-none"
               )}>
-                <div className="flex flex-col gap-3">
-                  <span className="text-xs font-bold text-slate-300">3 Talent Shards can be combined into 1 Talent Scroll.</span>
+                <div className="flex flex-col gap-3 text-left">
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-300">Talent Shards</span>
+                      <div className="flex items-center gap-1.5">
+                        <Puzzle className="text-amber-400" size={12} />
+                        <span className="text-sm font-bold text-white">{state.talentShards}<span className="text-xs text-slate-500">/3</span></span>
+                      </div>
+                    </div>
+                    <span className="text-[10px] text-slate-500 leading-relaxed max-w-[200px] whitespace-normal">Combine 3 Talent Shards to forge 1 unified Talent Scroll.</span>
+                  </div>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -1256,7 +1265,7 @@ function App() {
             {/* Coins */}
             <div className="flex items-center space-x-1 sm:space-x-1.5 shrink-0">
               <Coins className="text-amber-500 shrink-0" size={14} />
-              <span className="font-bold text-white text-xs sm:text-sm">{state.coins.toLocaleString()}</span>
+              <span className="font-bold text-white text-xs sm:text-sm">{state.coins > 999999 ? '999,999+' : state.coins.toLocaleString()}</span>
             </div>
 
             {/* Streak */}
