@@ -205,6 +205,7 @@ export interface AppState {
   inventory: string[]; // IDs of functional cards active for next session
   userName?: string;
   userBio?: string;
+  userAvatar?: string;
   // Quests & Achievements
   quests: Quest[];
   questNotificationStyle: 'red_dot' | 'popup';

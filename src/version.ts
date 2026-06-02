@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v7.3.2';
+export const APP_VERSION = 'v7.4.0';
 export const LAST_UPDATE_DATE = '2026-06-01';
-export const LAST_UPDATE_TIME = '16:21:00';
+export const LAST_UPDATE_TIME = '16:35:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,26 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v7.4.0',
+    date: '2026-06-01',
+    time: '16:35:00',
+    title: 'Reward Economy Stats Integration',
+    items: [
+      { category: 'Feature', description: 'Added a mathematical expectation modal in Reward Pool Management to show expected Gold/XP values.' },
+      { category: 'Math', description: 'Automatically maps setup configurations, pool items, and talent buffs to compute expected average session gains.' }
+    ]
+  },
+  {
+    version: 'v7.3.3',
+    date: '2026-06-01',
+    time: '16:25:00',
+    title: 'Profile Avatar & Edit UI Polish',
+    items: [
+      { category: 'Feature', description: 'Added support for selecting a custom profile avatar from a curated list of Lucide icons.' },
+      { category: 'UI', description: 'Exchanged profile edit settings icon to a Pencil-Line for better visual semantics.' }
+    ]
+  },
   {
     version: 'v7.3.2',
     date: '2026-06-01',

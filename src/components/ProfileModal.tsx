@@ -13,7 +13,13 @@ import {
   Cloud,
   CheckCircle2,
   WifiOff,
-  Flame
+  Flame,
+  PencilLine,
+  Cat,
+  Dog,
+  Ghost,
+  Bot,
+  Skull
 } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { AppState } from '../types';
@@ -31,6 +37,8 @@ interface ProfileModalProps {
   setEditName: (val: string) => void;
   editBio: string;
   setEditBio: (val: string) => void;
+  editAvatar: string;
+  setEditAvatar: (val: string) => void;
   handleSaveProfile: () => void;
   setShowCloudSync: (val: boolean) => void;
   setActiveTab: (tab: any) => void;
@@ -52,6 +60,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   setEditName,
   editBio,
   setEditBio,
+  editAvatar,
+  setEditAvatar,
   handleSaveProfile,
   setShowCloudSync,
   setActiveTab,
@@ -65,6 +75,16 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   const [isOnline, setIsOnline] = useState(typeof window !== 'undefined' ? window.navigator.onLine : true);
   const [showStreakModal, setShowStreakModal] = useState(false);
   const [patchCandidate, setPatchCandidate] = useState<string | null>(null);
+
+  const AvatarIcon = {
+    User, Cat, Dog, Ghost, Bot, Skull
+  }[state.userAvatar || 'User'] || User;
+
+  const ActiveEditAvatarIcon = {
+    User, Cat, Dog, Ghost, Bot, Skull
+  }[editAvatar || 'User'] || User;
+
+  const availableAvatars = ['User', 'Cat', 'Dog', 'Ghost', 'Bot', 'Skull'];
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -129,7 +149,11 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 w-full">
               <div className="relative group shrink-0">
                 <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-3xl bg-slate-900 border-2 border-slate-800 flex items-center justify-center text-indigo-400 shadow-2xl relative overflow-hidden">
-                  <User className="w-10 h-10 sm:w-14 sm:h-14" />
+                  {isEditingProfile ? (
+                    <ActiveEditAvatarIcon className="w-10 h-10 sm:w-14 sm:h-14" />
+                  ) : (
+                    <AvatarIcon className="w-10 h-10 sm:w-14 sm:h-14" />
+                  )}
                   <div className="absolute inset-0 bg-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
                 <div className="absolute -bottom-2 -right-2 sm:-bottom-3 sm:-right-3 w-8 h-8 sm:w-12 sm:h-12 bg-slate-950 rounded-xl sm:rounded-2xl border-2 sm:border-4 border-slate-950 flex items-center justify-center shadow-lg">
@@ -155,6 +179,27 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                       className="bg-transparent border-b border-slate-700 text-sm sm:text-base text-slate-400 font-medium focus:outline-none w-full mt-1"
                       placeholder="Your Signature"
                     />
+                    
+                    <div className="flex flex-wrap gap-2 py-2">
+                      {availableAvatars.map(av => {
+                        const IconComponent = { User, Cat, Dog, Ghost, Bot, Skull }[av as keyof typeof availableAvatars] || User;
+                        return (
+                          <button
+                            key={av}
+                            onClick={() => setEditAvatar(av)}
+                            className={cn(
+                              "p-2 rounded-xl border transition-all",
+                              editAvatar === av 
+                                ? "bg-indigo-500/20 border-indigo-500 text-indigo-400" 
+                                : "bg-slate-900 border-slate-800 text-slate-500 hover:text-slate-300 hover:bg-slate-800"
+                            )}
+                          >
+                            <IconComponent size={20} />
+                          </button>
+                        );
+                      })}
+                    </div>
+
                     <div className="flex gap-2 pt-1 w-full max-w-xs">
                       <button onClick={handleSaveProfile} className="flex-1 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black uppercase tracking-widest rounded-lg transition-all">Save</button>
                       <button onClick={() => setIsEditingProfile(false)} className="flex-1 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-400 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all">Cancel</button>
@@ -170,7 +215,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                         onClick={() => setIsEditingProfile(true)}
                         className="p-1.5 sm:p-2 bg-slate-900 hover:bg-slate-800 rounded-lg sm:rounded-xl text-slate-500 hover:text-indigo-400 transition-all border border-slate-800 shrink-0"
                       >
-                        <SettingsIcon size={16} />
+                        <PencilLine size={16} />
                       </button>
                     </div>
                     <p className="text-xs sm:text-sm text-slate-400 font-medium line-clamp-2">{state.userBio || 'Master of the Study Dungeon'}</p>

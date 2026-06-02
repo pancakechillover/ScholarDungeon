@@ -251,6 +251,7 @@ function App() {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [editName, setEditName] = useState('');
   const [editBio, setEditBio] = useState('');
+  const [editAvatar, setEditAvatar] = useState('User');
   const [drawResult, setDrawResult] = useState<{item: string, rarity: string, poolType: 'gacha' | 'ichiban', color?: string}[] | null>(null);
   const [showCoinRain, setShowCoinRain] = useState(false);
   const [showBuildDetails, setShowBuildDetails] = useState(false);
@@ -569,7 +570,8 @@ function App() {
     setState(prev => ({
       ...prev,
       userName: editName,
-      userBio: editBio
+      userBio: editBio,
+      userAvatar: editAvatar
     }));
     setIsEditingProfile(false);
   };
@@ -579,6 +581,7 @@ function App() {
   const openProfile = () => {
     setEditName(state.userName || 'Scholar');
     setEditBio(state.userBio || 'Master of the Study Dungeon');
+    setEditAvatar(state.userAvatar || 'User');
     setShowProfile(true);
     setIsEditingProfile(false);
   };
@@ -1516,6 +1519,8 @@ function App() {
         setEditName={setEditName}
         editBio={editBio}
         setEditBio={setEditBio}
+        editAvatar={editAvatar}
+        setEditAvatar={setEditAvatar}
         handleSaveProfile={handleSaveProfile}
         setShowCloudSync={setShowCloudSync}
         setActiveTab={setActiveTab}

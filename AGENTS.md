@@ -23,7 +23,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v7.3.2
+- **Current Version:** v7.4.0
 - **Last Update Date:** 2026-06-01
 
 ## Dark Themes Definition
@@ -49,6 +49,14 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v7.4.0 (2026-06-01):** Reward Economy Stats Integration.
+  - *Feature:* Added a standalone 'Info' modal in the Reward Pool Management settings to provide full transparency on economy scaling.
+  - *Math:* The modal computes expected values for Base Session gains combined with expected values of Pool probability drops, accounting for direct Gold/XP items, multiplier scrolls (x2 / +XX%), and Talent effects (e.g., Alchemy flat additions, Critical Intuition multipliers).
+
+- **v7.3.3 (2026-06-01):** Profile Avatar & Edit UI Polish.
+  - *Feature:* Added support for selecting a custom profile avatar from a curated list of Lucide icons.
+  - *UI:* Exchanged profile edit settings icon to a 'Pencil-Line' for better visual semantics.
 
 - **v7.3.2 (2026-06-01):** Profile Modal UI Polish.
   - *UI:* Renamed the Talent attribute card to Scroll and updated the visual icon to match the broader system.

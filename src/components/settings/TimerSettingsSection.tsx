@@ -362,7 +362,7 @@ export const TimerSettingsSection = ({
 
       {/* Rewards Management Section */}
       <div className="space-y-6 pt-10 border-t border-slate-800">
-        <RewardSettings pool={rewardPool} onUpdate={onUpdateRewards} onReset={onResetRewards} />
+        <RewardSettings pool={rewardPool} appState={state} onUpdate={onUpdateRewards} onReset={onResetRewards} />
       </div>
     </div>
   );

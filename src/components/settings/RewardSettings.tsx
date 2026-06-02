@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { RewardCard, ShopItem, GachaPool, Rarity } from '../../types';
 import { INITIAL_GACHA } from '../../constants';
-import { Plus, Trash2, Save, Edit2, X, ChevronRight, Coins, Zap, Sparkles, Trophy, Timer as TimerIcon, Package, Flame, AlertTriangle, Scroll, Volume2, VolumeX, Sun, Moon, Settings as SettingsIcon, ShoppingBag, Trees, Waves, Database, Download, Upload, Target, Gift, User, Sword, Eye, Palette, Check, Bell, RefreshCw, Key, Layers, Sunrise, Cloud, CloudSun, Lollipop, Wrench, History, Ticket, Apple, Citrus, Cookie, IceCream, Cake, Beer, Wine, GlassWater, Flower, Flower2, Sprout, Leaf, Car, Bike, Plane, Rocket, Ship, Gamepad2, Headphones, Monitor, Smartphone, Tv, Library, Dumbbell, Award, Medal, Compass, Map, Camera, Music, Book, BookOpen } from 'lucide-react';
+import { Plus, Trash2, Save, Edit2, X, ChevronRight, Coins, Zap, Sparkles, Trophy, Timer as TimerIcon, Package, Flame, AlertTriangle, Scroll, Volume2, VolumeX, Sun, Moon, Settings as SettingsIcon, ShoppingBag, Trees, Waves, Database, Download, Upload, Target, Gift, User, Sword, Eye, Palette, Check, Bell, RefreshCw, Key, Layers, Sunrise, Cloud, CloudSun, Lollipop, Wrench, History, Ticket, Apple, Citrus, Cookie, IceCream, Cake, Beer, Wine, GlassWater, Flower, Flower2, Sprout, Leaf, Car, Bike, Plane, Rocket, Ship, Gamepad2, Headphones, Monitor, Smartphone, Tv, Library, Dumbbell, Award, Medal, Compass, Map, Camera, Music, Book, BookOpen, Info, Calculator } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { APP_VERSION, LAST_UPDATE_DATE, RELEASE_HISTORY } from '../../version';
 import { cn, getXPForLevel, getDefaultRewardForLevel } from '../../lib/utils';
@@ -28,8 +28,11 @@ function urlBase64ToUint8Array(base64String: string) {
 }
 
 
-export const RewardSettings = ({ pool, onUpdate, onReset }: { pool: RewardCard[], onUpdate: (p: RewardCard[]) => void, onReset?: () => void }) => {
+import { RewardStatsModal } from './RewardStatsModal';
+
+export const RewardSettings = ({ pool, onUpdate, onReset, appState }: { pool: RewardCard[], onUpdate: (p: RewardCard[]) => void, onReset?: () => void, appState?: any }) => {
   const [editing, setEditing] = useState<RewardCard | null>(null);
+  const [showExpectedStats, setShowExpectedStats] = useState(false);
   const [modalConfig, setModalConfig] = useState<{ 
     isOpen: boolean; 
     title: string; 
@@ -71,6 +74,15 @@ export const RewardSettings = ({ pool, onUpdate, onReset }: { pool: RewardCard[]
         <div className="flex items-center gap-2.5 text-indigo-400">
           <Package size={20} />
           <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Reward Pool Management</h4>
+          {appState && (
+            <button 
+              onClick={() => setShowExpectedStats(true)} 
+              className="p-1.5 text-slate-500 hover:text-indigo-400 bg-slate-800/50 hover:bg-slate-800 rounded-full transition-colors ml-1"
+              title="Economy Mathematics"
+            >
+              <Info size={14} />
+            </button>
+          )}
         </div>
         <div className="flex gap-2">
           {onReset && (
@@ -202,6 +214,20 @@ export const RewardSettings = ({ pool, onUpdate, onReset }: { pool: RewardCard[]
         type={modalConfig.type}
         isAlert={modalConfig.isAlert}
       />
+
+      {appState && createPortal(
+        <AnimatePresence>
+          {showExpectedStats && (
+             <RewardStatsModal 
+                key="expected-stats"
+                pool={pool} 
+                appState={appState} 
+                onClose={() => setShowExpectedStats(false)} 
+             />
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
       {createPortal(
         <AnimatePresence>
