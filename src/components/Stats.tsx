@@ -15,13 +15,16 @@ import { MOOD_OPTIONS, DEFAULT_ENABLED_MOODS } from '../constants';
 
 import { motion, AnimatePresence } from 'motion/react';
 import { PageHeader } from './PageHeader';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, Legend, LineChart, Line, CartesianGrid, LabelList } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, Legend, LineChart, Line, CartesianGrid, LabelList, PieChart, Pie } from 'recharts';
 import Markdown from 'react-markdown';
 import { ImmersiveReflectionModal } from './ImmersiveReflectionModal';
 import { DatePicker } from './DatePicker';
 import { DailySessionsModal } from './DailySessionsModal';
 import { RoutineTracker } from './RoutineTracker';
 import { ShareRecordModal } from './ShareRecordModal';
+import { ViewSettingsModal } from './ViewSettingsModal';
+import { DailyPieChart } from './DailyPieChart';
+import { WeeklyPieChart } from './WeeklyPieChart';
 
 export interface ShareConfig {
   showDaily: boolean;
@@ -193,6 +196,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
   const [showDailySessionsDate, setShowDailySessionsDate] = useState<Date | null>(null);
   const [showDailySessionsPeriod, setShowDailySessionsPeriod] = useState<string | undefined>();
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showViewSettings, setShowViewSettings] = useState(false);
   const [shareConfig, setShareConfig] = useState<ShareConfig>({
     showDaily: true,
     showWeekly: true,
@@ -202,6 +206,16 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
     aspectRatio: 'auto'
   });
   const statsContainerRef = useRef<HTMLDivElement>(null);
+  
+  const viewOpts = state.statsViewOpts || {
+    showDailyBar: true,
+    showDailyDonut: false,
+    showWeeklyBar: true,
+    showWeeklyDonut: false,
+    showRoutineTracker: true,
+    dailyDonutMode: 'compact' as const,
+    weeklyDonutMode: 'compact' as const,
+  };
   
   const getInitialPeakDate = () => {
     const ts = state.timeSettings || {
@@ -989,14 +1003,23 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
         description="Your journey through the dungeon"
         icon={BarChart2}
         action={
-          <button 
-            id="share-button"
-            onClick={() => setShowShareModal(true)}
-            className="p-2 sm:px-4 sm:py-2.5 bg-indigo-600/10 hover:bg-indigo-600 rounded-xl border border-indigo-500/20 text-indigo-400 hover:text-white transition-all flex items-center justify-center gap-2 group shrink-0"
-          >
-            <Share2 size={18} className="group-hover:scale-110 transition-transform" />
-            <span className="hidden sm:block text-xs font-bold uppercase tracking-widest">Share</span>
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowViewSettings(true)}
+              className="p-2 sm:px-4 sm:py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl border border-slate-700/50 text-slate-400 hover:text-white transition-all flex items-center justify-center gap-2 shrink-0"
+            >
+              <LayoutTemplate size={18} />
+              <span className="hidden sm:block text-xs font-bold uppercase tracking-widest">Layout</span>
+            </button>
+            <button 
+              id="share-button"
+              onClick={() => setShowShareModal(true)}
+              className="p-2 sm:px-4 sm:py-2.5 bg-indigo-600/10 hover:bg-indigo-600 rounded-xl border border-indigo-500/20 text-indigo-400 hover:text-white transition-all flex items-center justify-center gap-2 group shrink-0"
+            >
+              <Share2 size={18} className="group-hover:scale-110 transition-transform" />
+              <span className="hidden sm:block text-xs font-bold uppercase tracking-widest">Share</span>
+            </button>
+          </div>
         }
       />
 
@@ -1060,24 +1083,38 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
             </div>
           </div>
 
-          <div className="h-48 min-h-[192px]">
-            <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
-              <BarChart data={dailyData} onClick={(state) => handleChartClick(state, 'daily')} style={{ outline: 'none', touchAction: 'pan-y' }}>
-                <XAxis dataKey="name" axisLine={false} tickLine={false} interval={0} tick={{ fill: '#64748b', fontSize: 10 }} />
-                <Tooltip 
-                  key={chartKeys.daily}
-                  trigger="click"
-                  content={<CustomDailyTooltip dateTimestamp={dailyDate.getTime()} timeBasedMode={state.timeBasedMode} />}
-                  cursor={{ fill: 'rgba(100, 116, 139, 0.2)' }}
-                  wrapperStyle={{ zIndex: 100, pointerEvents: 'auto' }}
-                />
-                <Bar dataKey="sessions" radius={[4, 4, 0, 0]}>
-                  {dailyData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.fill} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+          <div className="space-y-8">
+            {(viewOpts.showDailyBar ?? true) && (
+              <div className="h-48 min-h-[192px]">
+                <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
+                  <BarChart data={dailyData} onClick={(state) => handleChartClick(state, 'daily')} style={{ outline: 'none', touchAction: 'pan-y' }}>
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} interval={0} tick={{ fill: '#64748b', fontSize: 10 }} />
+                    <Tooltip 
+                      key={chartKeys.daily}
+                      trigger="click"
+                      content={<CustomDailyTooltip dateTimestamp={dailyDate.getTime()} timeBasedMode={state.timeBasedMode} />}
+                      cursor={{ fill: 'rgba(100, 116, 139, 0.2)' }}
+                      wrapperStyle={{ zIndex: 100, pointerEvents: 'auto' }}
+                    />
+                    <Bar dataKey="sessions" radius={[4, 4, 0, 0]}>
+                      {dailyData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+            
+            {(viewOpts.showDailyDonut) && (
+              <DailyPieChart 
+                date={dailyDate} 
+                history={history} 
+                dungeons={dungeons} 
+                majorDungeons={majorDungeons} 
+                mode={viewOpts.dailyDonutMode || 'compact'} 
+              />
+            )}
           </div>
 
           {/* Daily Log Section */}
@@ -1340,66 +1377,83 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
           </div>
           
           <div className="space-y-8">
-            <div className="h-48 min-h-[192px]">
-              <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
-                <BarChart data={weeklyData} onClick={(state) => handleChartClick(state, 'weeklyBar')} style={{ outline: 'none', touchAction: 'pan-y', overflow: 'visible' }}>
-                  <XAxis dataKey="name" axisLine={false} tickLine={false} interval={0} tick={{ fill: '#64748b', fontSize: 10 }} />
-                  <Tooltip 
-                    key={chartKeys.weeklyBar}
-                    trigger="click"
-                    content={<CustomWeeklyTooltip timeBasedMode={state.timeBasedMode} />}
-                    cursor={{ fill: 'rgba(100, 116, 139, 0.2)' }}
-                    wrapperStyle={{ zIndex: 100, pointerEvents: 'auto' }}
-                  />
-                  <Bar dataKey="Morning" stackId="a" fill="#fde047" />
-                  <Bar dataKey="Afternoon" stackId="a" fill="#f97316" />
-                  <Bar dataKey="Night" stackId="a" fill="#6366f1" />
-                  {state.showOtherInActivityLog !== false && (
-                    <Bar dataKey="Other" stackId="a" fill="#64748b" radius={[4, 4, 0, 0]} />
-                  )}
-                  {/* Mood Icon Layer - Stacked with 0 height to stay at the top */}
-                  <Bar dataKey="moodHeight" stackId="a" fill="transparent" isAnimationActive={false}>
-                    <LabelList content={renderMoodIcon} />
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+            {(viewOpts.showWeeklyBar ?? true) && (
+              <>
+                <div className="h-48 min-h-[192px]">
+                  <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
+                    <BarChart data={weeklyData} onClick={(state) => handleChartClick(state, 'weeklyBar')} style={{ outline: 'none', touchAction: 'pan-y', overflow: 'visible' }}>
+                      <XAxis dataKey="name" axisLine={false} tickLine={false} interval={0} tick={{ fill: '#64748b', fontSize: 10 }} />
+                      <Tooltip 
+                        key={chartKeys.weeklyBar}
+                        trigger="click"
+                        content={<CustomWeeklyTooltip timeBasedMode={state.timeBasedMode} />}
+                        cursor={{ fill: 'rgba(100, 116, 139, 0.2)' }}
+                        wrapperStyle={{ zIndex: 100, pointerEvents: 'auto' }}
+                      />
+                      <Bar dataKey="Morning" stackId="a" fill="#fde047" />
+                      <Bar dataKey="Afternoon" stackId="a" fill="#f97316" />
+                      <Bar dataKey="Night" stackId="a" fill="#6366f1" />
+                      {state.showOtherInActivityLog !== false && (
+                        <Bar dataKey="Other" stackId="a" fill="#64748b" radius={[4, 4, 0, 0]} />
+                      )}
+                      {/* Mood Icon Layer - Stacked with 0 height to stay at the top */}
+                      <Bar dataKey="moodHeight" stackId="a" fill="transparent" isAnimationActive={false}>
+                        <LabelList content={renderMoodIcon} />
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
 
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <LineChartIcon className="text-indigo-400" size={16} />
-                <span className="text-xs font-black text-slate-500 uppercase tracking-widest">Efficiency Trend</span>
-              </div>
-              <div className="h-32 min-h-[128px]">
-                <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
-                  <LineChart data={weeklyData} margin={{ top: 10, right: 10, left: 10, bottom: 20 }} onClick={(state) => handleChartClick(state, 'weeklyLine')} style={{ outline: 'none', touchAction: 'pan-y' }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} interval={0} tick={{ fill: '#64748b', fontSize: 10 }} />
-                    <YAxis hide domain={[0, 5]} />
-                    <Tooltip 
-                      key={chartKeys.weeklyLine}
-                      trigger="click"
-                      content={<CustomWeeklyTooltip timeBasedMode={state.timeBasedMode} />}
-                      wrapperStyle={{ zIndex: 100, pointerEvents: 'auto' }}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey={(d) => d.efficiency || 0} 
-                      stroke="var(--color-indigo-500, #6366f1)" 
-                      strokeWidth={3} 
-                      dot={{ fill: 'var(--color-indigo-500, #6366f1)', strokeWidth: 2, r: 4 }}
-                      activeDot={{ r: 6, strokeWidth: 0, fill: 'var(--color-indigo-400, #818cf8)' }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <LineChartIcon className="text-indigo-400" size={16} />
+                    <span className="text-xs font-black text-slate-500 uppercase tracking-widest">Efficiency Trend</span>
+                  </div>
+                  <div className="h-32 min-h-[128px]">
+                    <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
+                      <LineChart data={weeklyData} margin={{ top: 10, right: 10, left: 10, bottom: 20 }} onClick={(state) => handleChartClick(state, 'weeklyLine')} style={{ outline: 'none', touchAction: 'pan-y' }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+                        <XAxis dataKey="name" axisLine={false} tickLine={false} interval={0} tick={{ fill: '#64748b', fontSize: 10 }} />
+                        <YAxis hide domain={[0, 5]} />
+                        <Tooltip 
+                          key={chartKeys.weeklyLine}
+                          trigger="click"
+                          content={<CustomWeeklyTooltip timeBasedMode={state.timeBasedMode} />}
+                          wrapperStyle={{ zIndex: 100, pointerEvents: 'auto' }}
+                        />
+                        <Line 
+                          type="monotone" 
+                          dataKey={(d) => d.efficiency || 0} 
+                          stroke="var(--color-indigo-500, #6366f1)" 
+                          strokeWidth={3} 
+                          dot={{ fill: 'var(--color-indigo-500, #6366f1)', strokeWidth: 2, r: 4 }}
+                          activeDot={{ r: 6, strokeWidth: 0, fill: 'var(--color-indigo-400, #818cf8)' }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {viewOpts.showWeeklyDonut && (
+              <WeeklyPieChart 
+                weekSessions={history.filter(s => {
+                  const d = parseISO(s.timestamp || '');
+                  return isWithinInterval(d, {
+                    start: weekStart,
+                    end: addDays(weekStart, 6)
+                  });
+                })} 
+                mode={viewOpts.weeklyDonutMode || 'compact'} 
+              />
+            )}
           </div>
         </div>
         )}
       </div>
 
-      {shareConfig.showRoutine && (
+      {(shareConfig.showRoutine && (viewOpts.showRoutineTracker ?? true)) && (
         <div id="routine-tracker-section" className="w-full">
           <RoutineTracker 
             history={state.history} 
@@ -1417,7 +1471,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
       )}
 
       {/* Study Heatmap */}
-      {shareConfig.showHeatmap && (
+      {(shareConfig.showHeatmap && (viewOpts.showHeatmap ?? true)) && (
         <div id="heatmap-section" className="bg-slate-900 p-6 rounded-3xl border border-slate-800 lg:col-span-2">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <div className="flex items-center gap-4">
@@ -1560,6 +1614,13 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
           indicators={dateIndicators}
         />
       )}
+
+      <ViewSettingsModal 
+        isOpen={showViewSettings}
+        onClose={() => setShowViewSettings(false)}
+        opts={viewOpts}
+        onUpdate={(updates) => onUpdateState?.({ statsViewOpts: { ...viewOpts, ...updates } })}
+      />
 
       {showDailySessionsDate && (
         <DailySessionsModal 

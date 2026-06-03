@@ -342,6 +342,17 @@ export interface AppState {
   sagePersonality?: 'sage' | 'friend' | 'master' | 'custom';
   sagePersonalityPrompts?: Record<string, string>;
   sageAllowGameModifiers?: boolean;
+  
+  // Record View Options
+  statsViewOpts?: {
+    showDailyBar?: boolean;
+    showDailyDonut?: boolean;
+    showWeeklyBar?: boolean;
+    showWeeklyDonut?: boolean;
+    showRoutineTracker?: boolean;
+    dailyDonutMode?: '24h' | 'compact';
+    weeklyDonutMode?: 'time_of_day' | 'day_of_week';
+  };
 }
 
 export interface StudySession {

@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v7.8.0';
+export const APP_VERSION = 'v7.9.0';
 export const LAST_UPDATE_DATE = '2026-06-03';
-export const LAST_UPDATE_TIME = '13:20:00';
+export const LAST_UPDATE_TIME = '14:02:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,17 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v7.9.0',
+    date: '2026-06-03',
+    time: '14:02:00',
+    title: 'Dashboard Modular Layouts',
+    items: [
+      { category: 'Feature', description: 'Upgraded the Record dashboard with a dynamic Layout configuration system, allowing for custom module composition.' },
+      { category: 'UI', description: 'Added Daily and Weekly Donut Chart layout alternatives with distinct visualization modes (Compact vs. Time Breakdown).' },
+      { category: 'UI', description: 'Record tabs now independently manage their visibility preferences out of the new modular configuration menu.' }
+    ]
+  },
   {
     version: 'v7.8.0',
     date: '2026-06-03',
