@@ -50,6 +50,17 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 ## Task History
 
+- **v7.5.4 (2026-06-02):** Record Dashboard Tooltips & Jump Navigation.
+  - *Feature:* Added "Return to Day" jump buttons inside Record dashboard tooltips (Heatmap, Weekly charts, Efficiency chart, and Routine Tracker), which dynamically synchronizes both Daily and Weekly views to the selected date.
+  - *Feature:* Integrated interactive statistics popovers for individual checks within the Routine Tracker, rendering complete daily histories on click.
+  - *UI:* Upgraded Daily statistics and Weekly chart tooltips to clearly display "No activity" when interacting with zero-value data columns or empty Heatmap boundaries.
+
+- **v7.5.3 (2026-06-02):** Record Dashboard Chart Alignment.
+  - *UI:* Aligned the base and maximum rendering height of the Weekly bar chart with the Daily bar chart by removing explicit internal margins, ensuring visual consistency across the dashboard grid.
+
+- **v7.5.2 (2026-06-02):** Mobile Top Bar Polish.
+  - *UI:* Fixed an issue on mobile where the top bar's Profile Sync indicator (red dot) would appear statically on synced states instead of hiding. Match exact visual sync behaviors from desktop across screens.
+
 - **v7.5.1 (2026-06-02):** XP Table Multi-Reward Architecture.
   - *Feature:* Upgraded leveling up rewards to support setting and receiving multiple custom different rewards per level.
   - *UI:* Created a beautiful, rich multi-reward custom list controller in the Level-Up settings modal with interactive additions and deletions.

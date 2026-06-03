@@ -16,9 +16,24 @@ export function UpdateChecker() {
         const data = await res.json();
         
         if (data.version && data.version !== APP_VERSION) {
-          if (mounted) {
-            setUpdateAvailable(data);
-            setIsOpen(true);
+          // Version comparison: only update if remote version is newer
+          const compareVersions = (v1: string, v2: string) => {
+            const p1 = v1.replace(/^v/, '').split('.').map(Number);
+            const p2 = v2.replace(/^v/, '').split('.').map(Number);
+            for (let i = 0; i < Math.max(p1.length, p2.length); i++) {
+              const num1 = p1[i] || 0;
+              const num2 = p2[i] || 0;
+              if (num1 > num2) return 1;
+              if (num1 < num2) return -1;
+            }
+            return 0;
+          };
+          
+          if (compareVersions(data.version, APP_VERSION) > 0) {
+            if (mounted) {
+              setUpdateAvailable(data);
+              setIsOpen(true);
+            }
           }
         }
       } catch (err) {

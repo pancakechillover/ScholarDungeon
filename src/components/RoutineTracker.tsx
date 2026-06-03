@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { StudySession, Dungeon, MajorDungeon } from '../types';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, startOfYear, eachMonthOfInterval, endOfYear, subDays } from 'date-fns';
 import { cn } from '../lib/utils';
@@ -11,11 +11,29 @@ interface RoutineTrackerProps {
   majorDungeons?: MajorDungeon[];
   timeSettings?: AppState['timeSettings'];
   timezone?: string;
+  renderPopover?: (date: Date) => React.ReactNode;
 }
 
-export const RoutineTracker: React.FC<RoutineTrackerProps> = ({ history, dungeons = [], majorDungeons = [], timeSettings, timezone }) => {
+export const RoutineTracker: React.FC<RoutineTrackerProps> = ({ history, dungeons = [], majorDungeons = [], timeSettings, timezone, renderPopover }) => {
   const [activeTab, setActiveTab] = useState<'daily' | 'weekly' | 'monthly'>('daily');
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedCell, setSelectedCell] = useState<{date: number, routineId: string} | null>(null);
+
+  useEffect(() => {
+    const handleOutside = (e: MouseEvent | TouchEvent) => {
+      const target = e.target as Element;
+      if (!target.closest('.routine-cell-container')) {
+        setSelectedCell(null);
+      }
+    };
+    document.addEventListener('click', handleOutside, { capture: true });
+    document.addEventListener('touchstart', handleOutside, { passive: true, capture: true });
+    return () => {
+      document.removeEventListener('click', handleOutside, { capture: true });
+      document.removeEventListener('touchstart', handleOutside, { capture: true });
+    };
+  }, []);
+
 
   const routines = useMemo(() => {
     const majors = (majorDungeons || []).filter(m => m.isRoutine && m.routineType === activeTab).map(m => ({
@@ -200,13 +218,18 @@ export const RoutineTracker: React.FC<RoutineTrackerProps> = ({ history, dungeon
                     const isChecked = checkIns[routine.id]?.has(colKey);
                     
                     return (
-                      <td key={col.toISOString()} className="p-1 text-center">
-                        <div className={cn(
-                          "mx-auto w-5 h-5 rounded-md flex items-center justify-center transition-all",
-                          isChecked ? "bg-indigo-500/20 text-indigo-400" : "bg-slate-800/30 text-transparent"
-                        )}>
+                      <td key={col.toISOString()} className="p-1 text-center relative routine-cell-container">
+                        <button
+                          type="button"
+                          onClick={() => activeTab !== 'monthly' ? setSelectedCell(selectedCell?.date === col.getTime() && selectedCell?.routineId === routine.id ? null : { date: col.getTime(), routineId: routine.id }) : undefined}
+                          className={cn(
+                            "mx-auto w-5 h-5 rounded-md flex items-center justify-center transition-all cursor-pointer",
+                            isChecked ? "bg-indigo-500/20 text-indigo-400" : "bg-slate-800/30 text-transparent hover:bg-slate-800/60"
+                          )}
+                        >
                           {isChecked && <Check size={12} strokeWidth={3} />}
-                        </div>
+                        </button>
+                        {selectedCell?.date === col.getTime() && selectedCell?.routineId === routine.id && renderPopover?.(col)}
                       </td>
                     );
                   })}

@@ -1,4 +1,4 @@
-export const APP_VERSION = 'v7.5.1';
+export const APP_VERSION = 'v7.5.4';
 export const LAST_UPDATE_DATE = '2026-06-02';
 export const LAST_UPDATE_TIME = '15:00:00';
 
@@ -11,6 +11,27 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v7.5.4',
+    date: '2026-06-02',
+    time: '23:30:00',
+    title: 'Record Dashboard Data Interactions',
+    items: [
+      { category: 'Feature', description: 'Added "Return to Day" jump buttons inside tooltips across the Record dashboard to jump specifically to that date.' },
+      { category: 'Feature', description: 'Interactive statistics popovers added for individual history checks within the Routine Tracker.' },
+      { category: 'UI', description: 'Daily statistics and Weekly charts now clearly display "No activity" placeholders on zero-value segments.' }
+    ]
+  },
+  {
+    version: 'v7.5.3',
+    date: '2026-06-02',
+    time: '23:00:00',
+    title: 'Record Dashboard UI & Sync Polish',
+    items: [
+      { category: 'UI', description: 'Aligned the base and maximum rendering height of the Weekly bar chart with the Daily bar chart for visual consistency across the grid.' },
+      { category: 'UI', description: 'Fixed an issue on mobile where the top bar Profile Sync red dot indicator would persist on fully synced states.' },
+    ]
+  },
   {
     version: 'v7.5.1',
     date: '2026-06-02',

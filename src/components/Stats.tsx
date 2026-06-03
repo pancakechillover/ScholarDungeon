@@ -94,6 +94,18 @@ const SharedPopoverContent = ({
               <LayoutTemplate size={12} />
               <span>Show Daily Sessions</span>
             </button>
+            <button 
+              type="button"
+              style={{ pointerEvents: 'auto' }}
+              onClick={(e) => { 
+                e.stopPropagation(); 
+                window.dispatchEvent(new CustomEvent('statsNavJump', { detail: dateTimestamp }));
+              }}
+              className="w-full text-indigo-400 hover:text-indigo-300 font-medium text-center transition-colors hover:bg-slate-800/30 rounded px-2 py-1 flex items-center justify-center gap-1.5"
+            >
+              <RotateCcw size={12} />
+              <span>Return to Day</span>
+            </button>
           </div>
         )}
       </div>
@@ -130,11 +142,15 @@ const CustomDailyTooltip = ({ active, payload, label, dateTimestamp, timeBasedMo
     const data = payload[0].payload;
     return (
       <div className="bg-slate-900/95 backdrop-blur-md border border-slate-700/50 shadow-xl shadow-indigo-500/10 rounded-xl p-3 z-50 min-w-[120px]">
-        <p className="text-slate-50 font-bold mb-1.5 pb-1.5 border-b border-slate-800/50">{label}</p>
-        <div className="flex justify-between gap-4 text-xs mb-3">
-          <span className="text-slate-400">{timeBasedMode ? 'Time (min)' : 'Sessions'}</span>
-          <span className="text-indigo-400 font-bold">{data.sessions}</span>
-        </div>
+        <p className="text-slate-50 font-bold mb-1.5 pb-1.5 border-b border-slate-800/50 text-[13px] sm:text-sm">{label}</p>
+        {data.sessions > 0 ? (
+          <div className="flex justify-between gap-4 text-xs mb-3">
+            <span className="text-slate-400">{timeBasedMode ? 'Time (min)' : 'Sessions'}</span>
+            <span className="text-indigo-400 font-bold">{data.sessions}</span>
+          </div>
+        ) : (
+          <p className="text-slate-500 italic text-xs mb-3">No activity</p>
+        )}
         {dateTimestamp && (
           <div className="flex flex-col gap-1.5 pt-1.5 border-t border-slate-800/50">
             <button 
@@ -284,6 +300,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
         setIsEditingLog(false);
       }
       setDailyDate(new Date(e.detail));
+      setWeeklyDate(new Date(e.detail));
       setSelectedHeatmapDate(null);
       setChartKeys({
         daily: Date.now() + Math.random(),
@@ -1279,7 +1296,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
           <div className="space-y-8">
             <div className="h-48 min-h-[192px]">
               <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
-                <BarChart data={weeklyData} margin={{ top: 35, right: 10, left: 10, bottom: 20 }} onClick={(state) => handleChartClick(state, 'weeklyBar')} style={{ outline: 'none', touchAction: 'pan-y' }}>
+                <BarChart data={weeklyData} onClick={(state) => handleChartClick(state, 'weeklyBar')} style={{ outline: 'none', touchAction: 'pan-y', overflow: 'visible' }}>
                   <XAxis dataKey="name" axisLine={false} tickLine={false} interval={0} tick={{ fill: '#64748b', fontSize: 10 }} />
                   <Tooltip 
                     key={chartKeys.weeklyBar}
@@ -1340,6 +1357,11 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
           majorDungeons={majorDungeons} 
           timeSettings={state.timeSettings}
           timezone={state.timezone}
+          renderPopover={(date) => (
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 pointer-events-auto z-[100]">
+              {renderHeatmapPopover(date)?.props.children}
+            </div>
+          )}
         />
 
         {/* Study Heatmap */}
