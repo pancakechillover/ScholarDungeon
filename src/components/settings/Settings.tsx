@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { RewardCard, ShopItem, GachaPool, Rarity } from '../../types';
 import { INITIAL_GACHA } from '../../constants';
-import { Plus, Trash2, Save, Edit2, X, ChevronRight, Coins, Zap, Sparkles, Trophy, Timer as TimerIcon, Package, Flame, AlertTriangle, Scroll, Volume2, VolumeX, Sun, Moon, Settings as SettingsIcon, ShoppingBag, Trees, Waves, Database, Download, Upload, Target, Gift, User, Sword, Eye, Palette, Check, Bell, BellOff, RefreshCw, Key, Layers, Sunrise, Cloud, CloudSun, Lollipop, Wrench, History, Ticket, ArrowLeft } from 'lucide-react';
+import { Plus, Trash2, Save, Edit2, X, ChevronRight, Coins, Zap, Sparkles, Trophy, Timer as TimerIcon, Package, Flame, AlertTriangle, Scroll, Volume2, VolumeX, Sun, Moon, Settings as SettingsIcon, ShoppingBag, Trees, Waves, Database, Download, Upload, Target, Gift, User, Sword, Eye, Palette, Check, Bell, BellOff, RefreshCw, Key, Layers, Sunrise, Cloud, CloudSun, Lollipop, Wrench, History, Ticket, ArrowLeft, Search } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { APP_VERSION, LAST_UPDATE_DATE, RELEASE_HISTORY } from '../../version';
 import { cn, getXPForLevel, getDefaultRewardForLevel } from '../../lib/utils';
@@ -133,7 +133,7 @@ const SETTINGS_COMPARTMENTS = [
   {
     id: 'general' as const,
     title: 'General Settings',
-    desc: 'Configure notification sounds, theme modes, routine refresh cycles, and system data resets.',
+    desc: 'System core configuration, themes, and routines.',
     icon: SettingsIcon,
     borderColor: 'hover:border-indigo-500',
     iconColor: 'text-indigo-400',
@@ -142,7 +142,7 @@ const SETTINGS_COMPARTMENTS = [
   {
     id: 'timer' as const,
     title: 'Timer Settings',
-    desc: 'Adjust focus and rest intervals, manage dungeon sessions bulk generation, and edit chest loot pool.',
+    desc: 'Focus loops, intervals, and chest loot pool.',
     icon: TimerIcon,
     borderColor: 'hover:border-amber-500',
     iconColor: 'text-amber-400',
@@ -151,7 +151,7 @@ const SETTINGS_COMPARTMENTS = [
   {
     id: 'level' as const,
     title: 'Level & Milestones',
-    desc: 'Customize milestone level-up bonuses, Gold Coin values, XP requirements, and bonus talent scrolls.',
+    desc: 'Milestone bonuses, Gold, XP, and talent rewards.',
     icon: Trophy,
     borderColor: 'hover:border-purple-500',
     iconColor: 'text-purple-400',
@@ -160,7 +160,7 @@ const SETTINGS_COMPARTMENTS = [
   {
     id: 'merchant' as const,
     title: 'Merchant & Gacha',
-    desc: 'Edit merchant shop listing shelves, summon pool draw rates, and card flip gacha animations.',
+    desc: 'Shop listing shelves and summon pool rates.',
     icon: ShoppingBag,
     borderColor: 'hover:border-emerald-500',
     iconColor: 'text-emerald-400',
@@ -169,7 +169,7 @@ const SETTINGS_COMPARTMENTS = [
   {
     id: 'calculator' as const,
     title: 'Balance Calculator',
-    desc: 'Run mathematical simulations over your custom loot drops to compute session economy expectations.',
+    desc: 'Mathematical simulations for economy drop expectations.',
     icon: Target,
     borderColor: 'hover:border-pink-500',
     iconColor: 'text-pink-400',
@@ -178,7 +178,7 @@ const SETTINGS_COMPARTMENTS = [
   {
     id: 'sage' as const,
     title: 'Sage AI Assistant',
-    desc: 'Select Sage personality modes, configure AI behavior styles, and edit interactive prompt engines.',
+    desc: 'AI personality modes and interactive prompt engine.',
     icon: Sparkles,
     borderColor: 'hover:border-rose-500',
     iconColor: 'text-rose-400',
@@ -187,7 +187,7 @@ const SETTINGS_COMPARTMENTS = [
   {
     id: 'cloud' as const,
     title: 'Cloud Archives',
-    desc: 'Sync game progression to Astral Archives, import JSON backup files, and check cloud connection status.',
+    desc: 'Sync game progression and manage JSON backups.',
     icon: Cloud,
     borderColor: 'hover:border-blue-500',
     iconColor: 'text-blue-400',
@@ -196,7 +196,7 @@ const SETTINGS_COMPARTMENTS = [
   {
     id: 'dev' as const,
     title: 'Developer Panel',
-    desc: 'Access developer console commands, instantly edit active stats, test notifications, and trigger level ups.',
+    desc: 'Developer console commands and stats overrides.',
     icon: Wrench,
     borderColor: 'hover:border-red-500',
     iconColor: 'text-red-400',
@@ -205,7 +205,7 @@ const SETTINGS_COMPARTMENTS = [
   {
     id: 'about' as const,
     title: 'About Scholar\'s Dungeon',
-    desc: 'Check current version metadata release history log, email social links, and external documentation.',
+    desc: 'Version release notes and external documentation.',
     icon: Scroll,
     borderColor: 'hover:border-slate-500',
     iconColor: 'text-slate-400',
@@ -261,6 +261,35 @@ export const Settings = React.memo<SettingsProps & { onOpenAstralArchives?: () =
     return localStorage.getItem('settings_last_view') || 'menu';
   });
 
+  const [searchQuery, setSearchQuery] = useState('');
+  const [recentSearches, setRecentSearches] = useState<string[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('settings_recent_searches') || '[]');
+    } catch {
+      return [];
+    }
+  });
+
+  const handleSearchSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!searchQuery.trim()) return;
+    const term = searchQuery.trim().toLowerCase();
+    const newSearches = [term, ...recentSearches.filter(t => t !== term)].slice(0, 5);
+    setRecentSearches(newSearches);
+    localStorage.setItem('settings_recent_searches', JSON.stringify(newSearches));
+  };
+
+  const removeRecentSearch = (e: React.MouseEvent, term: string) => {
+    e.stopPropagation();
+    const newSearches = recentSearches.filter(t => t !== term);
+    setRecentSearches(newSearches);
+    localStorage.setItem('settings_recent_searches', JSON.stringify(newSearches));
+  };
+
+  const handleRecentSearchClick = (term: string) => {
+    setSearchQuery(term);
+  };
+  
   const [lastPropSection, setLastPropSection] = useState(activeSection);
 
   if (activeSection !== lastPropSection) {
@@ -278,6 +307,12 @@ export const Settings = React.memo<SettingsProps & { onOpenAstralArchives?: () =
 
   const currentCompartment = SETTINGS_COMPARTMENTS.find(c => c.id === activeTab);
   const CurrentIcon = currentCompartment?.icon;
+
+  const filteredCompartments = SETTINGS_COMPARTMENTS.filter(c => {
+    if (!searchQuery.trim()) return true;
+    const term = searchQuery.toLowerCase();
+    return c.title.toLowerCase().includes(term) || c.desc.toLowerCase().includes(term);
+  });
 
   const handleExportData = () => {
     const data = {
@@ -309,13 +344,58 @@ export const Settings = React.memo<SettingsProps & { onOpenAstralArchives?: () =
                 <SettingsIcon className="text-indigo-500 w-6 h-6 sm:w-8 sm:h-8" />
                 <span>Settings Panel</span>
               </h2>
-              <p className="text-slate-400 text-xs sm:text-sm mt-1 font-medium">Select a settings compartment below to customize your dungeons, mechanics, and economy integrations.</p>
+              <p className="text-slate-400 text-xs sm:text-sm mt-1 font-medium">Select a settings compartment to customize your experience.</p>
             </div>
 
+            <form onSubmit={handleSearchSubmit} className="relative max-w-4xl">
+              <input
+                type="text"
+                placeholder="Search settings..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onBlur={() => handleSearchSubmit()}
+                className="w-full bg-slate-900/50 border border-slate-800 rounded-2xl py-3 pl-11 pr-4 text-sm text-slate-300 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+              />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+              {searchQuery && (
+                <button type="button" onClick={() => { setSearchQuery(''); handleSearchSubmit(); }} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors">
+                  <X size={16} />
+                </button>
+              )}
+            </form>
+
+            {recentSearches.length > 0 && !searchQuery.trim() && (
+              <div className="flex flex-wrap items-center gap-2 max-w-4xl">
+                <span className="text-[10px] font-bold text-slate-500 uppercase flex items-center gap-1.5 shrink-0 px-1 pt-0.5">
+                  Recent Searches:
+                </span>
+                {recentSearches.map((term, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleRecentSearchClick(term)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-400 hover:text-indigo-300 hover:border-indigo-500/30 transition-all group shrink-0"
+                  >
+                    <span>{term}</span>
+                    <div
+                      onClick={(e) => removeRecentSearch(e, term)}
+                      className="p-0.5 rounded text-slate-600 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                    >
+                      <X size={12} />
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+
             <div className="grid grid-cols-1 gap-4 max-w-4xl">
-              {SETTINGS_COMPARTMENTS.map(compartment => (
-                <button 
-                  key={compartment.id}
+              {filteredCompartments.length === 0 ? (
+                <div className="py-12 text-center bg-slate-900/20 rounded-3xl border border-slate-800/50 border-dashed">
+                  <p className="text-slate-500 font-medium">No configuration compartments matched your search.</p>
+                </div>
+              ) : (
+                filteredCompartments.map(compartment => (
+                  <button 
+                    key={compartment.id}
                   onClick={() => setTabAndSave(compartment.id)} 
                   className={cn(
                     "flex items-center gap-4 p-5 bg-slate-900/40 hover:bg-slate-900/80 rounded-3xl border border-slate-800/80 transition-all text-left group w-full",
@@ -333,7 +413,8 @@ export const Settings = React.memo<SettingsProps & { onOpenAstralArchives?: () =
                     <ChevronRight className={compartment.iconColor} size={16} />
                   </div>
                 </button>
-              ))}
+                ))
+              )}
             </div>
           </div>
         ) : (

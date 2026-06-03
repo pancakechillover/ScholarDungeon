@@ -1,25 +1,21 @@
 {
-  "version": "v7.5.4",
-  "date": "2026-06-02",
+  "version": "v7.5.6",
+  "date": "2026-06-03",
   "latestRelease": {
-    "version": "v7.5.4",
-    "date": "2026-06-02",
-    "time": "23:30:00",
-    "title": "Record Dashboard Data Interactions",
+    "version": "v7.5.6",
+    "date": "2026-06-03",
+    "time": "01:35:00",
+    "title": "Record Dashboard Image Export",
     "items": [
       {
         "category": "Feature",
-        "description": "Added \"Return to Day\" jump buttons inside tooltips across the Record dashboard to jump specifically to that date."
+        "description": "Added a Share button to the Record dashboard to export beautiful custom statistics images directly to your device."
       },
       {
         "category": "Feature",
-        "description": "Interactive statistics popovers added for individual history checks within the Routine Tracker."
-      },
-      {
-        "category": "UI",
-        "description": "Daily statistics and Weekly charts now clearly display \"No activity\" placeholders on zero-value segments."
+        "description": "Supports setting the exported image aspect ratio (16:9, 4:3, 1:1) and customizing the visibility of specific statistical charts."
       }
     ]
   },
-  "timestamp": 1780449285977
+  "timestamp": 1780450523355
 }

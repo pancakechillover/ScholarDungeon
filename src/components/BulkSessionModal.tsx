@@ -4,6 +4,8 @@ import { X, Plus, Trash2, Calendar, Clock, Target, AlertCircle, Sparkles, CheckC
 import { createPortal } from 'react-dom';
 import { cn } from '../lib/utils';
 import { StudySession, Dungeon } from '../types';
+import { DatePicker } from './DatePicker';
+import { TimePicker } from './TimePicker';
 
 interface BulkSessionModalProps {
   isOpen: boolean;
@@ -138,54 +140,38 @@ export const BulkSessionModal: React.FC<BulkSessionModalProps> = ({
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Start Date</label>
-                  <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={14} />
-                    <input 
-                      type="date" 
-                      value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
-                      className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2.5 pl-9 pr-3 text-sm text-white focus:outline-none focus:border-indigo-500/50 transition-colors"
-                    />
-                  </div>
+                  <DatePicker 
+                    value={startDate}
+                    onChange={(val) => setStartDate(val)}
+                    className="w-full bg-slate-800 border-slate-700 py-2.5 text-sm font-medium hover:border-indigo-500/50"
+                  />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">End Date</label>
-                  <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={14} />
-                    <input 
-                      type="date" 
-                      value={endDate}
-                      onChange={(e) => setEndDate(e.target.value)}
-                      className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2.5 pl-9 pr-3 text-sm text-white focus:outline-none focus:border-indigo-500/50 transition-colors"
-                    />
-                  </div>
+                  <DatePicker 
+                    value={endDate}
+                    onChange={(val) => setEndDate(val)}
+                    className="w-full bg-slate-800 border-slate-700 py-2.5 text-sm font-medium hover:border-indigo-500/50"
+                  />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Daily Start</label>
-                  <div className="relative">
-                    <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={14} />
-                    <input 
-                      type="time" 
-                      value={startTime}
-                      onChange={(e) => setStartTime(e.target.value)}
-                      className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2.5 pl-9 pr-3 text-sm text-white focus:outline-none focus:border-indigo-500/50 transition-colors"
-                    />
-                  </div>
+                  <TimePicker 
+                    value={startTime}
+                    onChange={(val) => setStartTime(val)}
+                    className="w-full bg-slate-800 border-slate-700 py-2.5 text-sm font-medium hover:border-indigo-500/50"
+                  />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Daily End</label>
-                  <div className="relative">
-                    <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={14} />
-                    <input 
-                      type="time" 
-                      value={endTime}
-                      onChange={(e) => setEndTime(e.target.value)}
-                      className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2.5 pl-9 pr-3 text-sm text-white focus:outline-none focus:border-indigo-500/50 transition-colors"
-                    />
-                  </div>
+                  <TimePicker 
+                    value={endTime}
+                    onChange={(val) => setEndTime(val)}
+                    className="w-full bg-slate-800 border-slate-700 py-2.5 text-sm font-medium hover:border-indigo-500/50"
+                  />
                 </div>
               </div>
             </div>

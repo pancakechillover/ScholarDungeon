@@ -586,6 +586,28 @@ html {
   color: #ffffff !important;
 }
 
+/* Fix DatePicker highlight text contrast for Light vs Dark themes */
+.date-highlight {
+  background-color: var(--color-indigo-200, #c7d2fe) !important;
+  color: var(--color-indigo-900, #312e81) !important;
+}
+.date-highlight:hover {
+  background-color: var(--color-indigo-300, #a5b4fc) !important;
+}
+
+[data-theme="daylight"] .date-highlight,
+[data-theme="warm"] .date-highlight,
+[data-theme="candy"] .date-highlight {
+  background-color: var(--color-indigo-600, #4f46e5) !important;
+  color: #ffffff !important;
+}
+[data-theme="daylight"] .date-highlight:hover,
+[data-theme="warm"] .date-highlight:hover,
+[data-theme="candy"] .date-highlight:hover {
+  background-color: var(--color-indigo-500, #6366f1) !important;
+}
+
+
 /* Custom Scrollbar - Hidden by default to prevent jitter */
   .hide-scrollbar {
     -ms-overflow-style: none !important;

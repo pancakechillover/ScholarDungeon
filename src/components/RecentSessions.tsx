@@ -5,6 +5,7 @@ import { StudySession, Dungeon, MajorDungeon, RewardCard, TimeSettings } from '.
 import { cn } from '../lib/utils';
 import { format, parseISO, isAfter, isBefore, startOfDay, endOfDay } from 'date-fns';
 import { SpinnerInput } from './SpinnerInput';
+import { DatePicker } from './DatePicker';
 import { BulkSessionModal } from './BulkSessionModal';
 import { ConfirmModal } from './ConfirmModal';
 
@@ -361,20 +362,18 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Start Date</label>
-                  <input 
-                    type="date" 
+                  <DatePicker 
                     value={dateRange.start}
-                    onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
-                    className="w-full bg-slate-800 border-none rounded-xl py-2 px-4 text-xs text-white outline-none focus:ring-2 focus:ring-indigo-500"
+                    onChange={(val) => setDateRange(prev => ({ ...prev, start: val }))}
+                    className="w-full bg-slate-800 border-none text-xs"
                   />
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">End Date</label>
-                  <input 
-                    type="date" 
+                  <DatePicker 
                     value={dateRange.end}
-                    onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
-                    className="w-full bg-slate-800 border-none rounded-xl py-2 px-4 text-xs text-white outline-none focus:ring-2 focus:ring-indigo-500"
+                    onChange={(val) => setDateRange(prev => ({ ...prev, end: val }))}
+                    className="w-full bg-slate-800 border-none text-xs"
                   />
                 </div>
                 <div className="space-y-2">

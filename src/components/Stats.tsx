@@ -9,7 +9,7 @@ import {
 import { StudySession, AppState, RewardHistoryItem, Dungeon, MajorDungeon } from '../types';
 import { cn } from '../lib/utils';
 import { 
-  BarChart2, Zap, Coins, ChevronLeft, ChevronRight, ChevronDown, Calendar, Star, StarHalf, Edit2, Save, X, Eye, EyeOff, LineChart as LineChartIcon, Trophy, Sword, Heart, Maximize2, Minimize2, LayoutTemplate, File, FileText, RotateCcw
+  BarChart2, Zap, Coins, ChevronLeft, ChevronRight, ChevronDown, Calendar, Star, StarHalf, Edit2, Save, X, Eye, EyeOff, LineChart as LineChartIcon, Trophy, Sword, Heart, Maximize2, Minimize2, LayoutTemplate, File, FileText, RotateCcw, Share2
 } from 'lucide-react';
 import { MOOD_OPTIONS, DEFAULT_ENABLED_MOODS } from '../constants';
 
@@ -18,8 +18,19 @@ import { PageHeader } from './PageHeader';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, Legend, LineChart, Line, CartesianGrid, LabelList } from 'recharts';
 import Markdown from 'react-markdown';
 import { ImmersiveReflectionModal } from './ImmersiveReflectionModal';
+import { DatePicker } from './DatePicker';
 import { DailySessionsModal } from './DailySessionsModal';
 import { RoutineTracker } from './RoutineTracker';
+import { ShareRecordModal } from './ShareRecordModal';
+
+export interface ShareConfig {
+  showDaily: boolean;
+  showWeekly: boolean;
+  showRoutine: boolean;
+  showHeatmap: boolean;
+  showReflection: boolean;
+  aspectRatio: 'auto' | '1:1' | '4:3' | '16:9';
+}
 
 interface StatsProps {
   state: AppState;
@@ -181,6 +192,16 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
   const dailyLogs = state.dailyLogs || {};
   const [showDailySessionsDate, setShowDailySessionsDate] = useState<Date | null>(null);
   const [showDailySessionsPeriod, setShowDailySessionsPeriod] = useState<string | undefined>();
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [shareConfig, setShareConfig] = useState<ShareConfig>({
+    showDaily: true,
+    showWeekly: true,
+    showRoutine: true,
+    showHeatmap: true,
+    showReflection: true,
+    aspectRatio: 'auto'
+  });
+  const statsContainerRef = useRef<HTMLDivElement>(null);
   
   const getInitialPeakDate = () => {
     const ts = state.timeSettings || {
@@ -221,6 +242,27 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
     weeklyBar: Date.now() + 1,
     weeklyLine: Date.now() + 2
   });
+
+  const dateIndicators = React.useMemo(() => {
+    const res: Record<string, { highlight?: boolean; star?: boolean }> = {};
+    if (state.history) {
+      for (const session of state.history) {
+        if (!session.timestamp) continue;
+        const d = session.timestamp.substring(0, 10);
+        if (!res[d]) res[d] = {};
+        res[d].highlight = true;
+      }
+    }
+    if (state.dailyLogs) {
+      for (const [dateStr, log] of Object.entries(state.dailyLogs)) {
+        if (log && log.reflection) {
+          if (!res[dateStr]) res[dateStr] = {};
+          res[dateStr].star = true;
+        }
+      }
+    }
+    return res;
+  }, [state.history, state.dailyLogs]);
 
   const handleChartClick = (chartState: any, chart: 'daily' | 'weeklyBar' | 'weeklyLine') => {
     // If no active payload, we clicked empty space - reset ALL keys including current one
@@ -941,21 +983,31 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
   };
 
   return (
-    <div className="p-6 space-y-8" onClick={() => {}} style={{ cursor: 'auto' }}>
+    <div ref={statsContainerRef} className="p-6 space-y-8" onClick={() => {}} style={{ cursor: 'auto' }}>
       <PageHeader 
         title="Record"
         description="Your journey through the dungeon"
         icon={BarChart2}
-        stats={[
-          { label: 'Total XP', value: history.reduce((acc, s) => acc + s.xpEarned, 0).toLocaleString(), icon: Zap, color: 'text-indigo-400' },
-          { label: 'Total Gold', value: history.reduce((acc, s) => acc + s.coinsEarned, 0).toLocaleString(), icon: Coins, color: 'text-amber-400' }
-        ]}
+        action={
+          <button 
+            id="share-button"
+            onClick={() => setShowShareModal(true)}
+            className="p-2 sm:px-4 sm:py-2.5 bg-indigo-600/10 hover:bg-indigo-600 rounded-xl border border-indigo-500/20 text-indigo-400 hover:text-white transition-all flex items-center justify-center gap-2 group shrink-0"
+          >
+            <Share2 size={18} className="group-hover:scale-110 transition-transform" />
+            <span className="hidden sm:block text-xs font-bold uppercase tracking-widest">Share</span>
+          </button>
+        }
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div id="charts-grid" className={cn(
+        "grid gap-8 transition-all",
+        (shareConfig.showDaily && shareConfig.showWeekly) ? "grid-cols-1 lg:grid-cols-2" : "grid-cols-1"
+      )}>
         
         {/* Daily */}
-        <div id="daily-activity-section" className="bg-slate-900 p-6 rounded-3xl border border-slate-800 flex flex-col space-y-6">
+        {shareConfig.showDaily && (
+          <div id="daily-activity-section" className="bg-slate-900 p-6 rounded-3xl border border-slate-800 flex flex-col space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
             <div className="flex items-center justify-between w-full sm:w-auto">
               <h3 className="text-lg font-bold text-slate-100">Daily</h3>
@@ -963,19 +1015,14 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
             <div className="flex items-center justify-center sm:justify-start gap-1 sm:gap-2 bg-slate-800/50 rounded-lg p-0.5 sm:p-1 w-full sm:w-auto">
               <button onClick={() => handleDailyDateChange(subDays(dailyDate, 1))} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-slate-200"><ChevronLeft size={16} /></button>
               <div className="relative flex items-center justify-center flex-1 sm:flex-none">
-                <button 
-                  onClick={() => dailyInputRef.current?.showPicker()}
-                  className="text-[10px] sm:text-xs font-bold text-slate-300 w-full sm:w-24 text-center hover:text-indigo-400 transition-colors"
+                <DatePicker 
+                  value={format(dailyDate, 'yyyy-MM-dd')}
+                  onChange={(val) => val && handleDailyDateChange(parseISO(val))}
+                  indicators={dateIndicators}
+                  className="text-[10px] sm:text-xs font-bold text-slate-300 w-full sm:w-24 text-center hover:text-indigo-400 transition-colors inline-block whitespace-nowrap cursor-pointer"
                 >
                   {format(dailyDate, 'MMM d, yyyy')}
-                </button>
-                <input 
-                  type="date" 
-                  ref={dailyInputRef}
-                  className="absolute bottom-0 left-1/2 -translate-x-1/2 opacity-0 pointer-events-none w-1 h-1" 
-                  value={format(dailyDate, 'yyyy-MM-dd')}
-                  onChange={(e) => e.target.value && handleDailyDateChange(parseISO(e.target.value))}
-                />
+                </DatePicker>
               </div>
               <button onClick={() => handleDailyDateChange(addDays(dailyDate, 1))} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-slate-200"><ChevronRight size={16} /></button>
               <button 
@@ -1200,22 +1247,26 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
                   </div>
                 </div>
 
-                <div className="text-sm text-slate-300 leading-relaxed pt-3 border-t border-slate-900">
-                  {currentLog?.reflection ? (
-                    <div className="prose prose-invert prose-sm max-w-none prose-p:text-slate-300 prose-headings:text-slate-100 prose-strong:text-slate-200 prose-li:text-slate-300">
-                      <Markdown>{currentLog.reflection}</Markdown>
-                    </div>
-                  ) : (
-                    <p className="italic text-xs text-slate-600">The day's reflections are yet to be chronicled.</p>
-                  )}
-                </div>
+                {shareConfig.showReflection && (
+                  <div className="text-sm text-slate-300 leading-relaxed pt-3 border-t border-slate-900">
+                    {currentLog?.reflection ? (
+                      <div className="prose prose-invert prose-sm max-w-none prose-p:text-slate-300 prose-headings:text-slate-100 prose-strong:text-slate-200 prose-li:text-slate-300">
+                        <Markdown>{currentLog.reflection}</Markdown>
+                      </div>
+                    ) : (
+                      <p className="italic text-xs text-slate-600">The day's reflections are yet to be chronicled.</p>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>
         </div>
+        )}
 
         {/* Weekly */}
-        <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800 flex flex-col space-y-6">
+        {shareConfig.showWeekly && (
+          <div id="weekly-activity-section" className="bg-slate-900 p-6 rounded-3xl border border-slate-800 flex flex-col space-y-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 sm:gap-4">
             <div className="flex items-center justify-between md:justify-start gap-2 sm:gap-4 w-full md:w-auto">
               <h3 className="text-lg font-bold text-slate-100">Weekly</h3>
@@ -1240,19 +1291,14 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
                 setWeeklyDate(subDays(weeklyDate, amount));
               }} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-slate-200"><ChevronLeft size={16} /></button>
               <div className="relative flex items-center justify-center flex-1 sm:flex-none">
-                <button 
-                  onClick={() => weeklyInputRef.current?.showPicker()}
-                  className="text-[10px] sm:text-xs font-bold text-slate-300 w-[90px] sm:w-28 text-center hover:text-indigo-400 transition-colors"
+                <DatePicker 
+                  value={format(weeklyDate, 'yyyy-MM-dd')}
+                  onChange={(val) => val && setWeeklyDate(parseISO(val))}
+                  indicators={dateIndicators}
+                  className="text-[10px] sm:text-xs font-bold text-slate-300 w-[90px] sm:w-28 text-center hover:text-indigo-400 transition-colors inline-block whitespace-nowrap cursor-pointer"
                 >
                   {format(weekStart, 'MMM d')} - {format(weekEnd, 'MMM d')}
-                </button>
-                <input 
-                  type="date" 
-                  ref={weeklyInputRef}
-                  className="absolute bottom-0 left-1/2 -translate-x-1/2 opacity-0 pointer-events-none w-1 h-1" 
-                  value={format(weeklyDate, 'yyyy-MM-dd')}
-                  onChange={(e) => e.target.value && setWeeklyDate(parseISO(e.target.value))}
-                />
+                </DatePicker>
               </div>
               <button onClick={() => {
                 const amount = weeklyMode === 'calendar' ? 1 : 7;
@@ -1350,22 +1396,29 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
             </div>
           </div>
         </div>
+        )}
+      </div>
 
-        <RoutineTracker 
-          history={state.history} 
-          dungeons={dungeons} 
-          majorDungeons={majorDungeons} 
-          timeSettings={state.timeSettings}
-          timezone={state.timezone}
-          renderPopover={(date) => (
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 pointer-events-auto z-[100]">
-              {renderHeatmapPopover(date)?.props.children}
-            </div>
-          )}
-        />
+      {shareConfig.showRoutine && (
+        <div id="routine-tracker-section" className="w-full">
+          <RoutineTracker 
+            history={state.history} 
+            dungeons={dungeons} 
+            majorDungeons={majorDungeons} 
+            timeSettings={state.timeSettings}
+            timezone={state.timezone}
+            renderPopover={(date) => (
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 pointer-events-auto z-[100]">
+                {renderHeatmapPopover(date)?.props.children}
+              </div>
+            )}
+          />
+        </div>
+      )}
 
-        {/* Study Heatmap */}
-        <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800 lg:col-span-2">
+      {/* Study Heatmap */}
+      {shareConfig.showHeatmap && (
+        <div id="heatmap-section" className="bg-slate-900 p-6 rounded-3xl border border-slate-800 lg:col-span-2">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <div className="flex items-center gap-4">
               <h3 className="text-lg font-bold text-slate-100">Heatmap</h3>
@@ -1417,19 +1470,14 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
                   <ChevronLeft size={16} />
                 </button>
                 <div className="relative flex items-center justify-center flex-1 sm:flex-none">
-                  <button 
-                    onClick={() => heatmapInputRef.current?.showPicker()}
-                    className="text-xs font-bold text-slate-300 w-full sm:w-24 text-center hover:text-indigo-400 transition-colors py-1"
+                  <DatePicker 
+                    value={format(heatmapDate, 'yyyy-MM-dd')}
+                    onChange={(val) => val && setHeatmapDate(parseISO(val))}
+                    indicators={dateIndicators}
+                    className="text-xs font-bold text-slate-300 w-full sm:w-24 text-center hover:text-indigo-400 transition-colors py-1 inline-block whitespace-nowrap cursor-pointer"
                   >
                     {heatmapMode === '30days' ? 'Custom' : heatmapMode === 'month' ? format(heatmapDate, 'MMM yyyy') : format(heatmapDate, 'yyyy')}
-                  </button>
-                  <input 
-                    type="date" 
-                    ref={heatmapInputRef}
-                    className="absolute bottom-0 left-1/2 -translate-x-1/2 opacity-0 pointer-events-none w-1 h-1" 
-                    value={format(heatmapDate, 'yyyy-MM-dd')}
-                    onChange={(e) => e.target.value && setHeatmapDate(parseISO(e.target.value))}
-                  />
+                  </DatePicker>
                 </div>
                 <button 
                   onClick={() => {
@@ -1479,8 +1527,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
             <span>More</span>
           </div>
         </div>
-
-      </div>
+      )}
       
       <ImmersiveReflectionModal
         isOpen={isFullscreenEdit}
@@ -1492,6 +1539,27 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
         setIsMarkdownEnabled={setIsMarkdownPreview}
         renderTemplateControls={renderTemplateControls}
       />
+
+      {showShareModal && (
+        <ShareRecordModal 
+          onClose={() => {
+            setShowShareModal(false);
+            setShareConfig({
+              showDaily: true,
+              showWeekly: true,
+              showRoutine: true,
+              showHeatmap: true,
+              showReflection: true,
+              aspectRatio: 'auto'
+            });
+          }} 
+          containerRef={statsContainerRef} 
+          config={shareConfig}
+          setConfig={setShareConfig}
+          dailyLogs={state.dailyLogs || {}}
+          indicators={dateIndicators}
+        />
+      )}
 
       {showDailySessionsDate && (
         <DailySessionsModal 

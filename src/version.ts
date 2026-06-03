@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v7.5.4';
-export const LAST_UPDATE_DATE = '2026-06-02';
-export const LAST_UPDATE_TIME = '15:00:00';
+export const APP_VERSION = 'v7.6.7';
+export const LAST_UPDATE_DATE = '2026-06-03';
+export const LAST_UPDATE_TIME = '05:25:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,169 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v7.6.7',
+    date: '2026-06-03',
+    time: '05:25:00',
+    title: 'Settings Panel Search & Navigation Polish',
+    items: [
+      { category: 'Feature', description: 'Added a search bar to the Settings Panel to easily filter and find specific configuration compartments.' },
+      { category: 'UX', description: 'Settings Panel now saves and displays recent search queries for quick access.' },
+      { category: 'UI', description: 'Streamlined the sub-text descriptions for both Reward Vault and Settings Panel menu tabs to be more concise and readable.' }
+    ]
+  },
+  {
+    version: 'v7.6.6',
+    date: '2026-06-03',
+    time: '05:10:00',
+    title: 'DatePicker Theme Sync & Watermark Gradients',
+    items: [
+      { category: 'UI', description: 'Upgraded DatePicker active days highlighting to natively adapt to the system theme: displaying elegant deep-indigo backgrounds with bright high-contrast white text when active in Daylight, Candy, or Warm Sun themes.' },
+      { category: 'UI', description: 'Replaced the solid single-color top borders on Export Image watermarks with a beautiful fading CSS-gradient separator line that gracefully tapers off left and right.' },
+    ]
+  },
+  {
+    version: 'v7.6.5',
+    date: '2026-06-03',
+    time: '05:01:00',
+    title: 'Export Polish & Calendar Tweaks',
+    items: [
+      { category: 'Feature', description: 'DatePickers now universally display Monday as the starting day of the week instead of Sunday globally.' },
+      { category: 'UI', description: 'Export Image modes dynamically generate watermarks with separator lines that adapt their color tint precisely to the active system theme.' },
+      { category: 'UI', description: 'Evolved the Diary image export rating text into a visually distinct row of Lucide Stars.' },
+      { category: 'Bug Fix', description: 'Repaired the logic mapping session timestamps within unified DatePickers, allowing daily record highlight backgrounds to accurately populate.' }
+    ]
+  },
+  {
+    version: 'v7.6.4',
+    date: '2026-06-03',
+    time: '05:00:00',
+    title: 'DatePicker Activity & Diary Indicators',
+    items: [
+      { category: 'Feature', description: 'Date pickers in the Record Dashboard now dynamically highlight days that contain recorded sessions with a subtle background.' },
+      { category: 'UI', description: 'Days where a diary reflection was written feature a small golden star in the corner for intuitive record referencing.' },
+      { category: 'Bug Fix', description: 'Implemented dynamic bounding box calculation preventing DatePicker and TimePicker modals from clipping off the left or top edge of the screen.' }
+    ]
+  },
+  {
+    version: 'v7.6.3',
+    date: '2026-06-03',
+    time: '04:55:00',
+    title: 'Share Diary Theme Rendering Fixes',
+    items: [
+      { category: 'Bug Fix', description: 'Fixed an issue in Diary Export mode where the preview background defaulted to a hardcoded black color (#020617), rendering incorrectly for light themes.' },
+      { category: 'Bug Fix', description: 'Repaired Markdown typography generation causing list items and bullets within diary entries to become illegibly faint or bright against their respective theme canvas.' }
+    ]
+  },
+  {
+    version: 'v7.6.2',
+    date: '2026-06-03',
+    time: '04:45:00',
+    title: 'Custom Unified Date/Time Pickers',
+    items: [
+      { category: 'Feature', description: 'Fully replaced all native browser default <input type="date"> and <input type="time"> components with custom unified DatePicker and TimePicker UI components.' },
+      { category: 'UI', description: 'Custom date and time pickers natively adapt to the app\'s established dark-mode aesthetics, guaranteeing 100% cross-platform layout consistency regardless of operating system quirks.' },
+      { category: 'UX', description: 'Improved time selection with elegant snapping vertical scrolling columns (Hours:Minutes), avoiding OS numeric fallbacks and clunky native scrollers.' }
+    ]
+  },
+  {
+    version: 'v7.6.1',
+    date: '2026-06-03',
+    time: '04:30:00',
+    title: 'Diary Record & Watermark Fixes',
+    items: [
+      { category: 'Feature', description: 'Diary exports stretch their rendering canvas boundaries via DOM layouts to correctly push standard HTML watermarks precisely to the bottom of images of any target aspect ratio.' },
+      { category: 'Feature', description: 'Exporting diaries natively supports filtering out layout linebreaks, and permits standard paragraph indents for continuous readability.' },
+      { category: 'UI', description: 'Overhauled extreme scrollbox limitations during active preview rendering to support viewing heavily tall uncropped slices seamlessly.' },
+      { category: 'UX', description: 'Images generate precise year timestamps explicitly formatted in English. Integrated mood component icons faithfully alongside summary metadata.' }
+    ]
+  },
+  {
+    version: 'v7.6.0',
+    date: '2026-06-03',
+    time: '03:31:00',
+    title: 'Diary Export Customization',
+    items: [
+      { category: 'Feature', description: 'Added layout controls to the Diary export view, supporting continuous long-images or single-day segmented slices.' },
+      { category: 'Feature', description: 'Exposed typographical scale and font-family customization options.' },
+      { category: 'Feature', description: 'Export canvases now automatically support applying aspect ratios (16:9, 4:3, 1:1) to individual diary outputs.' },
+      { category: 'UX', description: 'Safe empty state handling implemented. Empty date ranges will gracefully fall back to a UI prompt without outputting broken image artifacts.' }
+    ]
+  },
+  {
+    version: 'v7.5.11',
+    date: '2026-06-03',
+    time: '03:22:00',
+    title: 'Export Diary Mode & Watermark Tuning',
+    items: [
+      { category: 'Feature', description: 'Added a dedicated "Diary Export" tab to generate and download filtered markdown text or beautiful image compilations.' },
+      { category: 'UI', description: 'Tuned watermark structural order.' }
+    ]
+  },
+  {
+    version: 'v7.5.10',
+    date: '2026-06-03',
+    time: '03:13:00',
+    title: 'Share Image Watermark Polish',
+    items: [
+      { category: 'UI', description: 'Expanded the Share Image watermark to a professional flex-based layout.' },
+      { category: 'Feature', description: 'Embedded native AppLogo and official URL directly into the generated image.' }
+    ]
+  },
+  {
+    version: 'v7.5.9',
+    date: '2026-06-03',
+    time: '03:06:00',
+    title: 'Share Dashboard Enhancements',
+    items: [
+      { category: 'Feature', description: 'When exporting at specific aspect ratios, Daily and Weekly panels now intelligently reform into a neat side-by-side flex layout to fill space beautifully.' },
+      { category: 'Feature', description: 'Added a toggle to allow users to hide their daily reflections from the generated image for privacy.' },
+      { category: 'UI', description: 'Added a localized watermark at the bottom of the exported image declaring it was generated by the platform.' }
+    ]
+  },
+  {
+    version: 'v7.5.8',
+    date: '2026-06-03',
+    time: '02:57:00',
+    title: 'Share Image Layout & Watermark',
+    items: [
+      { category: 'Feature', description: 'Image generation now dynamically injects flex constraints to naturally stretch components to the target aspect ratio instead of padding.' },
+      { category: 'Feature', description: 'Added a branded watermark to the bottom of the exported snapshot.' },
+      { category: 'UI', description: 'Added an incomplete status annotation to the Export Image header.' }
+    ]
+  },
+  {
+    version: 'v7.5.7',
+    date: '2026-06-03',
+    time: '02:40:00',
+    title: 'Record Screenshot Quality Refactoring',
+    items: [
+      { category: 'Bug Fix', description: 'Completely removed unstable direct DOM layout manipulations during the Share Image generation process. This prevents Recharts overflow, structural overlap, and broken CSS constraints.' },
+      { category: 'Feature', description: 'Upgraded html-to-image rendering to utilize pixelRatio: 2 to double the original render space, guaranteeing sharp text and clearly legible fonts upon export.' },
+      { category: 'Feature', description: 'Image generation now retrieves the exact --color-slate-950 or #020617 root theme dynamically, applying it to both the raw captured frame and the target canvas padding to prevent transparent/black background corruption upon sharing.' },
+      { category: 'UX', description: 'Aspect ratio generation (16:9, 4:3, 1:1) now uses smart canvas padding instead of explicitly breaking the component flow to achieve size requirements.' }
+    ]
+  },
+  {
+    version: 'v7.5.6',
+    date: '2026-06-03',
+    time: '01:35:00',
+    title: 'Record Dashboard Image Export',
+    items: [
+      { category: 'Feature', description: 'Added a Share button to the Record dashboard to export beautiful custom statistics images directly to your device.' },
+      { category: 'Feature', description: 'Supports setting the exported image aspect ratio (16:9, 4:3, 1:1) and customizing the visibility of specific statistical charts.' }
+    ]
+  },
+  {
+    version: 'v7.5.5',
+    date: '2026-06-03',
+    time: '01:25:00',
+    title: 'UI Minimalism & Hotfix',
+    items: [
+      { category: 'UI', description: 'Removed redundant Total XP and Gold summary blocks from page headers.' },
+      { category: 'Bug Fix', description: 'Fixed an issue with the Update Checker evaluating older versions as available updates.' }
+    ]
+  },
   {
     version: 'v7.5.4',
     date: '2026-06-02',

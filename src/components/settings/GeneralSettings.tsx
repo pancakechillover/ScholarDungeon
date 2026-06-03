@@ -10,6 +10,7 @@ import { cn, getXPForLevel, getDefaultRewardForLevel } from '../../lib/utils';
 import { playSound } from '../../lib/sound';
 import { ConfirmModal } from '../ConfirmModal';
 import { SpinnerInput } from '../SpinnerInput';
+import { TimePicker } from '../TimePicker';
 
 // Helper to convert VAPID key
 function urlBase64ToUint8Array(base64String: string) {
@@ -591,11 +592,10 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
                   {/* Row 2: Time Set */}
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Transition Time</span>
-                    <input 
-                      type="time"
+                    <TimePicker 
                       value={dayStart}
-                      onChange={(e) => setState(prev => ({ ...prev, autoThemeDayStart: e.target.value }))}
-                      className="bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-xs text-white focus:outline-none focus:ring-1 focus:ring-amber-500/50 w-24"
+                      onChange={(val) => setState(prev => ({ ...prev, autoThemeDayStart: val }))}
+                      className="bg-slate-950 border-slate-800 text-xs w-24 py-1.5"
                     />
                   </div>
 
@@ -627,11 +627,10 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
                   {/* Row 2: Time Set */}
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Transition Time</span>
-                    <input 
-                      type="time"
+                    <TimePicker 
                       value={nightStart}
-                      onChange={(e) => setState(prev => ({ ...prev, autoThemeNightStart: e.target.value }))}
-                      className="bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-xs text-white focus:outline-none focus:ring-1 focus:ring-indigo-500/50 w-24"
+                      onChange={(val) => setState(prev => ({ ...prev, autoThemeNightStart: val }))}
+                      className="bg-slate-950 border-slate-800 text-xs w-24 py-1.5"
                     />
                   </div>
 

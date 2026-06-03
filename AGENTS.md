@@ -23,8 +23,8 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v7.5.1
-- **Last Update Date:** 2026-06-02
+- **Current Version:** v7.6.7
+- **Last Update Date:** 2026-06-03
 
 ## Dark Themes Definition
 The following themes are considered "Dark Themes" and form the baseline for vibrant visual effects and high-contrast glowing elements:
@@ -49,6 +49,81 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v7.6.7 (2026-06-03):** Settings Panel Search & Navigation Polish.
+  - *Feature:* Added a search bar to the Settings Panel to easily filter and find specific configuration compartments.
+  - *UX:* Settings Panel now saves and displays recent search queries for quick access.
+  - *UI:* Streamlined the sub-text descriptions for both Reward Vault and Settings Panel menu tabs to be more concise and readable.
+
+- **v7.6.6 (2026-06-03):** DatePicker Theme Sync & Watermark Gradients.
+  - *UI:* Upgraded DatePicker active days highlighting to natively adapt to the system theme: displaying elegant deep-indigo backgrounds with bright high-contrast white text when active in Daylight, Candy, or Warm Sun themes.
+  - *UI:* Replaced the solid single-color top borders on Export Image watermarks with a beautiful fading CSS-gradient separator line that gracefully tapers off left and right.
+
+- **v7.6.5 (2026-06-03):** Export Polish & Calendar Tweaks.
+  - *Feature:* DatePickers now universally display Monday as the starting day of the week instead of Sunday globally.
+  - *UI:* Export Image modes dynamically generate watermarks with separator lines that adapt their color tint precisely to the active system theme.
+  - *UI:* Evolved the Diary image export rating text into a visually distinct row of Lucide Stars.
+  - *Bug Fix:* Repaired the logic mapping session timestamps within unified DatePickers, allowing daily record highlight backgrounds to accurately populate.
+
+- **v7.6.4 (2026-06-03):** DatePicker Activity & Diary Indicators.
+  - *Feature:* Date pickers in the Record Dashboard now dynamically highlight days that contain recorded sessions with a subtle background.
+  - *UI:* Days where a diary reflection was written feature a small golden star in the corner for intuitive record referencing.
+  - *Bug Fix:* Implemented dynamic bounding box calculation preventing DatePicker and TimePicker modals from clipping off the left or top edge of the screen.
+
+- **v7.6.3 (2026-06-03):** Share Diary Theme Rendering Fixes.
+  - *Bug Fix:* Fixed an issue in Diary Export mode where the preview background defaulted to a hardcoded black color (`#020617`), rendering incorrectly for light themes. The background now natively inherits the application's active visual theme dynamically.
+  - *Bug Fix:* Repaired Markdown typography generation (`prose-invert`) causing list items and bullets within diary entries to become illegibly faint or bright against their respective theme canvas. Bullets and text cleanly map back to standard `text-slate-300` and `text-slate-500` definitions.
+
+- **v7.6.2 (2026-06-03):** Custom Unified Date/Time Pickers.
+  - *Feature:* Fully replaced all native browser default `<input type="date">` and `<input type="time">` components with custom unified `DatePicker` and `TimePicker` UI components.
+  - *UI:* Custom date and time pickers natively adapt to the app's established dark-mode aesthetics, guaranteeing 100% cross-platform layout consistency regardless of operating system quirks.
+  - *UX:* Improved time selection with elegant snapping vertical scrolling columns (`Hours:Minutes`), avoiding OS numeric fallbacks and clunky native scrollers.
+
+- **v7.6.1 (2026-06-03):** Diary Record & Watermark Fixes.
+  - *Feature:* Diary export outputs now dynamically center and stretch their rendering containers (padding securely via DOM flex arrays) so dynamic aspect ratios cleanly lock unified HTML Watermarks consistently at the exact bottom margin rather than floating loosely within expanded canvases.
+  - *Feature:* Exporting diaries allows selectively stripping internal standard layout breaks (Remove Newline) for wall-of-text journaling styles and natively supports true physical 2-em paragraph indentation strings for formal reading aesthetic.
+  - *UI:* Overhauled preview generation windows safely dropping scrollbar restrictions enabling extreme vertical-stretch visualization.
+  - *UX:* Display accurate explicit 'mood' iconography next to emotional text summaries, increasing snapshot immersion. All generated timestamps strictly invoke English/US locatives matching standard formal branding with direct year visibility.
+
+- **v7.6.0 (2026-06-03):** Diary Export Customization.
+  - *Feature:* Added rich layout controls to the Diary export view, allowing users to choose between continuous long-image scrolling or segmented one-page-per-day image slices.
+  - *Feature:* Exposed typographical scale and font-family customization options, bridging reading styles to exported snapshots.
+  - *Feature:* Image generation pipelines now fully adapt exported snapshots to standard aspect ratios (4:3, 16:9, 1:1) scaling and padding securely via dynamic canvases to ensure social platform compatibility without image skewing or loss.
+  - *UX:* If arbitrary selected dates contain zero records, the diary export stream falls back safely to an empty state UI rather than outputting broken artifacts.
+
+- **v7.5.11 (2026-06-03):** Export Diary Mode & Watermark Tuning.
+  - *Feature:* Added a dedicated "Diary Export" mode inside the Share modal allowing users to select a custom date range.
+  - *Feature:* Enabled downloading of pure Markdown text diaries based on date filters.
+  - *UI:* Enabled generating beautiful, layout-adaptive Diary compilation images from the filtered range.
+  - *UI:* Tuned the default Share Image watermark order to cleanly display `Logo -> "Generated by" -> URL`.
+
+- **v7.5.10 (2026-06-03):** Share Image Watermark Polish.
+  - *UI:* Expanded the Share Image watermark to a flex-based layout featuring the native AppIcon, the official website URL, and the English generation string to match official branding constraints.
+
+- **v7.5.9 (2026-06-03):** Share Dashboard Enhancements.
+  - *Feature:* When exporting at specific aspect ratios, Daily and Weekly panels now intelligently reform into a neat side-by-side flex layout to gracefully fill horizontal space instead of stacking vertically.
+  - *Feature:* Added a "Show Diary" privacy toggle to allow users to completely hide their daily reflections from the generated statistics snapshot.
+  - *UI:* Appended an explicit, localized watermark (`该图片由 Scholar's Dungeon 生成`) tightly matched to the bottom of the exported snapshot.
+
+- **v7.5.8 (2026-06-03):** Share Image Layout Scaling & Watermarking.
+  - *Feature:* Image generation now dynamically modifies the actual DOM hierarchy just-in-time (`flex`, `flex-1`) allowing charts and grids to organically stretch and fill the target aspect ratio, eliminating the need for padding/black bars.
+  - *Feature:* Added a customized "Generated by Scholar's Dungeon" watermark anchored stably to the bottom of the exported snapshot.
+  - *UI:* Marked the Export Image header with an incomplete status indicator per user request.
+
+- **v7.5.7 (2026-06-03):** Record Screenshot Quality Refactoring.
+  - *Bug Fix:* Completely removed unstable direct DOM layout manipulations during the Share Image generation process. This prevents Recharts overflow, structural overlap, and broken CSS constraints.
+  - *Feature:* Upgraded `html-to-image` rendering to utilize `pixelRatio: 2` to double the original render space, guaranteeing sharp text and clearly legible fonts upon export.
+  - *Feature:* Image generation now retrieves the exact `--color-slate-950` or `#020617` root theme dynamically, applying it to both the raw captured frame and the target canvas padding to prevent transparent/black background corruption upon sharing.
+  - *UX:* Aspect ratio generation (16:9, 4:3, 1:1) now uses smart canvas padding instead of explicitly breaking the component flow to achieve size requirements.
+
+- **v7.5.6 (2026-06-03):** Record Dashboard Image Export.
+  - *Feature:* Added a generic "Share" extension to the Record dashboard to export beautiful custom statistics images.
+  - *Feature:* Embedded dynamic cropping and background padding calculations within the generation pipeline to properly export specific aspect ratios (16:9, 4:3, 1:1) without pixel distortion.
+  - *UI:* Allowed visibility toggles for internal statistical layers (Daily, Weekly, Routine, Heatmap) during the export flow.
+
+- **v7.5.5 (2026-06-03):** Record Dashboard UI Cleanup.
+  - *UI:* Removed Total XP and Total Gold display cards from the Record dashboard header and other common headers to create a cleaner aesthetic.
+  - *Bug Fix:* Fixed the Update Checker version comparison logic to correctly distinguish between older and newer versions.
 
 - **v7.5.4 (2026-06-02):** Record Dashboard Tooltips & Jump Navigation.
   - *Feature:* Added "Return to Day" jump buttons inside Record dashboard tooltips (Heatmap, Weekly charts, Efficiency chart, and Routine Tracker), which dynamically synchronizes both Daily and Weekly views to the selected date.

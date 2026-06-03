@@ -146,7 +146,7 @@ export const RewardHistory: React.FC<RewardHistoryProps> = ({ history, transacti
             </div>
             <div>
               <h3 className="font-black text-white uppercase tracking-widest text-sm">All Rewards</h3>
-              <p className="text-xs text-slate-500 font-medium mt-1">View the complete history of all acquisitions.</p>
+              <p className="text-xs text-slate-500 font-medium mt-1">Complete history of all acquisitions.</p>
             </div>
             <div className="ml-auto w-8 h-8 shrink-0 rounded-full bg-white/5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
               <ChevronRight className="text-indigo-400" size={16} />
@@ -159,7 +159,7 @@ export const RewardHistory: React.FC<RewardHistoryProps> = ({ history, transacti
             </div>
             <div>
               <h3 className="font-black text-white uppercase tracking-widest text-sm">Economy Log</h3>
-              <p className="text-xs text-slate-500 font-medium mt-1">Comprehensive transaction history of Gold and XP.</p>
+              <p className="text-xs text-slate-500 font-medium mt-1">Transaction history of Gold and XP.</p>
             </div>
             <div className="ml-auto w-8 h-8 shrink-0 rounded-full bg-white/5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
               <ChevronRight className="text-emerald-400" size={16} />
@@ -172,7 +172,7 @@ export const RewardHistory: React.FC<RewardHistoryProps> = ({ history, transacti
             </div>
             <div>
               <h3 className="font-black text-white uppercase tracking-widest text-sm">Item Inventory</h3>
-              <p className="text-xs text-slate-500 font-medium mt-1">Manage your consumable items, shards, and special medals.</p>
+              <p className="text-xs text-slate-500 font-medium mt-1">Manage consumable items and medals.</p>
             </div>
             <div className="ml-auto w-8 h-8 shrink-0 rounded-full bg-white/5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
               <ChevronRight className="text-blue-400" size={16} />
