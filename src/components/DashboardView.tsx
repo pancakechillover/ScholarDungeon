@@ -47,7 +47,7 @@ interface DashboardViewProps {
   openGuideBook: (chapter: number) => void;
   saveDailyLog: (date: string, rating: number, reflection: string, mood?: string) => void;
   applyExpeditionPlan?: (plan: any) => void;
-  navigateToSettings?: (section: any) => void;
+  navigateToSettings?: (section: any, settingId?: string) => void;
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
@@ -367,7 +367,7 @@ interface SageConsultModalProps {
   state: AppState;
   setState: React.Dispatch<React.SetStateAction<AppState>>;
   onClose: () => void;
-  navigateToSettings?: (section: any) => void;
+  navigateToSettings?: (section: any, settingId?: string) => void;
   applyExpeditionPlan?: (plan: any) => void;
 }
 
@@ -765,7 +765,7 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
                 onClick={() => {
                   if (navigateToSettings) {
                     onClose();
-                    navigateToSettings('sage');
+                    navigateToSettings('sage', 'setting-sage');
                   }
                 }}
                 title="Settings"

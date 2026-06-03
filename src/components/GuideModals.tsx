@@ -11,7 +11,7 @@ interface GuideBookModalProps {
   initialPage: number;
   soundEnabled?: boolean;
   soundVolume?: number;
-  navigateToSettings: (section: 'general' | 'timer' | 'rewards' | 'shop' | 'gacha' | 'dev' | 'levelRewards' | 'about' | 'level' | 'merchant') => void;
+  navigateToSettings: (section: 'general' | 'timer' | 'rewards' | 'shop' | 'gacha' | 'dev' | 'levelRewards' | 'about' | 'level' | 'merchant', settingId?: string) => void;
   onTabChange: (tab: 'dashboard' | 'dungeons' | 'explore' | 'talents' | 'shop' | 'vault' | 'stats' | 'settings', subTab?: string) => void;
 }
 
@@ -430,10 +430,10 @@ export const GuideBookModal: React.FC<GuideBookModalProps> = ({
             You can adjust how much Gold you earn and customize level-up gifts!
           </p>
           <div className="flex flex-col gap-2 sm:gap-3">
-            <button onClick={() => { onClose(); navigateToSettings('dev'); }} className="text-left w-full p-2 sm:p-3 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-600 text-sm md:text-base font-serif font-bold transition-all shadow-sm">
+            <button onClick={() => { onClose(); navigateToSettings('dev', 'setting-dev'); }} className="text-left w-full p-2 sm:p-3 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-600 text-sm md:text-base font-serif font-bold transition-all shadow-sm">
               Go to Settings &gt; Developer<br/><span className="font-normal font-sans text-xs sm:text-sm opacity-80 mt-1 block">Adjust base Gold rates and multipliers.</span>
             </button>
-            <button onClick={() => { onClose(); navigateToSettings('levelRewards'); }} className="text-left w-full p-2 sm:p-3 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-600 text-sm md:text-base font-serif font-bold transition-all shadow-sm">
+            <button onClick={() => { onClose(); navigateToSettings('level', 'setting-milestones'); }} className="text-left w-full p-2 sm:p-3 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-600 text-sm md:text-base font-serif font-bold transition-all shadow-sm">
               Go to Settings &gt; Level Rewards<br/><span className="font-normal font-sans text-xs sm:text-sm opacity-80 mt-1 block">Add or modify Gold gifts upon leveling up.</span>
             </button>
           </div>
@@ -478,10 +478,10 @@ export const GuideBookModal: React.FC<GuideBookModalProps> = ({
             Configure your level-up rewards to match your progression style!
           </p>
           <div className="flex flex-col gap-2 sm:gap-3">
-            <button onClick={() => { onClose(); navigateToSettings('dev'); }} className="text-left w-full p-2 sm:p-3 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-600 text-sm md:text-base font-serif font-bold transition-all shadow-sm">
+            <button onClick={() => { onClose(); navigateToSettings('dev', 'setting-dev'); }} className="text-left w-full p-2 sm:p-3 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-600 text-sm md:text-base font-serif font-bold transition-all shadow-sm">
               Go to Settings &gt; Developer<br/><span className="font-normal font-sans text-xs sm:text-sm opacity-80 mt-1 block">Adjust base XP rates and formula.</span>
             </button>
-            <button onClick={() => { onClose(); navigateToSettings('levelRewards'); }} className="text-left w-full p-2 sm:p-3 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-600 text-sm md:text-base font-serif font-bold transition-all shadow-sm">
+            <button onClick={() => { onClose(); navigateToSettings('level', 'setting-milestones'); }} className="text-left w-full p-2 sm:p-3 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-600 text-sm md:text-base font-serif font-bold transition-all shadow-sm">
               Go to Settings &gt; Level Rewards<br/><span className="font-normal font-sans text-xs sm:text-sm opacity-80 mt-1 block">Add/remove level-up gifts (e.g., loot).</span>
             </button>
           </div>
@@ -534,7 +534,7 @@ export const GuideBookModal: React.FC<GuideBookModalProps> = ({
             Want more Talent Scrolls? You can set them as rewards for leveling up!
           </p>
           <div className="flex flex-col gap-2 sm:gap-3">
-            <button onClick={() => { onClose(); navigateToSettings('levelRewards'); }} className="text-left w-full p-2 sm:p-3 rounded-lg bg-[var(--gb-talent-bg)] hover:opacity-80 border border-[var(--gb-talent-color)]/30 text-[var(--gb-talent-color)] text-sm md:text-base font-serif font-bold transition-all shadow-sm">
+            <button onClick={() => { onClose(); navigateToSettings('level', 'setting-milestones'); }} className="text-left w-full p-2 sm:p-3 rounded-lg bg-[var(--gb-talent-bg)] hover:opacity-80 border border-[var(--gb-talent-color)]/30 text-[var(--gb-talent-color)] text-sm md:text-base font-serif font-bold transition-all shadow-sm">
               Go to Settings &gt; Level Rewards<br/><span className="font-normal font-sans text-xs sm:text-sm opacity-80 mt-1 block">Add Talent Scrolls or Shards as level-up gifts.</span>
             </button>
           </div>

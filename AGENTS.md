@@ -23,7 +23,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v7.6.8
+- **Current Version:** v7.8.0
 - **Last Update Date:** 2026-06-03
 
 ## Dark Themes Definition
@@ -49,6 +49,22 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v7.8.0 (2026-06-03):** Time Calculation & Rest Tracking.
+  - *Feature:* Added "Include Rest Time in Tasks" to Time-Based Calculation settings. Rest periods now count toward task progress and daily records.
+  - *Feature:* Added standard Rest duration configuration.
+  - *UI:* Total Rooms fields dynamically calculate and display converted h/min real-time estimates.
+  - *UI:* Task progress bars conditionally display total Time formatting (`h` and `min`) instead of Sessions.
+  - *UI:* Cleaned up and redesigned the Open-Ended Tasks toggle module inside the Create Tier menu.
+
+- **v7.7.0 (2026-06-03):** Open-Ended Task Configuration.
+  - *Feature:* Added support for "Open-Ended Tasks" out of Expeditions, allowing tasks without an explicit "Total Rooms" session limit constraint, enabling infinite accumulation of focused tracking time.
+  - *Feature:* Added "Tasks Default to Open-Ended" toggle inside Settings panel > General.
+  - *UX:* Modded the Explore panel task rendering to suppress strict session ratio bars on Open-Ended tasks, opting for a clean textual accumulation of focused minutes. Tasks are completed securely and manually.
+
+- **v7.6.9 (2026-06-03):** Precise Settings Redirection.
+  - *Feature:* Upgraded the Guidebook and overarching navigational links (`navigateToSettings`) to dynamically target explicit `id` attributes when redirecting to Settings compartments, safely smoothing auto-scrolls down directly into specific configuration blocks.
+  - *UX:* Rewrote Guidebook button triggers across Level, Gacha, and Sage config links to directly lock user view framing down to precision modules (e.g., "Milestones", "Developer", "Sage AI").
 
 - **v7.6.8 (2026-06-03):** Activity Time Peaks & Streak Timezone Sync.
   - *Bug Fix:* Streamlined logical "Day" mappings globally by substituting hardcoded physical calendar slices with dynamically resolved Settlement Strings that accurately absorb user-configured Activity Time Peaks (Morning/Afternoon/Night loops) and native Timezones.

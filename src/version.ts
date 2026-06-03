@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v7.6.8';
+export const APP_VERSION = 'v7.8.0';
 export const LAST_UPDATE_DATE = '2026-06-03';
-export const LAST_UPDATE_TIME = '05:25:00';
+export const LAST_UPDATE_TIME = '13:20:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,50 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v7.8.0',
+    date: '2026-06-03',
+    time: '13:20:00',
+    title: 'Time Calculation & Rest Tracking',
+    items: [
+      { category: 'Feature', description: 'Added "Include Rest Time in Tasks" to Time-Based Calculation settings. Rest periods now count toward task progress and daily records.' },
+      { category: 'Feature', description: 'Added standard Rest duration configuration.' },
+      { category: 'UI', description: 'Total Rooms fields now dynamically calculate and display converted h/min real-time estimates.' },
+      { category: 'UI', description: 'Task progress bars conditionally display total Time formatting (`h` and `min`) instead of Sessions.' },
+      { category: 'UI', description: 'Cleaned up and redesigned the Open-Ended Tasks toggle module inside the Create Tier menu.' }
+    ]
+  },
+  {
+    version: 'v7.7.0',
+    date: '2026-06-03',
+    time: '12:44:00',
+    title: 'Open-Ended Tasks',
+    items: [
+      { category: 'Feature', description: 'Added support for Open-Ended Tasks allowing users to focus endlessly without an explicit session goal.' },
+      { category: 'Feature', description: 'Added "Tasks Default to Open-Ended" user preference inside General Settings.' },
+      { category: 'UX', description: 'Explore panel now cleanly suppresses traditional progress bars for open-ended tasks in favor of tracking total elapsed focused minutes.' }
+    ]
+  },
+  {
+    version: 'v7.6.9',
+    date: '2026-06-03',
+    time: '07:11:00',
+    title: 'Precise Settings Redirection',
+    items: [
+      { category: 'UX', description: 'Upgraded Guidebook and system dashboard redirects to auto-scroll directly into specific setting module block locations.' },
+    ]
+  },
+  {
+    version: 'v7.6.8',
+    date: '2026-06-03',
+    time: '05:36:00',
+    title: 'Activity Time Peaks & Streak Timezone Sync',
+    items: [
+      { category: 'Bug Fix', description: 'Streamlined logical "Day" mappings globally by substituting hardcoded physical calendar slices with dynamically resolved Settlement Strings that accurately absorb user-configured Activity Time Peaks (Morning/Afternoon/Night loops) and native Timezones.' },
+      { category: 'Bug Fix', description: 'Completely corrected raw date arithmetic in repairStreak resolving issues where streak patchwork systematically bypassed offset offsets.' },
+      { category: 'Bug Fix', description: 'Applied explicit timezone mapping capabilities across the "7-Day Activity Record" visualizer directly aligning historical UI interactions with the strict rules encoded inside the internal daily reset cycles.' }
+    ]
+  },
   {
     version: 'v7.6.7',
     date: '2026-06-03',

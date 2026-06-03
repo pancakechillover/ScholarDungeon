@@ -16,7 +16,8 @@ export const SETTINGS_SEARCH_INDEX: SettingsSearchItem[] = [
   { id: 'setting-sound', tab: 'general', title: 'Sound Effects', description: 'Play sounds for actions like gacha and rewards', keywords: ['audio', 'music', 'volume'] },
 
   // General Time-Based Calculation
-  { id: 'setting-time-based', tab: 'general', title: 'Time-Based Calculation', description: 'Compute tasks by time instead of sessions', keywords: ['compute', 'session duration', 'minutes'] },
+  { id: 'setting-time-based', tab: 'general', title: 'Time-Based Calculation', description: 'Compute tasks by time instead of sessions', keywords: ['compute', 'session duration', 'minutes', 'rest time', 'include rest'] },
+  { id: 'setting-open-ended', tab: 'general', title: 'Tasks Default to Open-Ended', description: 'Tasks default to tracking total time with no specific session limits', keywords: ['rooms', 'endless', 'open-ended', 'default'] },
   
   // General Heatmap
   { id: 'setting-heatmap', tab: 'general', title: 'Performance Heatmap', description: 'Heatmap saturation range configuration', keywords: ['0-8 mode', '0-16 mode', 'darkest color'] },

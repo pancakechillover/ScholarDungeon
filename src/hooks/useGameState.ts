@@ -8,6 +8,24 @@ import { generateRewardChoicesForSession } from '../lib/rewardLogic';
 
 const STORAGE_KEY = 'scholars_dungeon_state';
 
+const getAddedProgress = (
+  timeBasedMode: boolean | undefined, 
+  includeRestTimeInTasks: boolean | undefined,
+  focusDurationOrDuration: number, 
+  restDuration: number | undefined,
+  standardSessionMinutes: number | undefined, 
+  standardRestMinutes: number | undefined
+) => {
+  if (!timeBasedMode) return 1;
+  let val = focusDurationOrDuration;
+  let denom = standardSessionMinutes || 25;
+  if (includeRestTimeInTasks) {
+    val += (restDuration || standardRestMinutes || 5);
+    denom += (standardRestMinutes || 5);
+  }
+  return Math.max(1, val) / denom;
+};
+
 export function useGameState() {
   const [state, setState] = useState<AppState>(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -854,7 +872,7 @@ export function useGameState() {
     if (state.doubleGoldActive) baseCoins *= 2;
 
     const sessionDurationVal = focusDuration || duration;
-    const addedProgress = state.timeBasedMode ? (Math.max(1, sessionDurationVal) / (state.standardSessionMinutes || 25)) : 1;
+    const addedProgress = getAddedProgress(state.timeBasedMode, state.includeRestTimeInTasks, focusDuration || duration, restDuration, state.standardSessionMinutes, state.standardRestMinutes);
 
     // Daily 16 session bonuses
     const is16th = Math.floor(state.dailySessions) < 16 && Math.floor(state.dailySessions + addedProgress) >= 16;
@@ -899,7 +917,7 @@ export function useGameState() {
     const session: StudySession = {
       id: Math.random().toString(36).substr(2, 9),
       dungeonId: dungeonId || 'free_study',
-      duration,
+      duration: state.includeRestTimeInTasks ? sessionDurationVal + (restDuration || 0) : duration,
       focusDuration,
       restDuration,
       timestamp: now.toISOString(),
@@ -1080,11 +1098,11 @@ export function useGameState() {
         const updatedDungeons = prevDungeons.map(d => {
           if (d.id === dungeonId) {
             const actualDuration = focusDuration || duration;
-            const addedProgress = state.timeBasedMode 
-              ? (Math.max(1, actualDuration) / (state.standardSessionMinutes || 25))
-              : 1;
+            const addedProgress = getAddedProgress(state.timeBasedMode, state.includeRestTimeInTasks, actualDuration, restDuration, state.standardSessionMinutes, state.standardRestMinutes);
             const newCompleted = d.completedSessions + addedProgress;
-            if (newCompleted >= d.totalSessions && d.status !== 'completed') {
+            const newTotalFocusTime = (d.totalFocusTime || 0) + actualDuration;
+
+            if (!d.isOpenEnded && newCompleted >= d.totalSessions && d.status !== 'completed') {
               // Dungeon completed rewards
               const allRewards: DungeonReward[] = [];
               if (d.rewardXP > 0) allRewards.push({ type: 'xp', amount: d.rewardXP });
@@ -1165,9 +1183,9 @@ export function useGameState() {
                 });
               }
 
-              return { ...d, completedSessions: newCompleted, status: 'completed' as const, completedAt: getNow().toISOString() };
+              return { ...d, completedSessions: newCompleted, totalFocusTime: newTotalFocusTime, status: 'completed' as const, completedAt: getNow().toISOString() };
             }
-            return { ...d, completedSessions: newCompleted };
+            return { ...d, completedSessions: newCompleted, totalFocusTime: newTotalFocusTime };
           }
           return d;
         });
@@ -1609,7 +1627,7 @@ export function useGameState() {
 
       if (session.dungeonId !== 'free_study') {
          setDungeons(prevDungeons => {
-            const addedProgress = prev.timeBasedMode ? (Math.max(1, session.focusDuration || session.duration) / (prev.standardSessionMinutes || 25)) : 1;
+            const addedProgress = getAddedProgress(prev.timeBasedMode, prev.includeRestTimeInTasks, session.focusDuration || session.duration, session.restDuration, prev.standardSessionMinutes, prev.standardRestMinutes);
             return prevDungeons.map(d => {
                if (d.id === session.dungeonId) {
                   return { ...d, completedSessions: Math.max(0, d.completedSessions - addedProgress), status: 'active' };
@@ -1648,7 +1666,7 @@ export function useGameState() {
       const sessionDay = getSettlementDay(new Date(session.timestamp), prev.timeSettings);
 
       if (sessionDay === todayStr) {
-        const addedProgress = prev.timeBasedMode ? (Math.max(1, session.focusDuration || session.duration) / (prev.standardSessionMinutes || 25)) : 1;
+        const addedProgress = getAddedProgress(prev.timeBasedMode, prev.includeRestTimeInTasks, session.focusDuration || session.duration, session.restDuration, prev.standardSessionMinutes, prev.standardRestMinutes);
         newState.dailySessions = Math.max(0, newState.dailySessions - addedProgress);
       }
 

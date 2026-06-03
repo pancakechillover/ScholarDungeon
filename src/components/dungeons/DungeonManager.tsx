@@ -59,6 +59,8 @@ interface DungeonManagerProps {
   currentDungeonId: string | null;
   timeBasedMode?: boolean;
   standardSessionMinutes?: number;
+  standardRestMinutes?: number;
+  includeRestTimeInTasks?: boolean;
   isAddingMajor: boolean;
   setIsAddingMajor: (val: boolean) => void;
   onSelect: (id: string) => void;
@@ -80,6 +82,7 @@ interface DungeonManagerProps {
   isEditMode?: boolean;
   activeTab: 'active' | 'archive';
   timeSettings?: any;
+  defaultOpenEndedDungeon?: boolean;
 }
 
 export const DungeonManager = React.memo<DungeonManagerProps>(({
@@ -88,6 +91,9 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
   currentDungeonId,
   timeBasedMode,
   standardSessionMinutes = 25,
+  standardRestMinutes = 5,
+  includeRestTimeInTasks = false,
+  defaultOpenEndedDungeon,
   isAddingMajor,
   setIsAddingMajor,
   onSelect,
@@ -139,6 +145,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
     name: '',
     description: '',
     totalSessions: 10,
+    isOpenEnded: defaultOpenEndedDungeon || false,
     rewardCoins: 0,
     rewardXP: 0,
     rewardText: '',
@@ -231,6 +238,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
           name: '',
           description: preset.description || '',
           totalSessions: preset.totalSessions || 10,
+          isOpenEnded: defaultOpenEndedDungeon || false,
           rewardCoins: preset.rewardCoins || 0,
           rewardXP: preset.rewardXP || 0,
           rewardText: preset.rewardText || '',
@@ -246,6 +254,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
         name: '',
         description: '',
         totalSessions: 10,
+        isOpenEnded: defaultOpenEndedDungeon || false,
         rewardCoins: 0,
         rewardXP: 0,
         rewardText: '',
@@ -492,18 +501,45 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
 
                 <div className="flex items-center gap-2 shrink-0">
                   <div className="hidden sm:flex items-center gap-2 opacity-60">
-                    <div className="h-1.5 w-16 bg-slate-900 rounded-full overflow-hidden border border-slate-800/50">
-                      <div 
-                        className={cn("h-full transition-all", sub.status === 'completed' ? "bg-emerald-500" : "bg-indigo-500")}
-                        style={{ width: `${Math.min(100, (sub.completedSessions/sub.totalSessions)*100)}%` }}
-                      />
-                    </div>
-                    {timeBasedMode ? (
-                      <span className="text-[10px] font-bold text-slate-400 tabular-nums inline-block w-16 text-right whitespace-nowrap">
-                        {Math.floor(sub.completedSessions * (standardSessionMinutes || 25))}<span className="text-[9px] opacity-70 ml-[1px]">m</span> <span className="opacity-50 text-[9px] mx-[1px]">/</span> {sub.totalSessions * (standardSessionMinutes || 25)}<span className="text-[9px] opacity-70 ml-[1px]">m</span>
+                    {sub.isOpenEnded ? (
+                      <span className="text-[10px] font-bold text-slate-400 tabular-nums inline-block w-24 text-right whitespace-nowrap overflow-hidden text-ellipsis mr-auto">
+                        {sub.totalFocusTime || 0} min focused
                       </span>
                     ) : (
-                      <span className="text-[10px] font-bold text-slate-400 tabular-nums inline-block w-14 text-right">{Math.floor(sub.completedSessions)}/{sub.totalSessions}</span>
+                      <>
+                        <div className="h-1.5 w-16 bg-slate-900 rounded-full overflow-hidden border border-slate-800/50">
+                          <div 
+                            className={cn("h-full transition-all", sub.status === 'completed' ? "bg-emerald-500" : "bg-indigo-500")}
+                            style={{ width: `${Math.min(100, (sub.completedSessions/sub.totalSessions)*100)}%` }}
+                          />
+                        </div>
+                        {timeBasedMode ? (
+                          <span className="text-[10px] font-bold text-slate-400 tabular-nums flex items-center justify-end w-20">
+                            {(() => {
+                              const timePerRoom = standardSessionMinutes + (includeRestTimeInTasks ? standardRestMinutes : 0);
+                              
+                              const formatTime = (mins: number) => {
+                                if (mins < 60) return <>{Math.floor(mins)}<span className="text-[9px] opacity-70 ml-[1px]">m</span></>;
+                                const h = Math.floor(mins / 60);
+                                const m = Math.floor(mins % 60);
+                                return m > 0 
+                                  ? <>{h}<span className="text-[9px] opacity-70 ml-[1px]">h</span> {m}<span className="text-[9px] opacity-70 ml-[1px]">m</span></>
+                                  : <>{h}<span className="text-[9px] opacity-70 ml-[1px]">h</span></>;
+                              };
+
+                              return (
+                                <>
+                                  {formatTime(sub.completedSessions * timePerRoom)}
+                                  <span className="opacity-50 text-[9px] mx-1">/</span>
+                                  {formatTime(sub.totalSessions * timePerRoom)}
+                                </>
+                              );
+                            })()}
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-bold text-slate-400 tabular-nums inline-block w-14 text-right">{Math.floor(sub.completedSessions)}/{sub.totalSessions}</span>
+                        )}
+                      </>
                     )}
                   </div>
 
@@ -515,17 +551,28 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                         <button 
                           onClick={(e) => { 
                             e.stopPropagation(); 
-                            setModalConfig({
-                              isOpen: true,
-                              title: "Force Complete Task",
-                              message: `Are you sure you want to magically force complete "${sub.name}"? This will grant the remaining rewards immediately without completing the required sessions.`,
-                              confirmText: "Force Complete",
-                              type: "warning",
-                              onConfirm: () => onForceCompleteSub?.(sub.id)
-                            });
+                            if (sub.isOpenEnded) {
+                              setModalConfig({
+                                isOpen: true,
+                                title: "Complete Task",
+                                message: `Are you sure you have finished "${sub.name}"? This will complete the task and grant rewards based on your progress.`,
+                                confirmText: "Complete",
+                                type: "info",
+                                onConfirm: () => onForceCompleteSub?.(sub.id)
+                              });
+                            } else {
+                              setModalConfig({
+                                isOpen: true,
+                                title: "Force Complete Task",
+                                message: `Are you sure you want to magically force complete "${sub.name}"? This will grant the remaining rewards immediately without completing the required sessions.`,
+                                confirmText: "Force Complete",
+                                type: "warning",
+                                onConfirm: () => onForceCompleteSub?.(sub.id)
+                              });
+                            }
                           }}
                           className="hover:text-amber-400 transition-colors flex items-center justify-center p-0.5 rounded cursor-pointer"
-                          title="Force Complete Task"
+                          title={sub.isOpenEnded ? "Complete Task" : "Force Complete Task"}
                         >
                           <Square size={16} />
                         </button>
@@ -673,7 +720,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
 
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1">
+                  <div className={cn("space-y-1", (editingSub || isAddingSub) && !(isAddingSub ? newSub.isOpenEnded : editingSub?.isOpenEnded) ? "sm:col-span-1" : "sm:col-span-2")}>
                     <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Name</label>
                     <input
                       type="text"
@@ -688,9 +735,25 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                       placeholder={isAddingMajor || isAddingSub ? "Goal Name" : ""}
                     />
                   </div>
-                  {(editingSub || isAddingSub) && (
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Total Rooms</label>
+                  {(editingSub || isAddingSub) && !(isAddingSub ? newSub.isOpenEnded : editingSub?.isOpenEnded) && (
+                    <div className="space-y-1 sm:col-span-1">
+                      <div className="flex justify-between items-end">
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Total Rooms</label>
+                        {timeBasedMode && (
+                          <div className="text-[10px] text-indigo-400 font-bold tabular-nums">
+                            {(() => {
+                              const rooms = isAddingSub ? (newSub.totalSessions || 0) : (editingSub?.totalSessions || 0);
+                              if (!rooms) return null;
+                              const timePerRoom = standardSessionMinutes + (includeRestTimeInTasks ? standardRestMinutes : 0);
+                              const totalMinutes = rooms * timePerRoom;
+                              if (totalMinutes < 60) return `${totalMinutes} min`;
+                              const h = Math.floor(totalMinutes / 60);
+                              const m = totalMinutes % 60;
+                              return m > 0 ? `${h} h ${m} min` : `${h} h`;
+                            })()}
+                          </div>
+                        )}
+                      </div>
                       <SpinnerInput
                         min={1}
                         value={isAddingSub ? (newSub.totalSessions === undefined ? '' : newSub.totalSessions) : (editingSub?.totalSessions === undefined ? '' : editingSub.totalSessions)}
@@ -720,8 +783,33 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                     </div>
                   )}
 
+                  {(editingSub || isAddingSub) && (
+                    <div className="sm:col-span-2 pt-1 pb-1">
+                       <label className="flex items-center gap-3 text-white cursor-pointer border border-slate-700/50 bg-slate-800/30 px-4 py-3 rounded-xl hover:border-indigo-500/50 transition-colors">
+                         <div className="shrink-0 flex items-center justify-center">
+                           <input
+                             type="checkbox"
+                             checked={
+                               isAddingSub ? newSub.isOpenEnded :
+                               editingSub ? editingSub.isOpenEnded : false
+                             }
+                             onChange={e => {
+                               if (isAddingSub) setNewSub({ ...newSub, isOpenEnded: e.target.checked });
+                               else if (editingSub) setEditingSub({ ...editingSub, isOpenEnded: e.target.checked });
+                             }}
+                             className="w-4 h-4 rounded bg-slate-900 border-slate-600 focus:ring-indigo-500 text-indigo-500 cursor-pointer"
+                           />
+                         </div>
+                         <div className="flex-1 flex items-center justify-between min-w-0">
+                           <span className="font-semibold text-slate-200 text-sm">Open-Ended Task</span>
+                           <span className="text-[11px] text-slate-500 truncate ml-2">Track time endlessly without session goals</span>
+                         </div>
+                       </label>
+                    </div>
+                  )}
+
                   {(editingMajor || isAddingMajor || editingSub || isAddingSub) && (
-                    <div className="space-y-2 sm:col-span-2 pt-2">
+                    <div className="space-y-1 sm:col-span-2">
                       <label className="flex items-center gap-2 text-white text-sm cursor-pointer border border-slate-700 bg-slate-800 p-3 rounded-xl hover:border-indigo-500 transition-colors">
                         <input
                           type="checkbox"
@@ -934,7 +1022,8 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
 
                     if (isAddingSub || editingSub) {
                       const totalSessions = isAddingSub ? newSub.totalSessions : editingSub?.totalSessions;
-                      if (totalSessions === '' as any || isNaN(totalSessions as number) || (totalSessions as number) <= 0) {
+                      const isOpenEnded = isAddingSub ? newSub.isOpenEnded : editingSub?.isOpenEnded;
+                      if (!isOpenEnded && (totalSessions === '' as any || isNaN(totalSessions as number) || (totalSessions as number) <= 0)) {
                         setModalConfig({
                           isOpen: true,
                           title: "Invalid Input",
@@ -994,6 +1083,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                         name: editingSub.name, 
                         description: editingSub.description, 
                         totalSessions: editingSub.totalSessions, 
+                        isOpenEnded: editingSub.isOpenEnded,
                         rewards: editingSub.rewards,
                         isRoutine: editingSub.isRoutine,
                         routineType: editingSub.routineType

@@ -43,6 +43,8 @@ export interface Dungeon {
   description?: string;
   totalSessions: number;
   completedSessions: number;
+  isOpenEnded?: boolean;
+  totalFocusTime?: number;
   rewardCoins: number;
   rewardXP: number;
   rewardText: string;
@@ -248,7 +250,10 @@ export interface AppState {
   timerBannerShortcuts?: string[];
   requireFocusConfirmation?: boolean;
   timeBasedMode?: boolean;
+  defaultOpenEndedDungeon?: boolean;
   standardSessionMinutes?: number;
+  standardRestMinutes?: number;
+  includeRestTimeInTasks?: boolean;
   pendingRewardChest?: { session: StudySession; choices: RewardCard[]; }[];
   // Editable Pools
   rewardPool: RewardCard[];

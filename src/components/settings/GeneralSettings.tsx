@@ -779,18 +779,84 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
 
            {state.timeBasedMode && (
              <div className="p-4 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 space-y-4">
-               <label className="text-xs font-bold text-indigo-400 uppercase tracking-widest">Standard Session Duration (Minutes)</label>
-               <p className="text-xs text-slate-400 italic mb-2">Used as a unit converter between Session counts and Time. e.g. 3 Sessions = 75 minutes.</p>
-               <input
-                 type="number"
-                 min="1"
-                 max="1440"
-                 value={state.standardSessionMinutes || 25}
-                 onChange={(e) => setState(prev => ({ ...prev, standardSessionMinutes: Math.max(1, parseInt(e.target.value) || 25) }))}
-                 className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500"
-               />
+               <div>
+                 <label className="text-xs font-bold text-indigo-400 uppercase tracking-widest">Standard Focus Duration (Minutes)</label>
+                 <p className="text-[11px] text-slate-400 italic mb-2 mt-1">Used as a unit converter between Session counts and Time. e.g. 3 Sessions = 75 minutes.</p>
+                 <input
+                   type="number"
+                   min="1"
+                   max="1440"
+                   value={state.standardSessionMinutes || 25}
+                   onChange={(e) => setState(prev => ({ ...prev, standardSessionMinutes: Math.max(1, parseInt(e.target.value) || 25) }))}
+                   className="w-full bg-slate-900 border border-slate-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 text-sm"
+                 />
+               </div>
+
+               <div className="pt-2 border-t border-indigo-500/10 flex items-center justify-between">
+                 <div>
+                   <div className="text-sm font-bold text-slate-200">Include Rest Time in Tasks</div>
+                   <div className="text-[11px] text-slate-500 mt-1">If enabled, rest periods will also count towards your task progress and total recorded time.</div>
+                 </div>
+                 <button
+                   onClick={() => setState(prev => ({ ...prev, includeRestTimeInTasks: !prev.includeRestTimeInTasks }))}
+                   className={cn(
+                     "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors",
+                     state.includeRestTimeInTasks ? "bg-indigo-500" : "bg-slate-700"
+                   )}
+                 >
+                   <span
+                     className={cn(
+                       "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+                       state.includeRestTimeInTasks ? "translate-x-6" : "translate-x-1"
+                     )}
+                   />
+                 </button>
+               </div>
+
+               {state.includeRestTimeInTasks && (
+                 <div className="pt-2">
+                   <label className="text-xs font-bold text-indigo-400 uppercase tracking-widest">Standard Rest Duration (Minutes)</label>
+                   <p className="text-[11px] text-slate-400 italic mb-2 mt-1">Default rest duration to add per session.</p>
+                   <input
+                     type="number"
+                     min="1"
+                     max="1440"
+                     value={state.standardRestMinutes || 5}
+                     onChange={(e) => setState(prev => ({ ...prev, standardRestMinutes: Math.max(1, parseInt(e.target.value) || 5) }))}
+                     className="w-full bg-slate-900 border border-slate-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 text-sm"
+                   />
+                 </div>
+               )}
              </div>
            )}
+
+           <div id="setting-open-ended" className="flex items-center justify-between p-4 bg-slate-900/50 rounded-2xl border border-slate-800 mt-4">
+             <div className="flex items-center gap-3">
+               <div className={cn("p-2 rounded-xl", state.defaultOpenEndedDungeon ? "bg-indigo-500/10 text-indigo-400" : "bg-slate-800 text-slate-500")}>
+                 <Clock size={20} />
+               </div>
+               <div className="flex-1 pr-4">
+                 <div className="text-sm font-bold text-white mb-0.5">Tasks Default to Open-Ended</div>
+                 <div className="text-[11px] text-slate-500 leading-relaxed">
+                   New tasks will not require a "Total Rooms" goal. They will run endlessly and track total focus time until manually completed.
+                 </div>
+               </div>
+             </div>
+             <button
+               onClick={() => setState(prev => ({ ...prev, defaultOpenEndedDungeon: !prev.defaultOpenEndedDungeon }))}
+               className={cn(
+                 "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors",
+                 state.defaultOpenEndedDungeon ? "bg-indigo-500" : "bg-slate-700"
+               )}
+             >
+               <span
+                 className={cn(
+                   "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+                   state.defaultOpenEndedDungeon ? "translate-x-6" : "translate-x-1"
+                 )}
+               />
+             </button>
+           </div>
         </div>
       </div>
 

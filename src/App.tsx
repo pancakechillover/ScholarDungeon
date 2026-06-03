@@ -1393,9 +1393,19 @@ function App() {
                   setDungeons(prev => [...prev, ...newSubs]);
                   setActiveTab('dungeons');
                 }}
-                navigateToSettings={(section) => {
+                navigateToSettings={(section, settingId) => {
                   setActiveTab('settings');
                   setActiveSettingsSection(section);
+                  if (settingId) {
+                      setTimeout(() => {
+                        const el = document.getElementById(settingId);
+                        if (el) {
+                          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                          el.classList.add('ring-2', 'ring-indigo-500', 'ring-offset-2', 'ring-offset-slate-900', 'transition-all', 'duration-500');
+                          setTimeout(() => el.classList.remove('ring-2', 'ring-indigo-500', 'ring-offset-2', 'ring-offset-slate-900'), 1500);
+                        }
+                      }, 250);
+                  }
                 }}
               />
             )}
@@ -1715,10 +1725,20 @@ function App() {
         onClose={() => setShowGuideBook(false)}
         soundEnabled={state.soundEnabled}
         soundVolume={state.soundVolume}
-        navigateToSettings={(section) => {
+        navigateToSettings={(section, settingId) => {
           setActiveTab('settings');
           setActiveSettingsSection(section);
           setShowGuideBook(false);
+          if (settingId) {
+            setTimeout(() => {
+              const el = document.getElementById(settingId);
+              if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                el.classList.add('ring-2', 'ring-indigo-500', 'ring-offset-2', 'ring-offset-slate-900', 'transition-all', 'duration-500');
+                setTimeout(() => el.classList.remove('ring-2', 'ring-indigo-500', 'ring-offset-2', 'ring-offset-slate-900'), 1500);
+              }
+            }, 250);
+          }
         }}
         onTabChange={(tab, subTab) => {
           setActiveTab(tab);

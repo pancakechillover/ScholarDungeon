@@ -549,7 +549,11 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
                    >
                       <div className="flex justify-between items-center px-1">
                         <span className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em]">{currentDungeon.name}</span>
-                        {state.timeBasedMode ? (
+                        {currentDungeon.isOpenEnded ? (
+                          <span className="text-[10px] font-bold text-slate-400 tabular-nums">
+                            {currentDungeon.totalFocusTime || 0}<span className="text-[9px] opacity-70 ml-[1px]">m</span> Focused
+                          </span>
+                        ) : state.timeBasedMode ? (
                           <span className="text-[10px] font-bold text-slate-400 tabular-nums">
                              {Math.floor(currentDungeon.completedSessions * (state.standardSessionMinutes || 25))}<span className="text-[9px] opacity-70 ml-[1px]">m</span> <span className="opacity-50 text-[9px] mx-[1px]">/</span> {currentDungeon.totalSessions * (state.standardSessionMinutes || 25)}<span className="text-[9px] opacity-70 ml-[1px]">m</span>
                           </span>
@@ -557,13 +561,15 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
                           <span className="text-[10px] font-bold text-slate-400">{Math.floor(currentDungeon.completedSessions)}/{currentDungeon.totalSessions} Sessions</span>
                         )}
                       </div>
-                      <div className="h-2 flex w-full bg-slate-900 rounded-full border border-slate-800 overflow-hidden">
-                         <motion.div 
-                            initial={{ width: 0 }}
-                            animate={{ width: `${Math.min(100, (currentDungeon.completedSessions / currentDungeon.totalSessions) * 100)}%` }}
-                            className={cn("h-full shadow-[0_0_15px_rgba(99,102,241,0.6)]", currentDungeon.status === 'completed' ? "bg-emerald-500" : "bg-indigo-500")}
-                         />
-                      </div>
+                      {!currentDungeon.isOpenEnded && (
+                        <div className="h-2 flex w-full bg-slate-900 rounded-full border border-slate-800 overflow-hidden mt-2">
+                           <motion.div 
+                              initial={{ width: 0 }}
+                              animate={{ width: `${Math.min(100, (currentDungeon.completedSessions / currentDungeon.totalSessions) * 100)}%` }}
+                              className={cn("h-full shadow-[0_0_15px_rgba(99,102,241,0.6)]", currentDungeon.status === 'completed' ? "bg-emerald-500" : "bg-indigo-500")}
+                           />
+                        </div>
+                      )}
                    </motion.div>
                  )}
 
