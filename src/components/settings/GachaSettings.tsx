@@ -144,7 +144,7 @@ export const GachaSettings = ({ pools, onUpdate }: { pools: GachaPool[], onUpdat
   };
 
   return (
-    <div className="space-y-6">
+    <div id="setting-gacha" className="space-y-6">
       <div className="space-y-12">
         {/* Gacha Pools Section */}
         <div className="space-y-6">

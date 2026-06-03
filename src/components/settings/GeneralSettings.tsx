@@ -515,7 +515,7 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
 
   return (
     <div className="space-y-8">
-      <div className="space-y-6">
+      <div id="setting-themes" className="space-y-6">
         <div className="flex items-center gap-2.5 text-indigo-400 mb-6 pb-2">
           <Palette size={20} />
           <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Themes</h4>
@@ -654,7 +654,7 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
+              <div id="setting-timezone" className="flex items-center gap-3 p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
                 <div className="p-2 bg-indigo-500/10 text-indigo-400 rounded-xl shrink-0">
                   <Globe size={18} />
                 </div>
@@ -749,7 +749,7 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
         </div>
 
         <div className="space-y-4">
-           <div className="flex items-center justify-between p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
+           <div id="setting-time-based" className="flex items-center justify-between p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
              <div className="flex items-center gap-3">
                <div className={cn("p-2 rounded-xl", state.timeBasedMode ? "bg-indigo-500/10 text-indigo-400" : "bg-slate-800 text-slate-500")}>
                  <Clock size={20} />
@@ -800,7 +800,7 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
           <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Performance Heatmap</h4>
         </div>
 
-        <div className="space-y-4">
+        <div id="setting-heatmap" className="space-y-4">
           <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Heatmap Saturation Range</label>
           <p className="text-xs text-slate-500 italic">Adjusts the maximum session count required to reach the darkest color on the heatmap.</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -876,7 +876,7 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
             </button>
           </div>
 
-          <div className="p-4 bg-slate-900/50 rounded-2xl border border-slate-800 space-y-4">
+          <div id="setting-moods" className="p-4 bg-slate-900/50 rounded-2xl border border-slate-800 space-y-4">
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-rose-400">
                 <Smile size={18} />
@@ -927,7 +927,7 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
             </div>
           </div>
 
-          <div className="p-4 bg-slate-900/50 rounded-2xl border border-slate-800 space-y-4">
+          <div id="setting-daily-goal" className="p-4 bg-slate-900/50 rounded-2xl border border-slate-800 space-y-4">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-amber-400">
@@ -1018,7 +1018,7 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
           <h4 className="text-lg font-bold uppercase tracking-widest pr-1">System Notifications</h4>
         </div>
 
-        <div className="space-y-4">
+        <div id="setting-push" className="space-y-4">
           <div className="flex items-center justify-between p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
             <div className="flex items-center gap-3">
               <div className={cn("p-2 rounded-xl", state.pushEnabled ? "bg-indigo-500/10 text-indigo-400" : "bg-slate-800 text-slate-500")}>
@@ -1130,7 +1130,7 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
         </div>
       </div>
 
-      <div id="data-management" className="space-y-6 pt-6 border-t border-slate-800">
+      <div id="setting-data-management" className="space-y-6 pt-6 border-t border-slate-800">
         <div className="flex items-center gap-2.5 text-blue-400 mb-6 pb-2">
           <Database size={20} />
           <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Data Management</h4>

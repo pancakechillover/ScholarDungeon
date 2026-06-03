@@ -251,7 +251,7 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
   return (
     <>
     <div className="space-y-8">
-      <div className="space-y-6">
+      <div id="setting-sync-status" className="space-y-6">
         <div className="flex items-center gap-2.5 text-indigo-400 mb-6 pb-2">
           <Cloud size={20} />
           <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Cloud Sync</h4>
@@ -456,6 +456,7 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
 
         {/* Google OAuth */}
         <button
+          id="setting-drive"
           onClick={handleGoogleDriveClick}
           className={`relative text-left p-5 rounded-2xl overflow-hidden transition-all group ${
             state.googleDriveTokens 
@@ -502,6 +503,7 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
 
         {/* WebDAV */}
         <button
+          id="setting-webdav"
           onClick={() => {
             setUnlockTarget('webdav');
             setShowUnlockModal(true);

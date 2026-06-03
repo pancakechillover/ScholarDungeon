@@ -56,7 +56,7 @@ export const TimerSettingsSection = ({
         </div>
 
         <div className="flex flex-col gap-4 p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
-          <div className="flex items-center justify-between">
+          <div id="setting-banner" className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className={cn("p-2 rounded-xl", state.timerBannerCompactMode ? "bg-indigo-500/10 text-indigo-400" : "bg-slate-800 text-slate-500")}>
                 <TimerIcon size={20} />
@@ -123,7 +123,7 @@ export const TimerSettingsSection = ({
             </div>
           )}
 
-          <div className="flex items-center justify-between pt-4 border-t border-slate-800/50">
+          <div id="setting-manual-start" className="flex items-center justify-between pt-4 border-t border-slate-800/50">
             <div className="flex items-center gap-3">
               <div className={cn("p-2 rounded-xl", state.requireFocusConfirmation ? "bg-amber-500/10 text-amber-500" : "bg-slate-800 text-slate-500")}>
                 <Target size={20} />
@@ -152,7 +152,7 @@ export const TimerSettingsSection = ({
           </div>
         </div>
 
-        <div className="flex flex-col gap-4 p-4 bg-slate-900/50 rounded-2xl border border-slate-800 mt-4">
+        <div id="setting-skip-victory" className="flex flex-col gap-4 p-4 bg-slate-900/50 rounded-2xl border border-slate-800 mt-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className={cn("p-2 rounded-xl", state.timerSkipVictoryMode && state.timerSkipVictoryMode !== 'none' ? "bg-amber-500/10 text-amber-400" : "bg-slate-800 text-slate-500")}>

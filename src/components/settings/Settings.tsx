@@ -7,6 +7,7 @@ import { Plus, Trash2, Save, Edit2, X, ChevronRight, Coins, Zap, Sparkles, Troph
 import * as LucideIcons from 'lucide-react';
 import { APP_VERSION, LAST_UPDATE_DATE, RELEASE_HISTORY } from '../../version';
 import { cn, getXPForLevel, getDefaultRewardForLevel } from '../../lib/utils';
+import { SETTINGS_SEARCH_INDEX } from './SettingsSearchIndex';
 import { playSound } from '../../lib/sound';
 
 // Helper to convert VAPID key
@@ -314,6 +315,11 @@ export const Settings = React.memo<SettingsProps & { onOpenAstralArchives?: () =
     return c.title.toLowerCase().includes(term) || c.desc.toLowerCase().includes(term);
   });
 
+  const filteredSettingsItems = searchQuery.trim() ? SETTINGS_SEARCH_INDEX.filter(item => {
+    const term = searchQuery.toLowerCase();
+    return item.title.toLowerCase().includes(term) || item.description.toLowerCase().includes(term) || item.keywords.some(k => k.includes(term));
+  }) : [];
+
   const handleExportData = () => {
     const data = {
       state: state,
@@ -388,32 +394,75 @@ export const Settings = React.memo<SettingsProps & { onOpenAstralArchives?: () =
             )}
 
             <div className="grid grid-cols-1 gap-4 max-w-4xl">
-              {filteredCompartments.length === 0 ? (
-                <div className="py-12 text-center bg-slate-900/20 rounded-3xl border border-slate-800/50 border-dashed">
-                  <p className="text-slate-500 font-medium">No configuration compartments matched your search.</p>
-                </div>
-              ) : (
+              {!searchQuery.trim() ? (
+                // Normal Compartment View
                 filteredCompartments.map(compartment => (
                   <button 
                     key={compartment.id}
-                  onClick={() => setTabAndSave(compartment.id)} 
-                  className={cn(
-                    "flex items-center gap-4 p-5 bg-slate-900/40 hover:bg-slate-900/80 rounded-3xl border border-slate-800/80 transition-all text-left group w-full",
-                    compartment.borderColor
-                  )}
-                >
-                  <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center border group-hover:scale-105 transition-transform shrink-0", compartment.bgColor)}>
-                    <compartment.icon size={22} className={compartment.iconColor} />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="font-bold text-white uppercase tracking-widest text-xs sm:text-sm truncate">{compartment.title}</h3>
-                    <p className="text-xs text-slate-500 font-medium mt-1 leading-normal sm:line-clamp-1 line-clamp-2">{compartment.desc}</p>
-                  </div>
-                  <div className="ml-auto w-8 h-8 shrink-0 rounded-full bg-white/5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <ChevronRight className={compartment.iconColor} size={16} />
-                  </div>
-                </button>
+                    onClick={() => setTabAndSave(compartment.id)} 
+                    className={cn(
+                      "flex items-center gap-4 p-5 bg-slate-900/40 hover:bg-slate-900/80 rounded-3xl border border-slate-800/80 transition-all text-left group w-full",
+                      compartment.borderColor
+                    )}
+                  >
+                    <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center border group-hover:scale-105 transition-transform shrink-0", compartment.bgColor)}>
+                      <compartment.icon size={22} className={compartment.iconColor} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-bold text-white uppercase tracking-widest text-xs sm:text-sm truncate">{compartment.title}</h3>
+                      <p className="text-xs text-slate-500 font-medium mt-1 leading-normal sm:line-clamp-1 line-clamp-2">{compartment.desc}</p>
+                    </div>
+                    <div className="ml-auto w-8 h-8 shrink-0 rounded-full bg-white/5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <ChevronRight className={compartment.iconColor} size={16} />
+                    </div>
+                  </button>
                 ))
+              ) : (
+                // Search Results View
+                filteredSettingsItems.length === 0 ? (
+                  <div className="py-12 text-center bg-slate-900/20 rounded-3xl border border-slate-800/50 border-dashed">
+                    <p className="text-slate-500 font-medium">No settings matched "{searchQuery}".</p>
+                  </div>
+                ) : (
+                  filteredSettingsItems.map(item => {
+                    const compartment = SETTINGS_COMPARTMENTS.find(c => c.id === item.tab);
+                    if (!compartment) return null;
+                    return (
+                      <button 
+                        key={item.id}
+                        onClick={() => {
+                          setTabAndSave(item.tab);
+                          setTimeout(() => {
+                            const el = document.getElementById(item.id);
+                            if (el) {
+                              el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                              el.classList.add('ring-2', 'ring-indigo-500', 'ring-offset-2', 'ring-offset-slate-900', 'transition-all', 'duration-500');
+                              setTimeout(() => el.classList.remove('ring-2', 'ring-indigo-500', 'ring-offset-2', 'ring-offset-slate-900'), 1500);
+                            }
+                          }, 150);
+                        }} 
+                        className={cn(
+                          "flex items-start gap-4 p-5 bg-slate-900/40 hover:bg-slate-900/80 rounded-3xl border border-slate-800/80 transition-all text-left group w-full",
+                          compartment.borderColor
+                        )}
+                      >
+                        <div className={cn("w-10 h-10 mt-1 rounded-2xl flex items-center justify-center border shrink-0", compartment.bgColor)}>
+                          <compartment.icon size={18} className={compartment.iconColor} />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{compartment.title}</span>
+                          </div>
+                          <h3 className="font-bold text-white tracking-tight text-sm sm:text-base truncate">{item.title}</h3>
+                          <p className="text-xs text-slate-400 font-medium mt-1 leading-normal sm:line-clamp-1 line-clamp-2">{item.description}</p>
+                        </div>
+                        <div className="ml-auto w-8 h-8 shrink-0 rounded-full bg-white/5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity self-center">
+                          <ChevronRight className={compartment.iconColor} size={16} />
+                        </div>
+                      </button>
+                    );
+                  })
+                )
               )}
             </div>
           </div>

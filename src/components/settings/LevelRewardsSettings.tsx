@@ -129,7 +129,7 @@ export const LevelRewardsSettings = ({ state, setState }: { state: any, setState
   };
 
   return (
-    <div className="space-y-8">
+    <div id="setting-milestones" className="space-y-8">
       <div className="flex items-center justify-between gap-2.5 text-emerald-400 mb-6 pb-2">
         <div className="flex items-center gap-2.5">
           <Trophy size={20} />

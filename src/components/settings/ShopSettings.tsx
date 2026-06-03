@@ -41,7 +41,7 @@ export const ShopSettings = ({ items, onUpdate }: { items: ShopItem[], onUpdate:
   }>({ isOpen: false, title: '', message: '' });
 
   return (
-    <div className="space-y-6">
+    <div id="setting-shop" className="space-y-6">
       <div className="flex justify-between items-center pb-4 mb-6">
         <div className="flex items-center gap-2.5 text-amber-400">
           <ShoppingBag size={20} />
