@@ -1,8 +1,28 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
+import { format } from "date-fns";
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
+}
+
+export function getSettlementDay(date: Date, timeSettings?: any): string {
+  const ts = timeSettings || {
+    morning: { start: 8, end: 12 },
+    afternoon: { start: 14, end: 18 },
+    night: { start: 20, end: 24 }
+  };
+  const hour = date.getHours();
+  let baseDate = new Date(date);
+  
+  if (ts.night.start > ts.night.end && hour < ts.night.end) {
+    baseDate.setDate(baseDate.getDate() - 1);
+  } else if (hour < ts.morning.start) {
+    baseDate.setDate(baseDate.getDate() - 1);
+  }
+  
+  return format(baseDate, 'yyyy-MM-dd');
 }
 
 export const getXPForLevel = (lvl: number) => 1000 + Math.floor((lvl - 1) / 10) * 100;

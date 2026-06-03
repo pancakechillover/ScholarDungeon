@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 import { X, Flame, Search, HelpCircle } from 'lucide-react';
 import { AppState } from '../types';
 import { format, subDays, parseISO } from 'date-fns';
-import { cn } from '../lib/utils';
+import { cn, getSettlementDay } from '../lib/utils';
 import { ConfirmModal } from './ConfirmModal';
 
 interface StreakRecordModalProps {
@@ -19,15 +19,27 @@ export const StreakRecordModal: React.FC<StreakRecordModalProps> = ({ state, onC
   const streakData = (() => {
     const dates = new Set<string>();
     state.history.forEach(session => {
-      dates.add(format(parseISO(session.timestamp), 'yyyy-MM-dd'));
+      let sessionDate = new Date(session.timestamp);
+      if (state.timezone) {
+        try {
+          sessionDate = new Date(sessionDate.toLocaleString('en-US', { timeZone: state.timezone }));
+        } catch (e) {}
+      }
+      dates.add(getSettlementDay(sessionDate, state.timeSettings));
     });
     (state.patchedDays || []).forEach(d => dates.add(d));
 
     const result = [];
-    const now = new Date();
+    let now = new Date();
+    if (state.timezone) {
+      try {
+        now = new Date(now.toLocaleString('en-US', { timeZone: state.timezone }));
+      } catch (e) {}
+    }
+
     for (let i = 6; i >= 0; i--) {
       const d = subDays(now, i);
-      const str = format(d, 'yyyy-MM-dd');
+      const str = getSettlementDay(d, state.timeSettings);
       const isCompleted = dates.has(str);
       const isPatched = (state.patchedDays || []).includes(str);
       result.push({
@@ -37,6 +49,7 @@ export const StreakRecordModal: React.FC<StreakRecordModalProps> = ({ state, onC
         isCompleted,
         isPatched,
         isToday: i === 0,
+        // Using raw now (ignoring exact day string for future block, safe for local rendering) 
         isFuture: d > now
       });
     }

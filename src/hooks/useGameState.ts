@@ -3,7 +3,7 @@ import { AppState, Dungeon, StudySession, Talent, RewardCard, MajorDungeon, Rewa
 import { TALENTS, INITIAL_REWARD_POOL, INITIAL_GACHA, DEFAULT_QUESTS, DEFAULT_SAGE_PROMPTS } from '../constants';
 import { format, isSameDay, parseISO, differenceInDays, subDays } from 'date-fns';
 
-import { getXPForLevel, getDefaultRewardForLevel, getDeviceType, getDeviceCode } from '../lib/utils';
+import { getXPForLevel, getDefaultRewardForLevel, getDeviceType, getDeviceCode, getSettlementDay } from '../lib/utils';
 import { generateRewardChoicesForSession } from '../lib/rewardLogic';
 
 const STORAGE_KEY = 'scholars_dungeon_state';
@@ -491,29 +491,8 @@ export function useGameState() {
   // Daily Reset Logic
   useEffect(() => {
     const now = getNow();
-    const ts = state.timeSettings || {
-      morning: { start: 8, end: 12 },
-      afternoon: { start: 14, end: 18 },
-      night: { start: 20, end: 24 }
-    };
-
-    const getSettlementDay = (date: Date) => {
-      const hour = date.getHours();
-      let baseDate = new Date(date);
-      
-      // Boundary check:
-      // 1. If we are within a night peak that spans midnight (e.g. ends at 02:00 and we are at 01:00) -> Yesterday
-      if (ts.night.start > ts.night.end && hour < ts.night.end) {
-        baseDate.setDate(baseDate.getDate() - 1);
-      }
-      // 2. If we are before the morning start (e.g. starts at 08:00 and we are at 04:00) -> Yesterday
-      else if (hour < ts.morning.start) {
-        baseDate.setDate(baseDate.getDate() - 1);
-      }
-      return format(baseDate, 'yyyy-MM-dd');
-    };
-
-    const todayStr = getSettlementDay(now);
+    
+    const todayStr = getSettlementDay(now, state.timeSettings);
     const currentWeekStr = format(now, 'yyyy-' + Math.ceil(now.getDate() / 7));
     const currentMonthStr = format(now, 'yyyy-MM');
 
@@ -525,7 +504,7 @@ export function useGameState() {
       updates.dailySessions = 0;
       updates.dailyRerollUsed = false;
       updates.lastDailyReset = todayStr;
-      updates.streak = state.lastStudyDate ? (differenceInDays(now, parseISO(state.lastStudyDate)) <= 1 ? state.streak : 0) : 0;
+      updates.streak = state.lastStudyDate ? (differenceInDays(parseISO(todayStr), parseISO(state.lastStudyDate)) <= 1 ? state.streak : 0) : 0;
       
       // Reset daily quests
       if (state.quests) {
@@ -812,8 +791,13 @@ export function useGameState() {
   }, [dungeons, addCoins, addXP, addRewardToHistory]);
 
   const completeSession = useCallback((dungeonId: string | null, duration: number, focusDuration?: number, restDuration?: number) => {
-    const now = getNow();
-    const todayStr = format(now, 'yyyy-MM-dd');
+    let now = getNow();
+    if (state.timezone) {
+      try {
+        now = new Date(now.toLocaleString('en-US', { timeZone: state.timezone }));
+      } catch (e) {}
+    }
+    const todayStr = getSettlementDay(now, state.timeSettings);
     
     // Calculate rewards
     let baseXP = 100;
@@ -1192,7 +1176,7 @@ export function useGameState() {
     }
 
     return session;
-  }, [addXP, addCoins, state.activeTalents, state.dailySessions, state.streak, state.inventory, state.rewardPool, state.devModeEnabled, state.devBaseXP, state.devXpMode, state.devMinXP, state.devMaxXP, state.devCoinMode, state.devBaseCoins, state.devMinCoins, state.devMaxCoins, state.devCritChance, state.devCritMultiplier]);
+  }, [addXP, addCoins, state.activeTalents, state.dailySessions, state.streak, state.inventory, state.rewardPool, state.devModeEnabled, state.devBaseXP, state.devXpMode, state.devMinXP, state.devMaxXP, state.devCoinMode, state.devBaseCoins, state.devMinCoins, state.devMaxCoins, state.devCritChance, state.devCritMultiplier, state.timezone, state.timeSettings]);
 
   const forceCompleteSubDungeon = useCallback((dungeonId: string) => {
     setDungeons(prevDungeons => {
@@ -1659,25 +1643,9 @@ export function useGameState() {
 
       // Decrement dailySessions if the session was today
       const now = getNow();
-      const ts = prev.timeSettings || {
-        morning: { start: 8, end: 12 },
-        afternoon: { start: 14, end: 18 },
-        night: { start: 20, end: 24 }
-      };
 
-      const getSettlementDay = (date: Date) => {
-        const hour = date.getHours();
-        let baseDate = new Date(date);
-        if (ts.night.start > ts.night.end && hour < ts.night.end) {
-          baseDate.setDate(baseDate.getDate() - 1);
-        } else if (hour < ts.morning.start) {
-          baseDate.setDate(baseDate.getDate() - 1);
-        }
-        return format(baseDate, 'yyyy-MM-dd');
-      };
-
-      const todayStr = getSettlementDay(now);
-      const sessionDay = getSettlementDay(new Date(session.timestamp));
+      const todayStr = getSettlementDay(now, prev.timeSettings);
+      const sessionDay = getSettlementDay(new Date(session.timestamp), prev.timeSettings);
 
       if (sessionDay === todayStr) {
         const addedProgress = prev.timeBasedMode ? (Math.max(1, session.focusDuration || session.duration) / (prev.standardSessionMinutes || 25)) : 1;
@@ -1931,12 +1899,24 @@ export function useGameState() {
       const newPatchedDays = [...(prev.patchedDays || []), dateStr];
       const dates = new Set<string>();
       prev.history.forEach(session => {
-        dates.add(format(parseISO(session.timestamp), 'yyyy-MM-dd'));
+        let sessionDate = new Date(session.timestamp);
+        if (prev.timezone) {
+          try {
+            sessionDate = new Date(sessionDate.toLocaleString('en-US', { timeZone: prev.timezone }));
+          } catch (e) {}
+        }
+        dates.add(getSettlementDay(sessionDate, prev.timeSettings));
       });
       newPatchedDays.forEach(d => dates.add(d));
 
-      const now = getNow();
-      const todayStr = format(now, 'yyyy-MM-dd');
+      let localizedNow = getNow();
+      if (prev.timezone) {
+        try {
+          localizedNow = new Date(localizedNow.toLocaleString('en-US', { timeZone: prev.timezone }));
+        } catch (e) {}
+      }
+      
+      const todayStr = getSettlementDay(localizedNow, prev.timeSettings);
       let currTarget = todayStr;
       let newStreak = 0;
 
@@ -1954,7 +1934,7 @@ export function useGameState() {
       }
 
       let newLastStudyDate = prev.lastStudyDate;
-      const yesterday = format(subDays(now, 1), 'yyyy-MM-dd');
+      const yesterday = format(subDays(parseISO(todayStr), 1), 'yyyy-MM-dd');
       if (dates.has(todayStr)) newLastStudyDate = todayStr;
       else if (dates.has(yesterday)) newLastStudyDate = yesterday;
 

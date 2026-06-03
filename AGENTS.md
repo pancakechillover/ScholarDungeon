@@ -23,7 +23,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v7.6.7
+- **Current Version:** v7.6.8
 - **Last Update Date:** 2026-06-03
 
 ## Dark Themes Definition
@@ -49,6 +49,11 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v7.6.8 (2026-06-03):** Activity Time Peaks & Streak Timezone Sync.
+  - *Bug Fix:* Streamlined logical "Day" mappings globally by substituting hardcoded physical calendar slices with dynamically resolved Settlement Strings that accurately absorb user-configured Activity Time Peaks (Morning/Afternoon/Night loops) and native Timezones.
+  - *Bug Fix:* Completely corrected raw date arithmetic in `repairStreak` resolving issues where streak patchwork systematically bypassed offset offsets.
+  - *Bug Fix:* Applied explicit timezone mapping capabilities across the "7-Day Activity Record" visualizer directly aligning historical UI interactions with the strict rules encoded inside the internal daily reset cycles.
 
 - **v7.6.7 (2026-06-03):** Settings Panel Search & Navigation Polish.
   - *Feature:* Added a search bar to the Settings Panel to easily filter and find specific configuration compartments.

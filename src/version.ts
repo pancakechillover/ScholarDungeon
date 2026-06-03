@@ -1,4 +1,4 @@
-export const APP_VERSION = 'v7.6.7';
+export const APP_VERSION = 'v7.6.8';
 export const LAST_UPDATE_DATE = '2026-06-03';
 export const LAST_UPDATE_TIME = '05:25:00';
 
