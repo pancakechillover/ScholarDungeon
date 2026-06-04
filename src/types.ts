@@ -392,6 +392,7 @@ export interface TeamMember {
   joinedAt: number;
   totalFocusTime: number; // minutes contributed
   isCaptain: boolean;
+  lastActive?: number;
 }
 
 export interface TeamMessage {
@@ -440,6 +441,7 @@ export interface Team {
   config: TeamConfig;
   currentProposal?: TeamSettingProposal;
   applicants?: TeamMember[] | any[];
+  myUserId?: string;
 }
 
 export interface ShopItem {

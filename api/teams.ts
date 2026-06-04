@@ -97,6 +97,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
              if (userBio && m.bio !== userBio) { m.bio = userBio; updated = true; }
              if (userTitle && m.title !== userTitle) { m.title = userTitle; updated = true; }
              if (userLevel && m.level !== userLevel) { m.level = userLevel; updated = true; }
+             m.lastActive = Date.now();
+             updated = true;
              
              if (updated) {
                 await client.hSet(`scholar_team:${teamId}:members`, userId, JSON.stringify(m));
@@ -141,7 +143,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
              config,
              members,
              applicants, isMember, isPending,
-             currentProposal
+             currentProposal,
+             myUserId: userId
           },
           messages,
           events
@@ -518,6 +521,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
        
        await client.lPush(`scholar_team:${teamId}:events`, JSON.stringify({
           id: crypto.randomUUID(), type: 'transfer', content: `${member.name} transferred guild leadership to ${targetMember.name}.`, timestamp: Date.now()
+       }));
+       
+       return res.json({ success: true });
+    }
+
+    // POST: Kick Member
+    if (method === 'POST' && action === 'kick') {
+       const { teamId, targetMemberId } = req.body;
+       const memberStr = await client.hGet(`scholar_team:${teamId}:members`, userId);
+       if (!memberStr) return res.status(403).json({ error: 'Not member' });
+       const member = JSON.parse(memberStr);
+       if (!member.isCaptain) return res.status(403).json({ error: 'Only captain can banish members' });
+       
+       const targetStr = await client.hGet(`scholar_team:${teamId}:members`, targetMemberId);
+       if (!targetStr) return res.status(404).json({ error: 'Target not found' });
+       const targetMember = JSON.parse(targetStr);
+       
+       if (targetMember.isCaptain) return res.status(400).json({ error: 'Cannot banish the captain' });
+
+       await client.hDel(`scholar_team:${teamId}:members`, targetMemberId);
+       
+       await client.lPush(`scholar_team:${teamId}:events`, JSON.stringify({
+          id: crypto.randomUUID(), type: 'kick', content: `${member.name} banished ${targetMember.name} from the guild.`, timestamp: Date.now()
        }));
        
        return res.json({ success: true });

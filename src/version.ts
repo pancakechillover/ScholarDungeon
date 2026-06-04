@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v8.2.2';
+export const APP_VERSION = 'v8.4.1';
 export const LAST_UPDATE_DATE = '2026-06-04';
-export const LAST_UPDATE_TIME = '16:15:00';
+export const LAST_UPDATE_TIME = '17:02:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,38 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v8.4.1',
+    date: '2026-06-04',
+    time: '17:02:00',
+    title: 'Adaptive Light/Dark Theme Enhancements',
+    items: [
+      { category: 'UI/UX', description: 'Refined the Guild Goal progress widget and Detailed Modal to strictly enforce theme-aware primary colors, guaranteeing striking readability and aesthetics across all daylight and night environments without harsh hardcoded shadows.' }
+    ]
+  },
+  {
+    version: 'v8.4.0',
+    date: '2026-06-04',
+    time: '16:55:00',
+    title: 'Guild Leadership & Progress Glory',
+    items: [
+      { category: 'Feature', description: 'Captains are now empowered with the ability to banish members directly from the team profiles.' },
+      { category: 'Feature', description: 'Guild Goal cards evolved into rich interactive widgets with pulse effects, which can be clicked to open a celebratory Full-Screen Daily Progress & Leaderboard view.' },
+      { category: 'Feature', description: 'Active Fellow members now display an online presence indicator and the registry automatically ranks by Scholar Level.' }
+    ]
+  },
+  {
+    version: 'v8.3.0',
+    date: '2026-06-04',
+    time: '16:34:00',
+    title: 'Guild Quality of Life & Message Realism',
+    items: [
+      { category: 'UI/UX', description: 'Redesigned the "Found a Guild" modal layout, optimizing the vertical headspace and positioning action controls properly to upper right quadrants.' },
+      { category: 'Performance', description: 'Eliminated chat transmission latency by implementing full optimistic UI predictive appending on outbound messages.' },
+      { category: 'Bug Fix', description: 'Resolved systemic discrepancies preventing newly joined Fellowship members from broadcasting custom Avatar selections (e.g. Cat, Dog) synchronously.' },
+      { category: 'Bug Fix', description: 'Repaired the Team Member Identity hash resolver that had invisibly broken Captain Transfer permissions for shared name instances.' }
+    ]
+  },
   {
     version: 'v8.2.2',
     date: '2026-06-04',

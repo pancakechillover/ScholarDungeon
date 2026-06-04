@@ -22,12 +22,16 @@ const renderAvatar = (avatarValue: string | undefined, size: number = 14) => {
   const icons: Record<string, React.ComponentType<{ size: number; className?: string }>> = {
     User, Cat, Dog, Ghost, Bot, Skull
   };
-  const IconComponent = icons[avatarValue];
+  
+  // Normalize string for safety
+  const safeAvatarValue = avatarValue.charAt(0).toUpperCase() + avatarValue.slice(1).toLowerCase();
+  
+  const IconComponent = icons[safeAvatarValue] || icons[avatarValue];
   if (IconComponent) {
-    return <IconComponent size={size} className="text-indigo-400 m-auto" />;
+    return <IconComponent size={size} className="text-indigo-400 m-auto drop-shadow-md" />;
   }
   if (avatarValue.startsWith('http') || avatarValue.startsWith('data:')) {
-    return <img src={avatarValue} className="w-full h-full object-cover" alt="" />;
+    return <img src={avatarValue} className="w-full h-full object-cover rounded-full" alt="" />;
   }
   return <User size={size} className="text-slate-500 m-auto" />;
 };
@@ -49,6 +53,7 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
   const [showJoin, setShowJoin] = useState(false);
   const [viewingProfile, setViewingProfile] = useState<string | null>(null);
   const [showPlazaModal, setShowPlazaModal] = useState(false);
+  const [showDetailedGoal, setShowDetailedGoal] = useState(false);
 
   const fetchLobby = async () => {
     setLoading(true);
@@ -122,7 +127,7 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
           teamId: id, 
           secretCode: identityCode,
           userName: state.userName || 'Scholar',
-          userAvatar: state.userAvatar,
+          userAvatar: state.userAvatar || 'User',
           userBio: state.userBio,
           userTitle: state.userTitle,
           userLevel: state.level || 1
@@ -176,6 +181,18 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
     if (!chatInput.trim() || !state.teamId) return;
     const msg = chatInput.trim();
     setChatInput('');
+    
+    // Optimistic UI update
+    const fakeMessage: TeamMessage = {
+      id: "temp-" + Date.now(),
+      userId: team?.myUserId || identityCode,
+      name: state.userName || 'Scholar',
+      avatar: state.userAvatar || 'User',
+      content: msg,
+      timestamp: Date.now()
+    };
+    setMessages(prev => [fakeMessage, ...prev]);
+
     try {
       await fetch('/api/teams?action=message', {
         method: 'POST',
@@ -184,7 +201,7 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
           teamId: state.teamId, 
           secretCode: identityCode,
           userName: state.userName || 'Scholar',
-          userAvatar: state.userAvatar,
+          userAvatar: state.userAvatar || 'User',
           userBio: state.userBio,
           userTitle: state.userTitle,
           userLevel: state.level || 1,
@@ -328,7 +345,7 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
     let totalProgress = team.members.reduce((acc, m) => acc + m.totalFocusTime, 0);
     const target = team.config.targetValue;
     const isCompleted = target > 0 && totalProgress >= target;
-    const isCaptain = team.members.find(x => x.userId === state.secretCode || x.name === state.userName)?.isCaptain;
+    const isCaptain = team.members.find(x => x.userId === team.myUserId)?.isCaptain;
 
     return (
       <div className="flex flex-col h-[500px]">
@@ -349,24 +366,45 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
         <div className="flex gap-6 flex-1 overflow-hidden">
           {/* Left: Progress & Members */}
           <div className="w-1/3 flex flex-col gap-4">
-            <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4 text-center">
-              <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Team Goal ({{'daily_time': 'Daily', 'weekly_time': 'Weekly', 'monthly_time': 'Monthly', 'yearly_time': 'Yearly', 'total_time': 'Total'}[team.config.targetType] || 'Total'})</div>
-              <div className="flex justify-center items-end gap-1 mb-2">
-                <span className="text-3xl font-bold text-white leading-none">{totalProgress}</span>
-                <span className="text-sm font-semibold text-slate-500 mb-1">/ {target}m</span>
+            <div 
+              onClick={() => setShowDetailedGoal(true)}
+              className="bg-slate-900 border border-slate-800 rounded-2xl p-5 text-center cursor-pointer group hover:border-indigo-500/50 hover:shadow-[0_0_20px_rgba(99,102,241,0.15)] transition-all overflow-hidden relative"
+            >
+              <div className="absolute inset-0 bg-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+              {isCompleted && <div className="absolute -top-10 -right-10 w-24 h-24 bg-indigo-500/20 blur-2xl rounded-full pointer-events-none" />}
+              
+              <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 flex items-center justify-center gap-1.5 relative z-10">
+                <Target size={12} className={isCompleted ? "text-indigo-500" : "text-indigo-400"} />
+                Team Goal ({{'daily_time': 'Daily', 'weekly_time': 'Weekly', 'monthly_time': 'Monthly', 'yearly_time': 'Yearly', 'total_time': 'Total'}[team.config.targetType] || 'Total'})
               </div>
-              <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+              
+              <div className="flex justify-center items-end gap-1 mb-3 relative z-10">
+                <span className={cn("text-4xl font-black tabular-nums tracking-tighter leading-none transition-colors", isCompleted ? "text-indigo-500 drop-shadow-sm" : "text-white")}>
+                  {totalProgress}
+                </span>
+                <span className="text-sm font-bold text-slate-500 mb-1">/ {target} <span className="text-[10px] uppercase">min</span></span>
+              </div>
+              
+              <div className="w-full h-2 bg-slate-950 rounded-full overflow-hidden border border-slate-800 relative z-10">
                 <div 
-                  className={cn("h-full transition-all", isCompleted ? "bg-emerald-500" : "bg-indigo-500")}
+                  className="bg-indigo-500 h-full transition-all duration-1000 ease-out relative"
                   style={{ width: `${Math.min(100, (totalProgress / Math.max(1, target)) * 100)}%` }}
-                />
+                >
+                  <div className="absolute inset-0 bg-white/20 w-full animate-[pulse_2s_ease-in-out_infinite]" />
+                </div>
               </div>
-              {isCompleted && <div className="mt-2 text-xs font-bold text-emerald-400 flex justify-center items-center gap-1"><Check size={12} /> Goal Reached!</div>}
+              
+              <div className="mt-3 flex justify-between items-center relative z-10">
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                  {Math.round(Math.min(100, (totalProgress / Math.max(1, target)) * 100))}% Completed
+                </span>
+                {isCompleted && <div className="text-[9px] font-black text-white-pure bg-indigo-500 px-2 py-0.5 rounded-sm uppercase tracking-widest">Victory</div>}
+              </div>
               
               {team.config.rewardContent && (
-                <div className="mt-3 text-[10px] bg-slate-800/50 p-2 rounded-lg text-slate-400">
-                  <span className="text-amber-400 font-bold block mb-1">Reward Pool:</span>
-                  {team.config.rewardContent}
+                <div className="mt-4 pt-3 border-t border-slate-800/50 flex flex-col gap-1">
+                  <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest text-left">Reward Pool</span>
+                  <span className="text-xs text-slate-600 font-medium text-left truncate">{team.config.rewardContent}</span>
                 </div>
               )}
             </div>
@@ -402,15 +440,20 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
               )}
 
               <div className="space-y-3">
-                {team.members.map(m => (
+                {[...team.members].sort((a,b) => (b.level||1) - (a.level||1)).map(m => {
+                  const isOnline = m.lastActive && (Date.now() - m.lastActive < 5 * 60 * 1000);
+                  return (
                   <div 
                     key={m.userId} 
                     className="flex justify-between items-center group cursor-pointer hover:bg-slate-900/50 p-1.5 -mx-1.5 rounded-lg transition-colors"
                     onClick={() => setViewingProfile(m.userId)}
                   >
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center overflow-hidden text-lg">
+                      <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center overflow-hidden text-lg relative">
                         {renderAvatar(m.avatar, 14)}
+                        {isOnline ? (
+                          <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full border border-slate-800 shadow-[0_0_5px_rgba(16,185,129,0.5)]" />
+                        ) : null}
                       </div>
                       <div className="flex flex-col">
                         <span className="text-sm font-bold text-slate-300 flex items-center gap-1">
@@ -421,7 +464,7 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
                     </div>
                     <span className="text-[10px] font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-full">Lv. {m.level || 1}</span>
                   </div>
-                ))}
+                )})}
               </div>
 
               {isCaptain && (team as any).applicants && (team as any).applicants.length > 0 && (
@@ -498,7 +541,7 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
                         </div>
                      </div>
                      <div className="flex flex-col items-end gap-2">
-                        {team.currentProposal.votes[state.secretCode || getOrGenerateIdentity()] === undefined ? (
+                        {team.currentProposal.votes[team.myUserId || ''] === undefined ? (
                            <div className="flex gap-2">
                              <button onClick={() => voteProposal(true)} className="px-4 py-1.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-bold rounded-xl hover:bg-emerald-500/20 transition-colors uppercase tracking-widest">Accept</button>
                              <button onClick={() => voteProposal(false)} className="px-4 py-1.5 bg-rose-500/10 text-rose-400 border border-rose-500/20 text-xs font-bold rounded-xl hover:bg-rose-500/20 transition-colors uppercase tracking-widest">Reject</button>
@@ -521,7 +564,7 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
               {activeTab === 'chat' ? (
                 <div className="space-y-4 flex flex-col justify-end">
                   {messages.slice().reverse().map(m => {
-                    const isMe = m.name === (state.userName || 'Scholar');
+                    const isMe = m.userId === team?.myUserId;
                     return (
                       <div key={m.id} className={cn("flex flex-col w-full", isMe ? "items-end" : "items-start")}>
                         <div className={cn("flex items-end gap-2", isMe ? "flex-row-reverse" : "flex-row")}>
@@ -610,9 +653,9 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
            team={team} 
            onClose={() => setShowSettings(false)} 
            onSave={proposeSettings} 
-           isCaptain={team.members.find(x => x.name === state.userName || x.userId === state.secretCode)?.isCaptain}
+           isCaptain={team.members.find(x => x.userId === team.myUserId)?.isCaptain}
            onLeave={async () => {
-             const isCap = team.members.find(x => x.name === state.userName || x.userId === state.secretCode)?.isCaptain;
+             const isCap = team.members.find(x => x.userId === team.myUserId)?.isCaptain;
              const msg = isCap 
                ? "Are you sure you want to disband this guild? This will remove all members. (您确定要解散并退出该公队吗？)"
                : "Are you sure you want to leave this guild? (您确定要退出当前公队吗？)";
@@ -673,8 +716,8 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
         <TeamMemberProfileModal 
            member={team.members.find(m => m.userId === viewingProfile)!}
            onClose={() => setViewingProfile(null)}
-           isCurrentUserCaptain={team.members.find(m => m.userId === (state.secretCode || getOrGenerateIdentity()))?.isCaptain}
-           isTargetSelf={viewingProfile === (state.secretCode || getOrGenerateIdentity())}
+           isCurrentUserCaptain={team.members.find(m => m.userId === team.myUserId)?.isCaptain}
+           isTargetSelf={viewingProfile === team.myUserId}
            onTransferCaptain={async (targetId) => {
               if (!confirm("Are you sure you want to transfer guild leadership? You will become a regular member.")) return;
               const identityCode = state.secretCode || getOrGenerateIdentity();
@@ -685,11 +728,27 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
               });
               setViewingProfile(null);
            }}
+           onKickMember={async (targetId) => {
+              if (!confirm("Are you sure you want to banish this member from the guild?")) return;
+              const identityCode = state.secretCode || getOrGenerateIdentity();
+              await fetch('/api/teams?action=kick', {
+                 method: 'POST',
+                 headers: { 'Content-Type': 'application/json' },
+                 body: JSON.stringify({ teamId: team.id, secretCode: identityCode, targetMemberId: targetId })
+              });
+              setViewingProfile(null);
+              // Optimistically UI update
+              fetchTeam();
+           }}
         />
       )}
       
       {showPlazaModal && (
         <PlazaModal onClose={() => setShowPlazaModal(false)} />
+      )}
+      
+      {showDetailedGoal && team && (
+         <DetailedGoalModal team={team} onClose={() => setShowDetailedGoal(false)} />
       )}
     </div>
   );
@@ -731,22 +790,19 @@ const CreateTeamModal = ({ onClose, onCreate }: any) => {
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-slate-900 border-2 border-indigo-500/30 shadow-[0_0_50px_rgba(99,102,241,0.15)] rounded-3xl p-6 sm:p-8 max-w-4xl w-full relative overflow-hidden my-auto"
+        className="bg-slate-900 border border-indigo-500/30 shadow-[0_0_50px_rgba(99,102,241,0.15)] rounded-3xl p-6 sm:p-8 max-w-2xl w-full relative overflow-hidden my-auto"
       >
-        <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-indigo-900/40 to-transparent pointer-events-none" />
-        <div className="absolute -top-24 -right-24 w-64 h-64 bg-indigo-600/10 blur-[80px] rounded-full pointer-events-none" />
-        
-        <button onClick={onClose} className="absolute top-6 right-6 text-slate-500 hover:text-white transition-colors bg-slate-800/50 p-2 rounded-full relative z-20">
+        <button onClick={onClose} className="absolute top-6 right-6 text-slate-500 hover:text-white transition-colors bg-slate-800/50 p-2 rounded-full z-20">
           <X size={20}/>
         </button>
         
-        <div className="flex items-center gap-5 mb-8 relative z-10">
-          <div className="w-16 h-16 bg-slate-950 text-indigo-400 flex items-center justify-center rounded-2xl border-2 border-indigo-500/50 shadow-[0_0_15px_rgba(99,102,241,0.3)] shrink-0">
-            <Landmark size={32} />
+        <div className="flex items-center gap-4 mb-6 relative z-10">
+          <div className="w-14 h-14 bg-slate-950 text-indigo-400 flex items-center justify-center rounded-2xl border border-indigo-500/50 shadow-[0_0_15px_rgba(99,102,241,0.3)] shrink-0">
+            <Landmark size={28} />
           </div>
           <div>
-            <h3 className="text-3xl font-black text-white uppercase tracking-tighter">Found a Guild</h3>
-            <p className="text-sm text-slate-400 font-medium tracking-tight mt-1">Gather scholars under one banner and forge your legacy.</p>
+            <h3 className="text-2xl font-black text-white uppercase tracking-tighter">Found a Guild</h3>
+            <p className="text-xs text-slate-400 font-medium tracking-tight mt-0.5">Gather scholars under one banner and forge your legacy.</p>
           </div>
         </div>
          
@@ -869,7 +925,7 @@ const CreateTeamModal = ({ onClose, onCreate }: any) => {
   )
 }
 
-const TeamMemberProfileModal = ({ member, onClose, isCurrentUserCaptain, isTargetSelf, onTransferCaptain }: { member: TeamMember, onClose: () => void, isCurrentUserCaptain?: boolean, isTargetSelf?: boolean, onTransferCaptain?: (targetId: string) => void }) => {
+const TeamMemberProfileModal = ({ member, onClose, isCurrentUserCaptain, isTargetSelf, onTransferCaptain, onKickMember }: { member: TeamMember, onClose: () => void, isCurrentUserCaptain?: boolean, isTargetSelf?: boolean, onTransferCaptain?: (targetId: string) => void, onKickMember?: (targetId: string) => void }) => {
   if (!member) return null;
   return createPortal(
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
@@ -909,13 +965,106 @@ const TeamMemberProfileModal = ({ member, onClose, isCurrentUserCaptain, isTarge
             </div>
           </div>
           
-          {isCurrentUserCaptain && !isTargetSelf && onTransferCaptain && (
-            <button 
-               onClick={() => onTransferCaptain(member.userId)} 
-               className="mt-6 w-full py-2.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 border border-amber-500/30 rounded-xl font-bold font-sans text-xs tracking-widest uppercase transition-colors"
-            >
-               Transfer Captain
-            </button>
+          {isCurrentUserCaptain && !isTargetSelf && (
+            <div className="w-full flex gap-2 mt-6">
+              {onTransferCaptain && (
+                <button 
+                  onClick={() => onTransferCaptain(member.userId)} 
+                  className="flex-1 py-2.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 border border-amber-500/30 rounded-xl font-bold font-sans text-[10px] tracking-widest uppercase transition-colors"
+                >
+                  Transfer Captain
+                </button>
+              )}
+              {onKickMember && (
+                <button 
+                  onClick={() => onKickMember(member.userId)} 
+                  className="flex-1 py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/30 rounded-xl font-bold font-sans text-[10px] tracking-widest uppercase transition-colors"
+                >
+                  Banish
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+};
+
+const GoalDetailsModal = ({ team, onClose }: any) => {
+  const target = team.config.targetValue;
+  const totalProgress = team.members.reduce((acc: number, m: any) => acc + m.totalFocusTime, 0);
+  const isCompleted = target > 0 && totalProgress >= target;
+  const sortedMembers = [...team.members].sort((a,b) => b.totalFocusTime - a.totalFocusTime);
+
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md">
+      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 max-w-lg w-full relative overflow-hidden shadow-2xl">
+        <button onClick={onClose} className="absolute top-6 right-6 text-slate-500 hover:text-white transition-colors z-20"><X size={24}/></button>
+
+        {isCompleted && (
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-emerald-500/20 blur-[100px] rounded-full" />
+          </div>
+        )}
+
+        <div className="relative z-10 flex flex-col items-center">
+          <div className={cn("w-20 h-20 rounded-2xl flex items-center justify-center mb-6 shadow-xl", isCompleted ? "bg-emerald-500/20 text-emerald-400 border-2 border-emerald-500/50" : "bg-indigo-500/20 text-indigo-400 border-2 border-indigo-500/50")}>
+            <Target size={40} />
+          </div>
+          
+          <h2 className="text-3xl font-black text-white tracking-tighter uppercase mb-2">
+             {{'daily_time': 'Daily Goal', 'weekly_time': 'Weekly Goal', 'monthly_time': 'Monthly Goal', 'yearly_time': 'Yearly Goal', 'total_time': 'Total Goal'}[team.config.targetType as string] || 'Total Goal'}
+          </h2>
+          <p className="text-sm text-slate-400 mb-8">{isCompleted ? 'The guild has triumphed over its target.' : 'Every minute of focus brings the guild closer.'}</p>
+
+          <div className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-6 mb-8 text-center relative overflow-hidden">
+            <div className="flex justify-center items-end gap-2 mb-4">
+              <span className={cn("text-6xl font-black tabular-nums tracking-tighter leading-none", isCompleted ? "text-emerald-400 drop-shadow-[0_0_15px_rgba(16,185,129,0.4)]" : "text-white")}>
+                {totalProgress}
+              </span>
+              <span className="text-xl font-bold text-slate-500 mb-2">/ {target} <span className="text-sm uppercase">min</span></span>
+            </div>
+            <div className="w-full h-3 bg-slate-800 rounded-full overflow-hidden shadow-inner">
+              <div 
+                className={cn("h-full transition-all duration-1000 ease-out relative", isCompleted ? "bg-emerald-500" : "bg-gradient-to-r from-indigo-500 to-purple-500")}
+                style={{ width: `${Math.min(100, (totalProgress / Math.max(1, target)) * 100)}%` }}
+              >
+                 <div className="absolute inset-0 bg-white/20 w-full animate-[pulse_2s_ease-in-out_infinite]" />
+              </div>
+            </div>
+            <div className="mt-4 flex justify-between items-center text-xs font-bold uppercase tracking-widest text-slate-500">
+               <span>0%</span>
+               <span>{Math.round(Math.min(100, (totalProgress / Math.max(1, target)) * 100))}%</span>
+            </div>
+          </div>
+
+          <div className="w-full flex justify-between items-center mb-4">
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Top Contributors</span>
+          </div>
+
+          <div className="w-full space-y-3 max-h-48 overflow-y-auto custom-scrollbar pr-2 mb-6">
+            {sortedMembers.map((m: any, idx: number) => (
+               <div key={m.userId} className="flex items-center gap-4 p-3 bg-slate-800/30 rounded-xl border border-slate-800/50">
+                  <div className="w-6 text-center font-black text-slate-600 italic">#{idx + 1}</div>
+                  <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center overflow-hidden">
+                    {renderAvatar(m.avatar, 14)}
+                  </div>
+                  <div className="flex-1 font-bold text-slate-300 text-sm truncate">{m.name}</div>
+                  <div className="font-bold text-indigo-400 tabular-nums">{m.totalFocusTime} <span className="text-[10px] text-slate-500">m</span></div>
+               </div>
+            ))}
+          </div>
+          
+          {team.config.rewardContent && (
+             <div className="w-full p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-start gap-4">
+               <div className="text-amber-500 mt-1"><Crown size={24} /></div>
+               <div className="flex-1 text-left">
+                 <div className="text-[10px] font-bold text-amber-500/70 uppercase tracking-widest mb-1">Guild Reward Unlocked</div>
+                 <div className="text-sm font-bold text-amber-400">{team.config.rewardContent}</div>
+               </div>
+             </div>
           )}
         </div>
       </div>
@@ -1205,3 +1354,115 @@ const PlazaModal = ({ onClose }: { onClose: () => void }) => {
   );
 };
 
+
+const DetailedGoalModal = ({ team, onClose }: { team: Team, onClose: () => void }) => {
+  const sortedMembers = [...team.members].sort((a, b) => b.totalFocusTime - a.totalFocusTime);
+  let totalProgress = team.members.reduce((acc, m) => acc + m.totalFocusTime, 0);
+  const target = team.config.targetValue;
+  const isCompleted = target > 0 && totalProgress >= target;
+  
+  return createPortal(
+    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-xl overflow-y-auto">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        className="bg-slate-900 border border-slate-800 shadow-[0_0_80px_rgba(0,0,0,0.1)] rounded-[2rem] p-8 max-w-2xl w-full relative overflow-hidden my-auto"
+      >
+        <button onClick={onClose} className="absolute top-6 right-6 text-slate-500 hover:text-white transition-colors bg-slate-800/50 p-2 rounded-full z-20">
+          <X size={20}/>
+        </button>
+
+        <div className="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-indigo-500/10 to-transparent pointer-events-none" />
+        <div className="absolute top-[-20%] left-[-10%] w-64 h-64 bg-indigo-500/10 blur-[100px] rounded-full pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col items-center text-center mb-8">
+           <div className="w-16 h-16 bg-slate-950 text-indigo-500 flex items-center justify-center rounded-2xl border border-slate-800 shadow-sm mb-4">
+             <Target size={32} />
+           </div>
+           <h2 className="text-3xl font-black text-white italic tracking-tighter uppercase mb-1">Guild Horizon</h2>
+           <p className="text-sm text-slate-500 font-medium max-w-sm">
+             The collective target for {(team.name).toUpperCase()}
+           </p>
+        </div>
+
+        <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-slate-950/80 border border-slate-800 rounded-3xl p-6 flex flex-col items-center justify-center relative overflow-hidden group">
+            {isCompleted && (
+               <div className="absolute inset-0 bg-indigo-500/5 mix-blend-screen pointer-events-none" />
+            )}
+            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">Progress Target</div>
+            
+            <div className="relative w-40 h-40 flex items-center justify-center mb-4">
+              <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="45" fill="none" className="stroke-slate-800" strokeWidth="6" />
+                <circle 
+                  cx="50" cy="50" r="45" fill="none" 
+                  className="stroke-indigo-500 transition-all duration-1000 ease-out drop-shadow-sm"
+                  strokeWidth="6" 
+                  strokeLinecap="round"
+                  strokeDasharray="282.7" 
+                  strokeDashoffset={282.7 - Math.min(282.7, (totalProgress / Math.max(1, target)) * 282.7)}
+                />
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                 <span className={cn("text-4xl font-black tracking-tighter leading-none mb-1", isCompleted ? "text-indigo-500" : "text-white")}>{Math.round(Math.min(100, (totalProgress / Math.max(1, target)) * 100))}%</span>
+              </div>
+            </div>
+            
+            <div className="flex gap-6">
+               <div className="text-center">
+                 <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-0.5">Current</div>
+                 <div className="text-lg font-black text-white tabular-nums">{totalProgress} <span className="text-[10px] text-slate-500">min</span></div>
+               </div>
+               <div className="text-center">
+                 <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-0.5">Target</div>
+                 <div className="text-lg font-black text-white tabular-nums">{target} <span className="text-[10px] text-slate-500">min</span></div>
+               </div>
+            </div>
+            
+            {isCompleted && (
+              <div className="mt-4 absolute bottom-0 left-0 w-full bg-indigo-500 text-white-pure font-black italic tracking-widest uppercase text-xs py-1.5 flex justify-center items-center gap-2 shadow-sm">
+                 <Check size={14} /> Target Conquered
+              </div>
+            )}
+          </div>
+
+          <div className="flex flex-col gap-4">
+            <div className="bg-slate-950/80 border border-slate-800 rounded-3xl p-5 flex flex-col items-center text-center h-full justify-center">
+               <div className="w-10 h-10 bg-indigo-500/10 text-indigo-500 rounded-xl flex items-center justify-center mb-3 shadow-sm border border-indigo-500/10">
+                 <Crown size={20} />
+               </div>
+               <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Guild Vault Reward</div>
+               <div className="text-sm font-bold text-slate-600">
+                 {team.config.rewardContent || "No specific reward assigned."}
+               </div>
+            </div>
+            
+            <div className="bg-slate-950/80 border border-slate-800 rounded-3xl p-5 flex-1 flex flex-col">
+               <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 text-center">Top Contributors</div>
+               <div className="space-y-3 flex-1 overflow-y-auto custom-scrollbar pr-1">
+                 {sortedMembers.slice(0, 3).map((m, idx) => (
+                    <div key={m.userId} className="flex items-center justify-between p-2 rounded-xl bg-slate-900 border border-slate-800 shadow-sm">
+                       <div className="flex items-center gap-2">
+                         <div className={cn(
+                           "w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-black shrink-0",
+                           idx === 0 ? "bg-indigo-500 border-indigo-400 text-white-pure border" : 
+                           "bg-slate-800 text-slate-500 border border-slate-700"
+                         )}>
+                           #{idx + 1}
+                         </div>
+                         <div className="text-xs font-bold text-white clamp-1 truncate max-w-[80px]">{m.name}</div>
+                       </div>
+                       <div className="text-xs font-black text-indigo-500 tabular-nums shrink-0">{m.totalFocusTime} <span className="text-[9px] text-slate-500">m</span></div>
+                    </div>
+                 ))}
+               </div>
+            </div>
+          </div>
+        </div>
+
+      </motion.div>
+    </div>,
+    document.body
+  );
+};
