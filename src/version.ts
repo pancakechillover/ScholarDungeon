@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v7.9.12';
+export const APP_VERSION = 'v7.12.2';
 export const LAST_UPDATE_DATE = '2026-06-04';
-export const LAST_UPDATE_TIME = '15:10:00';
+export const LAST_UPDATE_TIME = '13:45:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,110 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v7.12.2',
+    date: '2026-06-04',
+    time: '13:45:00',
+    title: 'Fellowship Avatar & User Level Sync',
+    items: [
+      { category: 'Feature', description: 'Integrated real-time user profile synchronization to the group details pipeline, automatically updating levels, custom titles, bios, and avatars.' },
+      { category: 'UI', description: 'Improved structural avatar representations across the message chat workspace using custom AvatarRenderer.' },
+      { category: 'UI', description: 'Implemented level fallbacks and custom title mappings in TeamMemberProfileModal.' }
+    ]
+  },
+  {
+    version: 'v7.12.1',
+    date: '2026-06-04',
+    time: '13:35:00',
+    title: 'Fellowship Settings & Join Rule Optimizations',
+    items: [
+      { category: 'Feature', description: 'Integrated Fellowship Guild Key display directly inside the device identity settings tab under the Settings view.' },
+      { category: 'Feature', description: 'Updated GET team details pipeline to automatically return isMember and isPending status verification keys.' },
+      { category: 'Optimization', description: 'Refined applicants list types to streamline frontend/backend integration and prevent TypeScript compiler complaints.' }
+    ]
+  },
+  {
+    version: 'v7.12.0',
+    date: '2026-06-04',
+    time: '13:30:00',
+    title: 'Fellowship Security, Keys & Join Request Pipelines',
+    items: [
+      { category: 'Feature', description: 'Added high-visibility Guild Secret ID / Invite Key viewer inside Settings modal with copy utilities.' },
+      { category: 'Feature', description: 'Engineered Join Policy rules selector (direct vs approval), allowing captains to dictate request verification protocols.' },
+      { category: 'Feature', description: 'Created inline Applicant list views on active team dashboard for convenient leadership approval and denial responses.' },
+      { category: 'Feature', description: 'Moved exit and disband control buttons safely inside Settings modal, with tailored contextual messages.' }
+    ]
+  },
+  {
+    version: 'v7.11.0',
+    date: '2026-06-04',
+    time: '13:17:00',
+    title: 'Fellowship Social Alignment & Chat Upgrades',
+    items: [
+      { category: 'Feature', description: 'Added Guild Leave and Disband capabilities embedded directly inside the Guild banner layout.' },
+      { category: 'Feature', description: 'Overhauled Team chat rendering routing the current user\'s messaging explicitly to right-aligned bubbles while tracking peers on the left.' },
+      { category: 'Feature', description: 'Upgraded the guild configuration module to support Weekly, Monthly, and Yearly temporal periods.' },
+      { category: 'UI', description: 'Injected user levels universally into member list tiles and individual profile Modals.' },
+      { category: 'Bug Fix', description: 'Mapped physical avatar rendering schemas to ensure avatars properly apply.' }
+    ]
+  },
+  {
+    version: 'v7.10.2',
+    date: '2026-06-04',
+    time: '12:54:00',
+    title: 'Fellowship Identity & Modals',
+    items: [
+      { category: 'Bug Fix', description: 'Fixed the "Join Guild" button being blocked by browser-level prompt constraints by implementing a fully native custom Join Guild modal.' },
+      { category: 'UX', description: 'Identity requirements now seamlessly generate a unique user code transparently behind the scenes without demanding manual setup.' },
+      { category: 'Bug Fix', description: 'Mapped username pulls strictly back to the internal active Profile name avoiding sync-lock mismatches.' }
+    ]
+  },
+  {
+    version: 'v7.10.1',
+    date: '2026-06-04',
+    time: '12:29:00',
+    title: 'Fellowship UI & Joining',
+    items: [
+      { category: 'UI', description: 'Expanded the Fellowship module to span fully across the dashboard grid layout for optimal visibility.' },
+      { category: 'UI', description: 'Redesigned the "Found a Guild" creation modal to feature more intuitive goals, elegant gradients, animations, and inline error-handling.' },
+      { category: 'Feature', description: 'Added explicit "Join Guild" button enabling joining via string ID directly next to guild creation.' },
+      { category: 'Bug Fix', description: 'Fixed an issue where creating a guild silently failed if no secret identity code was configured limit-testing.' }
+    ]
+  },
+  {
+    version: 'v7.10.0',
+    date: '2026-06-04',
+    time: '12:25:00',
+    title: 'Fellowship / Team Module',
+    items: [
+      { category: 'Feature', description: 'Added a Fellowship module in the Sanctum (Dashboard) view allowing users to create or join teams using a cloud proxy.' },
+      { category: 'Feature', description: 'Implemented a team goal system with customizable targets and rewards, requiring unanimous vote or captain privileges.' },
+      { category: 'UI', description: 'Separated Team chat (Message Board) and events (Event Log) into dedicated tabs within the module.' },
+      { category: 'UI', description: 'Added a Recharts Pie chart to visually distribute the focus contribution pool among team members.' },
+      { category: 'UX', description: 'Integrated user bios and custom titles alongside their avatars when clicking on Team Member profiles.' }
+    ]
+  },
+  {
+    version: 'v7.9.14',
+    date: '2026-06-04',
+    time: '11:58:00',
+    title: 'Personalized Push Notifications',
+    items: [
+      { category: 'Feature', description: "Integrated the user's custom profile name directly into the Web Push Notification payload." },
+      { category: 'UX', description: 'End of Focus and End of Rest push notifications dynamically greet the user by name for a more personalized experience.' }
+    ]
+  },
+  {
+    version: 'v7.9.13',
+    date: '2026-06-04',
+    time: '11:20:00',
+    title: 'Touch Controls & Talent Logic Views',
+    items: [
+      { category: 'Feature', description: 'Integrated visual dynamic payout progression inside Timer-Dashboard Active Talents hover-cards for Branch A and B Flow Experience modules.' },
+      { category: 'UI', description: 'Duplicated the Start of the Day SVG ambient header cleanly into the End of the Day modal.' },
+      { category: 'UX', description: 'Migrated streak patching Death Defying Gold Medal hitboxes from a hover-invisible layout to an explicit always-visible clickable action specifically for PWA touch compatibility.' }
+    ]
+  },
   {
     version: 'v7.9.12',
     date: '2026-06-04',

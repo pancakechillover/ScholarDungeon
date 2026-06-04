@@ -212,6 +212,7 @@ export interface AppState {
   dailyRerollUsed: boolean; // Track if Shuffler reroll was used today
   inventory: string[]; // IDs of functional cards active for next session
   userName?: string;
+  teamId?: string;
   userBio?: string;
   userAvatar?: string;
   userTitle?: string;
@@ -379,6 +380,66 @@ export interface StudySession {
     flowExperience?: { xp: number; coins: number };
     perfectTheory?: { xp: number; coins: number };
   };
+}
+
+export interface TeamMember {
+  userId: string;
+  name: string;
+  avatar: string;
+  title?: string;
+  bio?: string;
+  level?: number;
+  joinedAt: number;
+  totalFocusTime: number; // minutes contributed
+  isCaptain: boolean;
+}
+
+export interface TeamMessage {
+  id: string;
+  userId: string;
+  name: string;
+  avatar: string;
+  content: string;
+  timestamp: number;
+}
+
+export interface TeamEvent {
+  id: string;
+  type: 'join' | 'leave' | 'focus' | 'target_change' | 'reward_change';
+  content: string;
+  timestamp: number;
+}
+
+export interface TeamSettingProposal {
+  id: string;
+  proposerId: string;
+  targetType: 'total_time' | 'daily_time' | 'weekly_time' | 'monthly_time' | 'yearly_time';
+  targetValue: number;
+  rewardType: 'item' | 'text';
+  rewardContent: string;
+  votes: Record<string, boolean>; // userId -> boolean (true: accept, false: reject)
+  status: 'pending' | 'approved' | 'rejected';
+  expiresAt: number;
+}
+
+export interface TeamConfig {
+  permission: 'captain_only' | 'unanimous';
+  targetType: 'total_time' | 'daily_time' | 'weekly_time' | 'monthly_time' | 'yearly_time';
+  targetValue: number; // stored in minutes
+  rewardType: 'item' | 'text' | 'coins' | 'xp' | string;
+  rewardContent: string; // e.g. "Pizza party!" or "{ type: 'item', id: '123' }"
+  joinRule?: 'direct' | 'approval' | string;
+}
+
+export interface Team {
+  id: string;
+  name: string;
+  description: string;
+  createdAt: number;
+  members: TeamMember[];
+  config: TeamConfig;
+  currentProposal?: TeamSettingProposal;
+  applicants?: TeamMember[] | any[];
 }
 
 export interface ShopItem {

@@ -1,21 +1,29 @@
 {
-  "version": "v7.5.6",
-  "date": "2026-06-03",
+  "version": "v7.12.0",
+  "date": "2026-06-04",
   "latestRelease": {
-    "version": "v7.5.6",
-    "date": "2026-06-03",
-    "time": "01:35:00",
-    "title": "Record Dashboard Image Export",
+    "version": "v7.12.0",
+    "date": "2026-06-04",
+    "time": "13:30:00",
+    "title": "Fellowship Security, Keys & Join Request Pipelines",
     "items": [
       {
         "category": "Feature",
-        "description": "Added a Share button to the Record dashboard to export beautiful custom statistics images directly to your device."
+        "description": "Added high-visibility Guild Secret ID / Invite Key viewer inside Settings modal with copy utilities."
       },
       {
         "category": "Feature",
-        "description": "Supports setting the exported image aspect ratio (16:9, 4:3, 1:1) and customizing the visibility of specific statistical charts."
+        "description": "Engineered Join Policy rules selector (direct vs approval), allowing captains to dictate request verification protocols."
+      },
+      {
+        "category": "Feature",
+        "description": "Created inline Applicant list views on active team dashboard for convenient leadership approval and denial responses."
+      },
+      {
+        "category": "Feature",
+        "description": "Moved exit and disband control buttons safely inside Settings modal, with tailored contextual messages."
       }
     ]
   },
-  "timestamp": 1780450523355
+  "timestamp": 1780582200000
 }

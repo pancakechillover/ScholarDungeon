@@ -364,6 +364,7 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
         isFullscreen={isFullscreenExplore}
         pipWindow={pipWindow}
         secretCode={state.secretCode}
+        userName={state.userName}
         pushEnabled={state.pushEnabled}
         onTogglePip={togglePip}
         requireFocusConfirmation={state.requireFocusConfirmation}
@@ -682,14 +683,77 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
                                 ? "visible opacity-100 translate-y-0" 
                                 : "invisible opacity-0 translate-y-1 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0"
                             )}>
-                              <div className="bg-slate-900 border border-slate-700 p-4 rounded-2xl shadow-2xl min-w-[200px]">
+                              <div className="bg-slate-900 border border-slate-700 p-4 rounded-2xl shadow-2xl min-w-[240px]">
                                 <div className={cn("text-sm font-black mb-1", branchColors[talent.branch].split(' ')[0])}>
                                   {talent.name}
                                 </div>
                                 <p className="text-xs text-slate-400 leading-relaxed">
                                   {talent.description}
                                 </p>
-                                <div className="mt-2 pt-2 border-t border-slate-800 flex items-center gap-2">
+                                
+                                {['a2', 'a3', 'b2', 'b3'].includes(talent.id) && (
+                                  <div className="mt-3 bg-slate-950 rounded-xl p-3 border border-slate-800 space-y-1.5">
+                                    {talent.id === 'a2' && (
+                                      <>
+                                        <div className="text-[10px] font-bold text-slate-500 uppercase">Trigger Progress</div>
+                                        <div className="flex justify-between items-center bg-slate-800 rounded-lg p-1.5 mt-0.5 relative overflow-hidden">
+                                          <div 
+                                            className="absolute inset-y-0 left-0 bg-indigo-500/20" 
+                                            style={{ width: `${Math.min(100, (Math.floor(state.dailySessions) / 16) * 100)}%` }}
+                                          />
+                                          <span className="text-xs font-bold text-indigo-400 z-10 pl-1">{Math.floor(state.dailySessions)} / 16 Sessions</span>
+                                          <span className="text-xs font-bold text-emerald-400 z-10 pr-1">{Math.floor(state.dailySessions) >= 16 ? 'Claimed' : '+200 XP'}</span>
+                                        </div>
+                                      </>
+                                    )}
+                                    {talent.id === 'b2' && (
+                                      <>
+                                        <div className="text-[10px] font-bold text-slate-500 uppercase">Trigger Progress</div>
+                                        <div className="flex justify-between items-center bg-slate-800 rounded-lg p-1.5 mt-0.5 relative overflow-hidden">
+                                          <div 
+                                            className="absolute inset-y-0 left-0 bg-amber-500/20" 
+                                            style={{ width: `${Math.min(100, (Math.floor(state.dailySessions) / 16) * 100)}%` }}
+                                          />
+                                          <span className="text-xs font-bold text-amber-400 z-10 pl-1">{Math.floor(state.dailySessions)} / 16 Sessions</span>
+                                          <span className="text-xs font-bold text-amber-400 z-10 pr-1">{Math.floor(state.dailySessions) >= 16 ? 'Claimed' : '+50 Coins'}</span>
+                                        </div>
+                                      </>
+                                    )}
+                                    {(talent.id === 'a3' || talent.id === 'b3') && (
+                                      <>
+                                        <div className="text-[10px] font-bold text-slate-500 uppercase">Session Progress</div>
+                                        <div className="flex justify-between items-center bg-slate-800 rounded-lg p-1.5 mt-0.5 relative overflow-hidden">
+                                          <div 
+                                            className="absolute inset-y-0 left-0 bg-sky-500/20" 
+                                            style={{ width: `${Math.min(100, (Math.floor(state.dailySessions) / 8) * 100)}%` }}
+                                          />
+                                          <span className="text-xs font-bold text-sky-400 z-10 pl-1">{Math.floor(state.dailySessions)} / 8 Sessions</span>
+                                          <span className="text-xs font-bold text-emerald-400 z-10 pr-1">{Math.floor(state.dailySessions) >= 8 ? 'Claimed' : 'Pending'}</span>
+                                        </div>
+                                        
+                                        <div className="text-[10px] font-bold text-slate-500 uppercase mt-2">Active Streak Evaluation</div>
+                                        <div className="flex flex-col bg-slate-800 rounded-lg p-2 mt-0.5 text-xs text-slate-300">
+                                          <div className="flex justify-between">
+                                            <span>Current Streak:</span>
+                                            <span className="font-bold text-orange-400">{state.streak >= 2 && state.streak <= 10 ? `${state.streak} Days` : (state.streak > 10 ? 'Max (≥10)' : 'Inactive (< 2)')}</span>
+                                          </div>
+                                          <div className="flex justify-between mt-1">
+                                            <span>Variable Yield:</span>
+                                            <span className="font-bold">{talent.id === 'a3' ? `${20 * (state.streak > 10 ? 10 : Math.max(state.streak, 0))} XP` : `${10 * (state.streak > 10 ? 10 : Math.max(state.streak, 0))} Coins`}</span>
+                                          </div>
+                                          {state.streak >= 10 && (
+                                            <div className="flex justify-between mt-1 pt-1 border-t border-slate-700/50 text-rose-400">
+                                              <span>Day 10 Bonus:</span>
+                                              <span className="font-bold">+{talent.id === 'a3' ? '1000 XP' : '100 Coins'}</span>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </>
+                                    )}
+                                  </div>
+                                )}
+
+                                <div className="mt-3 pt-3 border-t border-slate-800 flex items-center gap-2">
                                   <div className={cn("w-1.5 h-1.5 rounded-full", branchColors[talent.branch].split(' ')[1])} />
                                   <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
                                     Branch {talent.branch} • Tier {talent.tier}

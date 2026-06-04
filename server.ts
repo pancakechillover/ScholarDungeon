@@ -315,6 +315,13 @@ app.get('/api/auth/google/url', (req, res) => {
 });
 
 // WebDAV Proxy for local development
+import teamsHandler from './api/teams';
+
+app.all('/api/teams', async (req, res) => {
+  // Mock Vercel Request for Express
+  await teamsHandler(req as any, res as any);
+});
+
 app.post('/api/webdav/proxy', async (req, res) => {
   const { url, username, password, method, body } = req.body;
 

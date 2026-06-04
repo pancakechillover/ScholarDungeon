@@ -31,6 +31,7 @@ interface TimerProps {
   setShowCoinRain: (show: boolean) => void;
   isFullscreen?: boolean;
   secretCode?: string;
+  userName?: string;
   pushEnabled?: boolean;
   onTogglePip?: () => void;
   requireFocusConfirmation?: boolean;
@@ -85,6 +86,7 @@ export const Timer = React.memo<TimerProps>(({
   setShowCoinRain,
   isFullscreen = false,
   secretCode,
+  userName,
   pushEnabled,
   onTogglePip,
   requireFocusConfirmation = false,
@@ -158,7 +160,7 @@ export const Timer = React.memo<TimerProps>(({
           body: JSON.stringify({
             secretCode,
             delayMinutes,
-            title: isResting ? "Rest Over!" : "Focus Over!",
+            title: isResting ? `Rest Over, ${userName || 'Seeker'}!` : `Focus Over, ${userName || 'Seeker'}!`,
             body: isResting ? "Time to return to the dungeon." : "You have cleared the room. Take a rest?",
             type: isResting ? 'rest_end' : 'timer_end'
           })
@@ -195,7 +197,7 @@ export const Timer = React.memo<TimerProps>(({
     // Show local notification if possible
     if (!silent && pushEnabled && 'serviceWorker' in navigator && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
       navigator.serviceWorker.ready.then(reg => {
-        reg.showNotification(isResting ? "Rest Over!" : "Focus Over!", {
+        reg.showNotification(isResting ? `Rest Over, ${userName || 'Seeker'}!` : `Focus Over, ${userName || 'Seeker'}!`, {
           body: isResting ? "Time to return to the dungeon." : "You have cleared the room. Take a rest?",
           icon: '/pwa-icon.svg',
           tag: 'timer_complete',

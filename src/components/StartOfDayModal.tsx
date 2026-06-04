@@ -501,16 +501,24 @@ export const StartOfDayModal: React.FC<StartOfDayModalProps> = ({ state, onClose
                             <Flame size={14} className={day.isPatched ? "text-amber-400" : "text-orange-400"} />
                           </div>
                         ) : (
-                          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-800 flex items-center justify-center border border-slate-700 overflow-visible relative">
-                            <span className="text-slate-600 font-bold text-xs">X</span>
-                            {!day.isCompleted && !day.isToday && !day.isFuture && availableMedals > 0 && repairStreak && (
-                              <div 
-                                className="absolute inset-0 bg-indigo-500 flex items-center justify-center rounded-full opacity-0 hover:opacity-100 cursor-pointer shadow-[0_0_15px_rgba(99,102,241,0.5)] scale-110 transition-all z-10"
-                                onClick={() => setConfirmRepairDate(day.dateStr)}
-                                title="Use Death Defying Medal to patch"
-                              >
-                                <Flame size={12} className="text-white" />
-                              </div>
+                          <div 
+                            className={cn(
+                              "w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center border overflow-visible relative transition-all group/patch",
+                              !day.isCompleted && !day.isToday && !day.isFuture && availableMedals > 0 && repairStreak
+                                ? "bg-indigo-500/20 border-indigo-500/50 cursor-pointer hover:scale-110 shadow-[0_0_10px_rgba(99,102,241,0.3)] hover:bg-indigo-500"
+                                : "bg-slate-800 border-slate-700"
+                            )}
+                            onClick={() => {
+                              if (!day.isCompleted && !day.isToday && !day.isFuture && availableMedals > 0 && repairStreak) {
+                                setConfirmRepairDate(day.dateStr);
+                              }
+                            }}
+                            title={!day.isCompleted && !day.isToday && !day.isFuture && availableMedals > 0 ? "Use Death Defying Medal to patch" : undefined}
+                          >
+                            {!day.isCompleted && !day.isToday && !day.isFuture && availableMedals > 0 && repairStreak ? (
+                              <Flame size={12} className="text-indigo-400 group-hover/patch:text-white transition-colors" />
+                            ) : (
+                              <span className="text-slate-600 font-bold text-xs">X</span>
                             )}
                           </div>
                         )}

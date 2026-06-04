@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Cloud, Server, HardDrive, CheckCircle2, ChevronRight, Settings, Lock, X, History, ArrowDownUp, RefreshCw, LogIn, Trash2, ShieldBan, Eye, Search, UploadCloud, DownloadCloud, Download, Laptop, Monitor, Smartphone, Tablet, Copy, Key, WifiOff } from 'lucide-react';
+import { Cloud, Server, HardDrive, CheckCircle2, ChevronRight, Settings, Lock, X, History, ArrowDownUp, RefreshCw, LogIn, Trash2, ShieldBan, Eye, Search, UploadCloud, DownloadCloud, Download, Laptop, Monitor, Smartphone, Tablet, Copy, Key, WifiOff, Users } from 'lucide-react';
 import { AppState } from '../../types';
 import { cn, getDeviceCode } from '../../lib/utils';
 
@@ -408,6 +408,46 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
               </button>
             </div>
             <p className="text-[9px] text-slate-600 italic ml-1 font-medium">Unique hash for this installation. Used for silent identity verification during sync.</p>
+          </div>
+        </div>
+      </div>
+
+      {state.teamId && (
+        <div className="space-y-6 pt-6 border-t border-slate-800">
+          <div className="flex items-center gap-2.5 text-slate-200 mb-6 pb-2">
+            <Users size={20} className="text-indigo-450" />
+            <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Fellowship Key</h4>
+          </div>
+          
+          <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 space-y-4">
+            <div>
+              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 block mb-2">Guild Identity Code / Team Secret Key</label>
+              <div className="flex items-center gap-3 p-4 bg-slate-950 rounded-xl border border-slate-800 group/teamcode">
+                <div className="p-2 bg-slate-900 rounded-lg text-indigo-400">
+                  <Users size={16} />
+                </div>
+                <div className="flex-1 font-mono text-xs text-slate-350 break-all select-all font-bold tracking-tight">
+                  {state.teamId}
+                </div>
+                <button 
+                  onClick={() => {
+                    navigator.clipboard.writeText(state.teamId || '');
+                    alert('Guild Key copied to clipboard!');
+                  }}
+                  className="p-2 text-slate-500 hover:text-indigo-400 transition-colors"
+                  title="Copy Guild Key"
+                >
+                  <Copy size={16} />
+                </button>
+              </div>
+              <p className="text-[9px] text-slate-600 italic ml-1 mt-1 font-medium">This is your unique Fellowship Key. Share this with other scholars to invite them to join your guild.</p>
+            </div>
+          </div>
+        </div>
+      )}
+      <div>
+        <div>
+          <div>
           </div>
         </div>
       </div>

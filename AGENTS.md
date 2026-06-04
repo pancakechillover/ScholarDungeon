@@ -23,9 +23,9 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v7.9.12
+- **Current Version:** v7.12.2
 - **Last Update Date:** 2026-06-04
-- **Last Update Time:** 15:10:00
+- **Last Update Time:** 13:45:00
 
 ## Dark Themes Definition
 The following themes are considered "Dark Themes" and form the baseline for vibrant visual effects and high-contrast glowing elements:
@@ -50,6 +50,56 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v7.12.2 (2026-06-04):** Fellowship Avatar & User Level Sync.
+  - *Feature:* Integrated real-time user profile synchronization to the group details pipeline, automatically updating levels, custom titles, bios, and avatars.
+  - *UI:* Improved structural avatar representations across the message chat workspace using custom `AvatarRenderer`.
+  - *UI:* Implemented level fallbacks and custom title mappings in `TeamMemberProfileModal`.
+
+- **v7.12.1 (2026-06-04):** Fellowship Settings & Join Rule Optimizations.
+  - *Feature:* Integrated Fellowship Guild Key display directly inside the device identity settings tab under the Settings view.
+  - *Feature:* Updated GET team details pipeline to automatically return `isMember` and `isPending` status verification keys.
+  - *Optimization:* Refined applicants list types to streamline frontend/backend integration and prevent TypeScript compiler complaints.
+
+- **v7.12.0 (2026-06-04):** Fellowship Security, Keys & Join Request Pipelines.
+  - *Feature:* Integrated high-visibility Guild Secret ID / Invite Key viewer inside Settings modal with robust "Copy-to-Clipboard" notification badges.
+  - *Feature:* Engineered Join Policy rules selector ('direct' vs 'approval'), enabling captains to dictate whether entering the join key permits direct team authorization or triggers a pending captain review.
+  - *Feature:* Created inline Applicant lists on the active team dashboard with instant "Approve" / "Decline" operations for captains.
+  - *Feature:* Migrated "Leave Guild" / "Disband Guild" control buttons entirely into the Settings modal layout to safe-guard layout density, adding contextual confirmations based on leadership.
+
+- **v7.11.0 (2026-06-04):** Fellowship Social Alignment & Chat Upgrades.
+  - *Feature:* Added Guild Leave and Disband capabilities embedded directly inside the Guild banner layout.
+  - *Feature:* Overhauled Team chat rendering: integrated message avatar bubbles natively, routing the current user's messaging explicitly to right-aligned bubbles while tracking peers cleanly on the left axis like a modern chat client. 
+  - *Feature:* Upgraded the guild configuration module to definitively support diverse target horizons including Weekly, Monthly, and Yearly temporal periods.
+  - *UI:* Injected explicitly calculated user `level` integers universally throughout the guild ecosystem mapping directly into active member list tiles and rich individual profile Modals.
+  - *Bug Fix:* Mapped missing base64 physical avatar rendering schemas to ensure user's profile images elegantly wrap inside full `<img/>` elements rather than dropping string fragments into empty dom nodes.
+
+- **v7.10.2 (2026-06-04):** Fellowship Identity & Modals.
+  - *Bug Fix:* Fixed the "Join Guild" button being blocked by browser-level \`prompt\` constraints by implementing a fully native custom Join Guild modal.
+  - *UX:* Identity requirements now seamlessly generate a unique user code transparently behind the scenes without demanding manual setup.
+  - *Bug Fix:* Mapped username pulls strictly back to the internal active Profile name avoiding sync-lock mismatches.
+
+- **v7.10.1 (2026-06-04):** Fellowship UI & Joining.
+  - *UI:* Expanded the Fellowship module to span fully across the dashboard grid layout for optimal visibility.
+  - *UI:* Redesigned the "Found a Guild" creation modal to feature more intuitive goals, elegant gradients, animations, and inline error-handling.
+  - *Feature:* Added explicit "Join Guild" button enabling joining via string ID directly next to guild creation.
+  - *Bug Fix:* Fixed an issue where creating a guild silently failed if no secret identity code was configured limit-testing.
+
+- **v7.10.0 (2026-06-04):** Fellowship (Team) Module.
+  - *Feature:* Added a Fellowship module in the Sanctum (Dashboard) view allowing users to create or join teams using a cloud proxy.
+  - *Feature:* Implemented a team goal system with customizable targets and rewards, requiring unanimous vote or captain privileges.
+  - *UI:* Separated Team chat (Message Board) and events (Event Log) into dedicated tabs within the module.
+  - *UI:* Added a Recharts Pie chart to visually distribute the focus contribution pool among team members.
+  - *UX:* Integrated user bios and custom titles alongside their avatars when clicking on Team Member profiles.
+
+- **v7.9.14 (2026-06-04):** Personalized Push Notifications.
+  - *Feature:* Integrated the user's custom profile name (`userName`) directly into the Push Notification payload.
+  - *UX:* Notifications scheduled by the Timer now natively greet the user by name (e.g., "Focus Over, [Name]!") for a more personalized experience.
+
+- **v7.9.13 (2026-06-04):** Touch Controls & Talent Logic Views.
+  - *Feature:* Integrated visual dynamic payout progression inside Timer-Dashboard 'Active Talents' hover-cards for Flow Experience and Streak bonus talents.
+  - *UI:* Replicated the 'Start of the Day' ambient SVG header style into the 'End of the Day' modal block.
+  - *UX:* Migrated streak patching Death Defying Gold Medal hitboxes from a hover-invisible layout to an explicitly visible clickable ring specifically for PWA touch compatibility.
 
 - **v7.9.12 (2026-06-04):** PWA Web Push Priority & Vercel Scheduler.
   - *Feature:* Added Vercel Cron engine configurations inside `vercel.json` to sustain scheduled background checks cleanly under serverless deployment environments.

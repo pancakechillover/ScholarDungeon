@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { createPortal } from 'react-dom';
+import { TeamModule } from './TeamModule';
 import { 
   Sword, 
   ChevronRight, 
@@ -212,6 +213,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </button>
           </div>
         </div>
+        
         </div>
 
         <div className="space-y-6">
@@ -336,6 +338,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </div>
       </div>
+      
+      <TeamModule state={state} setState={setState} />
 
       {showSageConsult && createPortal(
          <SageConsultModal 

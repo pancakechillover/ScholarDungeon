@@ -460,33 +460,41 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
         className="bg-slate-900 border border-indigo-500/30 rounded-[2.5rem] w-full max-w-2xl shadow-2xl overflow-hidden my-auto relative"
       >
         {/* Header */}
-        <div className="p-5 sm:p-8 border-b border-slate-800 flex justify-between items-start bg-gradient-to-r from-indigo-500/10 to-transparent">
-          <div className="space-y-1">
+        <div className="p-5 sm:p-8 border-b border-slate-800 flex justify-between items-start bg-gradient-to-r from-indigo-500/10 to-transparent relative overflow-hidden flex-shrink-0">
+          <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none z-0">
+            <Moon size={120} />
+          </div>
+          <div className="flex justify-between items-start relative z-10 w-full">
+            <div className="space-y-1">
               <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tighter uppercase italic pr-1 flex items-center gap-3">
                 End of the Day <Moon className="text-indigo-400" size={28} />
               </h2>
-            <div className="text-[10px] sm:text-xs font-medium text-slate-500 tracking-wider flex items-center gap-1.5">
-               {(() => {
-                 const parts = today.settlementPeriod.split(' - ');
-                 if (parts.length !== 2) return <span>{today.settlementPeriod}</span>;
-                 const [start, end] = parts;
-                 const startParts = start.split(' ');
-                 if (startParts.length !== 2) return <span>{today.settlementPeriod}</span>;
-                 const [startDatePart, startTimePart] = startParts;
-                 return (
-                   <>
-                     <span className="text-indigo-400 font-bold bg-indigo-500/5 px-1 rounded-sm">{startDatePart}</span>
-                     <span className="text-slate-400">{startTimePart}</span>
-                     <span className="opacity-40">→</span>
-                     <span className="text-slate-500">{end}</span>
-                   </>
-                 );
-               })()}
+              <div className="text-[10px] sm:text-xs font-medium text-slate-500 tracking-wider flex items-center gap-1.5">
+                 {(() => {
+                   const parts = today.settlementPeriod.split(' - ');
+                   if (parts.length !== 2) return <span>{today.settlementPeriod}</span>;
+                   const [start, end] = parts;
+                   const startParts = start.split(' ');
+                   if (startParts.length !== 2) return <span>{today.settlementPeriod}</span>;
+                   const [startDatePart, startTimePart] = startParts;
+                   return (
+                     <>
+                       <span className="text-indigo-400 font-bold bg-indigo-500/5 px-1 rounded-sm">{startDatePart}</span>
+                       <span className="text-slate-400">{startTimePart}</span>
+                       <span className="opacity-40">→</span>
+                       <span className="text-slate-500">{end}</span>
+                     </>
+                   );
+                 })()}
+              </div>
             </div>
+            <button 
+              onClick={onClose} 
+              className="w-10 h-10 rounded-2xl bg-slate-800/50 hover:bg-slate-700/50 text-slate-400 hover:text-slate-200 flex items-center justify-center transition-colors"
+            >
+              <X size={20} />
+            </button>
           </div>
-          <button onClick={onClose} className="p-2 -mr-2 text-slate-500 hover:text-white rounded-full hover:bg-slate-800 transition-all">
-            <X size={24} />
-          </button>
         </div>
 
         <div className="p-5 sm:p-8 space-y-6 sm:space-y-8 max-h-[80vh] sm:max-h-[70vh] overflow-y-auto custom-scrollbar">
