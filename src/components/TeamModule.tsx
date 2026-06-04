@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { createPortal } from 'react-dom';
-import { Users, LogIn, Plus, X, MessageSquare, Activity, Crown, Clock, Target, Check, AlertCircle, RefreshCw, Send, Settings, User, UserCheck, Landmark } from 'lucide-react';
+import { 
+  Users, LogIn, Plus, X, MessageSquare, Activity, Crown, Clock, Target, Check, AlertCircle, RefreshCw, Send, Settings, User, UserCheck, Landmark,
+  Cat, Dog, Ghost, Bot, Skull
+} from 'lucide-react';
 import { AppState, Team, TeamMessage, TeamEvent, TeamMember, TeamSettingProposal } from '../types';
-import { cn } from '../lib/utils';
+import { cn, getTitleForLevel } from '../lib/utils';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { ProfileModal } from './ProfileModal';
 
@@ -11,6 +14,23 @@ interface TeamModuleProps {
   state: AppState;
   setState: React.Dispatch<React.SetStateAction<AppState>>;
 }
+
+const renderAvatar = (avatarValue: string | undefined, size: number = 14) => {
+  if (!avatarValue) {
+    return <User size={size} className="text-slate-500 m-auto" />;
+  }
+  const icons: Record<string, React.ComponentType<{ size: number; className?: string }>> = {
+    User, Cat, Dog, Ghost, Bot, Skull
+  };
+  const IconComponent = icons[avatarValue];
+  if (IconComponent) {
+    return <IconComponent size={size} className="text-indigo-400 m-auto" />;
+  }
+  if (avatarValue.startsWith('http') || avatarValue.startsWith('data:')) {
+    return <img src={avatarValue} className="w-full h-full object-cover" alt="" />;
+  }
+  return <User size={size} className="text-slate-500 m-auto" />;
+};
 
 export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
   const [view, setView] = useState<'lobby' | 'team'>('lobby');
@@ -47,7 +67,16 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
   const fetchTeam = async () => {
     if (!state.teamId) return;
     try {
-      const res = await fetch(`/api/teams?id=${state.teamId}`);
+      const res = await fetch(`/api/teams?id=${state.teamId}`, {
+        headers: {
+          'x-secret-code': state.secretCode || '',
+          'x-user-name': encodeURIComponent(state.userName || 'Scholar'),
+          'x-user-avatar': state.userAvatar || 'User',
+          'x-user-bio': encodeURIComponent(state.userBio || ''),
+          'x-user-title': encodeURIComponent(state.userTitle || getTitleForLevel(state.level || 1)),
+          'x-user-level': String(state.level || 1)
+        }
+      });
       if (!res.ok) return;
       const data = await res.json();
       if (data.team) {
@@ -381,7 +410,7 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
                   >
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center overflow-hidden text-lg">
-                        {m.avatar ? <img src={m.avatar} className="w-full h-full object-cover" alt="" /> : <User size={14} className="text-slate-500" />}
+                        {renderAvatar(m.avatar, 14)}
                       </div>
                       <div className="flex flex-col">
                         <span className="text-sm font-bold text-slate-300 flex items-center gap-1">
@@ -390,7 +419,7 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
                         <span className="text-[10px] text-slate-500">{m.totalFocusTime}m focus</span>
                       </div>
                     </div>
-                    {m.level && <span className="text-[10px] font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-full">Lv. {m.level}</span>}
+                    <span className="text-[10px] font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-full">Lv. {m.level || 1}</span>
                   </div>
                 ))}
               </div>
@@ -406,7 +435,7 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
                         <div className="flex justify-between items-center">
                           <div className="flex items-center gap-2">
                             <div className="w-7 h-7 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center overflow-hidden">
-                              {app.avatar ? <img src={app.avatar} className="w-full h-full object-cover" alt="" /> : <User size={12} className="text-slate-500" />}
+                              {renderAvatar(app.avatar, 12)}
                             </div>
                             <div className="flex flex-col">
                               <span className="text-xs font-bold text-white leading-tight">{app.name}</span>
@@ -458,6 +487,36 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
               </button>
             </div>
             
+            {activeTab === 'chat' && team.currentProposal && (
+               <div className="p-4 border-b border-slate-800 bg-indigo-950/20 shrink-0">
+                  <div className="flex items-center justify-between mb-3">
+                     <div>
+                        <div className="text-[10px] font-bold text-amber-400 uppercase tracking-widest flex items-center gap-1.5 mb-1"><Target size={12}/> Proposal Pending</div>
+                        <div className="text-sm text-slate-300 flex items-center gap-2">
+                           <span className="font-bold text-white">Target:</span> {team.currentProposal.targetValue} min <span className="text-slate-600">•</span>
+                           <span className="font-bold text-white">Reward:</span> {team.currentProposal.rewardContent}
+                        </div>
+                     </div>
+                     <div className="flex flex-col items-end gap-2">
+                        {team.currentProposal.votes[state.secretCode || getOrGenerateIdentity()] === undefined ? (
+                           <div className="flex gap-2">
+                             <button onClick={() => voteProposal(true)} className="px-4 py-1.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-bold rounded-xl hover:bg-emerald-500/20 transition-colors uppercase tracking-widest">Accept</button>
+                             <button onClick={() => voteProposal(false)} className="px-4 py-1.5 bg-rose-500/10 text-rose-400 border border-rose-500/20 text-xs font-bold rounded-xl hover:bg-rose-500/20 transition-colors uppercase tracking-widest">Reject</button>
+                           </div>
+                        ) : (
+                           <span className="text-[10px] font-bold text-indigo-400 py-1.5 uppercase tracking-widest bg-indigo-500/10 px-3 rounded-xl border border-indigo-500/20">Voted Successfully</span>
+                        )}
+                     </div>
+                  </div>
+                  <div className="w-full bg-slate-900 border border-slate-800 h-2 mt-2 rounded-full overflow-hidden flex">
+                     <div className="bg-amber-400 h-full transition-all" style={{ width: `${(Object.keys(team.currentProposal.votes).length / Math.max(1, team.members.length)) * 100}%` }} />
+                  </div>
+                  <div className="text-[9px] font-bold text-slate-500 mt-1.5 text-right uppercase tracking-widest">
+                     {Object.keys(team.currentProposal.votes).length} / {team.members.length} Voted
+                  </div>
+               </div>
+            )}
+            
             <div className="flex-1 overflow-y-auto p-4 custom-scrollbar flex flex-col-reverse">
               {activeTab === 'chat' ? (
                 <div className="space-y-4 flex flex-col justify-end">
@@ -466,8 +525,8 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
                     return (
                       <div key={m.id} className={cn("flex flex-col w-full", isMe ? "items-end" : "items-start")}>
                         <div className={cn("flex items-end gap-2", isMe ? "flex-row-reverse" : "flex-row")}>
-                          <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 overflow-hidden shrink-0 translate-y-1">
-                            {m.avatar ? <img src={m.avatar} className="w-full h-full object-cover" alt=""/> : <User size={14} className="text-slate-500 m-auto h-full" />}
+                          <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 overflow-hidden shrink-0 translate-y-1 flex items-center justify-center">
+                            {renderAvatar(m.avatar, 14)}
                           </div>
                           <div className={cn("flex flex-col", isMe ? "items-end" : "items-start")}>
                             <div className={cn("flex items-center gap-2 mb-1", isMe ? "flex-row-reverse" : "flex-row")}>
@@ -614,6 +673,18 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
         <TeamMemberProfileModal 
            member={team.members.find(m => m.userId === viewingProfile)!}
            onClose={() => setViewingProfile(null)}
+           isCurrentUserCaptain={team.members.find(m => m.userId === (state.secretCode || getOrGenerateIdentity()))?.isCaptain}
+           isTargetSelf={viewingProfile === (state.secretCode || getOrGenerateIdentity())}
+           onTransferCaptain={async (targetId) => {
+              if (!confirm("Are you sure you want to transfer guild leadership? You will become a regular member.")) return;
+              const identityCode = state.secretCode || getOrGenerateIdentity();
+              await fetch('/api/teams?action=transfer', {
+                 method: 'POST',
+                 headers: { 'Content-Type': 'application/json' },
+                 body: JSON.stringify({ teamId: team.id, secretCode: identityCode, targetMemberId: targetId })
+              });
+              setViewingProfile(null);
+           }}
         />
       )}
       
@@ -656,25 +727,26 @@ const CreateTeamModal = ({ onClose, onCreate }: any) => {
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto">
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-slate-900 border-2 border-indigo-500/30 shadow-[0_0_50px_rgba(99,102,241,0.15)] rounded-3xl p-8 max-w-lg w-full relative overflow-hidden"
+        className="bg-slate-900 border-2 border-indigo-500/30 shadow-[0_0_50px_rgba(99,102,241,0.15)] rounded-3xl p-6 sm:p-8 max-w-4xl w-full relative overflow-hidden my-auto"
       >
+        <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-indigo-900/40 to-transparent pointer-events-none" />
         <div className="absolute -top-24 -right-24 w-64 h-64 bg-indigo-600/10 blur-[80px] rounded-full pointer-events-none" />
         
         <button onClick={onClose} className="absolute top-6 right-6 text-slate-500 hover:text-white transition-colors bg-slate-800/50 p-2 rounded-full relative z-20">
           <X size={20}/>
         </button>
         
-        <div className="flex items-center gap-4 mb-8 relative z-10">
-          <div className="w-14 h-14 bg-indigo-500/20 text-indigo-400 flex items-center justify-center rounded-2xl border border-indigo-500/30 shadow-lg shadow-indigo-500/20">
-            <Users size={28} />
+        <div className="flex items-center gap-5 mb-8 relative z-10">
+          <div className="w-16 h-16 bg-slate-950 text-indigo-400 flex items-center justify-center rounded-2xl border-2 border-indigo-500/50 shadow-[0_0_15px_rgba(99,102,241,0.3)] shrink-0">
+            <Landmark size={32} />
           </div>
           <div>
-            <h3 className="text-2xl font-black text-white italic uppercase tracking-tighter">Found a Guild</h3>
-            <p className="text-sm text-slate-400 font-medium tracking-tight">Gather scholars under one banner.</p>
+            <h3 className="text-3xl font-black text-white uppercase tracking-tighter">Found a Guild</h3>
+            <p className="text-sm text-slate-400 font-medium tracking-tight mt-1">Gather scholars under one banner and forge your legacy.</p>
           </div>
         </div>
          
@@ -685,33 +757,36 @@ const CreateTeamModal = ({ onClose, onCreate }: any) => {
           </div>
         )}
 
-        <div className="space-y-6 max-h-[60vh] overflow-y-auto custom-scrollbar pr-2 relative z-10">
-          {/* Identity */}
-          <div className="space-y-4">
-            <div>
-              <label className="text-xs font-bold text-indigo-400 uppercase tracking-widest pl-1 mb-1 block">Guild Name <span className="text-rose-500">*</span></label>
-              <input type="text" value={cfg.name} onChange={e => setCfg({...cfg, name: e.target.value})}
-                 placeholder="e.g. Knights of Knowledge"
-                 className="w-full bg-slate-950 border border-slate-700 focus:border-indigo-500 hover:border-slate-600 rounded-xl px-4 py-3 text-sm text-white transition-colors outline-none" />
-            </div>
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 relative z-10">
+          {/* Left Column: Identity */}
+          <div className="space-y-6">
+            <h4 className="text-sm font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-2">
+              <Landmark size={16} className="text-indigo-400" /> Guild Identity
+            </h4>
+            <div className="space-y-4">
+              <div>
+                <label className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest pl-1 mb-1 block">Guild Name <span className="text-rose-500">*</span></label>
+                <input type="text" value={cfg.name} onChange={e => setCfg({...cfg, name: e.target.value})}
+                   placeholder="e.g. Knights of Knowledge"
+                   className="w-full bg-slate-950 border border-slate-700 focus:border-indigo-500 hover:border-slate-600 rounded-xl px-4 py-3 text-sm text-white transition-colors outline-none" />
+              </div>
 
-            <div>
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest pl-1 mb-1 block">Guild Philosophy</label>
-              <textarea value={cfg.description} onChange={e => setCfg({...cfg, description: e.target.value})}
-                 placeholder="What unites your members? Describe your shared purpose..."
-                 className="w-full bg-slate-950 border border-slate-700 focus:border-indigo-500 hover:border-slate-600 rounded-xl px-4 py-3 text-sm text-white min-h-[100px] transition-colors outline-none resize-none" />
+              <div>
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-1 mb-1 block">Guild Philosophy / Description</label>
+                <textarea value={cfg.description} onChange={e => setCfg({...cfg, description: e.target.value})}
+                   placeholder="What unites your members? Describe your shared purpose..."
+                   className="w-full bg-slate-950 border border-slate-700 focus:border-indigo-500 hover:border-slate-600 rounded-xl px-4 py-3 text-sm text-white min-h-[120px] transition-colors outline-none resize-none" />
+              </div>
             </div>
           </div>
 
-          <div className="w-full h-px bg-slate-800" />
-
-          {/* Goal System */}
-          <div className="space-y-4">
-             <h4 className="text-sm font-bold text-white flex items-center gap-2">
+          {/* Right Column: Goal System */}
+          <div className="space-y-6">
+             <h4 className="text-sm font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-2">
                <Target size={16} className="text-emerald-400" /> Goal Configuration
              </h4>
              
-             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+             <div className="grid grid-cols-2 gap-4">
                <div>
                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-1 mb-1 block">Target Rules</label>
                  <select 
@@ -720,7 +795,7 @@ const CreateTeamModal = ({ onClose, onCreate }: any) => {
                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:border-indigo-500 outline-none"
                  >
                    <option value="total_time">Cumulative Focus</option>
-                   <option value="daily_time">Daily Routine Focus</option>
+                   <option value="daily_time">Daily Routine</option>
                    <option value="weekly_time">Weekly Challenge</option>
                    <option value="monthly_time">Monthly Marathon</option>
                    <option value="yearly_time">Yearly Epic Goal</option>
@@ -734,7 +809,7 @@ const CreateTeamModal = ({ onClose, onCreate }: any) => {
                </div>
              </div>
 
-             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+             <div className="grid grid-cols-2 gap-4">
                <div>
                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-1 mb-1 block">Reward Base</label>
                  <select 
@@ -743,15 +818,15 @@ const CreateTeamModal = ({ onClose, onCreate }: any) => {
                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:border-indigo-500 outline-none"
                  >
                    <option value="text">Honor / Promise</option>
-                   <option value="coins">Shared Gold Pool</option>
-                   <option value="xp">Shared XP Bonus</option>
+                   <option value="coins">Shared Gold</option>
+                   <option value="xp">Shared XP</option>
                  </select>
                </div>
                
                <div>
-                 <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-1 mb-1 block">Reward Content</label>
+                 <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-1 mb-1 block">Reward Detail</label>
                  <input type="text" value={cfg.config.rewardContent} onChange={e => setCfg({...cfg, config: {...cfg.config, rewardContent: e.target.value}})}
-                    placeholder={cfg.config.rewardType === 'text' ? "e.g. A Pizza Party" : "e.g. 500"}
+                    placeholder={cfg.config.rewardType === 'text' ? "e.g. Pizza Party" : "e.g. 500"}
                     className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:border-indigo-500 outline-none" />
                </div>
              </div>
@@ -770,7 +845,7 @@ const CreateTeamModal = ({ onClose, onCreate }: any) => {
           </div>
         </div>
         
-        <div className="mt-8 relative z-10 flex gap-4">
+        <div className="mt-10 relative z-10 flex gap-4 xl:w-1/2 xl:ml-auto">
           <button 
              onClick={onClose} 
              className="w-1/3 py-3.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition-colors tracking-widest text-sm"
@@ -794,7 +869,7 @@ const CreateTeamModal = ({ onClose, onCreate }: any) => {
   )
 }
 
-const TeamMemberProfileModal = ({ member, onClose }: { member: TeamMember, onClose: () => void }) => {
+const TeamMemberProfileModal = ({ member, onClose, isCurrentUserCaptain, isTargetSelf, onTransferCaptain }: { member: TeamMember, onClose: () => void, isCurrentUserCaptain?: boolean, isTargetSelf?: boolean, onTransferCaptain?: (targetId: string) => void }) => {
   if (!member) return null;
   return createPortal(
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
@@ -803,10 +878,10 @@ const TeamMemberProfileModal = ({ member, onClose }: { member: TeamMember, onClo
         
         <div className="flex flex-col items-center relative z-10 text-center">
           <div className="w-24 h-24 rounded-full bg-slate-800 border-4 border-slate-700 flex items-center justify-center text-4xl shadow-xl shadow-black/50 mb-4 overflow-hidden relative">
-            {member.avatar ? <img src={member.avatar} className="w-full h-full object-cover" alt="" /> : <User size={40} className="text-slate-500" />}
+            {renderAvatar(member.avatar, 40)}
           </div>
           
-          <h2 className="text-2xl font-black text-white italic tracking-tight">{member.name}</h2>
+          <h2 className="text-2xl font-black text-white italic tracking-tight">{member.name} {member.isCaptain && <span className="text-amber-500 text-base" title="Captain">♔</span>}</h2>
           
           <div className="flex items-center gap-2 mt-2">
             <div className="text-xs font-bold text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">
@@ -833,6 +908,15 @@ const TeamMemberProfileModal = ({ member, onClose }: { member: TeamMember, onClo
               <span className="text-sm font-bold text-white tabular-nums leading-loose">{new Date(member.joinedAt).toLocaleDateString()}</span>
             </div>
           </div>
+          
+          {isCurrentUserCaptain && !isTargetSelf && onTransferCaptain && (
+            <button 
+               onClick={() => onTransferCaptain(member.userId)} 
+               className="mt-6 w-full py-2.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 border border-amber-500/30 rounded-xl font-bold font-sans text-xs tracking-widest uppercase transition-colors"
+            >
+               Transfer Captain
+            </button>
+          )}
         </div>
       </div>
     </div>,
@@ -841,7 +925,11 @@ const TeamMemberProfileModal = ({ member, onClose }: { member: TeamMember, onClo
 };
 
 const SettingsModal = ({ team, onClose, onSave, isCaptain, onLeave }: any) => {
-  const [cfg, setCfg] = useState(team.config);
+  const [cfg, setCfg] = useState({ 
+    name: team.name || '', 
+    description: team.description || '', 
+    ...team.config 
+  });
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
@@ -849,116 +937,168 @@ const SettingsModal = ({ team, onClose, onSave, isCaptain, onLeave }: any) => {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
-  
+
   return createPortal(
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
-       <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full relative max-h-[90vh] overflow-y-auto custom-scrollbar">
-         <button onClick={onClose} className="absolute top-4 right-4 text-slate-500 hover:text-white"><X size={20}/></button>
-         <h3 className="text-lg font-bold text-white mb-6">Guild Settings & Goal</h3>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto">
+       <div className="bg-slate-900 border-2 border-slate-800 rounded-3xl p-6 sm:p-8 max-w-4xl w-full relative my-auto">
+         <button onClick={onClose} className="absolute top-6 right-6 text-slate-500 hover:text-white bg-slate-800/50 p-2 rounded-full transition-colors z-20"><X size={20}/></button>
          
-         <div className="space-y-4">
-           {/* Guild Secret Key Section */}
-           <div className="bg-slate-950 border border-slate-800/80 rounded-2xl p-4 flex flex-col gap-2">
-             <label className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest block font-sans">Guild Secret ID / Invite Key (团队钥匙 / 秘钥)</label>
-             <div className="flex items-center gap-2">
-               <span className="font-mono text-xs text-slate-300 select-all break-all bg-slate-900/60 px-3 py-1.5 rounded-xl border border-slate-800 flex-1">{team.id}</span>
-               <button 
-                 onClick={handleCopy}
-                 className="px-3 py-1.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 hover:text-white rounded-xl text-xs font-bold transition-all shrink-0 border border-indigo-500/20 font-sans"
-               >
-                 {copied ? "Copied!" : "Copy"}
-               </button>
-             </div>
-             <p className="text-[9px] text-slate-500">Share this unique ID with other scholars to invite them to this guild.</p>
+         <div className="flex items-center gap-4 mb-8">
+           <div className="w-14 h-14 bg-slate-800 text-slate-300 flex items-center justify-center rounded-2xl border-2 border-slate-700 shrink-0">
+             <Settings size={28} />
            </div>
-
-           {/* Join Rule Section */}
            <div>
-             <label className="text-xs font-bold text-slate-500 uppercase">Joining Policy (入队规则)</label>
-             <select 
-               value={cfg.joinRule || 'direct'} 
-               onChange={e => setCfg({...cfg, joinRule: e.target.value})}
-               disabled={!isCaptain}
-               className="w-full mt-1 bg-slate-950 border border-slate-800 rounded-lg p-2 text-sm text-white"
-             >
-               <option value="direct">Direct Join (输入秘钥其他人即可加入)</option>
-               <option value="approval">Captain Approval Required (需要队长同意才能加入)</option>
-             </select>
-             {!isCaptain && (
-               <p className="text-[10px] text-slate-500 mt-1">Only the captain can modify join policy.</p>
-             )}
-           </div>
-
-           {/* Permission Section */}
-           <div>
-             <label className="text-xs font-bold text-slate-500 uppercase">Goal Setting Authority</label>
-             <select 
-               value={cfg.permission} 
-               onChange={e => setCfg({...cfg, permission: e.target.value})}
-               disabled={!isCaptain}
-               className="w-full mt-1 bg-slate-950 border border-slate-800 rounded-lg p-2 text-sm text-white"
-             >
-               <option value="captain_only">Captain Only</option>
-               <option value="unanimous">Unanimous Vote Required</option>
-             </select>
-           </div>
-           
-           <div>
-             <label className="text-xs font-bold text-slate-500 uppercase">Target Horizon</label>
-             <select 
-               value={cfg.targetType} 
-               onChange={e => setCfg({...cfg, targetType: e.target.value})}
-               className="w-full mt-1 bg-slate-950 border border-slate-800 rounded-lg p-2 text-sm text-white"
-             >
-               <option value="total_time">Guild Total Focus (m)</option>
-               <option value="daily_time">Guild Daily Progress (m)</option>
-               <option value="weekly_time">Guild Weekly Challenge (m)</option>
-               <option value="monthly_time">Guild Monthly Marathon (m)</option>
-               <option value="yearly_time">Guild Yearly Epic Goal (m)</option>
-             </select>
-           </div>
-           
-           <div>
-             <label className="text-xs font-bold text-slate-500 uppercase">Target Value (Minutes)</label>
-             <input type="number" value={cfg.targetValue} onChange={e => setCfg({...cfg, targetValue: parseInt(e.target.value) || 0})}
-                className="w-full mt-1 bg-slate-950 border border-slate-800 rounded-lg p-2 text-sm text-white" />
-           </div>
-
-           <div>
-             <label className="text-xs font-bold text-slate-500 uppercase">Goal Reward Type</label>
-             <select 
-               value={cfg.rewardType || 'text'} 
-               onChange={e => setCfg({...cfg, rewardType: e.target.value})}
-               className="w-full mt-1 bg-slate-950 border border-slate-800 rounded-lg p-2 text-sm text-white"
-             >
-               <option value="text">Text Only (e.g. Honor/Title)</option>
-               <option value="coins">Gold Coins</option>
-               <option value="xp">Experience (XP)</option>
-               <option value="item">Custom Item Data</option>
-             </select>
-           </div>
-
-           <div>
-             <label className="text-xs font-bold text-slate-500 uppercase">Goal Reward Details</label>
-             <input type="text" value={cfg.rewardContent} onChange={e => setCfg({...cfg, rewardContent: e.target.value})}
-                placeholder={cfg.rewardType === 'text' ? "e.g. Pizza Party" : "e.g. 500"}
-                className="w-full mt-1 bg-slate-950 border border-slate-800 rounded-lg p-2 text-sm text-white" />
+             <h3 className="text-3xl font-black text-white uppercase tracking-tighter">Guild Settings</h3>
+             <p className="text-sm text-slate-400 font-medium tracking-tight mt-1">Manage configuration, policy, and goals.</p>
            </div>
          </div>
          
-         <div className="mt-6 flex flex-col gap-3">
-           <button onClick={() => onSave(cfg)} className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-colors font-sans">
-             Submit Changes
+         <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 relative z-10">
+           {/* Left Column: Identity & Access */}
+           <div className="space-y-6">
+             <h4 className="text-sm font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-2">
+               <Landmark size={16} className="text-indigo-400" /> Identity & Access
+             </h4>
+             
+             <div className="space-y-4">
+               {/* Guild Secret Key Section */}
+               <div className="bg-slate-950 border border-slate-800/80 rounded-2xl p-4 flex flex-col gap-2">
+                 <label className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest block font-sans">Guild Secret ID / Invite Key</label>
+                 <div className="flex items-center gap-2">
+                   <span className="font-mono text-xs text-slate-300 select-all break-all bg-slate-900/60 px-3 py-1.5 rounded-xl border border-slate-800 flex-1">{team.id}</span>
+                   <button 
+                     onClick={handleCopy}
+                     className="px-3 py-1.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 hover:text-white rounded-xl text-xs font-bold transition-all shrink-0 border border-indigo-500/20 font-sans"
+                   >
+                     {copied ? "Copied!" : "Copy"}
+                   </button>
+                 </div>
+                 <p className="text-[9px] text-slate-500">Share this unique ID with other scholars to invite them to this guild.</p>
+               </div>
+
+               <div>
+                 <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-1 mb-1 block">Guild Name</label>
+                 <input type="text" value={cfg.name} onChange={e => setCfg({...cfg, name: e.target.value})}
+                    disabled={!isCaptain}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:border-indigo-500 outline-none disabled:opacity-50" />
+               </div>
+
+               <div>
+                 <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-1 mb-1 block">Guild Description</label>
+                 <textarea value={cfg.description} onChange={e => setCfg({...cfg, description: e.target.value})}
+                    disabled={!isCaptain}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:border-indigo-500 outline-none min-h-[80px] resize-none disabled:opacity-50" />
+               </div>
+
+               <div>
+                 <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-1 mb-1 block">Joining Policy</label>
+                 <select 
+                   value={cfg.joinRule || 'direct'} 
+                   onChange={e => setCfg({...cfg, joinRule: e.target.value})}
+                   disabled={!isCaptain}
+                   className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white outline-none disabled:opacity-50"
+                 >
+                   <option value="direct">Direct Join (Open to anyone with the key)</option>
+                   <option value="approval">Captain Approval Required</option>
+                 </select>
+               </div>
+             </div>
+           </div>
+
+           {/* Right Column: Goals & Authority */}
+           <div className="space-y-6">
+             <h4 className="text-sm font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-2">
+               <Target size={16} className="text-emerald-400" /> Goal Configuration
+             </h4>
+             
+             <div className="space-y-4">
+               <div>
+                 <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-1 mb-1 block">Goal Setting Authority</label>
+                 <select 
+                   value={cfg.permission} 
+                   onChange={e => setCfg({...cfg, permission: e.target.value})}
+                   disabled={!isCaptain}
+                   className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white outline-none disabled:opacity-50"
+                 >
+                   <option value="captain_only">Captain Only</option>
+                   <option value="unanimous">Unanimous Vote Required</option>
+                 </select>
+               </div>
+               
+               <div className="grid grid-cols-2 gap-4">
+                 <div>
+                   <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-1 mb-1 block">Target Horizon</label>
+                   <select 
+                     value={cfg.targetType} 
+                     onChange={e => setCfg({...cfg, targetType: e.target.value})}
+                     disabled={!isCaptain && team.config.permission !== 'unanimous'}
+                     className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white outline-none disabled:opacity-50"
+                   >
+                     <option value="total_time">Guild Total Focus</option>
+                     <option value="daily_time">Guild Daily Progress</option>
+                     <option value="weekly_time">Guild Weekly Challenge</option>
+                     <option value="monthly_time">Guild Monthly Marathon</option>
+                     <option value="yearly_time">Guild Yearly Epic Goal</option>
+                   </select>
+                 </div>
+                 
+                 <div>
+                   <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-1 mb-1 block">Value (Minutes)</label>
+                   <input type="number" value={cfg.targetValue} onChange={e => setCfg({...cfg, targetValue: parseInt(e.target.value) || 0})}
+                      disabled={!isCaptain && team.config.permission !== 'unanimous'}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white outline-none tabular-nums disabled:opacity-50" />
+                 </div>
+               </div>
+
+               <div className="grid grid-cols-2 gap-4">
+                 <div>
+                   <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-1 mb-1 block">Reward Type</label>
+                   <select 
+                     value={cfg.rewardType || 'text'} 
+                     onChange={e => setCfg({...cfg, rewardType: e.target.value})}
+                     disabled={!isCaptain && team.config.permission !== 'unanimous'}
+                     className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white outline-none disabled:opacity-50"
+                   >
+                     <option value="text">Text Only / Honor</option>
+                     <option value="coins">Gold Coins</option>
+                     <option value="xp">Experience (XP)</option>
+                     <option value="item">Custom Item Data</option>
+                   </select>
+                 </div>
+
+                 <div>
+                   <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-1 mb-1 block">Reward Detail</label>
+                   <input type="text" value={cfg.rewardContent} onChange={e => setCfg({...cfg, rewardContent: e.target.value})}
+                      disabled={!isCaptain && team.config.permission !== 'unanimous'}
+                      placeholder={cfg.rewardType === 'text' ? "e.g. Pizza Party" : "e.g. 500"}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white outline-none disabled:opacity-50" />
+                 </div>
+               </div>
+             </div>
+           </div>
+         </div>
+         
+         <div className="mt-10 flex flex-col xl:flex-row gap-4 items-center justify-between border-t border-slate-800 pt-6">
+           <button 
+             onClick={() => onLeave(isCaptain)}
+             className="w-full xl:w-auto py-3 px-6 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 font-bold text-xs rounded-xl transition-colors border border-rose-500/20 flex items-center justify-center gap-2 font-sans tracking-widest uppercase"
+           >
+             <LogIn size={14} className="rotate-180" />
+             {isCaptain ? "Disband Guild" : "Leave Guild"}
            </button>
 
-           <div className="pt-4 border-t border-slate-800/80 mt-2">
-             <button 
-               onClick={onLeave}
-               className="w-full py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 font-bold text-xs rounded-xl transition-colors border border-rose-500/20 flex items-center justify-center gap-1.5 font-sans"
-             >
-               <LogIn size={14} className="rotate-180" />
-               {isCaptain ? "Disband / Leave Guild (解散/退出团队)" : "Leave Guild (退出此团队)"}
+           <div className="flex gap-4 w-full xl:w-auto">
+             <button onClick={onClose} className="w-1/3 xl:w-auto xl:px-8 py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition-colors text-sm tracking-widest overflow-hidden">
+               {(!isCaptain && team.config.permission !== 'unanimous') ? "CLOSE" : "CANCEL"}
              </button>
+             {(isCaptain || team.config.permission === 'unanimous') && (
+               <button onClick={() => onSave(cfg)} className={cn(
+                 "w-2/3 xl:w-auto xl:px-8 py-3 text-white font-bold rounded-xl transition-colors font-sans text-sm tracking-widest whitespace-nowrap shadow-lg",
+                 isCaptain ? "bg-indigo-600 hover:bg-indigo-500 shadow-indigo-600/30" : "bg-emerald-600 hover:bg-emerald-500 shadow-emerald-600/30"
+               )}>
+                 {isCaptain ? "SAVE ALL CHANGES" : "PROPOSE CHANGES"}
+               </button>
+             )}
            </div>
          </div>
        </div>

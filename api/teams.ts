@@ -41,12 +41,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (secretCode) {
       userId = crypto.createHash('sha256').update(secretCode as string).digest('hex').substring(0, 16);
     }
-    const userName = req.body?.userName || req.query?.userName || 'Scholar';
-    const userAvatar = req.body?.userAvatar || req.query?.userAvatar || '';
-    const userBio = req.body?.userBio || req.query?.userBio || '';
-    const userTitle = req.body?.userTitle || req.query?.userTitle || '';
-    const userLevelRaw = req.body?.userLevel !== undefined ? req.body.userLevel : req.query?.userLevel;
-    const userLevel = userLevelRaw !== undefined ? parseInt(userLevelRaw as string) : 1;
+    
+    const decodeHeader = (val: any) => {
+      if (!val) return "";
+      try {
+        return decodeURIComponent(Array.isArray(val) ? val[0] : val);
+      } catch (e) {
+        return Array.isArray(val) ? val[0] : val;
+      }
+    };
+
+    const userName = req.body?.userName || decodeHeader(req.headers['x-user-name']) || req.query?.userName || 'Scholar';
+    const userAvatar = req.body?.userAvatar || req.headers['x-user-avatar'] || req.query?.userAvatar || '';
+    const userBio = req.body?.userBio || decodeHeader(req.headers['x-user-bio']) || req.query?.userBio || '';
+    const userTitle = req.body?.userTitle || decodeHeader(req.headers['x-user-title']) || req.query?.userTitle || '';
+    const userLevel = parseInt((req.body?.userLevel || req.headers['x-user-level'] || req.query?.userLevel || '1') as string, 10);
 
     // GET: List all teams (Lobby)
     if (method === 'GET' && !req.query.id) {
@@ -78,8 +87,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
        const teamData = await client.hGetAll(`scholar_team:${teamId}`);
        if (!teamData || !teamData.id) return res.status(404).json({ error: 'Team not found' });
        
-       let membersData = await client.hGetAll(`scholar_team:${teamId}:members`);
-       let members = Object.values(membersData).map((m: any) => JSON.parse(m));
+       const membersData = await client.hGetAll(`scholar_team:${teamId}:members`);
+       if (userId && membersData[userId]) {
+          try {
+             const m = JSON.parse(membersData[userId]);
+             let updated = false;
+             if (userName && userName !== 'Scholar' && m.name !== userName) { m.name = userName; updated = true; }
+             if (userAvatar && m.avatar !== userAvatar) { m.avatar = userAvatar; updated = true; }
+             if (userBio && m.bio !== userBio) { m.bio = userBio; updated = true; }
+             if (userTitle && m.title !== userTitle) { m.title = userTitle; updated = true; }
+             if (userLevel && m.level !== userLevel) { m.level = userLevel; updated = true; }
+             
+             if (updated) {
+                await client.hSet(`scholar_team:${teamId}:members`, userId, JSON.stringify(m));
+                membersData[userId] = JSON.stringify(m);
+             }
+          } catch (e) {
+             console.error("Failed to sync member info", e);
+          }
+       }
+       const members = Object.values(membersData).map((m: any) => JSON.parse(m));
        
        const proposalData = await client.get(`scholar_team:${teamId}:proposal`);
        const currentProposal = proposalData ? JSON.parse(proposalData) : undefined;
@@ -100,40 +127,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           rewardContent: teamData.config_rewardContent
        };
 
-       let applicantsData = await client.hGetAll(`scholar_team:${teamId}:applicants`) || {};
-       let applicants = Object.values(applicantsData).map((m: any) => JSON.parse(m));
-
-       // Sync member profile on GET
-       if (userId && membersData[userId]) {
-          const existingMember = JSON.parse(membersData[userId]);
-          let changed = false;
-          if (userName && existingMember.name !== userName) { existingMember.name = userName; changed = true; }
-          if (userAvatar && existingMember.avatar !== userAvatar) { existingMember.avatar = userAvatar; changed = true; }
-          if (userBio && existingMember.bio !== userBio) { existingMember.bio = userBio; changed = true; }
-          if (userTitle && existingMember.title !== userTitle) { existingMember.title = userTitle; changed = true; }
-          if (userLevel && existingMember.level !== userLevel) { existingMember.level = userLevel; changed = true; }
-          if (changed) {
-             await client.hSet(`scholar_team:${teamId}:members`, userId, JSON.stringify(existingMember));
-             membersData = await client.hGetAll(`scholar_team:${teamId}:members`) || {};
-             members = Object.values(membersData).map((m: any) => JSON.parse(m));
-          }
-       }
-
-       // Sync applicant profile on GET
-       if (userId && applicantsData[userId]) {
-          const existingApp = JSON.parse(applicantsData[userId]);
-          let changed = false;
-          if (userName && existingApp.name !== userName) { existingApp.name = userName; changed = true; }
-          if (userAvatar && existingApp.avatar !== userAvatar) { existingApp.avatar = userAvatar; changed = true; }
-          if (userBio && existingApp.bio !== userBio) { existingApp.bio = userBio; changed = true; }
-          if (userTitle && existingApp.title !== userTitle) { existingApp.title = userTitle; changed = true; }
-          if (userLevel && existingApp.level !== userLevel) { existingApp.level = userLevel; changed = true; }
-          if (changed) {
-             await client.hSet(`scholar_team:${teamId}:applicants`, userId, JSON.stringify(existingApp));
-             applicantsData = await client.hGetAll(`scholar_team:${teamId}:applicants`) || {};
-             applicants = Object.values(applicantsData).map((m: any) => JSON.parse(m));
-          }
-       }
+       const applicantsData = await client.hGetAll(`scholar_team:${teamId}:applicants`) || {};
+       const applicants = Object.values(applicantsData).map((m: any) => JSON.parse(m));
         const isMember = userId ? members.some((m: any) => m.userId === userId) : false;
         const isPending = userId ? applicants.some((r: any) => r.userId === userId) : false;
 
@@ -303,7 +298,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // POST: Update Settings
     if (method === 'POST' && action === 'settings') {
-       const { teamId, targetType, targetValue, rewardType, rewardContent, permission, joinRule } = req.body;
+       const { teamId, name, description, targetType, targetValue, rewardType, rewardContent, permission, joinRule } = req.body;
        const teamData = await client.hGetAll(`scholar_team:${teamId}`);
        if (!teamData || !teamData.id) return res.status(404).json({ error: 'Not found' });
        
@@ -313,12 +308,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
        if (reqMember.isCaptain) {
           const adminUpdates: Record<string, string> = {};
+          if (name) adminUpdates.name = name;
+          if (description !== undefined) adminUpdates.description = description;
           if (permission) adminUpdates.config_permission = permission;
           if (joinRule) adminUpdates.config_joinRule = joinRule;
           if (Object.keys(adminUpdates).length > 0) {
              await client.hSet(`scholar_team:${teamId}`, adminUpdates);
              if (permission) teamData.config_permission = permission;
              if (joinRule) teamData.config_joinRule = joinRule;
+             if (name) teamData.name = name;
+             if (description !== undefined) teamData.description = description;
           }
        }
        
@@ -470,38 +469,57 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
        return res.json({ success: true });
     }
 
-    // POST: Vote
+    // POST: Leave or Disband
     if (method === 'POST' && action === 'leave') {
-       const { teamId } = req.body;
+       const { teamId, disband } = req.body;
        const memberStr = await client.hGet(`scholar_team:${teamId}:members`, userId);
        if (!memberStr) return res.status(403).json({ error: 'Not member' });
        const member = JSON.parse(memberStr);
        
-       await client.hDel(`scholar_team:${teamId}:members`, userId);
-       
-       const remainingKeys = await client.hKeys(`scholar_team:${teamId}:members`);
-       if (remainingKeys.length === 0) {
+       if (member.isCaptain) {
+          if (!disband) return res.status(400).json({ error: 'Captain cannot just leave. Please transfer leadership or disband the guild.' });
+          
           // Disband completely
           await client.del(`scholar_team:${teamId}`);
           await client.del(`scholar_team:${teamId}:members`);
           await client.del(`scholar_team:${teamId}:messages`);
           await client.del(`scholar_team:${teamId}:events`);
           await client.del(`scholar_team:${teamId}:proposal`);
-       } else {
-          if (member.isCaptain) {
-            // Assign new captain based on joined time
-            const members = await Promise.all(remainingKeys.map(k => client.hGet(`scholar_team:${teamId}:members`, k)));
-            const parsedMembers = members.map(m => m ? JSON.parse(m) : null).filter(Boolean).sort((a,b) => a.joinedAt - b.joinedAt);
-            if (parsedMembers.length > 0) {
-               const newCap = parsedMembers[0];
-               newCap.isCaptain = true;
-               await client.hSet(`scholar_team:${teamId}:members`, newCap.userId, JSON.stringify(newCap));
-            }
-          }
-          await client.lPush(`scholar_team:${teamId}:events`, JSON.stringify({
-             id: crypto.randomUUID(), type: 'leave', content: `${userName} left the guild.`, timestamp: Date.now()
-          }));
+          return res.json({ success: true, disbanded: true });
        }
+       
+       await client.hDel(`scholar_team:${teamId}:members`, userId);
+       
+       // Clean up if it was the last non-captain member (though captain can't leave without disbanding, so this is just general cleanup)
+       await client.lPush(`scholar_team:${teamId}:events`, JSON.stringify({
+          id: crypto.randomUUID(), type: 'leave', content: `${userName} left the guild.`, timestamp: Date.now()
+       }));
+       
+       return res.json({ success: true });
+    }
+
+    // POST: Transfer Captain
+    if (method === 'POST' && action === 'transfer') {
+       const { teamId, targetMemberId } = req.body;
+       const memberStr = await client.hGet(`scholar_team:${teamId}:members`, userId);
+       if (!memberStr) return res.status(403).json({ error: 'Not member' });
+       const member = JSON.parse(memberStr);
+       if (!member.isCaptain) return res.status(403).json({ error: 'Only captain can transfer leadership' });
+       
+       const targetStr = await client.hGet(`scholar_team:${teamId}:members`, targetMemberId);
+       if (!targetStr) return res.status(404).json({ error: 'Target not found' });
+       const targetMember = JSON.parse(targetStr);
+       
+       member.isCaptain = false;
+       targetMember.isCaptain = true;
+       
+       await client.hSet(`scholar_team:${teamId}:members`, userId, JSON.stringify(member));
+       await client.hSet(`scholar_team:${teamId}:members`, targetMemberId, JSON.stringify(targetMember));
+       
+       await client.lPush(`scholar_team:${teamId}:events`, JSON.stringify({
+          id: crypto.randomUUID(), type: 'transfer', content: `${member.name} transferred guild leadership to ${targetMember.name}.`, timestamp: Date.now()
+       }));
+       
        return res.json({ success: true });
     }
 

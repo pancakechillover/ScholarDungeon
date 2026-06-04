@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v8.1.1';
+export const APP_VERSION = 'v8.2.2';
 export const LAST_UPDATE_DATE = '2026-06-04';
-export const LAST_UPDATE_TIME = '15:15:00';
+export const LAST_UPDATE_TIME = '16:15:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,38 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v8.2.2',
+    date: '2026-06-04',
+    time: '16:15:00',
+    title: 'Guild Goal Approvals & Profile Advancements',
+    items: [
+      { category: 'Feature', description: 'Implemented the ability for any guild member to respectfully propose edits to the Guild Target Horizon and Vault Rewards, under Democratic unanimous voting systems.' },
+      { category: 'Feature', description: 'Proposed votes are now pinned seamlessly at the peak of the Guild Message board showing clear live-progress meters.' },
+      { category: 'Feature', description: 'Added the ability for captains to dynamically transfer their role to another deserving team member from the Team Profile Modal View.' }
+    ]
+  },
+  {
+    version: 'v8.2.1',
+    date: '2026-06-04',
+    time: '16:10:00',
+    title: 'Guild Settings Redesign',
+    items: [
+      { category: 'UI Enhancement', description: 'Restructured the "Found a Guild" and "Guild Settings & Goal" modals with a responsive two-column grid on wide screens.' },
+      { category: 'Feature', description: 'Added the ability for captains to dynamically edit guild name and description from the settings menu, and unified language to English.' }
+    ]
+  },
+  {
+    version: 'v8.2.0',
+    date: '2026-06-04',
+    time: '16:00:00',
+    title: 'Fellowship Profile Auto-Sync & Interface Upgrades',
+    items: [
+      { category: 'Feature', description: 'Fully synchronized user avatar icons from the personal center into the Fellowship team module.' },
+      { category: 'UI Enhancement', description: 'Imbued the Fellowship members list with user level tags (Lv. x), and linked avatar cards directly to live bios, custom titles, and levels.' },
+      { category: 'Database Integration', description: 'Architected dynamic real-time profile fetching and updating on the Redis/Express backend for 100% accurate guild profile details.' }
+    ]
+  },
   {
     version: 'v8.1.1',
     date: '2026-06-04',
