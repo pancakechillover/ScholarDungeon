@@ -1,6 +1,712 @@
 # Version Archive
 
 ## Task History
+- **v8.0.1 (2026-06-04):** Vercel Analytics & Plaza Polishing.
+  - *Architecture:* Updated vercel.json cron schedule to 0 0,12 * * * to respect Vercel Hobby Free Tier limitation of max 2 cron jobs per day.
+  - *UI:* Polished the Plaza view, replacing Chinese texts with clean English descriptions and integrating the Landmark icon instead of the loading spinner.
+  - *Integrations:* Installed and configured the high-performance @vercel/analytics package for real-time traffic observation.
+- **v8.0.0 (2026-06-04):** Plaza Integration & Major 8.0 Overlay.
+  - *Feature:* Upgraded the public guilds list section within the Sanctum dashboard into a modern spiritual "Plaza" (广场) layout action.
+  - *UI:* Engineered a highly aesthetic under-construction Plaza modal following strict mobile and dark/light portal guidelines.
+  - *Architecture:* Triggered major architecture level bump upgrade to 8.0.0 representing clean multi-system alignment.
+- **v7.12.3 (2026-06-04):** Vercel Hobby Deploy & Cron Alignments.
+  - *Architecture:* Restructured push-notification cron schedule configurations inside vercel.json to satisfy strict rate limits on Vercel Hobby Free tier, unblocking automated GitHub deploy pipelines.
+  - *Optimization:* Documented full schedule constraints and handled serverless build configurations under standard Vercel environments.
+- **v7.12.2 (2026-06-04):** Fellowship Avatar & User Level Sync.
+  - *Feature:* Integrated real-time user profile synchronization to the group details pipeline, automatically updating levels, custom titles, bios, and avatars.
+  - *UI:* Improved structural avatar representations across the message chat workspace using custom AvatarRenderer.
+  - *UI:* Implemented level fallbacks and custom title mappings in TeamMemberProfileModal.
+- **v7.12.1 (2026-06-04):** Fellowship Settings & Join Rule Optimizations.
+  - *Feature:* Integrated Fellowship Guild Key display directly inside the device identity settings tab under the Settings view.
+  - *Feature:* Updated GET team details pipeline to automatically return isMember and isPending status verification keys.
+  - *Optimization:* Refined applicants list types to streamline frontend/backend integration and prevent TypeScript compiler complaints.
+- **v7.12.0 (2026-06-04):** Fellowship Security, Keys & Join Request Pipelines.
+  - *Feature:* Added high-visibility Guild Secret ID / Invite Key viewer inside Settings modal with copy utilities.
+  - *Feature:* Engineered Join Policy rules selector (direct vs approval), allowing captains to dictate request verification protocols.
+  - *Feature:* Created inline Applicant list views on active team dashboard for convenient leadership approval and denial responses.
+  - *Feature:* Moved exit and disband control buttons safely inside Settings modal, with tailored contextual messages.
+- **v7.11.0 (2026-06-04):** Fellowship Social Alignment & Chat Upgrades.
+  - *Feature:* Added Guild Leave and Disband capabilities embedded directly inside the Guild banner layout.
+  - *Feature:* Overhauled Team chat rendering routing the current user's messaging explicitly to right-aligned bubbles while tracking peers on the left.
+  - *Feature:* Upgraded the guild configuration module to support Weekly, Monthly, and Yearly temporal periods.
+  - *UI:* Injected user levels universally into member list tiles and individual profile Modals.
+  - *Bug Fix:* Mapped physical avatar rendering schemas to ensure avatars properly apply.
+- **v7.10.2 (2026-06-04):** Fellowship Identity & Modals.
+  - *Bug Fix:* Fixed the "Join Guild" button being blocked by browser-level prompt constraints by implementing a fully native custom Join Guild modal.
+  - *UX:* Identity requirements now seamlessly generate a unique user code transparently behind the scenes without demanding manual setup.
+  - *Bug Fix:* Mapped username pulls strictly back to the internal active Profile name avoiding sync-lock mismatches.
+- **v7.10.1 (2026-06-04):** Fellowship UI & Joining.
+  - *UI:* Expanded the Fellowship module to span fully across the dashboard grid layout for optimal visibility.
+  - *UI:* Redesigned the "Found a Guild" creation modal to feature more intuitive goals, elegant gradients, animations, and inline error-handling.
+  - *Feature:* Added explicit "Join Guild" button enabling joining via string ID directly next to guild creation.
+  - *Bug Fix:* Fixed an issue where creating a guild silently failed if no secret identity code was configured limit-testing.
+- **v7.10.0 (2026-06-04):** Fellowship / Team Module.
+  - *Feature:* Added a Fellowship module in the Sanctum (Dashboard) view allowing users to create or join teams using a cloud proxy.
+  - *Feature:* Implemented a team goal system with customizable targets and rewards, requiring unanimous vote or captain privileges.
+  - *UI:* Separated Team chat (Message Board) and events (Event Log) into dedicated tabs within the module.
+  - *UI:* Added a Recharts Pie chart to visually distribute the focus contribution pool among team members.
+  - *UX:* Integrated user bios and custom titles alongside their avatars when clicking on Team Member profiles.
+- **v7.9.14 (2026-06-04):** Personalized Push Notifications.
+  - *Feature:* Integrated the user's custom profile name directly into the Web Push Notification payload.
+  - *UX:* End of Focus and End of Rest push notifications dynamically greet the user by name for a more personalized experience.
+- **v7.9.13 (2026-06-04):** Touch Controls & Talent Logic Views.
+  - *Feature:* Integrated visual dynamic payout progression inside Timer-Dashboard Active Talents hover-cards for Branch A and B Flow Experience modules.
+  - *UI:* Duplicated the Start of the Day SVG ambient header cleanly into the End of the Day modal.
+  - *UX:* Migrated streak patching Death Defying Gold Medal hitboxes from a hover-invisible layout to an explicit always-visible clickable action specifically for PWA touch compatibility.
+- **v7.9.12 (2026-06-04):** PWA Web Push Priority & Vercel Scheduler.
+  - *Architecture:* Added Vercel Cron engine configurations inside vercel.json to sustain scheduled background checks cleanly under serverless deployment environments.
+  - *Bug Fix:* Injected low-bound dynamic TTL limits (300s TTL for timers vs 86400s TTL for streak reminders) to avoid offline delivery delayed notification clutter on iOS/Android devices.
+  - *Architecture:* Synchronized Web Push high urgency priorities across both serverless Vercel API routes and permanent server queue processors.
+- **v7.9.11 (2026-06-04):** Adaptive Pickers & Smart Time Presets.
+  - *Bug Fix:* Upgraded DatePicker and TimePicker to utilize layout fallback positioning to eliminate any potential viewport clipping on mobile, PWAs, or modal boundaries.
+  - *Feature:* Added standard infinite circular value-wrap logic inside the TimePicker with looping up/down adjustments.
+  - *Feature:* Enabled saving and managing common/frequent time entries inside persistent localStorage preset badges with direct click-to-apply controls.
+  - *Feature:* Provided instant "Use Current Date" and "Use Current Time" quick-choice buttons inside both DatePicker and TimePicker popovers.
+- **v7.9.10 (2026-06-04):** Pie Chart Legend Alignment & Tooltip Refinement.
+  - *Bug Fix:* Fixed the tooltip anonymous Time formatting bug in the Weekly Pie Chart to correctly show the actual day or period name upon click.
+  - *UI:* Mapped stable, consistent, theme-matching colors for days of the week (Sun to Sat) and daily periods (Morning, Afternoon, Night) inside the Weekly Pie Chart.
+  - *UX:* Aggregated and displayed total categorized study hours and minutes within both Daily and Weekly Custom Legends next to the labels for rapid reading.
+- **v7.9.9 (2026-06-04):** Sleep Tracker Polish & Bulk Editor.
+  - *Feature:* Added a dedicated Bulk Sleep Editor modal accessed natively from the Sleep Tracker dashboard designed to quickly jump to any past date and supplement missing records continuously without closing.
+  - *Feature:* Replaced system-default Time Inputs inside the Start of the Day and Bulk Sleep Modal interfaces with unified custom TimePicker popup menus for consistent global layout across mobile and desktop.
+  - *UI:* Upgraded the Sleep Tracker visual pane substituting the empty header with a fully interactive Date Picker + Mode selector header mimicking the Weekly Overview's architecture (Natural Calendar vs Last 7 Days).
+  - *UX:* Rewired the Recharts Sleep Tooltip trigger converting it perfectly to click-to-open and click-outside-to-dismiss behavior cleanly decoupling the tooltip from any previous inline editing hacks.
+- **v7.9.8 (2026-06-04):** Sleep Tracking Time Mappings & Chart Split.
+  - *Feature:* Corrected standard sleep data chronologies so morning sleep-reports correctly attribute numeric logic directly back to the night phase while avoiding boundary clipping (e.g. 02:00 equates to 26:00).
+  - *UI:* Splitted multi-axis domains in the Record Dashboard's composed sleep chart strictly segregating durations into the bottom 40% height grid while bounding timeline indicators smoothly into the 50%-100% canvas frame eliminating all spatial overlap.
+  - *UX:* Installed absolute limits ensuring raw durations cap at strict logical thresholds (<= 16h) and automatically blocking save-states with descriptive red error fields directly spanning out when cross-midnight loops detect invalid offsets.
+- **v7.9.7 (2026-06-04):** Start of Day Polishing & Streak Patching.
+  - *Feature:* Integrated the full 7-Day Activity Record streak heat-map inside the Start of the Day modal.
+  - *Feature:* Enabled spending Death Defying Gold Medals natively inside the Start of the Day streak viewer to patch missed dates without jumping to settings.
+  - *UI:* Cloned the comprehensive End of the Day Reflection toolkit (Immersive editing, Templates, and Markdown syntax parsing) directly into the Start of the Day screen.
+  - *UI:* Aligned the top banner time-settlement string presentation synchronously between both daily modals.
+- **v7.9.6 (2026-06-04):** Sleep Tracker Polish & Editing.
+  - *UI:* Unified the "Start the Day" modal styling strictly with the "End of the Day" visual dark-themed layout while preserving the soft, glowing Sun SVG background.
+  - *UI:* Increased the height and y-axis detail of the Sleep Tracker in the Record Dashboard for better readability.
+  - *UI:* Changed the wake-up indicator dot color on the Sleep Tracker line graph to a vibrant yellow (#fbbf24) for higher contrast.
+  - *UX:* Enabled re-editing of past sleep records by directly clicking on the Sleep Tracker data points, natively triggering the detailed custom edit modal.
+- **v7.9.5 (2026-06-04):** Sleep Tracking & Start of Day.
+  - *Feature:* Added a new "Start the Day" modal that automatically triggers upon the first visit after the configured settlement time, allowing users to actively record sleep duration and set morning intentions.
+  - *Feature:* Implemented an integrated Sleep Tracker within the Record Dashboard, displaying a customized 7-day Composed Chart merging dual Y-axis data (bedtime/wake-time steps alongside total duration bars).
+  - *UI:* Integrated quick-access "Start the Day" buttons natively adjacent to "End the Day" toggles across the Explore and Dashboard interfaces.
+- **v7.9.4 (2026-06-04):** Background Audio Playback Fix.
+  - *Bug Fix:* Removed the legacy, continuous silent audio track design that hijacked iOS and Android native Audio Focus, explicitly preventing the timer from forcefully pausing external music platforms like Spotify or Apple Music when entering the background.
+  - *Architecture:* Replaced explicit backend audio hooks with clean navigator.wakeLock screen privileges to sustain foreground timers.
+- **v7.9.3 (2026-06-04):** Shuffler Talent (C2) Expansion.
+  - *Audio:* Triggered the gacha audio channel natively across all C2 interaction vectors.
+  - *UI:* C2 rerolls now invoke an elegant 3D card flipping animation to visually highlight the loot refresh sequence.
+  - *Bug Fix:* Prevented rerolled loot cards inside the immediate-completion screen from falling out of sync with the underlying deferred Chest state architecture.
+- **v7.9.2 (2026-06-03):** PWA Layout Fixes.
+  - *Bug Fix:* Removed forced scrollbar gutter that caused a black border on the right side of desktop PWA app views.
+  - *Bug Fix:* Mapped CSS safe-area-inset and root html background properties to properly adapt to mobile notch areas during landscape fullscreen mode, resolving the black letterboxing edge.
+- **v7.9.1 (2026-06-03):** Pie Chart Tooltips & Legends.
+  - *UI:* Enhanced Pie Charts and Donut Charts in the Record view by adding color-coded legends.
+  - *UX:* Tooltips on Donut Charts are now explicitly configured for click interactions to better support mobile touch devices and detailed reading.
+- **v7.9.0 (2026-06-03):** Dashboard Modular Layouts.
+  - *Feature:* Upgraded the Record dashboard with a dynamic Layout configuration system, allowing for custom module composition.
+  - *UI:* Added Daily and Weekly Donut Chart layout alternatives with distinct visualization modes (Compact vs. Time Breakdown).
+  - *UI:* Record tabs now independently manage their visibility preferences out of the new modular configuration menu.
+- **v7.8.0 (2026-06-03):** Time Calculation & Rest Tracking.
+  - *Feature:* Added "Include Rest Time in Tasks" to Time-Based Calculation settings. Rest periods now count toward task progress and daily records.
+  - *Feature:* Added standard Rest duration configuration.
+  - *UI:* Total Rooms fields now dynamically calculate and display converted h/min real-time estimates.
+  - *UI:* Task progress bars conditionally display total Time formatting (`h` and `min`) instead of Sessions.
+  - *UI:* Cleaned up and redesigned the Open-Ended Tasks toggle module inside the Create Tier menu.
+- **v7.7.0 (2026-06-03):** Open-Ended Tasks.
+  - *Feature:* Added support for Open-Ended Tasks allowing users to focus endlessly without an explicit session goal.
+  - *Feature:* Added "Tasks Default to Open-Ended" user preference inside General Settings.
+  - *UX:* Explore panel now cleanly suppresses traditional progress bars for open-ended tasks in favor of tracking total elapsed focused minutes.
+- **v7.6.9 (2026-06-03):** Precise Settings Redirection.
+  - *UX:* Upgraded Guidebook and system dashboard redirects to auto-scroll directly into specific setting module block locations.
+- **v7.6.8 (2026-06-03):** Activity Time Peaks & Streak Timezone Sync.
+  - *Bug Fix:* Streamlined logical "Day" mappings globally by substituting hardcoded physical calendar slices with dynamically resolved Settlement Strings that accurately absorb user-configured Activity Time Peaks (Morning/Afternoon/Night loops) and native Timezones.
+  - *Bug Fix:* Completely corrected raw date arithmetic in repairStreak resolving issues where streak patchwork systematically bypassed offset offsets.
+  - *Bug Fix:* Applied explicit timezone mapping capabilities across the "7-Day Activity Record" visualizer directly aligning historical UI interactions with the strict rules encoded inside the internal daily reset cycles.
+- **v7.6.7 (2026-06-03):** Settings Panel Search & Navigation Polish.
+  - *Feature:* Added a search bar to the Settings Panel to easily filter and find specific configuration compartments.
+  - *UX:* Settings Panel now saves and displays recent search queries for quick access.
+  - *UI:* Streamlined the sub-text descriptions for both Reward Vault and Settings Panel menu tabs to be more concise and readable.
+- **v7.6.6 (2026-06-03):** DatePicker Theme Sync & Watermark Gradients.
+  - *UI:* Upgraded DatePicker active days highlighting to natively adapt to the system theme: displaying elegant deep-indigo backgrounds with bright high-contrast white text when active in Daylight, Candy, or Warm Sun themes.
+  - *UI:* Replaced the solid single-color top borders on Export Image watermarks with a beautiful fading CSS-gradient separator line that gracefully tapers off left and right.
+- **v7.6.5 (2026-06-03):** Export Polish & Calendar Tweaks.
+  - *Feature:* DatePickers now universally display Monday as the starting day of the week instead of Sunday globally.
+  - *UI:* Export Image modes dynamically generate watermarks with separator lines that adapt their color tint precisely to the active system theme.
+  - *UI:* Evolved the Diary image export rating text into a visually distinct row of Lucide Stars.
+  - *Bug Fix:* Repaired the logic mapping session timestamps within unified DatePickers, allowing daily record highlight backgrounds to accurately populate.
+- **v7.6.4 (2026-06-03):** DatePicker Activity & Diary Indicators.
+  - *Feature:* Date pickers in the Record Dashboard now dynamically highlight days that contain recorded sessions with a subtle background.
+  - *UI:* Days where a diary reflection was written feature a small golden star in the corner for intuitive record referencing.
+  - *Bug Fix:* Implemented dynamic bounding box calculation preventing DatePicker and TimePicker modals from clipping off the left or top edge of the screen.
+- **v7.6.3 (2026-06-03):** Share Diary Theme Rendering Fixes.
+  - *Bug Fix:* Fixed an issue in Diary Export mode where the preview background defaulted to a hardcoded black color (#020617), rendering incorrectly for light themes.
+  - *Bug Fix:* Repaired Markdown typography generation causing list items and bullets within diary entries to become illegibly faint or bright against their respective theme canvas.
+- **v7.6.2 (2026-06-03):** Custom Unified Date/Time Pickers.
+  - *Feature:* Fully replaced all native browser default <input type="date"> and <input type="time"> components with custom unified DatePicker and TimePicker UI components.
+  - *UI:* Custom date and time pickers natively adapt to the app's established dark-mode aesthetics, guaranteeing 100% cross-platform layout consistency regardless of operating system quirks.
+  - *UX:* Improved time selection with elegant snapping vertical scrolling columns (Hours:Minutes), avoiding OS numeric fallbacks and clunky native scrollers.
+- **v7.6.1 (2026-06-03):** Diary Record & Watermark Fixes.
+  - *Feature:* Diary exports stretch their rendering canvas boundaries via DOM layouts to correctly push standard HTML watermarks precisely to the bottom of images of any target aspect ratio.
+  - *Feature:* Exporting diaries natively supports filtering out layout linebreaks, and permits standard paragraph indents for continuous readability.
+  - *UI:* Overhauled extreme scrollbox limitations during active preview rendering to support viewing heavily tall uncropped slices seamlessly.
+  - *UX:* Images generate precise year timestamps explicitly formatted in English. Integrated mood component icons faithfully alongside summary metadata.
+- **v7.6.0 (2026-06-03):** Diary Export Customization.
+  - *Feature:* Added layout controls to the Diary export view, supporting continuous long-images or single-day segmented slices.
+  - *Feature:* Exposed typographical scale and font-family customization options.
+  - *Feature:* Export canvases now automatically support applying aspect ratios (16:9, 4:3, 1:1) to individual diary outputs.
+  - *UX:* Safe empty state handling implemented. Empty date ranges will gracefully fall back to a UI prompt without outputting broken image artifacts.
+- **v7.5.11 (2026-06-03):** Export Diary Mode & Watermark Tuning.
+  - *Feature:* Added a dedicated "Diary Export" tab to generate and download filtered markdown text or beautiful image compilations.
+  - *UI:* Tuned watermark structural order.
+- **v7.5.10 (2026-06-03):** Share Image Watermark Polish.
+  - *UI:* Expanded the Share Image watermark to a professional flex-based layout.
+  - *Feature:* Embedded native AppLogo and official URL directly into the generated image.
+- **v7.5.9 (2026-06-03):** Share Dashboard Enhancements.
+  - *Feature:* When exporting at specific aspect ratios, Daily and Weekly panels now intelligently reform into a neat side-by-side flex layout to fill space beautifully.
+  - *Feature:* Added a toggle to allow users to hide their daily reflections from the generated image for privacy.
+  - *UI:* Added a localized watermark at the bottom of the exported image declaring it was generated by the platform.
+- **v7.5.8 (2026-06-03):** Share Image Layout & Watermark.
+  - *Feature:* Image generation now dynamically injects flex constraints to naturally stretch components to the target aspect ratio instead of padding.
+  - *Feature:* Added a branded watermark to the bottom of the exported snapshot.
+  - *UI:* Added an incomplete status annotation to the Export Image header.
+- **v7.5.7 (2026-06-03):** Record Screenshot Quality Refactoring.
+  - *Bug Fix:* Completely removed unstable direct DOM layout manipulations during the Share Image generation process. This prevents Recharts overflow, structural overlap, and broken CSS constraints.
+  - *Feature:* Upgraded html-to-image rendering to utilize pixelRatio: 2 to double the original render space, guaranteeing sharp text and clearly legible fonts upon export.
+  - *Feature:* Image generation now retrieves the exact --color-slate-950 or #020617 root theme dynamically, applying it to both the raw captured frame and the target canvas padding to prevent transparent/black background corruption upon sharing.
+  - *UX:* Aspect ratio generation (16:9, 4:3, 1:1) now uses smart canvas padding instead of explicitly breaking the component flow to achieve size requirements.
+- **v7.5.6 (2026-06-03):** Record Dashboard Image Export.
+  - *Feature:* Added a Share button to the Record dashboard to export beautiful custom statistics images directly to your device.
+  - *Feature:* Supports setting the exported image aspect ratio (16:9, 4:3, 1:1) and customizing the visibility of specific statistical charts.
+- **v7.5.5 (2026-06-03):** UI Minimalism & Hotfix.
+  - *UI:* Removed redundant Total XP and Gold summary blocks from page headers.
+  - *Bug Fix:* Fixed an issue with the Update Checker evaluating older versions as available updates.
+- **v7.5.4 (2026-06-02):** Record Dashboard Data Interactions.
+  - *Feature:* Added "Return to Day" jump buttons inside tooltips across the Record dashboard to jump specifically to that date.
+  - *Feature:* Interactive statistics popovers added for individual history checks within the Routine Tracker.
+  - *UI:* Daily statistics and Weekly charts now clearly display "No activity" placeholders on zero-value segments.
+- **v7.5.3 (2026-06-02):** Record Dashboard UI & Sync Polish.
+  - *UI:* Aligned the base and maximum rendering height of the Weekly bar chart with the Daily bar chart for visual consistency across the grid.
+  - *UI:* Fixed an issue on mobile where the top bar Profile Sync red dot indicator would persist on fully synced states.
+- **v7.5.1 (2026-06-02):** XP Table Multi-Reward Architecture.
+  - *Feature:* Upgraded Level Up rewards to support setting and granting multiple different rewards per milestone level.
+  - *UI:* Redesigned the custom Level Rewards manager inside Settings to display an interactive modular sub-rewards list constructor.
+  - *UI:* Changed Talent point rewards representation to green Talent Scroll icons throughout the XP lists, Modals, and Settings.
+- **v7.5.0 (2026-06-02):** XP Tied Epithet Customization.
+  - *Feature:* Re-linked title (称号) milestones to level progression achievements directly integrated within the XP list.
+  - *UI:* Employed high-contrast horizontal divider rows to separate rank tiers (Novice: 1-3, Veteran: 4-15, Master: 16-47, Grandmaster: 48+).
+  - *UX:* Removed the previous manual title setting form from Settings, making player badges earned purely as level-up reward milestones.
+- **v7.4.14 (2026-06-02):** Settings Navigation Redesign.
+  - *UX:* Redesigned the Settings tabs into a compact row-by-row navigation menu layout, improving scannability and structure.
+  - *UI:* Moved the "Back to Menu" action button to the far-right of settings sub-page headers on all devices.
+  - *Feature:* The settings screen persistently remembers the last opened tab compartment between user sessions using localStorage.
+- **v7.4.13 (2026-06-02):** Reward Vault Navigation Polish.
+  - *Feature:* Merged Treasures and Custom Rewards channels into All Rewards sub-tabs for simplified layout.
+  - *UI:* Relocated the "Back to Vault" action button to the rightmost side of sub-page headers across all compartments.
+- **v7.4.12 (2026-06-02):** Reward Vault Navigation Redesign.
+  - *UX:* Redesigned the Reward Vault into a nested menu structure, showing one distinct compartment per row on the root screen.
+  - *Feature:* The Vault now persistently remembers the last opened compartment between sessions using local storage.
+- **v7.4.11 (2026-06-02):** Reward Vault Mobile Polish.
+  - *UI:* Modified the Reward Vault tabs container to be horizontally scrollable on mobile devices, ensuring all options remain fully accessible even on narrow screens.
+- **v7.4.10 (2026-06-02):** Reward Vault UI Cleanup.
+  - *UI:* Removed redundant "Treasures" and "Custom" counter blocks in the Reward Vault header to declutter the interface and maintain visual consistency.
+- **v7.4.9 (2026-06-02):** Talent Tree UI Cleanup.
+  - *UI:* Removed redundant point and shard trackers strictly within the Talent Tree header to avoid overlapping with the universal Top Bar indicators.
+- **v7.4.8 (2026-06-02):** Top Bar Polish & Talent Logic.
+  - *Fix:* Fixed Talent Scrolls tooltip opening animation jitter by isolating hover/active bounds out of the absolute wrapper.
+  - *UI:* Added proper "X/3" Shards indicator within the Talent Forge tooltip.
+  - *UI:* Capped displayed Top Bar Gold Coin amount strictly to 6 digits (using a 999,999+ maximum).
+  - *UI:* Realigned flex-box gaps between Talent, Coins, and Streak to be perfectly symmetrical.
+- **v7.4.7 (2026-06-02):** Top Bar Sync & Resource Upgrades.
+  - *UI:* Talent Shards strictly render at 1280px screen widths, independent of the sidebar state.
+  - *Feature:* Retired auto-conversion of Shards into Scrolls. They are now combined side-by-side physically in a dedicated click-to-open manual interaction popover.
+  - *UX:* Cloud Sync button on mobile devices transitioned cleanly to a minimal red dot attached globally to the User Profile.
+- **v7.4.6 (2026-06-02):** Guidebook Audio Update.
+  - *UX:* Added a physical page-turning sound effect when directly jumping to specific Guidebook chapters from external shortcuts.
+- **v7.4.5 (2026-06-02):** Guidebook Indexing Bug Fix.
+  - *Bug Fix:* Rebuilt Guidebook sub-chapter mapping to fix a legacy offset issue that caused buttons to load the wrong chapter.
+  - *Bug Fix:* Repaired the Streak Record modal Help button so it now accurately targets the Death Defying Medal guidebook page.
+- **v7.4.4 (2026-06-02):** Streak Record UX Improvements.
+  - *UX:* The 7-Day Activity Record modal now includes an explicit reminder banner detailing if you have studied today.
+  - *UX:* Added a Help icon to the Streak Repair Modules section to directly open the Guidebook.
+- **v7.4.3 (2026-06-02):** Streak UI Refinement.
+  - *UI:* Simplified the top bar streak reminder by removing the exclamation mark badge and directly turning the text and icon red if the daily session is incomplete.
+- **v7.4.2 (2026-06-02):** UI Polishing & Detailed Expectations.
+  - *UI:* Matched the top bar unread session (!)-badge to identical styling as the main system profile indicator.
+  - *UX:* Experience bar tooltips on the top bar now require a direct click to toggle.
+  - *UX:* Clicking the streak icon on the top bar now directly summons the 1-Week Activity Record modal.
+  - *Math:* Updated reward expectation displays to explicitly note the multipliers applied by Talent A1 (Mind Lubrication) and Talent B1 (Alchemy).
+- **v7.4.1 (2026-06-02):** Streak & Probability Model Enhancements.
+  - *UI:* Added a small red exclamation mark to the top bar Streak icon to remind you to complete today's session.
+  - *Math:* Refined Economy Expectation modal to use multi-draw occurrence probabilities combining Base stats, Pool drop tables, and Talent limits.
+- **v7.4.0 (2026-06-01):** Reward Economy Stats Integration.
+  - *Feature:* Added a mathematical expectation modal in Reward Pool Management to show expected Gold/XP values.
+  - *Math:* Automatically maps setup configurations, pool items, and talent buffs to compute expected average session gains.
+- **v7.3.3 (2026-06-01):** Profile Avatar & Edit UI Polish.
+  - *Feature:* Added support for selecting a custom profile avatar from a curated list of Lucide icons.
+  - *UI:* Exchanged profile edit settings icon to a Pencil-Line for better visual semantics.
+- **v7.3.2 (2026-06-01):** Profile Modal UI Polish.
+  - *UI:* Renamed the Talent attribute card to Scroll and updated the visual icon to match the broader system.
+- **v7.3.1 (2026-06-01):** Inventory Ledger Enhancements.
+  - *Feature:* Advanced logging implemented to track physical usages of Talent Scrolls, Medals, and Buff cards.
+  - *UI:* Upgraded the Inventory history tabs to feature an Economy-Log style quantity modifier badge (+1/-1).
+- **v7.3.0 (2026-06-01):** Vault Inventory Storage System.
+  - *Feature:* Added an Inventory tab inside the Vault interface to track active held items.
+  - *Feature:* Transformed Double Buffs into manually activated consumable items.
+  - *UX:* Added item acquisition and usage historical grid.
+- **v7.2.0 (2026-06-01):** Profile Modal UI Cleanup.
+  - *UI:* Removed the redundant streak badge next to the level title in the Profile Modal.
+- **v7.1.13 (2026-06-01):** Streak Reminder Notification.
+  - *UI:* Added a highly visible notification badge directly to the Streak widget on the Profile Dashboard, displaying an exclamation mark when the daily session has not yet been completed.
+- **v7.1.12 (2026-06-01):** Profile Modal Next Reward Bug Fix.
+  - *Bug Fix:* Fixed an issue where the Profile Modal Next Reward always showed the default generic text instead of correctly calculating and displaying custom Leveling Rewards configured in settings.
+- **v7.1.11 (2026-06-01):** Fate Dice: Shuffler Enhancement.
+  - *Feature:* Upgraded the "Shuffler" talent effect from 1 daily reroll to 1 free reroll per chest draw, greatly expanding flexibility.
+  - *UI:* Integrated individual reroll buttons natively into the delayed Reward Chest interface for Shuffler owners.
+- **v7.1.10 (2026-06-01):** Streak Timezone Bug Fix.
+  - *Bug Fix:* Fixed a timezone discrepancy in the streak patch system that caused patched days to incorrectly connect with mathematically shifted prior sessions, inflating the streak by +1 day incorrectly.
+- **v7.1.9 (2026-06-01):** Streak Modal UI Polish.
+  - *UI:* Removed the medal count badge from the top right corner of the Streak stat card to keep the design cleaner.
+  - *UX:* In the 7-Day Activity Record, the "X" marker directly behaves as the patch button (instead of a hover menu), triggering a confirmation double-check before using a Death Defying Medal.
+  - *UI:* Added the short date (MM/dd) above the weekday label in the 7-Day Activity Record.
+- **v7.1.8 (2026-06-01):** Streak Repair System.
+  - *Feature:* Transformed the Medal counter in the Profile Modal to a "Streak Status" button. Clicking the Streak badge opens an interactive 7-Day Activity Record, allowing the user to seamlessly use their "Death Defying Gold Medals" to patch manually missed days (Duolingo-style retroactive check-ins).
+- **v7.1.7 (2026-06-01):** Timer Bulk Advanced Configuration.
+  - *Feature:* In Timer Bulk Session creation, added the ability to define custom 'Focus' and 'Rest' durations, as well as an option to auto-calculate the appropriate number of bulk sessions directly based on a specific time range.
+- **v7.1.6 (2026-06-01):** Timer Bulk Session Rewards.
+  - *Bug Fix:* Unified the chest reward logic used during normal session clears and Timer Bulk Manage operations. Bulk added sessions will now accurately consider talent effects and limits checks.
+- **v7.1.5 (2026-06-01):** Ichiban Box Theme-Aware Polish.
+  - *UI:* Exchanged hardcoded green (emerald) styling in the Box Gacha "Ichiban" view for theme-adaptive indigo classes to maintain perfect continuity with light and dark themes.
+- **v7.1.4 (2026-06-01):** Shop UI Polish.
+  - *UI:* Made the active purchase button in the Merchant Shop much more prominent with solid theme colors, dynamic scale hovers, and shadows when items are affordable.
+- **v7.1.3 (2026-05-24):** Ichiban Box Gacha UI Polish.
+  - *UI:* Aligned the "Ichiban" section of the shop with the recent Gacha View redesign, expanding it into a complete two-column layout with a highly visual aesthetic.
+  - *UI:* Improved visibility of prize quantity, lineup structure, and integrated themed accent styling to better differentiate standard rewards from the 'Last One' prize.
+- **v7.1.2 (2026-05-24):** Gacha Summoning UI Polish.
+  - *UI:* Increased the size of Draw 1x and Draw 10x buttons in the Gacha View for better accessibility.
+  - *UI:* Fixed an issue in the Summoning Results screen where element cards overlapped across screens by introducing dynamic scaling and adaptive aspect ratios.
+- **v7.1.1 (2026-05-24):** Gacha View Redesign.
+  - *UI:* Redesigned the Gacha view for better aesthetics, placing the visual draw interface on the left and prominently displaying precise pool probabilities and contents on the right side.
+- **v7.1.0 (2026-05-24):** Merchant Shop Shelf UX Redesign.
+  - *UI:* Redesigned the Merchant Shop display to a minimalistic, flat shelf aesthetic, adapting seamlessly to active themes.
+- **v7.0.12 (2026-05-24):** Vault UI Clean up.
+  - *UI:* Removed legacy explicit quantity displays (x100) for "Double Coins" or "Double XP" items in the Reward History table.
+- **v7.0.11 (2026-05-24):** Top Bar & PIP Time-Based Support.
+  - *Feature:* Top Bar and Picture-in-Picture window active dungeon progress bar now natively display requirements correctly when "Compute Tasks by Time" is enabled.
+- **v7.0.10 (2026-05-24):** Settings UI Refinement.
+  - *UI:* Extracted "Compute Tasks by Time" functionality into a dedicated standalone section with a proper header in the General Settings page for better discoverability.
+- **v7.0.9 (2026-05-24):** Chestbox Auto-Pick Summary.
+  - *Feature:* In the pending Reward Chest, clicking "Auto-Pick Best" now displays an organized summary modal detailing all rewards obtained, instead of immediately closing.
+  - *UI:* Added a shortcut button in the Auto-Pick Summary to directly jump to the Vault screen.
+- **v7.0.8 (2026-05-24):** Chestbox Reward Limit Display.
+  - *UI:* Added reward frequency limit display to the cards within the pending Reward Chest modal to match the standard victory interface.
+- **v7.0.7 (2026-05-24):** Chestbox Loot Limit Fix.
+  - *Bug Fix:* Rewards with usage limits (e.g., 1 per day) will now correctly factor in occurrences where they have been drawn but are sitting unchosen inside the pending Reward Chest.
+- **v7.0.6 (2026-05-18):** Routine Refresh Logic Update.
+  - *Bug Fix:* Routine Tasks (Tiers/Expeditions) now actively reset their session progress recursively to 0 during cyclic refreshes even if the goal was not completed in the prior cycle. Previously, only "completed" status routines would reset their progress.
+- **v7.0.5 (2026-05-17):** Time-Based Reward Multipliers.
+  - *Feature:* In Time-Based mode, completing a focus session that is a multiple of the standard session size now triggers the reward generation recursively, granting multiple reward chests at once.
+  - *UI:* Updated the "End of the Day" rest prompt to accurately display the Daily Progress tracker in time format when Time-Based mode is active.
+- **v7.0.4 (2026-05-17):** Time-Based Progress Synchronization Fix.
+  - *Bug Fix:* Fixed the underlying `dailySessions` state calculation for Time-Based Mode, ensuring that real-time timer durations accurately translate into proportional dashboard progress, instead of only counting single physical sessions.
+- **v7.0.3 (2026-05-17):** Delete Session Fix.
+  - *Bug Fix:* Replaced native window.confirm with custom ConfirmModal in Recent Sessions. This fixes an issue where the delete session button failed to execute due to restricted environment policies.
+- **v7.0.2 (2026-05-17):** Limited Mental Effort Mode.
+  - *Feature:* Added a "Limited Mental Effort Mode" toggle in General Settings. When enabled, reaching the Daily Progress Goal automatically replaces the timer interface with an "End the Day" prompt, actively preventing further sessions and encouraging rest.
+- **v7.0.1 (2026-05-17):** Daily Progress Synchronization.
+  - *Bug Fix:* Fixed an issue where deleting a session from Explore (Recent Sessions) failed to synchronize and decrement the Daily Progress bar on the Dashboard.
+  - *Data Sync:* When a session is manually deleted, the system now automatically retracts the Gold and XP earned from that session, and removes any unredeemed chest rewards associated with it without penalizing the current level.
+- **v7.0.0 (2026-05-17):** Time-Based Sessions Calculation.
+  - *Feature:* Added "Time-Based Calculation" settings under General Settings. When enabled, task requirements and rewards scales are converted from fixed session numbers to time equivalents using a customizable standard session duration.
+  - *Feature:* Dungeons now natively present target times (e.g. 75 mins instead of 3 sessions).
+  - *UI:* The Stats layout and Record dashboard have been updated to present Tasks and Sessions in calculated minutes.
+- **v6.12.4 (2026-05-17):** Heatmap Range Configuration.
+  - *Feature:* Added the ability to customize the heatmap saturation range in Settings -> General, supporting both [0-8] and [0-16] modes for users with higher daily session counts.
+- **v6.12.3 (2026-05-16):** Timer Loop Progression Fix.
+  - *Bug Fix:* Fixed a bug where the timer would halt at 0:00 instead of automatically progressing to the resting phase or next loop when a focus session concluded.
+- **v6.12.2 (2026-05-16):** Vault UI Refinement.
+  - *UI:* Removed the Gold Earned, Gold Spent, and XP Earned statistics from the Economy Log banner to streamline the interface.
+- **v6.12.1 (2026-05-16):** Vault UI Consolidation.
+  - *UI:* Consolidated the Reward Vault and Economy Log navigation into a single unified tab row to optimize screen space and improve overall Vault coherence.
+- **v6.12.0 (2026-05-16):** Economy Transaction Log.
+  - *Feature:* Added an Economy Log module to the Vault page, tracking every single Gold Coin and XP acquisition and expenditure to ensure complete visibility into resource flow.
+  - *Architecture:* Implemented a robust centralized transaction methodology in the game state to ensure no economy modifications can slip past the logging system.
+- **v6.11.6 (2026-05-16):** Sage AI Light Theme & Output Enhancements.
+  - *UI:* Optimized Sage AI persona selector and interactable plan modifier forms specifically for light themes by replacing theme-agnostic styling with context-aware coloring.
+  - *Feature:* Added "Help me create tasks" as a standard default preset prompt within the Sage AI library.
+  - *Fix:* AI-generated task plans now accurately embed their Total Rooms (`sessions`) metric into the generated output structures instead of defaulting to 1.
+- **v6.11.5 (2026-05-16):** Reward Tag Display Fix.
+  - *Fix:* Resolved an issue where Dungeon reward tags of type "Item" or "Custom Text" were not displaying in the list.
+- **v6.11.4 (2026-05-16):** ReferenceError Bug Fix.
+  - *Fix:* Resolved Uncaught ReferenceError: applyExpeditionPlan is not defined in the Sage AI consult modal.
+- **v6.11.3 (2026-05-16):** Sage AI Interactive Chat Controls.
+  - *Feature:* Added an inline Identity Selector directly above the Sage AI chat input for seamless persona switching (Sage, Friend, Master).
+  - *Feature:* Added an explicit "Modify Mode" toggle. AI configuration schemas will now only render as interactive game modifier widgets if this mode is enabled, preventing accidental state changes.
+  - *Fix:* Re-wrote JSON response block parsing from the ground up to aggressively strip markdown tags and ensure expedition configuration elements always render reliably even when AI incorrectly formats code blocks.
+- **v6.11.2 (2026-05-16):** Sage AI Master Persona.
+  - *Feature:* Added "Master" personality mode to Sage AI settings. Forms a strict, highly analytical game master persona to help accurately plan tasks and adjust balance settings logically.
+- **v6.11.1 (2026-05-16):** Sage JSON Render Reliability.
+  - *Fix:* Improved the fallback JSON parsing engine within the chat interface, ensuring that interactive planners and balance setters always render properly even when AI omits code-block language tags.
+  - *Feature:* Added direct configuration rules for 'sessions' requirement values in Expedition Planners, allowing users to modify them natively.
+- **v6.11.0 (2026-05-16):** Sage AI Interactive Task Automation.
+  - *Feature:* The Sage AI chat can now directly generate fully-configured Expedition Plans including titles, descriptions, goals, and multiple reward tiers based on natural language requests.
+  - *Feature:* Added ExpeditionPlanPreview component that intercepts JSON payloads from Sage and renders them natively as an interactive, editable table within the chat interface.
+  - *Feature:* Users can freely customize the AI's proposed tiers, rewards, and requirements before clicking "Accept", which automatically maps and constructs the parent MajorDungeon and child Dungeon entries directly into the active state.
+  - *Feature:* Sage AI can also dynamically adjust global economy balance settings via interactive embedded chat UI components.
+  - *Prompt Polish:* Overhauled the hidden system prompt inside sageService.ts to strictly enforce markdown JSON outputs matching the expedition_plan syntax schema.
+- **v6.10.8 (2026-05-16):** Stats Chart Alignment.
+  - *UI:* Aligned the maximum height of the Weekly bar chart with the Daily bar chart for visual consistency across the Record dashboard.
+- **v6.10.7 (2026-05-16):** Stats Today Button Refinement.
+  - *UI:* Replaced the "TODAY" text buttons in the Record dashboard's Daily and Weekly modules with a compact "Return" (RotateCcw) icon to further conserve horizontal space.
+- **v6.10.6 (2026-05-16):** Stats Controls Polish.
+  - *UI:* Consolidated the "Natural" and "Last 7d" Weekly date mode selectors into a single dropdown component, drastically reducing horizontal space usage.
+  - *UI:* Narrowed the width of the Weekly date selector specifically to optimize for smaller tablet screens.
+- **v6.10.5 (2026-05-16):** Stats Controls Polish.
+  - *UI:* Aligned the font size CSS classes for the Weekly module's date selector to perfectly match the Daily module.
+- **v6.10.4 (2026-05-16):** Stats Controls Optimization.
+  - *UI:* Refined the styling and dimensions of the Daily and Weekly controls in the Record dashboard to prevent overflow and ensure a cohesive view on mobile/tablet.
+- **v6.10.3 (2026-05-16):** Top Bar Coloring Bug Fix.
+  - *Bug Fix:* Removed globally invasive sm:bg-indigo-600 theme overrides from index.css that were forcefully coloring mobile narrow-screen level text as pure white instead of matching the adaptive theme-colors of the other elements in the top bar.
+- **v6.10.2 (2026-05-16):** Top Bar Adaptive Coloring.
+  - *UI:* Reverted level text color on narrow screens to uniquely inherit theme-aware styling similarly to other attributes, whilst retaining purely white coloration specifically on wide screens.
+- **v6.10.1 (2026-05-16):** Top Bar Mobile & Wide UI Refinement.
+  - *UI:* Fixed Level Label (LV) to use text-black-pure on narrow screens and text-white-pure on wide screens.
+  - *Architecture:* Added .text-black-pure global utility in index.css.
+- **v6.10.0 (2026-05-16):** Advanced Multi-Named Preset System.
+  - *Feature:* Overhauled the Preset system to support multiple named configurations for Expeditions, Tiers, Quests, and Achievements.
+  - *UI:* Centralized preset management into a unified "PresetControl" component integrated into the banner of all creation modals.
+  - *UX:* Enhanced Auto-Load functionality to reliably apply the specific active preset designated by the user upon modal opening.
+- **v6.9.4 (2026-05-16):** Top Bar UI Persistence Fix.
+  - *Bug Fix:* Resolved CSS specificity conflict in index.css ensuring Level Label remains white on wide screens.
+  - *UI:* Decoupled Level Label font color from global top bar theme defaults.
+- **v6.9.3 (2026-05-16):** UI Branding & Icon Polish.
+  - *UI:* Applied .text-white-pure to the main settings icon in the About screen to ensure it remains white across all themes.
+  - *UI:* Optimized level badge color logic to use global white utility.
+- **v6.9.2 (2026-05-16):** Level Label UI Polish.
+  - *Architecture:* Added .text-white-pure global utility in index.css to bypass theme-aware color overrides.
+  - *UI:* Fixed Level Label (LV) in Top Bar to use pure white color on wide screens across all themes (daylight, warm sun, candy).
+  - *UI:* Retained theme-aware adaptive coloring for the Level Label on mobile for optimal legibility.
+- **v6.9.1 (2026-05-16):** Level Label Polish.
+  - *UI:* Fixed Level Label (LV) to ensure it is always solid white and opaque on light themes (daylight, warm sun, candy) for wide screens.
+- **v6.9.0 (2026-05-15):** Preset System & iOS Fix.
+  - *Feature:* Added "Save Preset", "Load", and "Auto-Load" functionality for Expedition Goals, Tiers, Quests, and Achievements creation forms.
+  - *Bug Fix:* Resolved iOS-specific input state issue preventing reward editing during initial item creation.
+- **v6.8.24 (2026-05-15):** Top Bar Mobile UX Polish.
+  - *UI:* Optimized the Top Bar for small mobile screens by conditionally hiding the streak days indicator, converting the XP Bar layout below the level badge, and simplifying the Level badge's CSS styling.
+- **v6.8.23 (2026-05-15):** Dungeon Tiers Preset & iOS UX Fix.
+  - *Feature:* Added "Save Preset" functionality when creating Dungeon Tiers, allowing users to save their favorite configurations (e.g., standard 20 rooms, 200 coin reward).
+  - *Feature:* Added an "Auto-Load" capability that, when enabled, seamlessly applies your saved preset every time you create a new tier.
+  - *Bug Fix:* Fixed a critical iOS / Edge bug where modifying reward items while creating a new tier directly edited the parent expedition state, rendering the inputs seemingly frozen.
+- **v6.8.22 (2026-05-15):** Routine Reset Synchronization.
+  - *Logic:* Routine expeditions now strictly align to the custom reset time defined in Settings, rather than standard midnight rollovers.
+  - *Logic:* Completing a routine task during late-night crossover hours (e.g. 03:00 AM) now properly credits the previous calendar day instead of prematurely checking off the next day.
+  - *UI:* Dungeon UI refresh schedule badges now correctly display the logical day calculated against your custom night-end offset.
+- **v6.8.21 (2026-05-15):** Mobile PWA Background Precision.
+  - *Architecture:* Implemented a continuous HTML5 silent audio track that guarantees JavaScript execution on mobile devices when the PWA is backgrounded or the screen is locked.
+  - *Bug Fix:* Solved the issue where Timer notifications would not deliver until the player reopened the Web App by forcing background wake-locks via the audio stream.
+  - *Feature:* Active timers will now display natively on your lock screen using the Media Session API!
+- **v6.8.20 (2026-05-15):** Timer Progression Sync.
+  - *Bug Fix:* Fixed an issue where the timer would wait at 0:00 for reward selection. The timer now automatically jumps to the next state (Resting/Focus) even while the reward modal stays open for you to pick an item on your own time.
+- **v6.8.19 (2026-05-15):** Routine Tracker Dashboard.
+  - *Feature:* Added a "Routine Tracker" matrix module to the Record interface placed precisely above the Heatmap to display daily/monthly completion progress for all Routine-tagged Expeditions.
+  - *UX:* Tier configuration now directly exposes the "Routine Expedition" toggle previously only available on parent goals.
+- **v6.8.18 (2026-05-15):** Routine Expeditions Detail.
+  - *Feature:* Expanded "Routine" configuration to allow individual Tiers (sub-dungeons) to have routine intervals indepedent of their Expedition Goal.
+  - *UI:* The refresh schedule dates (M/D) are now explicitly displayed alongside the routine badges for Daily, Weekly, and Monthly intervals.
+- **v6.8.17 (2026-05-15):** Routine Expeditions.
+  - *Feature:* Added "Routine" configuration when creating or editing an Expedition Goal. Routine expeditions reset their tier progress recursively on a daily, weekly, or monthly interval to allow replayable challenges and repeated rewards.
+- **v6.8.16 (2026-05-15):** UI Polish & Convenience Enhancements.
+  - *UI:* Updated the color of "Talent Scrolls" icons globally from purple to emerald green for better theme consistency.
+  - *UX:* In the Dungeons view, creating a new expedition or tier now automatically defaults to 100 Coins for the Completion Reward, avoiding an empty initial state.
+- **v6.8.15 (2026-05-15):** UI Stability & Error Handling Polish.
+  - *Bug Fix:* Resolved a React warning regarding uncontrolled inputs changing to controlled states during item/quest editing by enforcing explicit string fallbacks (value || "").
+  - *Bug Fix:* Suppressed expected NotSupportedError playback failures for missing page-flip.mp3 files in environments where audio is disabled or absent.
+- **v6.8.14 (2026-05-15):** Disable Sub/Parent Transference.
+  - *UX/Fix:* Completely disabled the functionality to transfer items between major and sub-levels via dragging. Drag and drop now strictly focuses on simple list reordering to stabilize the application and prevent potential data state losses.
+- **v6.8.13 (2026-05-15):** Dungeons Drag & Drop Stability.
+  - *Bug Fix:* Resolved a critical bug where dragging one dungeon item into another caused the item to be "swallowed" and disappear. Implementing strictly functional state updates fixes conflicts between drag state and list reordering UI states.
+  - *UI:* Corrected the icon for Talent Scrolls rewards in the Expedition view to properly display a Scroll instead of a Trophy.
+- **v6.8.12 (2026-05-15):** Fullscreen UX & WakeLock Support.
+  - *Feature:* Added Screen WakeLock support to prevent the device from sleeping during fullscreen sessions.
+  - *Feature:* Screen orientation is dynamically unlocked during fullscreen, allowing landscape viewing natively on mobile.
+  - *UI:* Overhauled mobile landscape fullscreen layout. Rescaled main timer module and relocated progress UI to bottom to prevent vertical overflow issues.
+  - *UI:* Adjusted narrow screen portrait layout for the fullscreen progress bar. Ensures right-edge spacing prevents overlap with the Exit Fullscreen button.
+- **v6.8.11 (2026-05-15):** Top Bar Polish.
+  - *UI:* Unified icon sizes across the top bar. Adapted the Sync button to remove bulky padding, syncing its dimensions with standard info indicators.
+  - *UX:* Fixed top bar streak text to use proper pluralization ("Days" vs "Day").
+- **v6.8.10 (2026-05-15):** Nomenclature & Iconography Update.
+  - *Terminology:* Renamed "Talent Points" mathematically to "Talent Scrolls" across all UI, settings, and quest reward tables.
+  - *UI:* Updated the icon for Talent Scrolls from a Star to a Scroll, and altered Talent Shards to a Puzzle icon to better fit the fantasy aesthetic.
+- **v6.8.9 (2026-05-15):** UI Consistency.
+  - *UI:* Updated the CSS styling of the "Quest History" view to match the modernized "Quest Board" styling for a cohesive interface.
+  - *UI:* Exchanged standard Zap icons in rewards rendering to Star globally when referencing "Talent Points" for clarity.
+- **v6.8.8 (2026-05-15):** Sage AI Output & Performance Enhancements.
+  - *Feature:* Implemented capability to cancel ongoing AI consultations if the Sage is taking too long.
+  - *UI:* Collapsible thought process for "reasoning" models like DeepSeek to reduce clutter in chat history.
+- **v6.8.7 (2026-05-15):** Background Timer & Notification Precision.
+  - *Architecture:* Delegated timer countdowns to a dedicated Web Worker to prevent browser throttling when the PWA is in the background.
+  - *Feature:* Added high urgency flag to Web Push notifications to bypass mobile OS battery-saver deferrals.
+- **v6.8.6 (2026-05-14):** Audio Error Handling Refinement.
+  - *Bug Fix:* Improved audio playback error handling to silence expected browser autoplay policy errors.
+- **v6.8.5 (2026-05-14):** Guidebook Scrollbar Refinement.
+  - *UI:* Improved visibility of 'Pro Tip' headers in the Talent System guidebook page by updating text color to theme-aware variables.
+- **v6.8.4 (2026-05-14):** Talent System Navigation Fix.
+  - *Bug Fix:* Fixed Talent System button in dashboard to point to the correct guidebook page.
+- **v6.8.3 (2026-05-14):** Dashboard UI Polish.
+  - *UX:* Removed redundant "GUIDE" label from Guidebook buttons on the dashboard for a cleaner interface.
+- **v6.8.2 (2026-05-14):** Talent Color Polish.
+  - *UI:* Brightened Talent System blue colors for improved visibility in Night, Forest, and Ocean themes.
+- **v6.8.1 (2026-05-14):** Talent System Interaction Polish.
+  - *UI:* Updated Talent System icons and text to use theme-aware CSS variables, ensuring high visibility in all dark and light themes.
+- **v6.8.0 (2026-05-14):** Themed Wisdom & Interaction Polish.
+  - *Feature:* Implemented comprehensive Guidebook theming for NIGHT, FOREST, and OCEAN; solid dark backgrounds with light mystical typography.
+  - *UX:* Enhanced Daily Sessions modal with permanently visible action buttons for better accessibility and touch support.
+  - *UI:* Removed redundant "Daily Record" buttons from chart tooltips to streamline the interaction flow.
+  - *Visual:* Polished book cover and spine aesthetics across all themes for improved immersion.
+- **v6.7.2 (2026-05-14):** Interaction & Type Integrity.
+  - *UX:* Removed redundant "Daily Record" navigation button from chart tooltips to streamline interaction.
+  - *Fix:* Hardened StudySession type definitions and resolved linting warnings in the daily sessions component.
+- **v6.7.1 (2026-05-14):** Chart Tooltip Optimization.
+  - *UX:* Removed redundant "Daily Record" navigation button from chart tooltips to streamline the interaction flow in the Record dashboard.
+- **v6.7.0 (2026-05-14):** Period-Aware Sessions Modal.
+  - *Feature:* Daily chart segments now open sessions modal filtered by Morning/Afternoon/Night.
+  - *UI:* Added chronological sorting (Morning to Night) and period separators matching Recent Sessions CSS.
+  - *Logic:* Improved session retrieval using calculated daily boundaries (assignedDate) for consistency with charts.
+- **v6.6.1 (2026-05-14):** Daily Sessions Modal Refinement.
+  - *UI:* Modified session action buttons to be permanently visible instead of hover-only for improved accessibility and touch support.
+- **v6.6.0 (2026-05-14):** Daily Session Modal & UX Synchronization.
+  - *Feature:* Implemented "Daily Sessions Modal" in the Record (Stats) interface; inspect sessions without tab switching.
+  - *UI:* Modal design synchronized with Recent Sessions table CSS while providing localized editing and deletion.
+  - *UX:* Enhanced chart interaction flow to prevent loss of scroll position and context in the dashboard.
+- **v6.5.2 (2026-05-14):** Touch & Navigation Refinement.
+  - *Fix:* Fixed navigation anchor bug: Clicking "view sessions record" in the Record chart now correctly scrolls to the target table.
+  - *Fix:* Fixed touch scrolling issues: Adjusted global overscroll behavior and Recharts tooltip pointer events to ensure smooth page sliding on mobile.
+  - *UX:* Refined tooltip interactivity: Improved button hitboxes and click detection for chart bubbles on touch devices.
+- **v6.5.1 (2026-05-14):** Startup Performance Optimization.
+  - *Perf:* Eliminated the "white flash" on startup by implementing inline background styles and PWA splash screen sync.
+  - *UX:* Added auto-save to Daily Record reflections to prevent data loss when switching dates or closing the editor.
+- **v6.5.0 (2026-05-14):** Interactive Navigation & Calculator Polish.
+  - *UX:* Implemented cross-section navigation: clicking a daily chart segment now jumps specifically to that day's filtered session list in the Record table.
+  - *Feature:* Enhanced calculators with detailed help tooltips and a master metric overview for better visibility into earning multipliers.
+  - *UI:* Optimized Dashboard layout: aligned Oracle's Insight module height with existing guides for a balanced wide-screen aesthetic.
+  - *Bug Fix:* Fixed audio context errors on mobile/iframes by implementing aggressive resume-on-gesture logic.
+  - *Documentation:* Created FEATURES.md to introduce the application's extensive mystical and technical capabilities.
+- **v6.4.2 (2026-05-14):** Daily Record Auto-Save.
+  - *UX:* Implemented auto-save for reflections; switching dates or closing the editor now automatically persists changes.
+- **v6.4.1 (2026-05-14):** Calculator Insights & Targeted Shop.
+  - *Feature:* Added a help button to the calculator to display all underlying multipliers and constant values.
+  - *Feature:* Implemented Targeted Shop Calculation: users can now select a specific item to calculate exact session and day requirements.
+  - *UI:* Moved the Goal selector to the bottom of the section and added help details to all modules.
+- **v6.4.0 (2026-05-14):** Version 6.4.0 Milestone.
+  - *Milestone:* Upgraded system version to 6.4.0.
+- **v6.3.20 (2026-05-14):** Immersive Reflection Unification.
+  - *Architecture:* Extracted the Immersive Reflection modal into a shared component to ensure parity between the Record dashboard and the End of Day summary screen.
+- **v6.3.19 (2026-05-14):** iOS Touch & Tooltip Refinement.
+  - *Bug Fix:* Fixed tooltip dismissal and unresponsiveness on mobile devices by securely deferring DOM mutations during the event capture phase.
+- **v6.3.18 (2026-05-14):** Immersive Reflection.
+  - *Feature:* Added a fullscreen edit mode for daily reflections, providing a distraction-free writing experience.
+- **v6.3.17 (2026-05-14):** iOS Touch Interaction Bug Fix.
+  - *Bug Fix:* Resolved double-tap requirement for navigation and interactions on iOS touch devices by optimising event handling in the Stats interface.
+- **v6.3.16 (2026-05-14):** UI Decoupling: Oracle Insight Icon.
+  - *UI:* Removed the icon to the left of "Oracle's Insight" in the Dashboard for a cleaner layout.
+- **v6.3.15 (2026-05-14):** English Default Prompts.
+  - *UX:* Translated the default Sage prompts from Chinese to English per user request.
+- **v6.3.14 (2026-05-14):** Input Box Readability & Complete Theme Inversion Fix.
+  - *UX:* Fixed unreadable text in the input box for AI consultation interfaces by using appropriate light/dark indigo variants instead of the inverted white/slate palette.
+  - *UI:* Replaced `bg-white` and hardcoded colors across prompt selectors and inputs to ensure high contrast in daylight, warm, and candy themes.
+- **v6.3.13 (2026-05-14):** Sage Light Theme Background Sync.
+  - *UI:* Synchronized the AI chat main message area background to exactly match the sidebar background (`bg-indigo-50`) in all light themes for improved consistency.
+- **v6.3.12 (2026-05-14):** Sage UI Full-Spectrum Theme Fix.
+  - *Architecture:* Overhauled global index.css to provide the full spectrum of theme-aware indigo variables (50 to 950), ensuring light theme accents correctly adapt to Warm and Candy palettes instead of defaulting to blue/purple.
+  - *UI:* Polished Sage's Council modal sidebar, banner, and message bubbles directly observing Dark/Light system preferences.
+  - *UX:* Implemented transparency logic (`bg-[color]/10`) for all AI interaction components in dark mode, fulfilling deep aesthetic contrast rules.
+- **v6.3.11 (2026-05-14):** Sage Interface Complete Theme Synchronization.
+  - *UI:* Stripped the hardcoded standard "emerald" colors from the entire Sage's Council and Advice settings.
+  - *UI:* Replaced these colors with theme-aware variables (handled via "indigo" aliases in Tailwind), ensuring the AI interface beautifully adapts to "Warm", "Candy", "Ocean", and other selected themes.
+  - *UI:* Fixed the Prompt Library selector and Chat Input components in the Sage Interface to dynamically swap backgrounds and text colors perfectly for Day/Light themes instead of staying stuck in dark-mode aesthetics.
+- **v6.3.10 (2026-05-14):** Sage UI Polish & Renaming.
+  - *UI:* Fully synchronized the new Sage Consultation sidebar with custom light/dark theme rules.
+  - *Feature:* You can now manually rename your saved consultation threads using the pencil icon in the sidebar.
+- **v6.3.9 (2026-05-14):** Sage Conversations & Archives.
+  - *Feature:* Added a collapsible sidebar to the Sage AI interface to manage multiple conversation threads.
+  - *Feature:* You can now start new consultations and easily switch between past discussion topics.
+  - *Feature:* Added the ability to export and download individual Sage conversation scroll histories.
+- **v6.3.8 (2026-05-14):** AI Timeout & Background Loading.
+  - *Feature:* Sage AI conversations now persist their loading state even if you switch tabs or close the modal.
+  - *Feature:* Added a live timer while the Sage consults the scrolls to track response duration.
+  - *Feature:* Implemented a 180-second timeout to prevent infinite hanging when APIs fail to respond.
+  - *Feature:* Added native support for viewing the deep thought processes (reasoning_content) of specific reasoning AI models.
+- **v6.3.7 (2026-05-14):** UI Clipping & Sage Theme Refinement.
+  - *UI:* Applied pr-1 padding to all italicized banner titles and empty states globally to prevent character clipping.
+  - *UI:* Optimized Sage's chat bubbles for all themes using theme-aware solid light backgrounds and high-contrast dark text, ensuring no transparency.
+  - *UI:* Renamed "Settings" inner tabs: "calculator" to "Calc" and "level" to "LV." for better density.
+- **v6.3.6 (2026-05-14):** Sage Dark Mode Messaging Polish.
+  - *UI:* Optimized Emerald Sage message bubbles for dark themes (Night, Forest, Ocean) by switching to a deep slate background with light emerald text, eliminating visual harshness.
+- **v6.3.5 (2026-05-14):** Settings UI Compactness Refinement.
+  - *UI:* Renamed "Calculator" settings tab to "Calc" and "Level" tab to "LV." for a more compact and mobile-friendly navigation bar.
+- **v6.3.4 (2026-05-14):** Emerald Sage Messaging Clarity.
+  - *UI:* Updated Sage's chat bubbles to use a solid light emerald background with high-contrast dark text, strictly adhering to the "Emerald" identity while ensuring superior readability.
+- **v6.3.3 (2026-05-14):** Sage Branding Refinement.
+  - *UI:* Renamed "Emerald Sage" settings tab to "Sage" for a cleaner and more concise interface.
+- **v6.3.2 (2026-05-14):** Sage Dark Mode Messaging Fix.
+  - *UI:* Inverted the Emerald Sage's message bubble to a dark background (slate-900) with light text (emerald-50) for superior readability in dark themes and a more mystical consistency.
+- **v6.3.1 (2026-05-14):** Sage Council UI Refinement.
+  - *UI:* Optimized AI prompt library buttons with a compact, wrap-around layout for improved visual density and mobile ergonomics.
+- **v6.3.0 (2026-05-14):** Sage UX & Theme Integration.
+  - *UI:* Unified and themed AI prompt buttons across the Sanctum and Settings, ensuring full synchronization with user-selected color palettes.
+  - *UX:* Streamlined the Sage Council starter prompts for a cleaner, more focused ritual experience.
+- **v6.2.2 (2026-05-14):** Sage Interface Synchronization.
+  - *UI:* Synchronized chat interface CSS between Settings and Dashboard for absolute consistency, including message bubbles, animations, and action placements.
+- **v6.2.1 (2026-05-14):** Sage Council UX Refinement.
+  - *UX:* Removed redundant default prompts ("Analyze journey", "Mystical challenge") from the Sage's Council chat interface to clear visual clutter.
+- **v6.2.0 (2026-05-14):** Advice & Sage Structural Refinement.
+  - *UX:* Split the "Advice" settings section into two separate top-level tabs: "Calculator" and "Emerald Sage" for better navigation and focus.
+  - *UI:* Updated the settings navigation bar with new specialized icons and labels for the split sections.
+- **v6.1.8 (2026-05-14):** Sage Interface Unification.
+  - *UI:* Unified prompt button styling across Sage's Council and Advice settings for a consistent mystical aesthetic.
+- **v6.1.7 (2026-05-14):** Sage Council UX Enhancement.
+  - *Feature:* Added permanently visible Copy and Quote actions under chat bubbles in Sage's Council for easier interaction.
+- **v6.1.6 (2026-05-14):** Emerald Sage Messaging Refinement.
+  - *UI:* Inverted Sage's chat bubble to dark font on a light emerald background for enhanced readability as per user request.
+- **v6.1.5 (2026-05-14):** Sage Council Solid Styling.
+  - *UI:* Updated Sage's Council chat bubbles to use solid, theme-aware colors without transparency for maximum contrast and visual stability.
+- **v6.1.4 (2026-05-14):** Sage Council Visual Polish.
+  - *UI:* Harmonized chat bubble styles in Sage's Council with theme-aware deep dark backgrounds and high-contrast mystical text colors.
+- **v6.1.3 (2026-05-14):** Sage Chat UI Refinement.
+  - *UI:* Updated user chat bubbles in Sage's Council to use theme-aware dark background and light text for a more harmonious appearance.
+- **v6.1.2 (2026-05-14):** Sage Chat Styling Refinement.
+  - *UI:* Updated user chat bubbles in Sage's Council to use dark font styling for improved readability.
+- **v6.1.1 (2026-05-14):** Oracle UI Standardization.
+  - *UI:* Standardized the Oracle's Insight module CSS to match the welcome/dashboard bento grid style.
+- **v6.1.0 (2026-05-14):** Mobile Header Stability Fix.
+  - *Bug Fix:* Fixed layout flickering on mobile by truncating long dungeon names in the page header.
+- **v6.0.42 (2026-05-13):** Dev Tooling Background Refinement.
+  - *UI:* Updated Quest Board CSS Debugger to use solid backgrounds and headers for improved readability.
+  - *UI:* Refined action button backgrounds in the developer utility panel to align with solid theme standards.
+- **v6.0.41 (2026-05-13):** Prompt Library Integrity & Migration Fix.
+  - *Logic:* Improved the data migration engine to ensure default mystical prompts are automatically merged into user libraries.
+  - *UX:* Added a "Load Defaults" emergency trigger inside the Sage Library popover for empty collections.
+- **v6.0.40 (2026-05-13):** AI Global Context & Advanced Analysis.
+  - *Logic:* Enhanced Sage AI with access to full application parameters (Quests, Gold/XP rates, Timer settings, 30-day history).
+  - *Feature:* Expanded Prompt Library with specialized analysis prompts (App Intro, Game Balance, Week/Month Analysis).
+- **v6.0.39 (2026-05-13):** Dev Tooling UI Polish.
+  - *UI:* Optimized Quest Board CSS Debugger with theme-aligned backgrounds and refined typography.
+  - *UX:* Redesigned variable editor cards with shortcut copy buttons and larger color swatches.
+  - *Visual:* Applied backdrop-blur and glassmorphism effects to the debugger control panel.
+- **v6.0.38 (2026-05-13):** Sage AI Chat Enhancements.
+  - *Feature:* Added a Prompt Library selector (Library icon) to the left of the chat input, with 6 pre-configured mystical prompts for quick consultation.
+  - *Feature:* Implemented a Prompt Manager in Sage Settings, allowing users to create, edit, or delete prompts, with a "Restore Defaults" option for safety.
+  - *Feature:* Implemented "Copy" and "Quote" message actions (Quote prepends message as Markdown quote to input).
+  - *UI:* Improved the chat input area in both Settings and Dashboard modals with better alignment and staggered animations.
+- **v6.0.37 (2026-05-13):** AI Output Markdown Rendering.
+  - *Feature:* Implemented Markdown rendering for AI chat outputs using react-markdown.
+  - *UI:* Enhanced chat bubble typography with tailwindcss/typography (prose) support.
+- **v6.0.36 (2026-05-13):** AI Personality Selector & Customizable Prompts.
+  - *Feature:* Implemented AI Personality Selector (Sage, Friend, Custom).
+  - *Feature:* Added Identity manager to modify base character prompts.
+  - *Logic:* Updated Sage service to respect chosen personality prompts.
+- **v6.0.35 (2026-05-13):** IOS Interaction & Tooltip Refinement.
+  - *Bug Fix:* Resolved iOS double-click issue in the Record interface.
+  - *Bug Fix:* Fixed chart tooltip persistence bug with improved global dismissal logic.
+- **v6.0.34 (2026-05-13):** VAPID Integrity & Sync Refinement.
+  - *Bug Fix:* Resolved "Vapid public key should be 65 bytes long" error by generating fresh VAPID keys and implementing stricter validation in the backend.
+  - *Logic:* Synchronized VAPID fallback keys across server and client configurations for consistent push notification behavior.
+  - *Security:* Enhanced VAPID key sanitization to strip invalid characters from environment variables.
+- **v6.0.33 (2026-05-13):** AI Model Management & Prompt Library.
+  - *Feature:* Implemented AI Model Management system for multiple provider profiles (Gemini, OpenAI).
+  - *Feature:* Added a Prompt Library for "One-tap Consultation" buttons.
+  - *UI:* Repositioned "Oracle's Insight" in the Sanctum to be below the Welcome module.
+  - *Bug Fix:* Fixed VAPID key validation error on server startup.
+- **v6.0.32 (2026-05-13):** Sage AI Chat Persistence & Structure.
+  - *Feature:* Implemented persistent chat history for the Emerald Sage, allowing multi-turn dialogues.
+  - *Logic:* Optimized Sage output with specific structural guidelines for clearer guidance.
+  - *UI:* Synchronized chat interfaces across Settings and Dashboard modals.
+- **v6.0.31 (2026-05-13):** The Emerald Sage AI Integration.
+  - *Feature:* Fully implemented "From Sage's" (The Emerald Sage) module for personalized AI coaching.
+  - *Feature:* Integrated Gemini and OpenAI/Compatible APIs with local key storage for secure advisory.
+  - *UI:* Added a "Sage's Council" consultation modal in the Sanctum (Dashboard) for direct access to AI insights.
+  - *Logic:* SAGE now analyzes historical records, efficiency trends, daily moods, and written reflections.
+- **v6.0.30 (2026-05-13):** Advice & Calculators Layout Polish.
+  - *UI:* Completely redesigned the "Advice & Calculators" layout into a clean Bento Grid configuration with floating styles, gradients, and hover effects.
+  - *UI:* Bound the General Advice font colors to theme-aware indigo classes, adapting optimally across dark and light themes.
+- **v6.0.29 (2026-05-13):** Sage Advice & Income Calculators.
+  - *Feature:* Added a new Advice module in Settings allowing users to calculate their anticipated XP, Gold, and Talent Shard yields per session based on custom input and active talents.
+  - *Tool:* Interactive calculators now estimate the exact number of sessions and days required to afford Shop items, Gacha/Ichiban Kuji pulls, and next 3 level-up milestones.
+  - *UI:* Implemented the "Basically" tab with interactive sliders and data visualizations for deep balance checking, preparing the "From Sage's" module for future complex game theory.
+- **v6.0.28 (2026-05-13):** PIP Window Victory Screen Behaviors.
+  - *UI:* PIP Window responsive adjustments for the non-modal reward summary, ensuring content is cleanly visible in ultra-compact view.
+  - *UX:* When "Show Victory Screen" is active, PIP window intelligently maximizes to full screen to display the native reward selection choices, and restores its layout after picking.
+- **v6.0.27 (2026-05-13):** Reward Chest Session Metadata.
+  - *UX:* Reward Chest items now cleanly display their completion timestamp and the name of the objective/dungeon they stem from.
+- **v6.0.26 (2026-05-13):** PIP Window Interactive Logic.
+  - *UI:* Implemented a non-modal reward summary (XP and Gold) in the Always-on-top (PIP) window that triggers when a focus session ends if "Show Screen" is enabled.
+  - *UX:* Integrated a "Start Focus" prompt in the PIP window that appears after rest ends if "Manual Focus Start" is active, allowing full session control from the compact view.
+- **v6.0.25 (2026-05-13):** Chart Layout Refinement.
+  - *Bug Fix:* Adjusted chart margins to provide more breathing room for the X-axis labels, preventing them from being clipped by the container boundaries.
+- **v6.0.24 (2026-05-13):** Chart X-Axis Label & Style Fix.
+  - *Bug Fix:* Fixed an issue where "MON" (Monday) label was missing from chart axes by forcing interval={0} and adding chart margins.
+  - *UI:* Standardized chart X-axis labels to uppercase (e.g. MON, TUE) for better consistency and visibility.
+- **v6.0.23 (2026-05-13):** PIP Portal CSS Performance & Cleanup.
+  - *Performance:* Re-engineered the PIP layout responsiveness to utilize pure CSS media queries, completely eliminating the React render lag and screen flickering during window resizing.
+  - *UI:* Removed the redundant session progress section to further declutter and prioritize the timer display.
+- **v6.0.22 (2026-05-13):** Chart Mood Icon Display.
+  - *UI:* Reconfigured the Weekly Activity bar chart to reliably display daily mood icons above the bars by anchoring them to the total column height instead of a zero-height stack segment.
+- **v6.0.21 (2026-05-13):** PIP Portal Resize Observer Fix.
+  - *Bug Fix:* Replaced window.innerWidth with a ResizeObserver in the CompactTimer to correctly track dimensions when rendered inside the separate Document context of a Picture-in-Picture window.
+- **v6.0.20 (2026-05-13):** Safe Export Integrity Fix.
+  - *Security:* Updated Safe Export to thoroughly scrub cloud sync unlock statuses, Redis settings, and auto-sync preferences to prevent data leakage during manual migration.
+- **v6.0.19 (2026-05-13):** PIP Window Interactive Logic.
+  - *UI:* Implemented a non-modal reward summary (XP and Gold) in the Always-on-top (PIP) window that triggers when a focus session ends if "Show Screen" is enabled.
+  - *UX:* Integrated a "Start Focus" prompt in the PIP window that appears after rest ends if "Manual Focus Start" is active, allowing full session control from the compact view.
+- **v6.0.18 (2026-05-13):** Sidebar Branding Collapse Logic.
+  - *UI:* Hid the branding icon when the sidebar is collapsed for a strictly minimal vertical interface.
+- **v6.0.17 (2026-05-13):** Sidebar Collapsed Symmetry.
+  - *UI:* Forced sidebar navigation buttons to maintain a perfect square aspect ratio (w-12 h-12) when collapsed for a cleaner, centered icon-only layout.
+  - *UI:* Added smooth entry animations for sidebar labels when expanding.
+- **v6.0.16 (2026-05-13):** PIP Adaptive "Mini" Layout.
+  - *UI:* Implemented a condensed layout for Always-on-top (PIP) window triggering at small sizes.
+  - *UX:* Moved controls to the right and reduced typography scales for better compact visibility.
+- **v6.0.15 (2026-05-13):** PIP Session Goal & Progress.
+  - *UI:* Added session progress bar and target duration to the top of the Always-on-top (PIP) window.
+  - *UX:* Real-time completion percentage tracking in compact view.
+- **v6.0.14 (2026-05-13):** Splash Screen UX Improvement.
+  - *UX:* Repositioned the version number in the opening animation to be more prominently visible.
+- **v6.0.13 (2026-05-13):** Sidebar Branding Alignment.
+  - *UI:* Replaced generic sidebar sword icon with custom AppIcon for consistent branding.
+  - *UX:* Ensured logo visibility in both expanded and collapsed sidebar states.
+- **v6.0.12 (2026-05-13):** Splash Screen Logo Refinement.
+  - *UI:* Removed the outer frame and backdrop from the logo in the opening animation for a cleaner, more focused arrival experience.
+- **v6.0.11 (2026-05-13):** Session Metadata in Reward Chest & Vault.
+  - *UX:* Reward Chests (Victory Modal and Pending Chests) now display the duration and goal of the completed session.
+  - *UI:* The Reward Vault (VAULT) table now includes a "Session Info" column, showing the session context (Duration and Goal) for each earned treasure.
+- **v6.0.10 (2026-05-13):** Merchant Shop Categorization.
+  - *UX:* Reclassified items purchased from the Merchant Shop as "Custom" rewards in the Vault, enabling manual redemption/tracking.
+- **v6.0.9 (2026-05-13):** Stats Tooltip Dismissal Fix.
+  - *Bug Fix:* Re-engineered the global click listener in Stats.tsx to reliably dismiss chart tooltips and heatmap popovers when clicking any blank area.
+- **v6.0.8 (2026-05-13):** Custom Time Mocking & Talent Enforcement.
+  - *Feature:* Added Time Manipulation to Developer Mode, allowing users to enable custom simulated time and set offsets (+/- days or specific dates) for testing resets and daily events.
+  - *Feature:* Talent unlocking now strictly requires prerequisites (sequential locking).
+  - *UI:* Improved visual feedback for failed talent unlocks with theme-synchronized floating bubbles.
+- **v6.0.7 (2026-05-13):** Talent Prerequisite Enforcement.
+  - *Feature:* Enforced sequential talent unlocking (e.g., Tier 1 must precede Tier 2).
+  - *UX:* Added a mystical floating bubble notification when attempting to bypass prerequisites, which dismisses automatically upon clicking anywhere else.
+- **v6.0.6 (2026-05-13):** Global Cloud Unbind Synchronization.
+  - *Bug Fix:* Resolved a critical race condition where secondary tabs would continue syncing with a dropped secret code. Added immediate cancellation triggers across all tabs via activeSyncRequestRef incrementation on state clear.
+  - *Bug Fix:* Synchronized the Cloud Sync Modal input field with backend state to prevent re-authentication with stale codes in secondary windows.
+- **v6.0.5 (2026-05-13):** Enhanced Sync Error Messaging.
+  - *UX:* Improved sync failure transparency by mapping raw errors to specific "Reason" and "Solution" blocks in the Cloud Sync Modal. Added support for Network, Rate-limit (429), Not Found (404), and Server configuration error types with dedicated icons and mystical themes.
+- **v6.0.4 (2026-05-13):** Ghost Push & Sync Drift Fixed.
+  - *Bug Fix:* Completely scrubbed secretCode and provider profiles from memory upon Unbind Local via deep delete. Added cross-tab storage syncing so unbinding in one tab safely terminates sync polling loops in all other concurrent tabs.
+  - *Bug Fix:* Corrected push notification system to officially /unsubscribe background channels immediately upon manual unbind.
+- **v6.0.3 (2026-05-12):** PIP Responsive Controls.
+  - *UI:* Automatically hide timer controls (Reset, Play/Pause, Skip) in the PIP window when resized below a certain height threshold for a cleaner minimal timer view.
+- **v6.0.2 (2026-05-12):** PIP Dimensions & Theme Alignment.
+  - *UI:* Reduced default PIP window dimensions to 220x300 for a more compact footprint.
+  - *UI:* Synchronized the PIP window theme with the main application, including dynamic background and accent color updates.
+- **v6.0.1 (2026-05-12):** PIP Timer Throttling Fix.
+  - *Bug Fix:* Re-engineered the PIP (Always-on-top) timer component to use local requestAnimationFrame loops instead of relying on the main window's intervals, which solves the issue of the timer freezing when the main window is minimized or inactive.
+- **v6.0.0 (2026-05-12):** Version 6.0.0 Milestone & PIP UI Alignment.
+  - *Milestone:* Archived previous updates and commenced Version 6.0.0.
+  - *UI:* Aligned Always-on-top (PIP) timer UI with the main page, including synchronized text tags and timer control buttons (Play/Pause, Reset, Skip).
 - **v5.5.8 (2026-05-12):** Interactive Chart Decoupling.
   - *UX:* Completely decoupled the Weekly Activity Bar Chart and Efficiency Trend Line Chart tooltips, ensuring they act individually instead of displaying simultaneously.
   - *Bugfix:* Fixed a bug where interacting with the Bar Chart would not trigger its independent popover immediately.
