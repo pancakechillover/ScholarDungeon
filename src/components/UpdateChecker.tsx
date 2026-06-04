@@ -37,7 +37,7 @@ export function UpdateChecker() {
           }
         }
       } catch (err) {
-        console.error('Update check failed:', err);
+        // Silently ignore update check failures (offline, unbuilt, etc.)
       }
     };
     

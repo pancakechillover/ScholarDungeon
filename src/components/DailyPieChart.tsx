@@ -1,10 +1,9 @@
 import React, { useMemo } from 'react';
-import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
+import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
 import { StudySession, Dungeon, MajorDungeon } from '../types';
 import { format, differenceInMinutes, parseISO, startOfDay, endOfDay, isSameDay } from 'date-fns';
 
-const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#3b82f6'];
-const T_COLORS = ['#6366f155', '#10b98155', '#f59e0b55', '#ef444455', '#8b5cf655', '#ec489955', '#3b82f655'];
+const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#3b82f6', '#14b8a6', '#84cc16'];
 
 interface Props {
   date: Date;
@@ -15,7 +14,7 @@ interface Props {
 }
 
 export const DailyPieChart: React.FC<Props> = ({ date, history, dungeons, majorDungeons, mode }) => {
-  const chartData = useMemo(() => {
+  const { chartData, legendPayload } = useMemo(() => {
     const daySessions = history.filter(s => s.timestamp && isSameDay(parseISO(s.timestamp), date));
     
     const getDungeonName = (id: string) => {
@@ -27,58 +26,94 @@ export const DailyPieChart: React.FC<Props> = ({ date, history, dungeons, majorD
       return 'Unknown';
     };
 
+    let segments: { name: string; value: number; isIdle?: boolean; realName?: string; color: string }[] = [];
+    const legendData: any[] = [];
+    
+    const uniqueNames = new Set<string>();
+    const getColor = (name: string) => {
+      if (!uniqueNames.has(name)) uniqueNames.add(name);
+      const arr = Array.from(uniqueNames);
+      return COLORS[arr.indexOf(name) % COLORS.length];
+    };
+
     if (mode === 'compact') {
       const grouped: Record<string, number> = {};
       daySessions.forEach(s => {
         const name = getDungeonName(s.dungeonId);
         grouped[name] = (grouped[name] || 0) + (s.duration || 0);
       });
-      return Object.entries(grouped).map(([name, value]) => ({ name, value })).filter(d => d.value > 0);
+      segments = Object.entries(grouped)
+        .filter(d => d[1] > 0)
+        .map(([name, value]) => ({ 
+          name, 
+          value,
+          realName: name,
+          color: getColor(name)
+        }));
     } else {
-      // 24h mode
-      // Group by hours or just visual representation out of 1440 minutes. 
-      // The requirement says "展示记录的活动在当天所占据的时间".
-      // We can create a ring of 1440 slices where active time gets color and idle time gets transparent/gray?
-      // Recharts pie chart doesn't do a time-based 24h ring easily unless we carefully measure segments.
-      // Easiest is segmenting properly by blocks of events + idle time.
-      const segments: { name: string; value: number; isIdle: boolean; realName?: string }[] = [];
       const dayStart = startOfDay(date);
-      
       const sorted = [...daySessions].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
       
-      let currentMinute = 0; // 0 to 1440
+      let currentMinute = 0; 
       
       sorted.forEach(s => {
         const stDate = new Date(s.timestamp);
-        // Start time is timestamp minus duration if we assume timestamp is end time?
-        // Wait, standard AppState history timestamp is usually END time.
-        // Let's assume timestamp is end time.
         const duration = (s.duration || 0);
         const endMinute = differenceInMinutes(stDate, dayStart);
         const startMinute = Math.max(0, endMinute - duration);
 
         if (startMinute > currentMinute) {
-          segments.push({ name: 'Idle', value: startMinute - currentMinute, isIdle: true });
+          segments.push({ name: 'Idle', value: startMinute - currentMinute, isIdle: true, color: '#1e293b' });
         }
         
-        // Add session
         if (duration > 0) {
+          const rName = getDungeonName(s.dungeonId);
           segments.push({ 
-            name: getDungeonName(s.dungeonId), 
-            realName: getDungeonName(s.dungeonId),
+            name: `${rName}-${currentMinute}`, // unique key to keep slices separate in 24h mode just in case
+            realName: rName,
             value: Math.min(1440 - Math.max(currentMinute, startMinute), duration),
-            isIdle: false 
+            isIdle: false,
+            color: getColor(rName)
           });
         }
         currentMinute = Math.max(currentMinute, endMinute);
       });
 
       if (currentMinute < 1440) {
-        segments.push({ name: 'Idle', value: 1440 - currentMinute, isIdle: true });
+        segments.push({ name: 'Idle', value: 1440 - currentMinute, isIdle: true, color: '#1e293b' });
       }
-
-      return segments;
     }
+    
+    // Build Legend
+    const addedToLegend = new Set<string>();
+    const dungeonDurations: Record<string, number> = {};
+    
+    segments.forEach(seg => {
+      if (seg.isIdle) return;
+      const rName = seg.realName || seg.name;
+      dungeonDurations[rName] = (dungeonDurations[rName] || 0) + seg.value;
+    });
+
+    segments.forEach(seg => {
+      if (seg.isIdle) return;
+      const rName = seg.realName || seg.name;
+      if (!addedToLegend.has(rName)) {
+        addedToLegend.add(rName);
+        const mins = dungeonDurations[rName] || 0;
+        const h = Math.floor(mins / 60);
+        const m = Math.round(mins % 60);
+        const formattedTotal = h > 0 ? `${h}h ${m}m` : `${m}m`;
+        
+        legendData.push({
+          value: `${rName} (${formattedTotal})`,
+          type: 'circle',
+          id: rName,
+          color: seg.color
+        });
+      }
+    });
+
+    return { chartData: segments, legendPayload: legendData };
   }, [history, date, dungeons, majorDungeons, mode]);
 
   if (!chartData.length || (mode === 'compact' && chartData.reduce((a, b) => a + b.value, 0) === 0)) {
@@ -97,23 +132,24 @@ export const DailyPieChart: React.FC<Props> = ({ date, history, dungeons, majorD
             data={chartData}
             cx="50%"
             cy="50%"
-            innerRadius={60}
-            outerRadius={80}
+            innerRadius={mode === '24h' ? 65 : 60}
+            outerRadius={mode === '24h' ? 85 : 80}
             paddingAngle={mode === 'compact' ? 2 : 0}
             dataKey="value"
             stroke="none"
-            startAngle={mode === '24h' ? 90 : 90} // Start at 12 o'clock for 24h mode
+            startAngle={mode === '24h' ? 90 : 90}
             endAngle={mode === '24h' ? -270 : -270}
           >
             {chartData.map((entry, index) => (
               <Cell 
                 key={`cell-${index}`} 
-                fill={mode === '24h' ? (entry.isIdle ? '#1e293b' : COLORS[index % COLORS.length]) : COLORS[index % COLORS.length]} 
-                opacity={mode === '24h' && entry.isIdle ? 0.3 : 1}
+                fill={entry.color} 
+                opacity={mode === '24h' && entry.isIdle ? 0.2 : 1}
               />
             ))}
           </Pie>
           <Tooltip 
+            trigger="click"
             formatter={(val: number, name: string, props: any) => {
               if (props?.payload?.isIdle) return ['...', 'Idle'];
               const h = Math.floor(val / 60);
@@ -121,8 +157,20 @@ export const DailyPieChart: React.FC<Props> = ({ date, history, dungeons, majorD
               const formattedTime = h > 0 ? `${h}h ${m}m` : `${m}m`;
               return [formattedTime, props?.payload?.realName || name];
             }}
-            contentStyle={{ borderRadius: '12px', border: 'none', backgroundColor: '#0f172a', fontWeight: 'bold', color: '#f8fafc' }}
+            contentStyle={{ borderRadius: '12px', border: 'none', backgroundColor: '#0f172a', fontWeight: 'bold', color: '#f8fafc', zIndex: 100 }}
+            cursor={{ fill: 'rgba(100, 116, 139, 0.2)' }}
+            wrapperStyle={{ zIndex: 100, pointerEvents: 'auto' }}
           />
+          {legendPayload.length > 0 && (
+            <Legend 
+              // @ts-ignore
+              payload={legendPayload}
+              verticalAlign="bottom" 
+              height={36} 
+              iconType="circle" 
+              wrapperStyle={{ fontSize: '11px', fontWeight: 'bold', color: '#94a3b8', paddingTop: '10px' }}
+            />
+          )}
         </PieChart>
       </ResponsiveContainer>
     </div>

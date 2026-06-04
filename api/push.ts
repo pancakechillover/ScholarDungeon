@@ -147,12 +147,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (subs && subs.length > 0) {
           for (const subStr of subs) {
             const subscription = JSON.parse(subStr.toString());
+            const subTTL = task.type === 'streak_reminder' ? 86400 : 300;
             try {
               await webpush.sendNotification(subscription, JSON.stringify({
                 title: task.title,
                 body: task.body,
                 data: task.data || { type: task.type }
-              }), { urgency: 'high' });
+              }), { urgency: 'high', TTL: subTTL });
               results.push({ secretCode: task.secretCode, status: 'sent', endpoint: subscription.endpoint.substring(0, 20) });
             } catch (err: any) {
               console.error(`Push failed for sub:`, err.message, err.body ? err.body : '');
@@ -167,12 +168,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           const oldSubStr = await client.get(`scholar_push_sub_${task.secretCode}`);
           if (oldSubStr) {
             const subscription = JSON.parse(oldSubStr.toString());
+            const subTTL = task.type === 'streak_reminder' ? 86400 : 300;
             try {
               await webpush.sendNotification(subscription, JSON.stringify({
                 title: task.title,
                 body: task.body,
                 data: task.data || { type: task.type }
-              }), { urgency: 'high' });
+              }), { urgency: 'high', TTL: subTTL });
               results.push({ secretCode: task.secretCode, status: 'sent_legacy' });
             } catch (err: any) {
               console.error(`Legacy push failed for sub:`, err.message, err.body ? err.body : '');

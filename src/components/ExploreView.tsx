@@ -19,7 +19,8 @@ import {
   X,
   Settings as SettingsIcon,
   Archive,
-  Calendar
+  Calendar,
+  Sun
 } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { useScrollLock } from '../hooks/useScrollLock';
@@ -96,6 +97,7 @@ interface ExploreViewProps {
   unclaimedAchievementsCount: number;
   openTimerSettings: () => void;
   setShowDailySummary: (show: boolean) => void;
+  setShowStartOfDayModal: (val: string | boolean) => void;
 }
 
 export const ExploreView: React.FC<ExploreViewProps> = ({
@@ -157,7 +159,8 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
   unclaimedQuestsCount,
   unclaimedAchievementsCount,
   openTimerSettings,
-  setShowDailySummary
+  setShowDailySummary,
+  setShowStartOfDayModal
 }) => {
   const [showChestModal, setShowChestModal] = React.useState(false);
   const [activeTooltipId, setActiveTooltipId] = React.useState<string | null>(null);
@@ -271,16 +274,28 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
           <p className="text-sm text-slate-400 mb-6 leading-relaxed">
             You've completed your daily progress goal. Limited Mental Effort mode is enabled, so it's time to rest and recharge.
           </p>
-          <button
-            onClick={() => {
-              setShowDailySummary(true);
-              playSound('success', state.soundVolume, state.soundEnabled);
-            }}
-            className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-black uppercase tracking-widest text-sm transition-all shadow-lg shadow-emerald-500/20 active:scale-95 flex items-center justify-center gap-2"
-          >
-            <Calendar size={18} fill="currentColor" />
-            End the Day
-          </button>
+          <div className="w-full flex gap-2">
+            <button
+              onClick={() => {
+                setShowStartOfDayModal(true);
+                playSound('success', state.soundVolume, state.soundEnabled);
+              }}
+              className="flex-1 py-4 bg-slate-800 hover:bg-slate-700 text-amber-400 rounded-2xl font-black uppercase tracking-widest text-[10px] sm:text-xs transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
+            >
+              <Sun size={14} fill="currentColor" />
+              Start Day
+            </button>
+            <button
+              onClick={() => {
+                setShowDailySummary(true);
+                playSound('success', state.soundVolume, state.soundEnabled);
+              }}
+              className="flex-1 py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] sm:text-xs transition-all shadow-lg shadow-emerald-500/20 active:scale-95 flex items-center justify-center gap-2"
+            >
+              <Calendar size={14} fill="currentColor" />
+              End Day
+            </button>
+          </div>
         </div>
       );
     }
@@ -335,6 +350,14 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
           setState(prev => ({
             ...prev,
             pendingRewardChest: [...(prev.pendingRewardChest || []), { session, choices }]
+          }));
+        }}
+        onUpdateChestItem={(sessionId, newChoices) => {
+          setState(prev => ({
+            ...prev,
+            pendingRewardChest: prev.pendingRewardChest?.map(item => 
+              item.session.id === sessionId ? { ...item, choices: newChoices } : item
+            ) || []
           }));
         }}
         setShowCoinRain={setShowCoinRain}
@@ -830,8 +853,9 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
                 standardSessionMinutes: state.standardSessionMinutes
               });
               if (generated.length > 0) {
-                newChest[index].choices = generated[0].choices;
+                newChest[index] = { ...newChest[index], choices: generated[0].choices };
                 setState(prev => ({ ...prev, pendingRewardChest: newChest }));
+                playSound('gacha', state.soundVolume, state.soundEnabled);
               }
             }
           }}

@@ -205,6 +205,7 @@ export interface AppState {
   streak: number;
   dailySessions: number;
   lastDailyReset: string | null;
+  lastStartOfDayPrompt?: string | null;
   lastWeeklyReset?: string | null;
   lastMonthlyReset?: string | null;
   patchedDays?: string[];
@@ -277,6 +278,9 @@ export interface AppState {
       reflection: string;
       mood?: string;
       moodScore?: number;
+      sleepTime?: string;
+      wakeTime?: string;
+      sleepDurationMin?: number;
     };
   };
   reflectionTemplates?: ReflectionTemplate[];
@@ -350,6 +354,8 @@ export interface AppState {
     showWeeklyBar?: boolean;
     showWeeklyDonut?: boolean;
     showRoutineTracker?: boolean;
+    showSleepTracker?: boolean;
+    showHeatmap?: boolean;
     dailyDonutMode?: '24h' | 'compact';
     weeklyDonutMode?: 'time_of_day' | 'day_of_week';
   };

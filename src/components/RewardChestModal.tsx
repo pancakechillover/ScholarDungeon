@@ -199,8 +199,11 @@ export const RewardChestModal: React.FC<RewardChestModalProps> = ({ chest, onSel
                       const claimsInPeriod = (card.claimHistory || []).filter(ts => (now - new Date(ts).getTime()) < periodMs).length;
                       
                       return (
-                      <button
-                        key={cIdx}
+                      <motion.button
+                        key={card.id + cIdx + (rerolledSessions.has(item.session.id) ? "_rerolled" : "")}
+                        initial={{ opacity: 0, scale: 0.8, rotateY: -90 }}
+                        animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+                        transition={{ type: "spring", stiffness: 200, damping: 15, delay: cIdx * 0.1 }}
                         onClick={() => { triggerSimpleConfetti(); onSelect(card, item.session.id); }}
                         className={cn(
                           "relative p-4 rounded-2xl border bg-slate-900/50 text-left transition-all hover:-translate-y-1 hover:shadow-lg overflow-hidden group cursor-pointer h-full flex flex-col justify-between min-h-[160px]",
@@ -234,7 +237,7 @@ export const RewardChestModal: React.FC<RewardChestModalProps> = ({ chest, onSel
                           <h4 className="text-white font-bold mb-2 leading-tight">{card.name}</h4>
                           <p className="text-xs text-slate-400 line-clamp-3">{card.description}</p>
                          </div>
-                      </button>
+                      </motion.button>
                     )})}
                   </div>
                 </div>

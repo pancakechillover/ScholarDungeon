@@ -28,9 +28,8 @@ html {
   }
 
   html {
-    scrollbar-gutter: stable;
-    overflow-y: scroll;
     height: 100%;
+    background-color: var(--color-slate-950, #020617);
   }
   
   body {

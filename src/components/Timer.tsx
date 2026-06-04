@@ -9,6 +9,7 @@ import { triggerSimpleConfetti } from '../lib/effects';
 import { createWorkerTimer } from '../lib/workerTimer';
 import { useBackgroundKeepAlive } from '../lib/keepAlive';
 import { generateRewardChoicesForSession } from '../lib/rewardLogic';
+import { playSound } from '../lib/sound';
 
 interface TimerProps {
   currentDungeon: Dungeon | null;
@@ -26,6 +27,7 @@ interface TimerProps {
   onReroll: () => void;
   onRewardSelect: (reward: RewardCard, sessionId: string) => void;
   onDeferReward: (session: StudySession, choices: RewardCard[]) => void;
+  onUpdateChestItem?: (sessionId: string, newChoices: RewardCard[]) => void;
   setShowCoinRain: (show: boolean) => void;
   isFullscreen?: boolean;
   secretCode?: string;
@@ -79,6 +81,7 @@ export const Timer = React.memo<TimerProps>(({
   onReroll,
   onRewardSelect,
   onDeferReward,
+  onUpdateChestItem,
   setShowCoinRain,
   isFullscreen = false,
   secretCode,
@@ -670,6 +673,17 @@ export const Timer = React.memo<TimerProps>(({
                       <button
                         onClick={() => {
                           if (showRewards) {
+                            let vol = 0.5;
+                            let soundOn = true;
+                            try {
+                              const stored = localStorage.getItem('scholars_dungeon_state');
+                              if (stored) {
+                                const parsed = JSON.parse(stored);
+                                if (parsed.state && parsed.state.soundVolume !== undefined) vol = parsed.state.soundVolume;
+                                if (parsed.state && parsed.state.soundEnabled !== undefined) soundOn = parsed.state.soundEnabled;
+                              }
+                            } catch (e) {}
+
                             const newChoices = generateRewardChoicesForSession(showRewards.session, {
                               rewardPool,
                               activeTalents,
@@ -682,6 +696,10 @@ export const Timer = React.memo<TimerProps>(({
                                 session: showRewards.session,
                                 choices: newChoices[0].choices
                               });
+                              playSound('gacha', vol, soundOn);
+                              if (onUpdateChestItem) {
+                                onUpdateChestItem(showRewards.session.id, newChoices[0].choices);
+                              }
                             }
                             setHasRerolled(true);
                           }
@@ -705,10 +723,10 @@ export const Timer = React.memo<TimerProps>(({
                     
                     return (
                       <motion.button
-                        key={idx}
-                        initial={{ y: 20, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ delay: 0.9 }} // Removed staggered delay
+                        key={card.id + idx + (hasRerolled ? "_rerolled" : "")}
+                        initial={hasRerolled ? { opacity: 0, scale: 0.8, rotateY: -90 } : { y: 20, opacity: 0 }}
+                        animate={hasRerolled ? { opacity: 1, scale: 1, rotateY: 0 } : { y: 0, opacity: 1 }}
+                        transition={hasRerolled ? { type: "spring", stiffness: 200, damping: 15, delay: idx * 0.1 } : { delay: 0.9 }}
                         whileHover={{ y: -5, scale: 1.01 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => {

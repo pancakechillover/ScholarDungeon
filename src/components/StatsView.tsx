@@ -11,6 +11,7 @@ interface StatsViewProps {
   deleteSession?: (id: string) => void;
   dungeons?: Dungeon[];
   majorDungeons?: MajorDungeon[];
+  setShowStartOfDayModal?: (val: string | boolean) => void;
 }
 
 export const StatsView: React.FC<StatsViewProps> = ({ 
@@ -20,7 +21,8 @@ export const StatsView: React.FC<StatsViewProps> = ({
   updateSession, 
   deleteSession,
   dungeons,
-  majorDungeons
+  majorDungeons,
+  setShowStartOfDayModal
 }) => {
   return (
     <motion.div
@@ -38,6 +40,7 @@ export const StatsView: React.FC<StatsViewProps> = ({
         deleteSession={deleteSession}
         dungeons={dungeons}
         majorDungeons={majorDungeons}
+        setShowStartOfDayModal={setShowStartOfDayModal}
       />
     </motion.div>
   );

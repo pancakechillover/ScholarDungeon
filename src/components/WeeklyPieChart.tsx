@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
+import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
 import { StudySession, Dungeon, MajorDungeon } from '../types';
 import { format, parseISO, isSameDay, getDay } from 'date-fns';
 
@@ -11,25 +11,49 @@ interface Props {
 }
 
 export const WeeklyPieChart: React.FC<Props> = ({ weekSessions, mode }) => {
-  const chartData = useMemo(() => {
+  const { chartData, legendPayload } = useMemo(() => {
+    let rawSegments: { name: string; value: number; color: string }[] = [];
+    
     if (mode === 'day_of_week') {
       const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const dayColors: Record<string, string> = {
+        'Sun': '#ef4444', // Red
+        'Mon': '#6366f1', // Indigo
+        'Tue': '#10b981', // Emerald
+        'Wed': '#f59e0b', // Amber
+        'Thu': '#06b6d4', // Cyan
+        'Fri': '#ec4899', // Pink
+        'Sat': '#8b5cf6'  // Purple
+      };
+      
       const grouped: Record<string, number> = {};
       weekSessions.forEach(s => {
         const d = new Date(s.timestamp);
         const dayName = days[getDay(d)];
         grouped[dayName] = (grouped[dayName] || 0) + (s.duration || 0);
       });
-      // Ensure day order
-      return days.map(d => ({ name: d, value: grouped[d] || 0 })).filter(d => d.value > 0);
+      
+      rawSegments = days
+        .map(d => ({ 
+          name: d, 
+          value: grouped[d] || 0,
+          color: dayColors[d]
+        }))
+        .filter(d => d.value > 0);
     } else {
       // Time of day (Morning/Afternoon/Night)
-      // Usually determined by the `period` field or the actual hour
+      const periodColors: Record<string, string> = {
+        'Morning': '#fde047',
+        'Afternoon': '#f97316',
+        'Night': '#6366f1'
+      };
+      
       const grouped = {
         'Morning': 0,
         'Afternoon': 0,
         'Night': 0
       };
+      
       weekSessions.forEach(s => {
         if (s.period) {
           const p = s.period.toLowerCase();
@@ -38,15 +62,35 @@ export const WeeklyPieChart: React.FC<Props> = ({ weekSessions, mode }) => {
           else if (p.includes('night')) grouped.Night += (s.duration || 0);
           else grouped.Morning += (s.duration || 0); 
         } else {
-          // Fallback based on hour if missing
           const h = new Date(s.timestamp).getHours();
           if (h >= 5 && h < 12) grouped.Morning += (s.duration || 0);
           else if (h >= 12 && h < 18) grouped.Afternoon += (s.duration || 0);
           else grouped.Night += (s.duration || 0);
         }
       });
-      return Object.entries(grouped).map(([name, value]) => ({ name, value })).filter(d => d.value > 0);
+      
+      rawSegments = Object.entries(grouped)
+        .map(([name, value]) => ({ 
+          name, 
+          value,
+          color: periodColors[name as 'Morning' | 'Afternoon' | 'Night']
+        }))
+        .filter(d => d.value > 0);
     }
+
+    const legendData = rawSegments.map(seg => {
+      const h = Math.floor(seg.value / 60);
+      const m = seg.value % 60;
+      const formattedTotal = h > 0 ? `${h}h ${m}m` : `${m}m`;
+      return {
+        value: `${seg.name} (${formattedTotal})`,
+        type: 'circle',
+        id: seg.name,
+        color: seg.color
+      };
+    });
+
+    return { chartData: rawSegments, legendPayload: legendData };
   }, [weekSessions, mode]);
 
   if (!chartData.length || chartData.reduce((a, b) => a + b.value, 0) === 0) {
@@ -72,18 +116,31 @@ export const WeeklyPieChart: React.FC<Props> = ({ weekSessions, mode }) => {
             stroke="none"
           >
             {chartData.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              <Cell key={`cell-${index}`} fill={entry.color} />
             ))}
           </Pie>
           <Tooltip 
-            formatter={(val: number) => {
+            trigger="click"
+            formatter={(val: number, name: string) => {
               const h = Math.floor(val / 60);
               const m = val % 60;
               const formattedTime = h > 0 ? `${h}h ${m}m` : `${m}m`;
-              return [formattedTime, 'Time'];
+              return [formattedTime, name];
             }}
-            contentStyle={{ borderRadius: '12px', border: 'none', backgroundColor: '#0f172a', fontWeight: 'bold', color: '#f8fafc' }}
+            contentStyle={{ borderRadius: '12px', border: 'none', backgroundColor: '#0f172a', fontWeight: 'bold', color: '#f8fafc', zIndex: 100 }}
+            cursor={{ fill: 'rgba(100, 116, 139, 0.2)' }}
+            wrapperStyle={{ zIndex: 100, pointerEvents: 'auto' }}
           />
+          {legendPayload.length > 0 && (
+            <Legend 
+              // @ts-ignore
+              payload={legendPayload}
+              verticalAlign="bottom" 
+              height={36} 
+              iconType="circle" 
+              wrapperStyle={{ fontSize: '11px', fontWeight: 'bold', color: '#94a3b8', paddingTop: '10px' }}
+            />
+          )}
         </PieChart>
       </ResponsiveContainer>
     </div>

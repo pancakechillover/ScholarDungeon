@@ -23,8 +23,9 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v7.9.0
-- **Last Update Date:** 2026-06-03
+- **Current Version:** v7.9.12
+- **Last Update Date:** 2026-06-04
+- **Last Update Time:** 15:10:00
 
 ## Dark Themes Definition
 The following themes are considered "Dark Themes" and form the baseline for vibrant visual effects and high-contrast glowing elements:
@@ -49,6 +50,67 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v7.9.12 (2026-06-04):** PWA Web Push Priority & Vercel Scheduler.
+  - *Feature:* Added Vercel Cron engine configurations inside `vercel.json` to sustain scheduled background checks cleanly under serverless deployment environments.
+  - *Bug Fix:* Injected low-bound dynamic TTL limits (300s TTL for timers vs 86400s TTL for reminders) to avoid offline queue piling and delayed notification bursts on iOS/Android devices.
+  - *Architecture:* Synchronized Web Push high urgency priorities across both serverless Vercel API routes and permanent server queue processors.
+
+- **v7.9.11 (2026-06-04):** Adaptive Pickers & Smart Time Presets.
+  - *Bug Fix:* Upgraded DatePicker and TimePicker to utilize layout fallback positioning to eliminate any potential viewport clipping on mobile, PWAs, or modal boundaries.
+  - *Feature:* Added standard infinite circular value-wrap logic inside the TimePicker with looping up/down adjustments.
+  - *Feature:* Enabled saving and managing common/frequent time entries inside persistent localStorage preset badges with direct click-to-apply controls.
+  - *Feature:* Provided instant "Use Current Date" and "Use Current Time" quick-choice buttons inside both DatePicker and TimePicker popovers.
+
+- **v7.9.10 (2026-06-04):** Pie Chart Legend Alignment & Tooltip Refinement.
+  - *Bug Fix:* Fixed the tooltip anonymous Time formatting bug in the Weekly Pie Chart to correctly show the actual day or period name upon click.
+  - *UI:* Mapped stable, consistent, theme-matching colors for days of the week (Sun to Sat) and daily periods (Morning, Afternoon, Night) inside the Weekly Pie Chart.
+  - *UX:* Aggregated and displayed total categorized study hours and minutes within both Daily and Weekly Custom Legends next to the labels for rapid reading.
+
+- **v7.9.9 (2026-06-04):** Sleep Tracker Polish & Bulk Editor.
+  - *Feature:* Added a dedicated Bulk Sleep Editor modal accessed natively from the Sleep Tracker dashboard designed to quickly jump to any past date and supplement missing records continuously without closing.
+  - *Feature:* Replaced system-default Time Inputs inside the Start of the Day and Bulk Sleep Modal interfaces with unified custom `TimePicker` popup menus for consistent global layout across mobile and desktop.
+  - *UI:* Upgraded the Sleep Tracker visual pane substituting the empty header with a fully interactive Date Picker + Mode selector header mimicking the Weekly Overview's architecture (Natural Calendar vs Last 7 Days).
+  - *UX:* Rewired the Recharts Sleep Tooltip trigger converting it perfectly to click-to-open and click-outside-to-dismiss behavior cleanly decoupling the tooltip from any previous inline editing hacks.
+  
+- **v7.9.8 (2026-06-04):** Sleep Tracking Time Mappings & Chart Split.
+  - *Feature:* Corrected standard sleep data chronologies so morning sleep-reports correctly attribute numeric logic directly back to the night phase while avoiding boundary clipping (e.g. 02:00 equates to 26:00).
+  - *UI:* Splitted multi-axis domains in the Record Dashboard's composed sleep chart strictly segregating durations into the bottom 40% height grid while bounding timeline indicators smoothly into the 50%-100% canvas frame eliminating all spatial overlap.
+  - *UX:* Installed absolute limits ensuring raw durations cap at strict logical thresholds (`<= 16h`) and automatically blocking save-states with descriptive red error fields directly spanning out when cross-midnight loops detect invalid offsets.
+
+- **v7.9.7 (2026-06-04):** Start of Day Polishing & Streak Patching.
+  - *Feature:* Integrated the full 7-Day Activity Record streak heat-map inside the Start of the Day modal.
+  - *Feature:* Enabled spending Death Defying Gold Medals natively inside the Start of the Day streak viewer to patch missed dates without jumping to settings.
+  - *UI:* Cloned the comprehensive End of the Day Reflection toolkit (Immersive editing, Templates, and Markdown syntax parsing) directly into the Start of the Day screen.
+  - *UI:* Aligned the top banner time-settlement string presentation synchronously between both daily modals.
+
+- **v7.9.6 (2026-06-04):** Sleep Tracker Polish & Editing.
+  - *UI:* Unified the "Start the Day" modal styling strictly with the "End of the Day" visual dark-themed layout while preserving the soft, glowing Sun SVG background.
+  - *UI:* Increased the height and y-axis detail of the Sleep Tracker in the Record Dashboard for better readability.
+  - *UI:* Changed the wake-up indicator dot color on the Sleep Tracker line graph to a vibrant yellow (`#fbbf24`) for higher contrast.
+  - *UX:* Enabled re-editing of past sleep records by directly clicking on the Sleep Tracker data points, natively triggering the detailed custom edit modal.
+
+- **v7.9.5 (2026-06-04):** Sleep Tracking & Start the Day.
+  - *Feature:* Added a new "Start the Day" popup modal triggered upon the first visit after the configured settlement time, allowing users to enter sleep duration and set morning reflections.
+  - *Feature:* Integrated a dual Y-axis 7-day Sleep Tracker Composed Chart within the Record Dashboard.
+  - *UI:* Added quick "Start the Day" buttons natively adjacent to "End the Day" toggles across the application.
+
+- **v7.9.4 (2026-06-04):** PWA Background Audio Fix.
+  - *Bug Fix:* Completely removed the continuous silent HTML5 audio tracks implemented for background execution, natively preventing the application from hijacking Audio Focus rules on iOS/Android or pausing background playback from music applications like Spotify or Apple Music.
+  - *Feature:* Migrated to `navigator.wakeLock` screen APIs natively to prevent lockscreen falloff when explicitly kept in foreground focus.
+
+- **v7.9.3 (2026-06-04):** Talent C2 (Shuffler) Polish.
+  - *Feature:* Added an interactive 3D card flipping animation to all rewards during the reroll sequence.
+  - *Feature:* Hooked the C2 reroll action up to the global "Gacha" audio channel, playing a satisfying draw sound upon selection.
+  - *Bug Fix:* Repaired a state management issue where redrawing rewards dynamically via the immediate post-session Timer screen failed to properly propagate the newly generated loot cards down into the deferred Chest architecture, guaranteeing loot persistence.
+
+- **v7.9.2 (2026-06-03):** PWA Fullscreen & Safe Area Polish.
+  - *Bug Fix:* Removed non-standard CSS scrollbar-gutter bindings that forced black border artifacts down the right side of desktop PWA installations.
+  - *Bug Fix:* Mapped strict `safe-area-inset` boundaries and dynamically synced the raw `html` node background rendering to ensure mobile physical notches smoothly integrate with active themes during Landscape Fullscreen timer mode without broken black bounds.
+
+- **v7.9.1 (2026-06-03):** Pie Chart Polish.
+  - *UI:* Enhanced Pie Charts and Donut Charts in the Record view by adding interactive customized legends.
+  - *UX:* Tooltips strictly trigger on click boundaries to provide easy access for mobile users to explicitly read the actual breakdown.
 
 - **v7.9.0 (2026-06-03):** Dashboard Modular Layouts.
   - *Feature:* Upgraded the Record dashboard with a dynamic Layout configuration menu to toggle module composition.

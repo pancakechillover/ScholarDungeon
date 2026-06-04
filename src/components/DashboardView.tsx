@@ -29,7 +29,8 @@ import {
   Download,
   Trash2,
   Edit2,
-  Settings as SettingsIcon
+  Settings as SettingsIcon,
+  Sun
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { AppState, Dungeon } from '../types';
@@ -44,6 +45,7 @@ interface DashboardViewProps {
   currentDungeon: Dungeon | null;
   setActiveTab: (tab: any) => void;
   setShowDailySummary: (show: boolean) => void;
+  setShowStartOfDayModal: (val: string | boolean) => void;
   openGuideBook: (chapter: number) => void;
   saveDailyLog: (date: string, rating: number, reflection: string, mood?: string) => void;
   applyExpeditionPlan?: (plan: any) => void;
@@ -56,6 +58,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   currentDungeon,
   setActiveTab,
   setShowDailySummary,
+  setShowStartOfDayModal,
   openGuideBook,
   saveDailyLog,
   applyExpeditionPlan,
@@ -285,16 +288,28 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 );
               })()}
             </div>
-            <button
-              onClick={() => {
-                setShowDailySummary(true);
-                playSound('success', state.soundVolume, state.soundEnabled);
-              }}
-              className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold uppercase tracking-widest transition-all border border-slate-700 flex items-center justify-center gap-2"
-            >
-              <Calendar size={14} className="text-indigo-400" />
-              End the Day
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  setShowStartOfDayModal(true);
+                  playSound('success', state.soundVolume, state.soundEnabled);
+                }}
+                className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-all border border-slate-700 flex items-center justify-center gap-2"
+              >
+                <Sun size={14} className="text-amber-400" />
+                Start the Day
+              </button>
+              <button
+                onClick={() => {
+                  setShowDailySummary(true);
+                  playSound('success', state.soundVolume, state.soundEnabled);
+                }}
+                className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-all border border-slate-700 flex items-center justify-center gap-2"
+              >
+                <Calendar size={14} className="text-indigo-400" />
+                End the Day
+              </button>
+            </div>
           </div>
 
           <div className="bg-slate-900 rounded-3xl border border-slate-800 p-6">

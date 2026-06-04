@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { AppIcon } from './components/icons/AppIcon';
 import { DailySummaryModal } from './components/DailySummaryModal';
+import { StartOfDayModal } from './components/StartOfDayModal';
 import { CoinRain } from './components/CoinRain';
 import { DashboardView } from './components/DashboardView';
 import { ExploreView } from './components/ExploreView';
@@ -44,7 +45,7 @@ import { BulkClaimModal } from './components/BulkClaimModal';
 import { useGameState } from './hooks/useGameState';
 import { useCloudSync } from './hooks/useCloudSync';
 import { triggerSimpleConfetti } from './lib/effects';
-import { cn, getXPForLevel } from './lib/utils';
+import { cn, getXPForLevel, getSettlementDay } from './lib/utils';
 import { playSound } from './lib/sound';
 import { Dungeon, MajorDungeon, DungeonReward } from './types';
 import { CloudSyncModal } from './components/CloudSyncModal';
@@ -271,6 +272,7 @@ function App() {
   const [showGuideBook, setShowGuideBook] = useState(false);
   const [guideInitialPage, setGuideInitialPage] = useState(0);
   const [showDailySummary, setShowDailySummary] = useState(false);
+  const [showStartOfDayModal, setShowStartOfDayModal] = useState<string | boolean>(false);
   const [showCloudSync, setShowCloudSync] = useState(false);
   const [isFullscreenExplore, setIsFullscreenExplore] = useState(false);
 
@@ -355,6 +357,25 @@ function App() {
     setIsSyncing,
     setIsVerifying
   } = useCloudSync(state, setState, setDungeons, setMajorDungeons);
+
+  // Auto show start of day modal
+  useEffect(() => {
+    if (!state.lastStartOfDayPrompt) {
+      setShowStartOfDayModal(true);
+      return;
+    }
+    let now = new Date();
+    if (state.timezone) {
+      try {
+        const str = now.toLocaleString('en-US', { timeZone: state.timezone });
+        now = new Date(str);
+      } catch (e) {}
+    }
+    const todayStr = getSettlementDay(now, state.timeSettings);
+    if (state.lastStartOfDayPrompt !== todayStr) {
+      setShowStartOfDayModal(true);
+    }
+  }, [state.lastStartOfDayPrompt, state.timezone, state.timeSettings]);
 
   const [hasUnsyncedChanges, setHasUnsyncedChanges] = useState(() => {
     return localStorage.getItem('scholars_dungeon_unsynced') === 'true';
@@ -1337,7 +1358,7 @@ function App() {
         </header>
         )}
 
-        <div className={cn("relative max-w-[1600px] mx-auto w-full flex-grow", isFullscreenExplore ? "h-[100dvh] flex flex-col justify-center" : "pb-[calc(7.5rem+env(safe-area-inset-bottom))] md:pb-8")}>
+        <div className={cn("relative max-w-[1600px] mx-auto w-full flex-grow pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]", isFullscreenExplore ? "h-[100dvh] flex flex-col justify-center" : "pb-[calc(7.5rem+env(safe-area-inset-bottom))] md:pb-8")}>
           <AnimatePresence mode="popLayout" initial={false}>
             {activeTab === 'dashboard' && (
               <DashboardView 
@@ -1346,6 +1367,7 @@ function App() {
                 currentDungeon={currentDungeon || null}
                 setActiveTab={setActiveTab}
                 setShowDailySummary={setShowDailySummary}
+                setShowStartOfDayModal={setShowStartOfDayModal}
                 openGuideBook={(chapter) => {
                   setGuideInitialPage(chapter);
                   setShowGuideBook(true);
@@ -1474,6 +1496,7 @@ function App() {
                    setActiveTab('settings');
                  }}
                  setShowDailySummary={setShowDailySummary}
+                 setShowStartOfDayModal={setShowStartOfDayModal}
                />
              )}
 
@@ -1562,6 +1585,7 @@ function App() {
                 deleteSession={deleteSession}
                 dungeons={dungeons}
                 majorDungeons={majorDungeons}
+                setShowStartOfDayModal={setShowStartOfDayModal}
               />
             )}
 
@@ -1601,6 +1625,34 @@ function App() {
             }}
             onSave={saveDailyLog}
             onUpdateState={(update) => setState(s => ({ ...s, ...update }))}
+          />
+        )}
+        {showStartOfDayModal && (
+          <StartOfDayModal
+            state={state}
+            initialDateStr={typeof showStartOfDayModal === 'string' ? showStartOfDayModal : undefined}
+            repairStreak={repairStreak}
+            onUpdateState={(update) => setState(s => ({ ...s, ...update }))}
+            onClose={() => setShowStartOfDayModal(false)}
+            onSave={(dateStr, sleepTime, wakeTime, sleepDurationMin, reflection, mood) => {
+              const logs = state.dailyLogs || {};
+              const current = logs[dateStr] || { rating: 0, reflection: '' };
+              setState(s => ({
+                ...s,
+                lastStartOfDayPrompt: dateStr,
+                dailyLogs: {
+                  ...logs,
+                  [dateStr]: {
+                    ...current,
+                    sleepTime,
+                    wakeTime,
+                    sleepDurationMin,
+                    reflection,
+                    mood: mood || current.mood
+                  }
+                }
+              }));
+            }}
           />
         )}
       </AnimatePresence>

@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v7.9.0';
-export const LAST_UPDATE_DATE = '2026-06-03';
-export const LAST_UPDATE_TIME = '14:02:00';
+export const APP_VERSION = 'v7.9.12';
+export const LAST_UPDATE_DATE = '2026-06-04';
+export const LAST_UPDATE_TIME = '15:10:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,139 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v7.9.12',
+    date: '2026-06-04',
+    time: '15:10:00',
+    title: 'PWA Web Push Priority & Vercel Scheduler',
+    items: [
+      { category: 'Architecture', description: 'Added Vercel Cron engine configurations inside vercel.json to sustain scheduled background checks cleanly under serverless deployment environments.' },
+      { category: 'Bug Fix', description: 'Injected low-bound dynamic TTL limits (300s TTL for timers vs 86400s TTL for streak reminders) to avoid offline delivery delayed notification clutter on iOS/Android devices.' },
+      { category: 'Architecture', description: 'Synchronized Web Push high urgency priorities across both serverless Vercel API routes and permanent server queue processors.' }
+    ]
+  },
+  {
+    version: 'v7.9.11',
+    date: '2026-06-04',
+    time: '14:45:00',
+    title: 'Adaptive Pickers & Smart Time Presets',
+    items: [
+      { category: 'Bug Fix', description: 'Upgraded DatePicker and TimePicker to utilize layout fallback positioning to eliminate any potential viewport clipping on mobile, PWAs, or modal boundaries.' },
+      { category: 'Feature', description: 'Added standard infinite circular value-wrap logic inside the TimePicker with looping up/down adjustments.' },
+      { category: 'Feature', description: 'Enabled saving and managing common/frequent time entries inside persistent localStorage preset badges with direct click-to-apply controls.' },
+      { category: 'Feature', description: 'Provided instant "Use Current Date" and "Use Current Time" quick-choice buttons inside both DatePicker and TimePicker popovers.' }
+    ]
+  },
+  {
+    version: 'v7.9.10',
+    date: '2026-06-04',
+    time: '14:30:00',
+    title: 'Pie Chart Legend Alignment & Tooltip Refinement',
+    items: [
+      { category: 'Bug Fix', description: 'Fixed the tooltip anonymous Time formatting bug in the Weekly Pie Chart to correctly show the actual day or period name upon click.' },
+      { category: 'UI', description: 'Mapped stable, consistent, theme-matching colors for days of the week (Sun to Sat) and daily periods (Morning, Afternoon, Night) inside the Weekly Pie Chart.' },
+      { category: 'UX', description: 'Aggregated and displayed total categorized study hours and minutes within both Daily and Weekly Custom Legends next to the labels for rapid reading.' }
+    ]
+  },
+  {
+    version: 'v7.9.9',
+    date: '2026-06-04',
+    time: '14:15:00',
+    title: 'Sleep Tracker Polish & Bulk Editor',
+    items: [
+      { category: 'Feature', description: 'Added a dedicated Bulk Sleep Editor modal accessed natively from the Sleep Tracker dashboard designed to quickly jump to any past date and supplement missing records continuously without closing.' },
+      { category: 'Feature', description: 'Replaced system-default Time Inputs inside the Start of the Day and Bulk Sleep Modal interfaces with unified custom TimePicker popup menus for consistent global layout across mobile and desktop.' },
+      { category: 'UI', description: 'Upgraded the Sleep Tracker visual pane substituting the empty header with a fully interactive Date Picker + Mode selector header mimicking the Weekly Overview\'s architecture (Natural Calendar vs Last 7 Days).' },
+      { category: 'UX', description: 'Rewired the Recharts Sleep Tooltip trigger converting it perfectly to click-to-open and click-outside-to-dismiss behavior cleanly decoupling the tooltip from any previous inline editing hacks.' }
+    ]
+  },
+  {
+    version: 'v7.9.8',
+    date: '2026-06-04',
+    time: '14:00:00',
+    title: 'Sleep Tracking Time Mappings & Chart Split',
+    items: [
+      { category: 'Feature', description: 'Corrected standard sleep data chronologies so morning sleep-reports correctly attribute numeric logic directly back to the night phase while avoiding boundary clipping (e.g. 02:00 equates to 26:00).' },
+      { category: 'UI', description: 'Splitted multi-axis domains in the Record Dashboard\'s composed sleep chart strictly segregating durations into the bottom 40% height grid while bounding timeline indicators smoothly into the 50%-100% canvas frame eliminating all spatial overlap.' },
+      { category: 'UX', description: 'Installed absolute limits ensuring raw durations cap at strict logical thresholds (<= 16h) and automatically blocking save-states with descriptive red error fields directly spanning out when cross-midnight loops detect invalid offsets.' }
+    ]
+  },
+  {
+    version: 'v7.9.7',
+    date: '2026-06-04',
+    time: '13:00:00',
+    title: 'Start of Day Polishing & Streak Patching',
+    items: [
+      { category: 'Feature', description: 'Integrated the full 7-Day Activity Record streak heat-map inside the Start of the Day modal.' },
+      { category: 'Feature', description: 'Enabled spending Death Defying Gold Medals natively inside the Start of the Day streak viewer to patch missed dates without jumping to settings.' },
+      { category: 'UI', description: 'Cloned the comprehensive End of the Day Reflection toolkit (Immersive editing, Templates, and Markdown syntax parsing) directly into the Start of the Day screen.' },
+      { category: 'UI', description: 'Aligned the top banner time-settlement string presentation synchronously between both daily modals.' }
+    ]
+  },
+  {
+    version: 'v7.9.6',
+    date: '2026-06-04',
+    time: '12:15:00',
+    title: 'Sleep Tracker Polish & Editing',
+    items: [
+      { category: 'UI', description: 'Unified the "Start the Day" modal styling strictly with the "End of the Day" visual dark-themed layout while preserving the soft, glowing Sun SVG background.' },
+      { category: 'UI', description: 'Increased the height and y-axis detail of the Sleep Tracker in the Record Dashboard for better readability.' },
+      { category: 'UI', description: 'Changed the wake-up indicator dot color on the Sleep Tracker line graph to a vibrant yellow (#fbbf24) for higher contrast.' },
+      { category: 'UX', description: 'Enabled re-editing of past sleep records by directly clicking on the Sleep Tracker data points, natively triggering the detailed custom edit modal.' }
+    ]
+  },
+  {
+    version: 'v7.9.5',
+    date: '2026-06-04',
+    time: '12:00:00',
+    title: 'Sleep Tracking & Start of Day',
+    items: [
+      { category: 'Feature', description: 'Added a new "Start the Day" modal that automatically triggers upon the first visit after the configured settlement time, allowing users to actively record sleep duration and set morning intentions.' },
+      { category: 'Feature', description: 'Implemented an integrated Sleep Tracker within the Record Dashboard, displaying a customized 7-day Composed Chart merging dual Y-axis data (bedtime/wake-time steps alongside total duration bars).' },
+      { category: 'UI', description: 'Integrated quick-access "Start the Day" buttons natively adjacent to "End the Day" toggles across the Explore and Dashboard interfaces.' }
+    ]
+  },
+  {
+    version: 'v7.9.4',
+    date: '2026-06-04',
+    time: '11:00:00',
+    title: 'Background Audio Playback Fix',
+    items: [
+      { category: 'Bug Fix', description: 'Removed the legacy, continuous silent audio track design that hijacked iOS and Android native Audio Focus, explicitly preventing the timer from forcefully pausing external music platforms like Spotify or Apple Music when entering the background.' },
+      { category: 'Architecture', description: 'Replaced explicit backend audio hooks with clean navigator.wakeLock screen privileges to sustain foreground timers.' }
+    ]
+  },
+  {
+    version: 'v7.9.3',
+    date: '2026-06-04',
+    time: '10:00:00',
+    title: 'Shuffler Talent (C2) Expansion',
+    items: [
+      { category: 'Audio', description: 'Triggered the gacha audio channel natively across all C2 interaction vectors.' },
+      { category: 'UI', description: 'C2 rerolls now invoke an elegant 3D card flipping animation to visually highlight the loot refresh sequence.' },
+      { category: 'Bug Fix', description: 'Prevented rerolled loot cards inside the immediate-completion screen from falling out of sync with the underlying deferred Chest state architecture.' }
+    ]
+  },
+  {
+    version: 'v7.9.2',
+    date: '2026-06-03',
+    time: '16:15:00',
+    title: 'PWA Layout Fixes',
+    items: [
+      { category: 'Bug Fix', description: 'Removed forced scrollbar gutter that caused a black border on the right side of desktop PWA app views.' },
+      { category: 'Bug Fix', description: 'Mapped CSS safe-area-inset and root html background properties to properly adapt to mobile notch areas during landscape fullscreen mode, resolving the black letterboxing edge.' }
+    ]
+  },
+  {
+    version: 'v7.9.1',
+    date: '2026-06-03',
+    time: '16:03:00',
+    title: 'Pie Chart Tooltips & Legends',
+    items: [
+      { category: 'UI', description: 'Enhanced Pie Charts and Donut Charts in the Record view by adding color-coded legends.' },
+      { category: 'UX', description: 'Tooltips on Donut Charts are now explicitly configured for click interactions to better support mobile touch devices and detailed reading.' }
+    ]
+  },
   {
     version: 'v7.9.0',
     date: '2026-06-03',

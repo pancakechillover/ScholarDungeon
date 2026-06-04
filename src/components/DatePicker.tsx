@@ -49,12 +49,14 @@ export const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, classNa
     if (triggerRef.current && isOpen) {
         const rect = triggerRef.current.getBoundingClientRect();
         
-        let top = rect.bottom + window.scrollY + 8;
-        let left = rect.left + window.scrollX;
+        let top = rect.bottom + 8;
+        let left = rect.left;
+        const popoverWidth = 280;
+        const popoverHeight = 360;
         
         // Prevent going off right edge
-        if (left + 280 > window.innerWidth) {
-            left = window.innerWidth - 280 - 16;
+        if (left + popoverWidth > window.innerWidth) {
+            left = window.innerWidth - popoverWidth - 16;
         }
         
         // Prevent going off left edge
@@ -63,8 +65,8 @@ export const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, classNa
         }
 
         // Prevent going off bottom edge
-        if (top + 400 > window.innerHeight + window.scrollY) {
-            top = rect.top + window.scrollY - 340 - 8;
+        if (top + popoverHeight > window.innerHeight) {
+            top = rect.top - popoverHeight - 8;
         }
         
         // Prevent going off top edge
@@ -73,8 +75,10 @@ export const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, classNa
         }
 
         setPopoverStyle({
+            position: 'fixed',
             top: `${top}px`,
             left: `${left}px`,
+            width: `${popoverWidth}px`,
         });
     }
   };
@@ -150,7 +154,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, classNa
         <div 
           ref={popoverRef}
           style={popoverStyle}
-          className="absolute z-[9999] p-4 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-[280px] animate-in fade-in zoom-in-95 duration-200"
+          className="fixed z-[9999] p-4 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl animate-in fade-in zoom-in-95 duration-200"
         >
           <div className="flex items-center justify-between mb-4">
             <button onClick={handlePrevMonth} className="p-1 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors">
@@ -210,6 +214,24 @@ export const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, classNa
                 </button>
               )
             })}
+          </div>
+
+          <div className="mt-3 pt-3 border-t border-slate-800 flex justify-center">
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                const today = new Date();
+                const year = today.getFullYear();
+                const month = String(today.getMonth() + 1).padStart(2, '0');
+                const d = String(today.getDate()).padStart(2, '0');
+                onChange(`${year}-${month}-${d}`);
+                setIsOpen(false);
+              }}
+              className="w-full py-1.5 px-3 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1 shadow-md cursor-pointer"
+            >
+              <CalendarIcon size={12} />
+              Use Current Date (本日)
+            </button>
           </div>
         </div>,
         document.body

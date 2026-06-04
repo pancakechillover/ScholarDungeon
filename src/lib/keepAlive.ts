@@ -1,33 +1,12 @@
 import { useEffect, useRef } from 'react';
 
-// A tiny 1-second silent WAV base64
-const SILENT_WAV_B64 = "data:audio/wav;base64,UklGRjIAAABXQVZFZm10IBIAAAABAAEAQB8AAEAfAAABAAgAAABmYWN0BAAAAAAAAABkYXRhAAAAAA==";
-
 export function useBackgroundKeepAlive(isActive: boolean, isResting: boolean, duration: number, timeLeft: number) {
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const wakeLockRef = useRef<any>(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
     
-    // Initialize audio element once
-    if (!audioRef.current) {
-      const audio = new Audio(SILENT_WAV_B64);
-      audio.loop = true;
-      audio.volume = 0.01; // Low volume just in case
-      // For iOS, playsInline and other attributes might be needed
-      audio.setAttribute('playsinline', 'true');
-      audioRef.current = audio;
-    }
-    
-    const audio = audioRef.current;
-    
     if (isActive) {
-      // Attempt to play to acquire background execution privileges
-      audio.play().catch(err => {
-        console.warn("Background Keep-Alive Audio Blocked (requires interaction):", err);
-      });
-      
-      // Update Lock Screen Metadata
       if ('mediaSession' in navigator) {
         navigator.mediaSession.metadata = new window.MediaMetadata({
           title: isResting ? 'Resting...' : 'Focusing...',
@@ -35,13 +14,32 @@ export function useBackgroundKeepAlive(isActive: boolean, isResting: boolean, du
           album: 'Timer Active',
         });
       }
+
+      // Instead of audio, optionally request a screen wake lock if available
+      // This prevents the device from sleeping while the timer is on screen
+      if ('wakeLock' in navigator && navigator.wakeLock && navigator.wakeLock.request) {
+        navigator.wakeLock.request('screen').then(lock => {
+          wakeLockRef.current = lock;
+        }).catch(err => {
+          console.warn("Wake Lock not acquired:", err);
+        });
+      }
     } else {
-      audio.pause();
       if ('mediaSession' in navigator) {
         navigator.mediaSession.metadata = null;
       }
+      if (wakeLockRef.current) {
+        wakeLockRef.current.release().catch(() => {});
+        wakeLockRef.current = null;
+      }
     }
     
+    return () => {
+      if (wakeLockRef.current) {
+        wakeLockRef.current.release().catch(() => {});
+        wakeLockRef.current = null;
+      }
+    };
   }, [isActive, isResting]);
   
   // Throttle media session progress updates to avoid performance hits

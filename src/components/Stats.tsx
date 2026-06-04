@@ -9,13 +9,13 @@ import {
 import { StudySession, AppState, RewardHistoryItem, Dungeon, MajorDungeon } from '../types';
 import { cn } from '../lib/utils';
 import { 
-  BarChart2, Zap, Coins, ChevronLeft, ChevronRight, ChevronDown, Calendar, Star, StarHalf, Edit2, Save, X, Eye, EyeOff, LineChart as LineChartIcon, Trophy, Sword, Heart, Maximize2, Minimize2, LayoutTemplate, File, FileText, RotateCcw, Share2
+  BarChart2, Zap, Coins, ChevronLeft, ChevronRight, ChevronDown, Calendar, Star, StarHalf, Edit2, Save, X, Eye, EyeOff, LineChart as LineChartIcon, Trophy, Sword, Heart, Maximize2, Minimize2, LayoutTemplate, File, FileText, RotateCcw, Share2, Moon
 } from 'lucide-react';
 import { MOOD_OPTIONS, DEFAULT_ENABLED_MOODS } from '../constants';
 
 import { motion, AnimatePresence } from 'motion/react';
 import { PageHeader } from './PageHeader';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, Legend, LineChart, Line, CartesianGrid, LabelList, PieChart, Pie } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, Legend, LineChart, Line, CartesianGrid, LabelList, PieChart, Pie, ComposedChart } from 'recharts';
 import Markdown from 'react-markdown';
 import { ImmersiveReflectionModal } from './ImmersiveReflectionModal';
 import { DatePicker } from './DatePicker';
@@ -25,6 +25,7 @@ import { ShareRecordModal } from './ShareRecordModal';
 import { ViewSettingsModal } from './ViewSettingsModal';
 import { DailyPieChart } from './DailyPieChart';
 import { WeeklyPieChart } from './WeeklyPieChart';
+import { BulkSleepModal } from './BulkSleepModal';
 
 export interface ShareConfig {
   showDaily: boolean;
@@ -43,6 +44,7 @@ interface StatsProps {
   deleteSession?: (id: string) => void;
   dungeons?: Dungeon[];
   majorDungeons?: MajorDungeon[];
+  setShowStartOfDayModal?: (val: string | boolean) => void;
 }
 
 const SharedPopoverContent = ({
@@ -190,7 +192,7 @@ const CustomDailyTooltip = ({ active, payload, label, dateTimestamp, timeBasedMo
 };
 
 
-export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateState, updateSession, deleteSession, dungeons = [], majorDungeons = [] }) => {
+export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateState, updateSession, deleteSession, dungeons = [], majorDungeons = [], setShowStartOfDayModal }) => {
   const history = state.history;
   const dailyLogs = state.dailyLogs || {};
   const [showDailySessionsDate, setShowDailySessionsDate] = useState<Date | null>(null);
@@ -207,14 +209,16 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
   });
   const statsContainerRef = useRef<HTMLDivElement>(null);
   
-  const viewOpts = state.statsViewOpts || {
+  const viewOpts: NonNullable<AppState['statsViewOpts']> = state.statsViewOpts || {
     showDailyBar: true,
     showDailyDonut: false,
     showWeeklyBar: true,
     showWeeklyDonut: false,
     showRoutineTracker: true,
+    showSleepTracker: true,
+    showHeatmap: true,
     dailyDonutMode: 'compact' as const,
-    weeklyDonutMode: 'compact' as const,
+    weeklyDonutMode: 'time_of_day' as const,
   };
   
   const getInitialPeakDate = () => {
@@ -247,6 +251,9 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
   const [dailyDate, setDailyDate] = useState(getInitialPeakDate());
   const [weeklyDate, setWeeklyDate] = useState(getInitialPeakDate());
   const [weeklyMode, setWeeklyMode] = useState<'calendar' | 'rolling'>('calendar');
+  const [sleepDate, setSleepDate] = useState(getInitialPeakDate());
+  const [sleepMode, setSleepMode] = useState<'calendar' | 'rolling'>('calendar');
+  const [showBulkSleepModal, setShowBulkSleepModal] = useState(false);
   const [heatmapMode, setHeatmapMode] = useState<'30days' | 'month' | 'year'>('30days');
   const [heatmapMetric, setHeatmapMetric] = useState<'time' | 'efficiency'>('time');
   const [selectedHeatmapDate, setSelectedHeatmapDate] = useState<number | null>(null);
@@ -254,7 +261,8 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
   const [chartKeys, setChartKeys] = useState({
     daily: Date.now(),
     weeklyBar: Date.now() + 1,
-    weeklyLine: Date.now() + 2
+    weeklyLine: Date.now() + 2,
+    sleep: Date.now() + 3
   });
 
   const dateIndicators = React.useMemo(() => {
@@ -278,14 +286,15 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
     return res;
   }, [state.history, state.dailyLogs]);
 
-  const handleChartClick = (chartState: any, chart: 'daily' | 'weeklyBar' | 'weeklyLine') => {
+  const handleChartClick = (chartState: any, chart: 'daily' | 'weeklyBar' | 'weeklyLine' | 'sleep') => {
     // If no active payload, we clicked empty space - reset ALL keys including current one
     const isEmptyClick = !chartState || !chartState.activePayload || chartState.activePayload.length === 0;
 
     setChartKeys(prev => ({
       daily: (chart === 'daily' && !isEmptyClick) ? prev.daily : Date.now() + Math.random(),
       weeklyBar: (chart === 'weeklyBar' && !isEmptyClick) ? prev.weeklyBar : Date.now() + Math.random(),
-      weeklyLine: (chart === 'weeklyLine' && !isEmptyClick) ? prev.weeklyLine : Date.now() + Math.random()
+      weeklyLine: (chart === 'weeklyLine' && !isEmptyClick) ? prev.weeklyLine : Date.now() + Math.random(),
+      sleep: (chart === 'sleep' && !isEmptyClick) ? prev.sleep : Date.now() + Math.random()
     }));
   };
 
@@ -361,7 +370,8 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
       setChartKeys({
         daily: Date.now() + Math.random(),
         weeklyBar: Date.now() + Math.random(),
-        weeklyLine: Date.now() + Math.random()
+        weeklyLine: Date.now() + Math.random(),
+        sleep: Date.now() + Math.random()
       });
       document.getElementById('daily-activity-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     };
@@ -648,6 +658,13 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
     ? endOfWeek(weeklyDate, { weekStartsOn: 1 })
     : weeklyDate;
 
+  const sleepStart = sleepMode === 'calendar' 
+    ? startOfWeek(sleepDate, { weekStartsOn: 1 })
+    : subDays(sleepDate, 6);
+  const sleepEnd = sleepMode === 'calendar'
+    ? endOfWeek(sleepDate, { weekStartsOn: 1 })
+    : sleepDate;
+
   const ts = state.timeSettings || {
     morning: { start: 8, end: 12 },
     afternoon: { start: 14, end: 18 },
@@ -881,6 +898,53 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
     }).length;
     return count > 0 ? count : 1;
   }, [weeklyDays, sessionsByDateStr, rewardsByDateStr]);
+
+  const sleepDays = eachDayOfInterval({ start: sleepStart, end: sleepEnd });
+
+  const sleepData = useMemo(() => {
+    return sleepDays.map(date => {
+      const dateStr = format(date, 'yyyy-MM-dd');
+      const log = dailyLogs[dateStr] || ({} as any);
+      const durationHours = (log.sleepDurationMin || 0) / 60;
+      
+      let sleepTimeNum: number | null = null;
+      let wakeTimeNum: number | null = null;
+      if (log.sleepTime && log.wakeTime) {
+         const [sh, sm] = log.sleepTime.split(':').map(Number);
+         const [wh, wm] = log.wakeTime.split(':').map(Number);
+         
+         let s = sh + sm/60;
+         let w = wh + wm/60;
+         
+         if (s <= w) {
+             if (s <= 12) {
+                 s += 24;
+                 w += 24;
+             }
+         } else {
+             w += 24;
+         }
+         sleepTimeNum = s;
+         wakeTimeNum = w;
+      } else if (log.sleepTime) {
+         const [h, m] = log.sleepTime.split(':').map(Number);
+         sleepTimeNum = h < 12 ? h + 24 + m/60 : h + m/60;
+      } else if (log.wakeTime) {
+         const [h, m] = log.wakeTime.split(':').map(Number);
+         wakeTimeNum = h + 24 + m/60;
+      }
+
+      return {
+        name: format(date, 'EEE'),
+        fullName: format(date, 'eeee, MMMM do'),
+        dateStr,
+        duration: Number(durationHours.toFixed(1)),
+        sleepTime: sleepTimeNum !== null ? Number(sleepTimeNum.toFixed(2)) : null,
+        wakeTime: wakeTimeNum !== null ? Number(wakeTimeNum.toFixed(2)) : null,
+        hasRecord: !!log.sleepDurationMin
+      };
+    });
+  }, [sleepDays, dailyLogs]);
 
   const weeklyData = useMemo(() => {
     return weeklyDays.map(date => {
@@ -1324,8 +1388,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
             </div>
             <div className="flex items-center justify-center sm:justify-start gap-1 sm:gap-2 bg-slate-800/50 rounded-lg p-0.5 sm:p-1 w-full md:w-auto">
               <button onClick={() => {
-                const amount = weeklyMode === 'calendar' ? 1 : 7;
-                setWeeklyDate(subDays(weeklyDate, amount));
+                setWeeklyDate(subDays(weeklyDate, 7));
               }} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-slate-200"><ChevronLeft size={16} /></button>
               <div className="relative flex items-center justify-center flex-1 sm:flex-none">
                 <DatePicker 
@@ -1338,8 +1401,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
                 </DatePicker>
               </div>
               <button onClick={() => {
-                const amount = weeklyMode === 'calendar' ? 1 : 7;
-                setWeeklyDate(addDays(weeklyDate, amount));
+                setWeeklyDate(addDays(weeklyDate, 7));
               }} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-slate-200"><ChevronRight size={16} /></button>
               <button 
                 onClick={() => setWeeklyDate(new Date())}
@@ -1445,7 +1507,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
                     end: addDays(weekStart, 6)
                   });
                 })} 
-                mode={viewOpts.weeklyDonutMode || 'compact'} 
+                mode={viewOpts.weeklyDonutMode || 'time_of_day'} 
               />
             )}
           </div>
@@ -1467,6 +1529,141 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
               </div>
             )}
           />
+        </div>
+      )}
+
+      {(viewOpts.showSleepTracker ?? true) && (
+        <div id="sleep-tracker-section" className="bg-slate-900 rounded-3xl border border-slate-800 p-6 w-full flex flex-col space-y-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <Moon className="text-indigo-400" size={20} />
+              <h3 className="text-lg font-bold text-slate-100">Sleep Tracker</h3>
+              <div className="relative bg-slate-800/50 hover:bg-slate-700 transition-colors rounded-lg flex items-center p-0.5 sm:p-1 cursor-pointer group ml-2">
+                <span className="px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-black uppercase tracking-wide sm:tracking-widest text-indigo-400 group-hover:text-indigo-300 whitespace-nowrap pointer-events-none flex items-center gap-1">
+                  {sleepMode === 'calendar' ? 'Natural' : 'Last 7d'}
+                  <ChevronDown size={12} className="opacity-70" />
+                </span>
+                <select 
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  value={sleepMode}
+                  onChange={(e) => setSleepMode(e.target.value as 'calendar' | 'rolling')}
+                >
+                  <option value="calendar">Natural</option>
+                  <option value="rolling">Last 7d</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between sm:justify-end gap-2 w-full md:w-auto">
+              <div className="flex items-center justify-center sm:justify-start gap-1 sm:gap-2 bg-slate-800/50 rounded-lg p-0.5 sm:p-1">
+                <button onClick={() => {
+                  setSleepDate(subDays(sleepDate, 7));
+                }} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-slate-200"><ChevronLeft size={16} /></button>
+                <div className="relative flex items-center justify-center">
+                  <DatePicker 
+                    value={format(sleepDate, 'yyyy-MM-dd')}
+                    onChange={(val) => val && setSleepDate(parseISO(val))}
+                    indicators={dateIndicators}
+                    className="text-[10px] sm:text-xs font-bold text-slate-300 w-[90px] sm:w-28 text-center hover:text-indigo-400 transition-colors inline-block whitespace-nowrap cursor-pointer"
+                  >
+                    {format(sleepStart, 'MMM d')} - {format(sleepEnd, 'MMM d')}
+                  </DatePicker>
+                </div>
+                <button onClick={() => {
+                  setSleepDate(addDays(sleepDate, 7));
+                }} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-slate-200"><ChevronRight size={16} /></button>
+                <button 
+                  onClick={() => setSleepDate(new Date())}
+                  className="p-1 text-indigo-400 hover:bg-slate-700 hover:text-indigo-300 rounded transition-colors"
+                  title="Return to Today"
+                >
+                  <RotateCcw size={14} />
+                </button>
+              </div>
+              <button
+                onClick={() => setShowBulkSleepModal(true)}
+                className="p-2 sm:px-3 sm:py-1.5 flex items-center gap-1.5 bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-400 rounded-lg transition-colors ml-2"
+              >
+                <Edit2 size={14} />
+                <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider hidden sm:inline">Edit</span>
+              </button>
+            </div>
+          </div>
+          <div className="h-80 min-h-[320px]">
+            <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
+              <ComposedChart 
+                data={sleepData} 
+                onClick={(state) => handleChartClick(state, 'sleep')}
+                style={{ outline: 'none', touchAction: 'pan-y', overflow: 'visible', cursor: 'pointer' }} 
+                margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10 }} />
+                <YAxis 
+                   yAxisId="right" 
+                   orientation="right" 
+                   domain={[0, 24]}
+                   tickCount={7}
+                   tick={{ fill: '#64748b', fontSize: 10 }} 
+                   axisLine={false} 
+                   tickLine={false} 
+                   tickFormatter={(val) => `${val}h`} 
+                />
+                <YAxis
+                   yAxisId="left"
+                   orientation="left"
+                   domain={[4, 40]}
+                   tickCount={7}
+                   tick={{ fill: '#64748b', fontSize: 10 }}
+                   axisLine={false}
+                   tickLine={false}
+                   scale="time"
+                   tickFormatter={(val) => {
+                     let h = Math.floor(val);
+                     const m = Math.round((val - h) * 60);
+                     if (h >= 24) h -= 24;
+                     return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+                   }}
+                />
+                <Tooltip
+                  key={chartKeys.sleep}
+                  trigger="click"
+                  wrapperStyle={{ zIndex: 100, pointerEvents: 'auto' }}
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      const data = payload[0].payload;
+                      if (!data.hasRecord) return null;
+                      const formatT = (val: number | null) => {
+                        if (val === null) return '--:--';
+                        let h = Math.floor(val);
+                        const m = Math.round((val - h) * 60);
+                        if (h >= 24) h -= 24;
+                        return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+                      };
+                      return (
+                        <div className="bg-slate-900 border border-slate-700 p-3 rounded-xl shadow-xl flex flex-col gap-2">
+                          <p className="text-white font-bold text-sm">{data.fullName}</p>
+                          <div className="text-xs text-slate-300 grid grid-cols-2 gap-x-4 gap-y-2">
+                             <span className="text-indigo-400 font-bold">Fell Asleep:</span>
+                             <span className="text-right font-mono">{formatT(data.sleepTime)}</span>
+                             <span className="text-amber-400 font-bold">Woke Up:</span>
+                             <span className="text-right font-mono">{formatT(data.wakeTime)}</span>
+                             <span className="text-emerald-400 font-bold">Duration:</span>
+                             <span className="text-right font-mono">{data.duration}h</span>
+                          </div>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                  cursor={{ fill: 'rgba(100, 116, 139, 0.2)' }}
+                />
+                <Bar yAxisId="right" dataKey="duration" fill="#818cf8" radius={[4, 4, 0, 0]} opacity={0.5} barSize={20} />
+                <Line yAxisId="left" type="stepAfter" dataKey="sleepTime" stroke="#6366f1" strokeWidth={2} dot={{ r: 4, strokeWidth: 2, fill: '#1e293b' }} />
+                <Line yAxisId="left" type="stepAfter" dataKey="wakeTime" stroke="#fbbf24" strokeWidth={2} dot={{ r: 4, strokeWidth: 2, fill: '#fbbf24' }} />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       )}
 
@@ -1581,6 +1778,31 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
             <span>More</span>
           </div>
         </div>
+      )}
+
+      {showBulkSleepModal && (
+        <BulkSleepModal
+          state={state}
+          onClose={() => setShowBulkSleepModal(false)}
+          onSave={(dateStr, sleepTime, wakeTime, sleepDurationMin) => {
+             const existing = state.dailyLogs?.[dateStr] || {};
+             if (onUpdateState) {
+               onUpdateState({
+                 dailyLogs: {
+                   ...(state.dailyLogs || {}),
+                   [dateStr]: {
+                     rating: 0,
+                     reflection: '',
+                     ...existing,
+                     sleepTime,
+                     wakeTime,
+                     sleepDurationMin
+                   }
+                 }
+               });
+             }
+          }}
+        />
       )}
       
       <ImmersiveReflectionModal

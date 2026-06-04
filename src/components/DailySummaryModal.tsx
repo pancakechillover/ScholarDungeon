@@ -28,7 +28,8 @@ import {
   File,
   FileText,
   Indent,
-  Heart
+  Heart,
+  Moon
 } from 'lucide-react';
 import Markdown from 'react-markdown';
 import { cn } from '../lib/utils';
@@ -461,7 +462,9 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
         {/* Header */}
         <div className="p-5 sm:p-8 border-b border-slate-800 flex justify-between items-start bg-gradient-to-r from-indigo-500/10 to-transparent">
           <div className="space-y-1">
-            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tighter uppercase italic pr-1">End of the Day</h2>
+              <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tighter uppercase italic pr-1 flex items-center gap-3">
+                End of the Day <Moon className="text-indigo-400" size={28} />
+              </h2>
             <div className="text-[10px] sm:text-xs font-medium text-slate-500 tracking-wider flex items-center gap-1.5">
                {(() => {
                  const parts = today.settlementPeriod.split(' - ');

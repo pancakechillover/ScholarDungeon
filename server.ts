@@ -214,12 +214,13 @@ const processPushQueue = async (client: any) => {
     if (subs && subs.length > 0) {
       for (const subStr of subs) {
         const subscription = JSON.parse(subStr.toString());
+        const subTTL = task.type === 'streak_reminder' ? 86400 : 300;
         try {
           await webpush.sendNotification(subscription, JSON.stringify({
             title: task.title,
             body: task.body,
             data: { type: task.type }
-          }), { urgency: 'high' });
+          }), { urgency: 'high', TTL: subTTL });
         } catch (err: any) {
           const bodyMsg = err.body ? (typeof err.body === 'string' ? err.body : JSON.stringify(err.body)) : '';
           console.error(`Push failed for ${task.secretCode}:`, err.message, bodyMsg);
@@ -235,12 +236,13 @@ const processPushQueue = async (client: any) => {
       const subStr = await client.get(`scholar_push_sub_${task.secretCode}`);
       if (subStr) {
         const subscription = JSON.parse(subStr.toString());
+        const subTTL = task.type === 'streak_reminder' ? 86400 : 300;
         try {
           await webpush.sendNotification(subscription, JSON.stringify({
             title: task.title,
             body: task.body,
             data: { type: task.type }
-          }), { urgency: 'high' });
+          }), { urgency: 'high', TTL: subTTL });
         } catch (err: any) {
           const bodyMsg = err.body ? (typeof err.body === 'string' ? err.body : JSON.stringify(err.body)) : '';
           console.error(`Legacy push failed for ${task.secretCode}:`, err.message, bodyMsg);
