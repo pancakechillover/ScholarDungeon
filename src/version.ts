@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v7.12.2';
+export const APP_VERSION = 'v8.0.0';
 export const LAST_UPDATE_DATE = '2026-06-04';
-export const LAST_UPDATE_TIME = '13:45:00';
+export const LAST_UPDATE_TIME = '14:20:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,27 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v8.0.0',
+    date: '2026-06-04',
+    time: '14:20:00',
+    title: 'Plaza Integration & Major 8.0 Overlay',
+    items: [
+      { category: 'Feature', description: 'Upgraded the public guilds list section within the Sanctum dashboard into a modern spiritual "Plaza" (广场) layout action.' },
+      { category: 'UI', description: 'Engineered a highly aesthetic under-construction Plaza modal following strict mobile and dark/light portal guidelines.' },
+      { category: 'Architecture', description: 'Triggered major architecture level bump upgrade to 8.0.0 representing clean multi-system alignment.' }
+    ]
+  },
+  {
+    version: 'v7.12.3',
+    date: '2026-06-04',
+    time: '14:10:00',
+    title: 'Vercel Hobby Deploy & Cron Alignments',
+    items: [
+      { category: 'Architecture', description: 'Restructured push-notification cron schedule configurations inside vercel.json to satisfy strict rate limits on Vercel Hobby Free tier, unblocking automated GitHub deploy pipelines.' },
+      { category: 'Optimization', description: 'Documented full schedule constraints and handled serverless build configurations under standard Vercel environments.' }
+    ]
+  },
   {
     version: 'v7.12.2',
     date: '2026-06-04',

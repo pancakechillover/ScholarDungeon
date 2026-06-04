@@ -1,30 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { createPortal } from 'react-dom';
-import { Users, LogIn, Plus, X, MessageSquare, Activity, Crown, Clock, Target, Check, AlertCircle, RefreshCw, Send, Settings, User, UserCheck, Cat, Dog, Ghost, Bot, Skull } from 'lucide-react';
+import { Users, LogIn, Plus, X, MessageSquare, Activity, Crown, Clock, Target, Check, AlertCircle, RefreshCw, Send, Settings, User, UserCheck, Landmark } from 'lucide-react';
 import { AppState, Team, TeamMessage, TeamEvent, TeamMember, TeamSettingProposal } from '../types';
-import { cn, getTitleForLevel } from '../lib/utils';
-
-interface AvatarRendererProps {
-  avatar?: string;
-  className?: string;
-  size?: number;
-}
-
-const AvatarRenderer = ({ avatar, className = "w-full h-full", size = 16 }: AvatarRendererProps) => {
-  if (!avatar) {
-    return <User className="text-slate-500 m-auto h-full" size={size} />;
-  }
-  if (['User', 'Cat', 'Dog', 'Ghost', 'Bot', 'Skull'].includes(avatar)) {
-    const IconComponent = { User, Cat, Dog, Ghost, Bot, Skull }[avatar] || User;
-    return <IconComponent className={cn("text-indigo-400 m-auto h-full", className)} size={size} />;
-  }
-  if (avatar.startsWith('data:') || avatar.includes('/') || avatar.includes('.')) {
-    return <img src={avatar} className="w-full h-full object-cover rounded-full" alt="" />;
-  }
-  const IconComponent = { User, Cat, Dog, Ghost, Bot, Skull }[avatar] || User;
-  return <IconComponent className="text-indigo-400 m-auto" size={size} />;
-};
+import { cn } from '../lib/utils';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { ProfileModal } from './ProfileModal';
 
@@ -49,6 +28,7 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
   
   const [showJoin, setShowJoin] = useState(false);
   const [viewingProfile, setViewingProfile] = useState<string | null>(null);
+  const [showPlazaModal, setShowPlazaModal] = useState(false);
 
   const fetchLobby = async () => {
     setLoading(true);
@@ -66,18 +46,8 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
 
   const fetchTeam = async () => {
     if (!state.teamId) return;
-    const identityCode = getOrGenerateIdentity();
     try {
-      const params = new URLSearchParams({
-        id: state.teamId,
-        secretCode: identityCode,
-        userName: state.userName || 'Scholar',
-        userAvatar: state.userAvatar || 'User',
-        userBio: state.userBio || '',
-        userTitle: getTitleForLevel(state.level || 1),
-        userLevel: (state.level || 1).toString()
-      });
-      const res = await fetch(`/api/teams?${params.toString()}`);
+      const res = await fetch(`/api/teams?id=${state.teamId}`);
       if (!res.ok) return;
       const data = await res.json();
       if (data.team) {
@@ -123,9 +93,9 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
           teamId: id, 
           secretCode: identityCode,
           userName: state.userName || 'Scholar',
-          userAvatar: state.userAvatar || 'User',
-          userBio: state.userBio || '',
-          userTitle: getTitleForLevel(state.level || 1),
+          userAvatar: state.userAvatar,
+          userBio: state.userBio,
+          userTitle: state.userTitle,
           userLevel: state.level || 1
         })
       });
@@ -185,9 +155,9 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
           teamId: state.teamId, 
           secretCode: identityCode,
           userName: state.userName || 'Scholar',
-          userAvatar: state.userAvatar || 'User',
-          userBio: state.userBio || '',
-          userTitle: getTitleForLevel(state.level || 1),
+          userAvatar: state.userAvatar,
+          userBio: state.userBio,
+          userTitle: state.userTitle,
           userLevel: state.level || 1,
           content: msg
         })
@@ -239,9 +209,13 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
   const renderLobby = () => (
     <div className="space-y-4">
       <div className="flex justify-between items-center mb-6">
-        <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
-          <Users size={16} /> Public Guilds
-        </h3>
+        <button
+          onClick={() => setShowPlazaModal(true)}
+          className="px-3 py-1.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 font-bold border border-indigo-500/20 rounded-lg text-xs transition-all flex items-center gap-1.5 cursor-pointer hover:scale-105 active:scale-95"
+          id="btn-plaza-tab"
+        >
+          <Landmark size={14} /> Plaza
+        </button>
         <div className="flex items-center gap-2">
           <button 
             onClick={() => setShowJoin(true)}
@@ -407,7 +381,7 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
                   >
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center overflow-hidden text-lg">
-                        <AvatarRenderer avatar={m.avatar} size={14} className="w-full h-full" />
+                        {m.avatar ? <img src={m.avatar} className="w-full h-full object-cover" alt="" /> : <User size={14} className="text-slate-500" />}
                       </div>
                       <div className="flex flex-col">
                         <span className="text-sm font-bold text-slate-300 flex items-center gap-1">
@@ -416,7 +390,7 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
                         <span className="text-[10px] text-slate-500">{m.totalFocusTime}m focus</span>
                       </div>
                     </div>
-                    <span className="text-[10px] font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-full">Lv. {m.level || 1}</span>
+                    {m.level && <span className="text-[10px] font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-full">Lv. {m.level}</span>}
                   </div>
                 ))}
               </div>
@@ -432,7 +406,7 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
                         <div className="flex justify-between items-center">
                           <div className="flex items-center gap-2">
                             <div className="w-7 h-7 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center overflow-hidden">
-                              <AvatarRenderer avatar={app.avatar} size={12} className="w-full h-full" />
+                              {app.avatar ? <img src={app.avatar} className="w-full h-full object-cover" alt="" /> : <User size={12} className="text-slate-500" />}
                             </div>
                             <div className="flex flex-col">
                               <span className="text-xs font-bold text-white leading-tight">{app.name}</span>
@@ -493,7 +467,7 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
                       <div key={m.id} className={cn("flex flex-col w-full", isMe ? "items-end" : "items-start")}>
                         <div className={cn("flex items-end gap-2", isMe ? "flex-row-reverse" : "flex-row")}>
                           <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 overflow-hidden shrink-0 translate-y-1">
-                            <AvatarRenderer avatar={m.avatar} size={14} className="w-full h-full" />
+                            {m.avatar ? <img src={m.avatar} className="w-full h-full object-cover" alt=""/> : <User size={14} className="text-slate-500 m-auto h-full" />}
                           </div>
                           <div className={cn("flex flex-col", isMe ? "items-end" : "items-start")}>
                             <div className={cn("flex items-center gap-2 mb-1", isMe ? "flex-row-reverse" : "flex-row")}>
@@ -611,9 +585,9 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
                    config: cfg.config,
                    secretCode: identityCode,
                    userName: state.userName || 'Scholar',
-                   userAvatar: state.userAvatar || 'User',
-                   userBio: state.userBio || '',
-                   userTitle: getTitleForLevel(state.level || 1),
+                   userAvatar: state.userAvatar,
+                   userBio: state.userBio,
+                   userTitle: state.userTitle,
                    userLevel: state.level || 1
                 })
              });
@@ -641,6 +615,10 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
            member={team.members.find(m => m.userId === viewingProfile)!}
            onClose={() => setViewingProfile(null)}
         />
+      )}
+      
+      {showPlazaModal && (
+        <PlazaModal onClose={() => setShowPlazaModal(false)} />
       )}
     </div>
   );
@@ -824,8 +802,8 @@ const TeamMemberProfileModal = ({ member, onClose }: { member: TeamMember, onClo
         <button onClick={onClose} className="absolute top-4 right-4 text-slate-500 hover:text-white z-20"><X size={20}/></button>
         
         <div className="flex flex-col items-center relative z-10 text-center">
-          <div className="w-24 h-24 rounded-full bg-slate-800 border-4 border-slate-700 flex items-center justify-center shadow-xl shadow-black/50 mb-4 overflow-hidden relative p-4">
-            <AvatarRenderer avatar={member.avatar} size={40} className="w-full h-full text-indigo-400" />
+          <div className="w-24 h-24 rounded-full bg-slate-800 border-4 border-slate-700 flex items-center justify-center text-4xl shadow-xl shadow-black/50 mb-4 overflow-hidden relative">
+            {member.avatar ? <img src={member.avatar} className="w-full h-full object-cover" alt="" /> : <User size={40} className="text-slate-500" />}
           </div>
           
           <h2 className="text-2xl font-black text-white italic tracking-tight">{member.name}</h2>
@@ -835,7 +813,7 @@ const TeamMemberProfileModal = ({ member, onClose }: { member: TeamMember, onClo
               Lv. {member.level || 1}
             </div>
             <div className="text-xs font-bold text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/20">
-              {member.title || getTitleForLevel(member.level || 1)}
+              {member.title || "Wandering Scholar"}
             </div>
           </div>
           
@@ -1048,4 +1026,42 @@ const JoinTeamModal = ({ onClose, onJoin }: any) => {
     document.body
   );
 }
+
+const PlazaModal = ({ onClose }: { onClose: () => void }) => {
+  return createPortal(
+    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-sm w-full relative overflow-hidden shadow-2xl shadow-black/80"
+      >
+        <div className="absolute top-0 right-0 p-6 opacity-5 pointer-events-none text-indigo-400">
+          <Landmark size={80} />
+        </div>
+        
+        <button onClick={onClose} className="absolute top-4 right-4 text-slate-500 hover:text-white transition-colors z-20">
+          <X size={20} />
+        </button>
+
+        <div className="flex flex-col items-center text-center relative z-10 py-4">
+          <div className="w-16 h-16 rounded-full bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mb-4 shadow-[0_0_15px_rgba(99,102,241,0.15)]">
+            <Landmark size={28} className="text-indigo-400" />
+          </div>
+          <h3 className="text-xl font-bold text-white mb-2">Sanctum Plaza</h3>
+          <p className="text-slate-400 text-sm mb-6 leading-relaxed">
+            The Sanctum Plaza is currently under spiritual construction. A wider realm of shared guilds and achievements is on its way.
+          </p>
+          <button 
+            onClick={onClose}
+            className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-indigo-600/20 active:scale-95"
+          >
+            Confirm
+          </button>
+        </div>
+      </motion.div>
+    </div>,
+    document.body
+  );
+};
 
