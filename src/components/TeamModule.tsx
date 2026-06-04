@@ -449,10 +449,12 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
                     onClick={() => setViewingProfile(m.userId)}
                   >
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center overflow-hidden text-lg relative">
-                        {renderAvatar(m.avatar, 14)}
+                      <div className="relative">
+                        <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center overflow-hidden text-lg">
+                          {renderAvatar(m.avatar, 14)}
+                        </div>
                         {isOnline ? (
-                          <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full border border-slate-800 shadow-[0_0_5px_rgba(16,185,129,0.5)]" />
+                          <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full border border-slate-950 shadow-[0_0_5px_rgba(16,185,129,0.5)] z-10" />
                         ) : null}
                       </div>
                       <div className="flex flex-col">

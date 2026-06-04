@@ -37,6 +37,70 @@ interface CloudSyncModalProps {
   isVerifying?: boolean;
 }
 
+// Phrase cycling for sync overlay
+const SYNC_PHRASES = [
+  "The maiden is praying...",
+  "Tip: Complete daily quests to earn valuable talent shards.",
+  "Tip: Join a guild to embark on shared focus journeys.",
+  "Tip: Review your timeline to discover your optimal focus hours.",
+  "Tip: Adjust your level-up notifications in the settings menu.",
+  "Tip: Long-press your avatar to quickly view your profile.",
+  "Aligning the chronological artifacts...",
+  "Communing with the ancient server spirits..."
+];
+
+const SyncPhraseTyper = () => {
+  const [phraseIndex, setPhraseIndex] = useState(0);
+  const [displayedWords, setDisplayedWords] = useState<string[]>([]);
+  
+  useEffect(() => {
+    let currentPhraseIndex = 0;
+    const interval = setInterval(() => {
+      setPhraseIndex(prev => {
+        const next = (prev + 1) % SYNC_PHRASES.length;
+        currentPhraseIndex = next;
+        return next;
+      });
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+  
+  useEffect(() => {
+    const phrase = SYNC_PHRASES[phraseIndex];
+    const words = phrase.split(' ');
+    setDisplayedWords([]);
+    
+    let wordIndex = 0;
+    const typer = setInterval(() => {
+      if (wordIndex < words.length) {
+        setDisplayedWords(prev => {
+          // If the phrase has changed during this fast interval, stop updating
+          if (SYNC_PHRASES[phraseIndex] !== phrase) return prev;
+          return [...prev, words[wordIndex]];
+        });
+        wordIndex++;
+      } else {
+        clearInterval(typer);
+      }
+    }, 200);
+    
+    return () => clearInterval(typer);
+  }, [phraseIndex]);
+  
+  return (
+    <div 
+      className="text-slate-400 text-sm max-w-[280px] mx-auto leading-relaxed min-h-[60px] cursor-pointer select-none flex items-center justify-center transition-all bg-slate-900/50 p-3 rounded-xl border border-slate-800 hover:border-slate-700" 
+      onClick={() => setPhraseIndex(prev => (prev + 1) % SYNC_PHRASES.length)}
+      title="Click to skip to next phrase"
+    >
+      <p>
+        <span className="text-slate-300 font-medium">{displayedWords.join(' ')}</span>
+        <span className="animate-pulse text-indigo-400 font-bold ml-1">_</span>
+      </p>
+    </div>
+  );
+};
+
 export function CloudSyncModal({
   isOpen,
   onClose,
@@ -636,24 +700,20 @@ export function CloudSyncModal({
                   </>
                 ) : (
                   <>
-                    <div className="relative mb-4">
-                      <div className="absolute inset-0 bg-indigo-500/20 blur-2xl rounded-full" />
-                      <Loader2 className="animate-spin text-indigo-400 relative z-10" size={48} />
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-[10px] font-black text-indigo-300/50 mt-24">{timeLeft}s</span>
+                    <div className="relative mb-6 flex flex-col items-center justify-center min-h-[120px]">
+                      <div className="absolute inset-0 bg-indigo-500/20 blur-2xl rounded-full translate-y-4" />
+                      <Loader2 className="animate-spin text-indigo-400 relative z-10" size={56} strokeWidth={1.5} />
+                      <div className="mt-4 relative z-10">
+                        <span className="text-xs font-black text-indigo-400 font-mono bg-indigo-500/10 px-2 py-0.5 rounded-md border border-indigo-500/20">{timeLeft}s</span>
                       </div>
                     </div>
-                    <div className="space-y-2">
-                      <h3 className="text-xl font-black text-indigo-300 uppercase tracking-widest">
+                    <div className="space-y-4 w-full">
+                      <h3 className="text-xl font-black text-indigo-300 uppercase tracking-widest mb-2">
                         {isSyncing ? (
                           syncCheckResult ? 'Applying Changes' : 'Communing Archives'
                         ) : 'Verifying Archives'}
                       </h3>
-                      <p className="text-slate-400 text-sm max-w-[250px] mx-auto leading-relaxed">
-                        {isSyncing ? (
-                          syncCheckResult ? 'Inscribing selected data to the astral records...' : 'Synchronizing temporal data across the void...'
-                        ) : 'Analyzing temporal data and local inscriptions for discrepancies...'}
-                      </p>
+                      <SyncPhraseTyper />
                     </div>
                     
                     <button

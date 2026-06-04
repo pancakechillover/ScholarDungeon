@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v8.4.1';
+export const APP_VERSION = 'v8.4.2';
 export const LAST_UPDATE_DATE = '2026-06-04';
-export const LAST_UPDATE_TIME = '17:02:00';
+export const LAST_UPDATE_TIME = '17:35:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,16 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v8.4.2',
+    date: '2026-06-04',
+    time: '17:35:00',
+    title: 'Archive Communion Upgrades',
+    items: [
+      { category: 'UI/UX', description: 'Overhauled the sync overlay aesthetics to prevent target occlusion, introducing rotating phrases and tooltips with practical, lore-friendly software advice (e.g., "The maiden is praying...").' },
+      { category: 'Bug Fix', description: 'Corrected the overflow collision of the Online Activity indicator on Member profile avatars.' }
+    ]
+  },
   {
     version: 'v8.4.1',
     date: '2026-06-04',
