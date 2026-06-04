@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v8.1.0';
+export const APP_VERSION = 'v8.1.1';
 export const LAST_UPDATE_DATE = '2026-06-04';
-export const LAST_UPDATE_TIME = '14:50:00';
+export const LAST_UPDATE_TIME = '15:15:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,15 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v8.1.1',
+    date: '2026-06-04',
+    time: '15:15:00',
+    title: 'Vercel Deployment Unblock (Cron Removal)',
+    items: [
+      { category: 'Architecture', description: 'Temporarily removed vercel.json cron configurations entirely to unblock Vercel GitHub webhook suspensions on the Free Tier.' }
+    ]
+  },
   {
     version: 'v8.1.0',
     date: '2026-06-04',

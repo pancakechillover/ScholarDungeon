@@ -1,10 +1,4 @@
 {
-  "crons": [
-    {
-      "path": "/api/push/check",
-      "schedule": "0 0,12 * * *"
-    }
-  ],
   "rewrites": [
     {
       "source": "/manifest.webmanifest",
