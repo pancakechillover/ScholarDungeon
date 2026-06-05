@@ -23,9 +23,9 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v8.6.6
+- **Current Version:** v8.6.8
 - **Last Update Date:** 2026-06-05
-- **Last Update Time:** 11:45:00
+- **Last Update Time:** 12:55:00
 
 ## Dark Themes Definition
 The following themes are considered "Dark Themes" and form the baseline for vibrant visual effects and high-contrast glowing elements:
@@ -50,6 +50,16 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v8.6.8 (2026-06-05):** Guild Avatars SVG Overhaul & UI Polish.
+  - *UI/UX:* Replaced emoji placeholders with high-fidelity Lucide-React SVG icons (Scholarly, Adventure, Fantasy themes), enhancing immersion.
+  - *UI/UX:* Amplified progress bar presence across the Guild dashboard and details modal (increased height to h-4/h-5 and stroke-width to 10).
+  - *Bug Fix:* Resolved right-side italic clipping for the guild name title globally.
+
+- **v8.6.7 (2026-06-05):** Fellowship Branding & Progress Refinements.
+  - *UI/UX:* Resolved italic boundary clipping on the main Guild Name typography by introducing tailored right padding bounds.
+  - *UI/UX:* Increased the tracking stroke width and visual height of both linear and radial Fellowship Goal progress bars to significantly amplify visual presence.
+  - *Feature:* Engineered a complete Guild Avatar icon system allowing Captains to select and broadcast high-fidelity emoji insignia directly into the Sanctum Plaza and primary team dashboards.
 
 - **v8.6.6 (2026-06-05):** Unified Modal System & Dialog Overhaul.
   - *UI/UX:* Systematically eradicated all native browser `window.alert` and `window.confirm` dialogues across the application.

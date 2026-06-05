@@ -75,12 +75,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             // Only send basic info, not full members list
             teams.push({
                id: teamData.id,
-
-
                name: teamData.name,
                description: teamData.description,
                createdAt: parseInt(teamData.createdAt),
-
+               avatar: teamData.avatar || '',
                memberCount: parseInt(teamData.memberCount || '0')
             });
          }
@@ -146,6 +144,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           team: {
              id: teamData.id,
              name: teamData.name,
+             avatar: teamData.avatar || '',
              description: teamData.description,
              createdAt: parseInt(teamData.createdAt),
              config,
@@ -168,7 +167,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           return res.status(403).json({ error: 'Capacity Full: Guild system is capped at 50 guilds in the free tier quota. Try again later when inactive guilds clear up.' });
        }
 
-       const { name, description, config } = req.body;
+       const { name, description, config, avatar } = req.body;
        if (!name) return res.status(400).json({ error: 'Name required' });
        
        const teamId = crypto.randomUUID();
@@ -177,6 +176,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
        await client.hSet(`scholar_team:${teamId}`, {
           id: teamId,
           name,
+          avatar: avatar || '🏰',
           description: description || '',
           createdAt: now.toString(),
           memberCount: '1',
@@ -321,7 +321,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // POST: Update Settings
     if (method === 'POST' && action === 'settings') {
-       const { teamId, name, description, targetType, targetValue, rewardType, rewardContent, permission, joinRule } = req.body;
+       const { teamId, name, description, targetType, targetValue, rewardType, rewardContent, permission, joinRule, avatar } = req.body;
        const teamData = await client.hGetAll(`scholar_team:${teamId}`);
        if (!teamData || !teamData.id) return res.status(404).json({ error: 'Not found' });
        
@@ -333,6 +333,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           const adminUpdates: Record<string, string> = {};
           if (name) adminUpdates.name = name;
           if (description !== undefined) adminUpdates.description = description;
+          if (avatar !== undefined) adminUpdates.avatar = avatar;
           if (permission) adminUpdates.config_permission = permission;
           if (joinRule) adminUpdates.config_joinRule = joinRule;
           if (Object.keys(adminUpdates).length > 0) {
@@ -341,6 +342,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
              if (joinRule) teamData.config_joinRule = joinRule;
              if (name) teamData.name = name;
              if (description !== undefined) teamData.description = description;
+             if (avatar !== undefined) teamData.avatar = avatar;
           }
        }
        

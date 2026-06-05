@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { createPortal } from 'react-dom';
 import { 
   Users, LogIn, Plus, X, MessageSquare, Activity, Crown, Clock, Target, Check, AlertCircle, RefreshCw, Send, Settings, User, UserCheck, Landmark,
-  Cat, Dog, Ghost, Bot, Skull, Lock
+  Cat, Dog, Ghost, Bot, Skull, Lock,
+  BookOpen, Library, Coffee, Brain, ShieldHalf, Swords, Flame, Sparkles, Castle, Mountain
 } from 'lucide-react';
 import { AppState, Team, TeamMessage, TeamEvent, TeamMember, TeamSettingProposal } from '../types';
 import { cn, getTitleForLevel } from '../lib/utils';
@@ -35,6 +36,30 @@ const renderAvatar = (avatarValue: string | undefined, size: number = 14) => {
     return <img src={avatarValue} className="w-full h-full object-cover rounded-full" alt="" />;
   }
   return <User size={size} className="text-slate-500 m-auto" />;
+};
+
+export const GUILD_ICONS = [
+  { id: 'book', icon: BookOpen },
+  { id: 'library', icon: Library },
+  { id: 'coffee', icon: Coffee },
+  { id: 'brain', icon: Brain },
+  { id: 'shield', icon: ShieldHalf },
+  { id: 'swords', icon: Swords },
+  { id: 'target', icon: Target },
+  { id: 'crown', icon: Crown },
+  { id: 'flame', icon: Flame },
+  { id: 'sparkles', icon: Sparkles },
+  { id: 'castle', icon: Castle },
+  { id: 'mountain', icon: Mountain },
+];
+
+export const renderGuildIcon = (iconId: string | undefined, size: number = 24, className?: string) => {
+  const match = GUILD_ICONS.find(i => i.id === iconId);
+  if (match) {
+    const Icon = match.icon;
+    return <Icon size={size} className={className || "text-indigo-400"} />;
+  }
+  return <Landmark size={size} className={className || "text-indigo-400"} />;
 };
 
 export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
@@ -324,7 +349,10 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
           {lobbyTeams.map(t => (
             <div key={t.id} className="bg-slate-950 p-4 rounded-2xl border border-slate-800 flex flex-col justify-between group hover:border-indigo-500/30 transition-colors">
               <div>
-                <h4 className="text-white font-bold text-lg mb-1">{t.name}</h4>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xl inline-flex">{renderGuildIcon(t.avatar, 20)}</span>
+                  <h4 className="text-white font-bold text-lg">{t.name}</h4>
+                </div>
                 <p className="text-slate-400 text-xs line-clamp-2">{t.description || 'No description'}</p>
               </div>
               <div className="mt-4 flex items-center justify-between">
@@ -392,9 +420,14 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
         {renderProposal()}
         
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-          <div className="truncate max-w-full">
-            <h3 className="text-2xl font-black text-white italic uppercase tracking-tighter mb-1 truncate">{team.name}</h3>
-            <p className="text-xs text-slate-400 line-clamp-2 md:line-clamp-1">{team.description}</p>
+          <div className="flex items-center gap-4 max-w-full truncate">
+            <div className="w-14 h-14 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center shadow-inner shrink-0 overflow-hidden text-2xl">
+              {renderGuildIcon((team as any).avatar, 28)}
+            </div>
+            <div className="truncate max-w-full">
+              <h3 className="text-2xl font-black text-white italic uppercase tracking-tighter mb-1 truncate pr-2">{team.name}</h3>
+              <p className="text-xs text-slate-400 line-clamp-2 md:line-clamp-1 pr-1">{team.description}</p>
+            </div>
           </div>
           <div className="flex gap-2 w-full sm:w-auto justify-end shrink-0">
             <button
@@ -468,7 +501,7 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
                 <span className="text-sm font-bold text-slate-500 mb-1">/ {target} <span className="text-[10px] uppercase">min</span></span>
               </div>
               
-              <div className="w-full h-2 bg-slate-950 rounded-full overflow-hidden border border-slate-800 relative z-10">
+              <div className="w-full h-4 bg-slate-950 rounded-full overflow-hidden border border-slate-800 relative z-10 shadow-inner">
                 <div 
                   className="bg-indigo-500 h-full transition-all duration-1000 ease-out relative"
                   style={{ width: `${Math.min(100, (totalProgress / Math.max(1, target)) * 100)}%` }}
@@ -772,6 +805,7 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
                 body: JSON.stringify({
                    name: cfg.name,
                    description: cfg.description,
+                   avatar: cfg.avatar,
                    config: cfg.config,
                    secretCode: identityCode,
                    userName: state.userName || 'Scholar',
@@ -849,6 +883,7 @@ const CreateTeamModal = ({ onClose, onCreate }: any) => {
   const [cfg, setCfg] = useState({
      name: '',
      description: '',
+     avatar: 'shield',
      config: {
         permission: 'captain_only',
         targetType: 'total_time',
@@ -912,6 +947,26 @@ const CreateTeamModal = ({ onClose, onCreate }: any) => {
               <Landmark size={16} className="text-indigo-400" /> Guild Identity
             </h4>
             <div className="space-y-4">
+              <div>
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-1 mb-1 block">Guild Icon</label>
+                <div className="flex flex-wrap gap-2">
+                  {GUILD_ICONS.map(iconConfig => (
+                    <button 
+                      key={iconConfig.id}
+                      onClick={() => setCfg({...cfg, avatar: iconConfig.id})}
+                      className={cn(
+                        "w-10 h-10 rounded-xl text-lg flex items-center justify-center transition-all bg-slate-950 border",
+                        cfg.avatar === iconConfig.id 
+                          ? "border-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.3)] bg-indigo-500/10 scale-110 z-10" 
+                          : "border-slate-800 hover:border-slate-600 hover:scale-105"
+                      )}
+                    >
+                      {renderGuildIcon(iconConfig.id, 20)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
               <div>
                 <label className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest pl-1 mb-1 block">Guild Name <span className="text-rose-500">*</span></label>
                 <input type="text" value={cfg.name} onChange={e => setCfg({...cfg, name: e.target.value})}
@@ -1140,7 +1195,7 @@ const GoalDetailsModal = ({ team, onClose }: any) => {
               </span>
               <span className="text-xl font-bold text-slate-500 mb-2">/ {target} <span className="text-sm uppercase">min</span></span>
             </div>
-            <div className="w-full h-3 bg-slate-800 rounded-full overflow-hidden shadow-inner">
+            <div className="w-full h-5 bg-slate-800 rounded-full overflow-hidden shadow-inner">
               <div 
                 className={cn("h-full transition-all duration-1000 ease-out relative", isCompleted ? "bg-emerald-500" : "bg-gradient-to-r from-indigo-500 to-purple-500")}
                 style={{ width: `${Math.min(100, (totalProgress / Math.max(1, target)) * 100)}%` }}
@@ -1191,6 +1246,7 @@ const SettingsModal = ({ team, onClose, onSave, isCaptain, onLeave }: any) => {
   const [cfg, setCfg] = useState({ 
     name: team.name || '', 
     description: team.description || '', 
+    avatar: team.avatar || '',
     ...team.config 
   });
   const [copied, setCopied] = useState(false);
@@ -1224,6 +1280,27 @@ const SettingsModal = ({ team, onClose, onSave, isCaptain, onLeave }: any) => {
              </h4>
              
              <div className="space-y-4">
+               {isCaptain && (
+                 <div>
+                   <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-1 mb-1 block">Guild Icon</label>
+                   <div className="flex flex-wrap gap-2">
+                     {GUILD_ICONS.map(iconConfig => (
+                       <button 
+                         key={iconConfig.id}
+                         onClick={() => setCfg({...cfg, avatar: iconConfig.id})}
+                         className={cn(
+                           "w-10 h-10 rounded-xl text-lg flex items-center justify-center transition-all bg-slate-950 border",
+                           cfg.avatar === iconConfig.id 
+                             ? "border-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.3)] bg-indigo-500/10 scale-110 z-10" 
+                             : "border-slate-800 hover:border-slate-600 hover:scale-105"
+                         )}
+                       >
+                         {renderGuildIcon(iconConfig.id, 20)}
+                       </button>
+                     ))}
+                   </div>
+                 </div>
+               )}
                {/* Guild Secret Key Section */}
                <div className="bg-slate-950 border border-slate-800/80 rounded-2xl p-4 flex flex-col gap-2">
                  <label className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest block font-sans">Guild Secret ID / Invite Key</label>
@@ -1561,11 +1638,11 @@ const DetailedGoalModal = ({ team, onClose }: { team: Team, onClose: () => void 
             
             <div className="relative w-48 h-48 flex items-center justify-center mb-6">
               <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="45" fill="none" className="stroke-slate-800" strokeWidth="6" />
+                <circle cx="50" cy="50" r="45" fill="none" className="stroke-slate-800" strokeWidth="10" />
                 <circle 
                   cx="50" cy="50" r="45" fill="none" 
                   className="stroke-indigo-500 transition-all duration-1000 ease-out drop-shadow-sm"
-                  strokeWidth="6" 
+                  strokeWidth="10" 
                   strokeLinecap="round"
                   strokeDasharray="282.7" 
                   strokeDashoffset={282.7 - Math.min(282.7, (totalProgress / Math.max(1, target)) * 282.7)}

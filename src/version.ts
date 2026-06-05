@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v8.6.6';
+export const APP_VERSION = 'v8.6.8';
 export const LAST_UPDATE_DATE = '2026-06-05';
-export const LAST_UPDATE_TIME = '11:45:00';
+export const LAST_UPDATE_TIME = '12:55:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,28 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v8.6.8',
+    date: '2026-06-05',
+    time: '12:55:00',
+    title: 'Guild Avatars SVG Overhaul & UI Polish',
+    items: [
+      { category: 'UI/UX', description: 'Replaced emoji placeholders with high-fidelity Lucide-React SVG icons (Scholarly, Adventure, Fantasy themes), enhancing immersion.' },
+      { category: 'UI/UX', description: 'Amplified progress bar presence across the Guild dashboard and details modal (increased height and stroke-width).' },
+      { category: 'Bug Fix', description: 'Resolved right-side italic clipping for the guild name title globally.' }
+    ]
+  },
+  {
+    version: 'v8.6.7',
+    date: '2026-06-05',
+    time: '12:45:00',
+    title: 'Fellowship Branding & Progress Refinements',
+    items: [
+      { category: 'UI/UX', description: 'Resolved italic boundary clipping on the main Guild Name typography by introducing tailored right padding tracking parameters.' },
+      { category: 'UI/UX', description: 'Increased the tracking stroke width and visual height of both linear and radial Fellowship Goal progress bars to significantly amplify visual presence.' },
+      { category: 'Feature', description: 'Engineered a complete Guild Avatar icon system allowing Captains to select and broadcast high-fidelity emoji insignia directly into the Sanctum Plaza and primary team dashboards.' }
+    ]
+  },
   {
     version: 'v8.6.6',
     date: '2026-06-05',

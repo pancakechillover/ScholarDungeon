@@ -446,6 +446,7 @@ export interface Team {
   currentProposal?: TeamSettingProposal;
   applicants?: TeamMember[] | any[];
   myUserId?: string;
+  avatar?: string;
 }
 
 export interface ShopItem {
