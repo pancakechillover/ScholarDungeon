@@ -23,9 +23,9 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v8.4.3
+- **Current Version:** v8.4.5
 - **Last Update Date:** 2026-06-05
-- **Last Update Time:** 02:45:00
+- **Last Update Time:** 03:45:00
 
 ## Dark Themes Definition
 The following themes are considered "Dark Themes" and form the baseline for vibrant visual effects and high-contrast glowing elements:
@@ -50,6 +50,14 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v8.4.5 (2026-06-05):** iOS PWA UX Polish.
+  - *UI/UX:* Rebased dynamic `theme-color` mutations to strictly utilize hex arrays, explicitly bypassing Safari's broken rgb compilation sequence and correcting the black Slide-Over interaction bar on DayLight themes. Hardcoded dynamic conditional classes for translucent headers instead of tailwind color-mixing for older iOS stability.
+  - *Bug Fix:* Completely reined in the mobile 7-item navigation grid to intelligently squish inside a 320px Slide-Over screen edge to prevent the root div from triggering iOS horizontal bounce overflow.
+
+- **v8.4.4 (2026-06-05):** iOS PWA Deep Immersion (Slide Over).
+  - *UI/UX:* Activated `black-translucent` status bar properties for Apple PWAs to eliminate the system-generated invasive top background bar during Slide Over multiplexing. Applied real safe-area-inset padding to top boundaries to perfectly merge the screen real-estate safely.
+  - *Bug Fix:* Intercepted and solved the horizontal swiping bug on iPad Slide Over configurations. Overhauled the mobile navigation bar layout algorithms to intelligently scale and shrink beneath the tight constraint of 320px bounding box edges.
 
 - **v8.4.3 (2026-06-05):** iOS PWA Engine Polish.
   - *UI/UX:* Embedded dynamic `<meta name="theme-color">` mutations mapped precisely to the active aesthetic theme (`daylight`, `warm`, `candy`, etc.). This gracefully merges the persistent iOS top status bar into the designated theme background and eliminates the intrusive rigid black rendering bug.

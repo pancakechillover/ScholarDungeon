@@ -487,18 +487,25 @@ function App() {
       }
     }
     
-    // Dynamically update theme-color meta tag for PWA status bar
+    // Dynamically update theme-color meta tag for PWA status bar with raw HEX colors (iOS parses rgb poorly)
     setTimeout(() => {
-      const bgColor = getComputedStyle(document.body).getPropertyValue('background-color');
-      if (bgColor) {
-        let metaThemeColor = document.querySelector('meta[name="theme-color"]');
-        if (!metaThemeColor) {
-          metaThemeColor = document.createElement('meta');
-          metaThemeColor.setAttribute('name', 'theme-color');
-          document.head.appendChild(metaThemeColor);
-        }
-        metaThemeColor.setAttribute('content', bgColor);
+      const themeColors: Record<string, string> = {
+        night: '#020617',
+        forest: '#022c22',
+        ocean: '#083344',
+        daylight: '#f8fafc',
+        warm: '#fffbeb',
+        candy: '#fdf2f8',
+      };
+      const hexColor = themeColors[state.theme] || '#020617';
+      
+      let metaThemeColor = document.querySelector('meta[name="theme-color"]');
+      if (!metaThemeColor) {
+        metaThemeColor = document.createElement('meta');
+        metaThemeColor.setAttribute('name', 'theme-color');
+        document.head.appendChild(metaThemeColor);
       }
+      metaThemeColor.setAttribute('content', hexColor);
     }, 50);
   }, [state.theme, pipWindow]);
 
@@ -1046,11 +1053,11 @@ function App() {
 
       <UpdateChecker />
 
-      <div className="min-h-[100dvh] bg-slate-950 text-slate-200 font-sans selection:bg-indigo-500/30 overflow-x-hidden">
+      <div className="min-h-[100dvh] w-full max-w-full bg-slate-950 text-slate-200 font-sans selection:bg-indigo-500/30 overflow-x-hidden relative">
       {/* Sidebar Navigation - Hidden on mobile, visible on tablet/desktop */}
       {!isFullscreenExplore && (
         <nav className={cn(
-          "hidden md:flex fixed left-0 top-0 h-[100dvh] bg-slate-900 border-r border-slate-800 z-[70] flex-col transition-all duration-300",
+          "hidden md:flex fixed left-0 top-0 h-[100dvh] bg-slate-900 border-r border-slate-800 z-[70] flex-col transition-all duration-300 pt-[env(safe-area-inset-top)]",
           isSidebarCollapsed ? "w-20" : "w-64"
         )}>
         <div className={cn(
@@ -1127,7 +1134,10 @@ function App() {
         isFullscreenExplore ? "m-0 p-0" : (isSidebarCollapsed ? "md:ml-20" : "md:ml-64")
       )}>
         {!isFullscreenExplore && (
-          <header className="sticky top-0 z-40 bg-slate-950/80 backdrop-blur-md border-b border-slate-800 px-3 sm:px-8 py-2.5 flex items-center justify-between gap-2">
+          <header className={cn(
+            "sticky top-0 z-40 backdrop-blur-md border-b px-3 sm:px-8 py-2.5 pt-[calc(0.625rem+env(safe-area-inset-top))] flex items-center justify-between gap-2",
+            ['night', 'forest', 'ocean'].includes(state.theme) ? "bg-slate-950/80 border-slate-800" : "bg-white/80 border-slate-200"
+          )}>
           {/* Top Bar Left Content */}
           <div className="hidden lg:flex items-center">
             {/* Title removed for cleaner UI */}
@@ -1901,7 +1911,7 @@ function MobileNavItem({ active, onClick, icon, label, showDot }: { active: bool
     <button
       onClick={onClick}
       className={cn(
-        "flex flex-col items-center justify-center w-14 h-12 rounded-2xl transition-all relative group",
+        "flex flex-col items-center justify-center flex-1 max-w-[56px] min-w-0 sm:min-w-[40px] px-0.5 sm:px-1 h-12 rounded-2xl transition-all relative group",
         active ? "text-indigo-400 bg-indigo-500/10" : "text-slate-500 hover:text-slate-300"
       )}
     >

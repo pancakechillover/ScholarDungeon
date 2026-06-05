@@ -426,7 +426,7 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
 
       <div className={cn(
         "w-full flex-1 min-h-0",
-        isFullscreenExplore ? "flex items-center justify-center w-full h-full" : "px-4 sm:px-6 lg:px-8"
+        isFullscreenExplore ? "flex items-center justify-center w-full h-full pt-[env(safe-area-inset-top)]" : "px-4 sm:px-6 lg:px-8"
       )}>
         <div className={cn(
           "w-full h-full",

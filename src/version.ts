@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v8.4.3';
+export const APP_VERSION = 'v8.4.5';
 export const LAST_UPDATE_DATE = '2026-06-05';
-export const LAST_UPDATE_TIME = '02:45:00';
+export const LAST_UPDATE_TIME = '03:45:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,27 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v8.4.5',
+    date: '2026-06-05',
+    time: '03:45:00',
+    title: 'iOS PWA UX & Background Notice Sync',
+    items: [
+      { category: 'UI/UX', description: 'Rebased JS-driven dynamic theme-color injections to export raw HEX coordinates cleanly, resolving an issue where the iPad native Slide-Over indicator handle rendered as an abrupt black bar under light themes.' },
+      { category: 'UI/UX', description: 'Refactored sticky header translucent opacities to execute natively without requiring color-mix compilation, matching visual themes accurately on older Safari clients.' },
+      { category: 'Bug Fix', description: 'Compacted Flex geometries within the mobile bottom navigation. Scaled boundaries from 40px down to gracefully fluid intervals, completely arresting any horizontal clipping behavior native to 320px Slide-Over environments.' }
+    ]
+  },
+  {
+    version: 'v8.4.4',
+    date: '2026-06-05',
+    time: '03:25:00',
+    title: 'iOS PWA Deep Immersion (Slide Over)',
+    items: [
+      { category: 'UI/UX', description: 'Activated black-translucent status bar properties for PWAs to completely eliminate invasive system-generated top background bounding boxes. Merged the safe-area dynamically.' },
+      { category: 'Bug Fix', description: 'Overhauled the logic governing the mobile bottom navbar to flex naturally within iPad Slide Over configurations, permanently eradicating the horizontal scrolling bug.' }
+    ]
+  },
   {
     version: 'v8.4.3',
     date: '2026-06-05',
