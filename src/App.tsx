@@ -1772,6 +1772,7 @@ function App() {
               isVerifying={isVerifying}
               syncError={syncError}
               syncCheckResult={syncCheckResult}
+              syncProvider={state.syncProvider}
               onConnect={fetchFromCloud}
               onResolveConflict={resolveConflict}
               onCancelConnect={(code) => {

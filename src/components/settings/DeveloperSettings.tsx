@@ -37,6 +37,18 @@ export const DeveloperSettings: React.FC<DeveloperSettingsProps> = ({
   }>({ isOpen: false, title: '', message: '' });
 
   const handleTestNotification = async () => {
+    if (!state.isRedisUnlocked) {
+      setModalConfig({
+        isOpen: true,
+        title: "Developer Access Required",
+        message: "You need to unlock Developer Access in the Data Management section.",
+        confirmText: "Got it",
+        type: "warning",
+        isAlert: true
+      });
+      return;
+    }
+
     if (!state.secretCode) {
       setModalConfig({
         isOpen: true,

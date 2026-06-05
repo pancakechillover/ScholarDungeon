@@ -67,6 +67,51 @@ app.use((req, res, next) => {
   next();
 });
 
+// Stats API Route
+app.get("/api/stats", async (req, res) => {
+  try {
+    const client = await getRedisClient();
+    if (!client) return res.json({ users: 0, maxUsers: 300, teams: 0, maxTeams: 50 });
+
+    const fifteenDaysAgoMs = Date.now() - 15 * 24 * 3600 * 1000;
+    
+    // Prune Expired Users
+    const expiredUsers = await client.zRangeByScore('scholar_active_users', 0, fifteenDaysAgoMs);
+    if (expiredUsers.length > 0) {
+      for (const user of expiredUsers) {
+        await client.del(`scholar_sync_${user}`);
+        await client.del(`scholar_push_subs_${user}`);
+        await client.del(`scholar_push_sub_${user}`); // legacy
+      }
+      await client.zRemRangeByScore('scholar_active_users', 0, fifteenDaysAgoMs);
+      console.log(`Cleaned up ${expiredUsers.length} inactive users.`);
+    }
+
+    // Prune Expired Teams
+    const expiredTeams = await client.zRangeByScore('scholar_active_teams', 0, fifteenDaysAgoMs);
+    if (expiredTeams.length > 0) {
+      for (const team of expiredTeams) {
+        await client.del(`scholar_team:${team}`);
+        await client.del(`scholar_team:${team}:members`);
+        await client.del(`scholar_team:${team}:messages`);
+        await client.del(`scholar_team:${team}:events`);
+        await client.del(`scholar_team:${team}:proposal`);
+        await client.del(`scholar_team:${team}:applicants`);
+      }
+      await client.zRemRangeByScore('scholar_active_teams', 0, fifteenDaysAgoMs);
+      console.log(`Cleaned up ${expiredTeams.length} inactive guilds.`);
+    }
+
+    const userCount = await client.zCard('scholar_active_users') || 0;
+    const teamCount = await client.zCard('scholar_active_teams') || 0;
+
+    res.json({ users: userCount, maxUsers: 300, teams: teamCount, maxTeams: 50 });
+  } catch (error: any) {
+    console.error("Stats API error:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Sync API Handler
 const syncHandler = async (req: express.Request, res: express.Response) => {
   try {
@@ -77,6 +122,24 @@ const syncHandler = async (req: express.Request, res: express.Response) => {
     if (!client) return res.status(500).json({ error: "Cloud sync is not configured." });
 
     const key = `scholar_sync_${secretCode}`;
+    
+    // Prune expired BEFORE check
+    const fifteenDaysAgoMs = Date.now() - 15 * 24 * 3600 * 1000;
+    await client.zRemRangeByScore('scholar_active_users', 0, fifteenDaysAgoMs);
+
+    // Track user active
+    await client.zAdd('scholar_active_users', { score: Date.now(), value: secretCode });
+
+    // Enforce 300 users limit
+    const userCount = await client.zCard('scholar_active_users');
+    if (userCount > 300) {
+      const rank = await client.zRank('scholar_active_users', secretCode);
+      if (rank >= 300) {
+        await client.zRem('scholar_active_users', secretCode);
+        return res.status(403).json({ error: "Capacity Full: Multi-device sync is capped at 300 registered users in the free tier quota. Try again later when inactive slots clear up." });
+      }
+    }
+
     const cloudDataRaw = await client.get(key);
     const cloudData = cloudDataRaw ? JSON.parse(cloudDataRaw.toString()) : null;
 

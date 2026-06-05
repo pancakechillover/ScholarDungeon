@@ -23,9 +23,9 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v8.6.3
+- **Current Version:** v8.6.6
 - **Last Update Date:** 2026-06-05
-- **Last Update Time:** 09:47:00
+- **Last Update Time:** 11:45:00
 
 ## Dark Themes Definition
 The following themes are considered "Dark Themes" and form the baseline for vibrant visual effects and high-contrast glowing elements:
@@ -50,6 +50,21 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v8.6.6 (2026-06-05):** Unified Modal System & Dialog Overhaul.
+  - *UI/UX:* Systematically eradicated all native browser `window.alert` and `window.confirm` dialogues across the application.
+  - *Feature:* Implemented a unified `ConfirmModal` utilizing `createPortal`, injecting robust, high-contrast, theme-aware custom dialog components into settings, guild management, CSS debugging, and daily session screens.
+  - *Bug Fix:* Resolved a visual mismatch in `CloudSyncModal` where disconnected WebDAV and Google Drive strategies incorrectly persisted Redis-style password input fields.
+
+- **v8.6.5 (2026-06-05):** Cloud Backend Global Restrictions / Invite Locks.
+  - *Architecture:* Redefined the `isRedisUnlocked` permission mechanism as an absolute, global gatekeeper against all Cloud Backend operations to strictly preserve the backend free-tier integrity.
+  - *Feature:* Added synchronous locked state walls that actively block automatic Redis polling (`checkCloudSync`), manual Push Notification syncing, scheduling tests in Developer Mode, and WebDAV proxy triggers directly on the client side unless the global Invite Code (derived `NjkwNTE4MDU=`) has been verified. 
+  - *UI/UX:* Replaced the primary Sanctum Plaza (Fellowship Network) with an aesthetic "Sanctum Plaza Locked" screen requiring a developer access invite code prior to granting any entry. Updated all related settings modules with transparent warnings ensuring users comprehend these limitations.
+
+- **v8.6.4 (2026-06-05):** Cloud Backend Quota Protection & Storage Optimization.
+  - *Architecture:* Implemented strict capacity limits for free tier Redis backend: automatically capped total remote active synced users to 300 and total guilds (fellowships) to 50.
+  - *Feature:* Engineered continuous background garbage collection API (`/api/stats`) bound to Settings menus to intelligently prune ghost accounts and disbanded guilds that have been structurally inactive for over 15 consecutive days, seamlessly freeing up remote slots.
+  - *UI/UX:* Upgraded the remote unlock modal to dynamically fetch and display absolute active capacity stats of both Users and Guilds. Added transparent explanations to users regarding automatic inactive account purging to prevent ghost capacity overflow.
 
 - **v8.6.3 (2026-06-05):** Data Management Privacy Enhancements.
   - *Feature:* Safe Export now completely scrubs all user identity fields including unique ID, custom avatar, and titles to ensure absolute privacy during data sharing.

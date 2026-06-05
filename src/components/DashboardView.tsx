@@ -39,6 +39,7 @@ import { playSound } from '../lib/sound';
 import { getSageAdvice } from '../services/sageService';
 import { cn } from '../lib/utils';
 import { ExpeditionPlanPreview } from './ExpeditionPlanPreview';
+import { ConfirmModal } from './ConfirmModal';
 
 interface DashboardViewProps {
   state: AppState;
@@ -403,6 +404,18 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
   const [editingTitle, setEditingTitle] = React.useState('');
   const scrollRef = React.useRef<HTMLDivElement>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
+  
+  const [confirmDialog, setConfirmDialog] = React.useState<{
+    isOpen: boolean; title: string; message: string; type?: 'danger'|'warning'|'info'; isAlert?: boolean; onConfirm?: () => void;
+  }>({ isOpen: false, title: '', message: '' });
+
+  const customAlert = (message: string, title = 'Notification') => {
+    setConfirmDialog({ isOpen: true, title, message, isAlert: true, type: 'info' });
+  };
+
+  const customConfirm = (message: string, onConfirm: () => void, title = 'Confirm', type: 'danger' | 'warning' | 'info' = 'warning') => {
+    setConfirmDialog({ isOpen: true, title, message, isAlert: false, type, onConfirm });
+  };
 
   // Initialize conversations if empty, using legacy history if it exists
   React.useEffect(() => {
@@ -626,7 +639,7 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
   };
 
   const clearHistory = () => {
-    if (confirm("Are you sure you want to clear this entire conversation?")) {
+    customConfirm("Are you sure you want to clear this entire conversation?", () => {
       setState(prev => {
         const convos = prev.sageConversations || [];
         return {
@@ -636,7 +649,7 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
           )
         };
       });
-    }
+    }, "Clear Conversation", "danger");
   };
 
   const handleCopy = (text: string, id: string) => {
@@ -940,7 +953,7 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
                                     ...(parsedSettings.devBaseXP !== undefined && { devBaseXP: parsedSettings.devBaseXP }),
                                     ...(parsedSettings.devBaseCoins !== undefined && { devBaseCoins: parsedSettings.devBaseCoins })
                                   }));
-                                  alert("Balance settings updated!");
+                                  customAlert("Balance settings updated!", "Success");
                                 }}
                                 className="px-4 py-2 mt-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold"
                               >
@@ -1133,6 +1146,15 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
         </div>
         </div>
       </motion.div>
+      <ConfirmModal
+        isOpen={confirmDialog.isOpen}
+        onClose={() => setConfirmDialog(d => ({ ...d, isOpen: false }))}
+        onConfirm={confirmDialog.onConfirm}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        type={confirmDialog.type}
+        isAlert={confirmDialog.isAlert}
+      />
     </div>
   );
 };

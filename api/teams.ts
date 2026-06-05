@@ -58,6 +58,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const userTitle = req.body?.userTitle || decodeHeader(req.headers['x-user-title']) || req.query?.userTitle || '';
     const userLevel = parseInt((req.body?.userLevel || req.headers['x-user-level'] || req.query?.userLevel || '1') as string, 10);
 
+    // Wait, let's just make sure client.zAdd gets called on every request that targets a teamId.
+    if (req.query.id || req.body?.teamId) {
+       const targetTeamId = req.query.id || req.body?.teamId;
+       await client.zAdd('scholar_active_teams', { score: Date.now(), value: targetTeamId as string });
+    }
+
     // GET: List all teams (Lobby)
     if (method === 'GET' && !req.query.id) {
        const keys = await client.keys('scholar_team:*');
@@ -155,6 +161,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // POST: Create a team
     if (method === 'POST' && action === 'create') {
+       const fifteenDaysAgoMs = Date.now() - 15 * 24 * 3600 * 1000;
+       await client.zRemRangeByScore('scholar_active_teams', 0, fifteenDaysAgoMs);
+       const teamCount = await client.zCard('scholar_active_teams');
+       if (teamCount >= 50) {
+          return res.status(403).json({ error: 'Capacity Full: Guild system is capped at 50 guilds in the free tier quota. Try again later when inactive guilds clear up.' });
+       }
+
        const { name, description, config } = req.body;
        if (!name) return res.status(400).json({ error: 'Name required' });
        

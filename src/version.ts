@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v8.6.3';
+export const APP_VERSION = 'v8.6.6';
 export const LAST_UPDATE_DATE = '2026-06-05';
-export const LAST_UPDATE_TIME = '09:47:00';
+export const LAST_UPDATE_TIME = '11:45:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,39 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v8.6.6',
+    date: '2026-06-05',
+    time: '11:45:00',
+    title: 'Unified Modal System & Dialog Overhaul',
+    items: [
+      { category: 'UI/UX', description: 'Systematically eradicated all native browser window.alert and window.confirm dialogues across the application.' },
+      { category: 'Feature', description: 'Implemented a unified ConfirmModal utilizing createPortal, injecting robust, high-contrast custom dialog components into settings and active guild workflows.' },
+      { category: 'Bug Fix', description: 'Resolved a visual state mismatch in CloudSyncModal where disconnected WebDAV and Google strategies incorrectly persisted Redis-style password credentials boxes.' }
+    ]
+  },
+  {
+    version: 'v8.6.5',
+    date: '2026-06-05',
+    time: '10:20:00',
+    title: 'Cloud Backend Global Restrictions & Invite Locks',
+    items: [
+      { category: 'Architecture', description: 'Redefined the isRedisUnlocked permission mechanism as an absolute, global gatekeeper against all Cloud Backend operations.' },
+      { category: 'Feature', description: 'Added synchronous locked state walls blocking automatic Redis polling, push notification manual saves, WebDAV proxy, and Developer mode push tests unless the global Invite Code is verified.' },
+      { category: 'UI/UX', description: 'Replaced the primary Sanctum Plaza (Fellowship Interface) with a secure Locked Screen requiring a developer access invite code prior to granting any entry.' }
+    ]
+  },
+  {
+    version: 'v8.6.4',
+    date: '2026-06-05',
+    time: '10:08:00',
+    title: 'Cloud Quota Protection & Storage Optimization',
+    items: [
+      { category: 'Architecture', description: 'Implemented strict capacity limits for free tier Redis backend: automatically capped total remote active synced users to 300 and total guilds (fellowships) to 50.' },
+      { category: 'Feature', description: 'Engineered continuous background garbage collection API (/api/stats) bound to Settings menus to intelligently prune ghost accounts and disbanded guilds.' },
+      { category: 'UI/UX', description: 'Upgraded the remote unlock modal to dynamically fetch and display absolute active capacity stats of both Users and Guilds with transparent explanations.' }
+    ]
+  },
   {
     version: 'v8.6.3',
     date: '2026-06-05',

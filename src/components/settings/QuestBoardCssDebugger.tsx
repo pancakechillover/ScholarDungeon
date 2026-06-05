@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, CheckCircle2, Clock, Target, Coins, Zap, Gift, Square, CheckSquare, Copy, Pin, Plus } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { ConfirmModal } from '../ConfirmModal';
 
 interface QuestBoardCssDebuggerProps {
   onClose: () => void;
@@ -55,6 +56,13 @@ export const QuestBoardCssDebugger: React.FC<QuestBoardCssDebuggerProps> = ({ on
   });
 
   const [copied, setCopied] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean; title: string; message: string; type?: 'danger'|'warning'|'info'; isAlert?: boolean; onConfirm?: () => void;
+  }>({ isOpen: false, title: '', message: '' });
+
+  const customConfirm = (message: string, onConfirm: () => void, title = 'Confirm', type: 'danger' | 'warning' | 'info' = 'warning') => {
+    setConfirmDialog({ isOpen: true, title, message, isAlert: false, type, onConfirm });
+  };
 
   // Re-generate CSS string whenever color overrides change
   useEffect(() => {
@@ -130,7 +138,7 @@ export const QuestBoardCssDebugger: React.FC<QuestBoardCssDebuggerProps> = ({ on
   const currentVars = colorOverrides[activeThemeId] || {};
   const [realisticMode, setRealisticMode] = useState(false);
 
-  return createPortal(
+  const modalContent = createPortal(
     <div className="fixed inset-0 z-[9999] bg-slate-950 flex items-center justify-center p-2 sm:p-4">
       <div className="bg-slate-900 border border-slate-700/50 rounded-[2rem] w-full h-full max-w-none flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
         {/* Header */}
@@ -362,9 +370,9 @@ export const QuestBoardCssDebugger: React.FC<QuestBoardCssDebuggerProps> = ({ on
               </div>
               <button 
                 onClick={() => {
-                  if (confirm(`Reset all colors for ${activeTheme.name}?`)) {
+                  customConfirm(`Reset all colors for ${activeTheme.name}?`, () => {
                     setColorOverrides(prev => ({ ...prev, [activeThemeId]: {} }));
-                  }
+                  }, "Reset Colors", "danger");
                 }}
                 className="px-6 py-2.5 bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border border-rose-500/20 active:scale-95 shrink-0"
               >
@@ -446,6 +454,21 @@ export const QuestBoardCssDebugger: React.FC<QuestBoardCssDebuggerProps> = ({ on
       </div>
     </div>,
     document.body
+  );
+
+  return (
+    <>
+      {modalContent}
+      <ConfirmModal
+        isOpen={confirmDialog.isOpen}
+        onClose={() => setConfirmDialog(d => ({ ...d, isOpen: false }))}
+        onConfirm={confirmDialog.onConfirm}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        type={confirmDialog.type}
+        isAlert={confirmDialog.isAlert}
+      />
+    </>
   );
 };
 

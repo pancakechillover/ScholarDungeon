@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Cloud, Server, HardDrive, CheckCircle2, ChevronRight, Settings, Lock, X, History, ArrowDownUp, RefreshCw, LogIn, Trash2, ShieldBan, Eye, Search, UploadCloud, DownloadCloud, Download, Laptop, Monitor, Smartphone, Tablet, Copy, Key, WifiOff, Users } from 'lucide-react';
 import { AppState } from '../../types';
 import { cn, getDeviceCode } from '../../lib/utils';
+import { ConfirmModal } from '../ConfirmModal';
 
 interface CloudSettingsSectionProps {
   state: AppState;
@@ -32,6 +33,23 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
   const [unlockPassword, setUnlockPassword] = useState('');
   const [unlockError, setUnlockError] = useState(false);
   const [isOnline, setIsOnline] = useState(typeof window !== 'undefined' ? window.navigator.onLine : true);
+  const [stats, setStats] = useState<{ users: number, maxUsers: number, teams: number, maxTeams: number } | null>(null);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean; title: string; message: string; type?: 'danger'|'warning'|'info'; isAlert?: boolean; onConfirm?: () => void;
+  }>({ isOpen: false, title: '', message: '' });
+
+  const customAlert = (message: string, title = 'Notification') => {
+    setConfirmDialog({ isOpen: true, title, message, isAlert: true, type: 'info' });
+  };
+
+  useEffect(() => {
+    fetch('/api/stats')
+      .then(r => r.json())
+      .then(data => {
+         if (!data.error) setStats(data);
+      })
+      .catch(e => console.error("Could not fetch stats", e));
+  }, []);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -100,11 +118,11 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
       );
 
       if (!authWindow) {
-        alert('Please allow popups for this site to connect your Google Drive account.');
+        customAlert('Please allow popups for this site to connect your Google Drive account.', 'Popup Blocked');
       }
     } catch (error) {
       console.error('OAuth error:', error);
-      alert('Failed to connect to Google Drive.');
+      customAlert('Failed to connect to Google Drive.', 'OAuth Error');
     }
   };
 
@@ -125,7 +143,7 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
 
   const handleUnlock = async () => {
     if (unlockTarget === 'redis') {
-      if (btoa(unlockPassword) === 'OTAwMTk5NjE5NTIw') {
+      if (btoa(unlockPassword) === 'NjkwNTE4MDU=') {
         setState(s => ({ ...s, isRedisUnlocked: true }));
         setShowUnlockModal(false);
         setUnlockTarget(null);
@@ -432,7 +450,7 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
                 <button 
                   onClick={() => {
                     navigator.clipboard.writeText(state.teamId || '');
-                    alert('Guild Key copied to clipboard!');
+                    customAlert('Guild Key copied to clipboard!', 'Success');
                   }}
                   className="p-2 text-slate-500 hover:text-indigo-400 transition-colors"
                   title="Copy Guild Key"
@@ -481,6 +499,22 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
               <h5 className="font-bold text-slate-200 mb-1">Redis Backend</h5>
               <p className="text-xs text-slate-400 leading-relaxed min-h-[3rem]">
                 The Astral Archives. High-speed custom cloud server using short secret codes.
+                {stats && (
+                  <span className="block mt-2 flex items-center gap-4 text-[10px] font-mono border-t border-slate-700/50 pt-2">
+                     <span className="flex flex-col">
+                       <span className="text-slate-500 uppercase">Users</span>
+                       <span className={cn("font-bold", stats.users >= stats.maxUsers ? "text-rose-400" : "text-emerald-400")}>
+                         {stats.users} / {stats.maxUsers}
+                       </span>
+                     </span>
+                     <span className="flex flex-col">
+                       <span className="text-slate-500 uppercase">Guilds</span>
+                       <span className={cn("font-bold", stats.teams >= stats.maxTeams ? "text-rose-400" : "text-emerald-400")}>
+                         {stats.teams} / {stats.maxTeams}
+                       </span>
+                     </span>
+                  </span>
+                )}
               </p>
             </div>
             <div className="flex items-center justify-between text-xs font-bold text-indigo-400 opacity-80 group-hover:opacity-100 transition-opacity pt-2">
@@ -926,9 +960,9 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
                     <Lock size={24} />
                   </div>
                   <h3 className="text-lg font-black text-white uppercase tracking-widest mb-2">Developer Access</h3>
-                  <p className="text-xs text-slate-400 leading-relaxed max-w-xs">
+                  <p className="text-[10px] text-slate-400 leading-relaxed max-w-xs">
                     {unlockTarget === 'redis' 
-                      ? 'Due to storage limitations, Redis sync is restricted to developers and invited testers. Please enter the pre-configured access code to enable it.'
+                      ? 'To stay within free tier quotas, maximum registered users is capped at 300 and guilds at 50. To prevent capacity overflow, inactive accounts and guilds (15 consecutive days of inactivity) will be automatically pruned from the cloud (local data is unaffected). Please enter the tester access code to proceed.'
                       : 'Google Drive Auth is currently restricted to approved internal testers only due to pending Google Verification. Please enter the test password to proceed.'
                     }
                   </p>
@@ -963,6 +997,16 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
           </div>
         </div>
       , document.body)}
+      
+      <ConfirmModal
+        isOpen={confirmDialog.isOpen}
+        onClose={() => setConfirmDialog(d => ({ ...d, isOpen: false }))}
+        onConfirm={confirmDialog.onConfirm}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        type={confirmDialog.type}
+        isAlert={confirmDialog.isAlert}
+      />
     </>
   );
 };

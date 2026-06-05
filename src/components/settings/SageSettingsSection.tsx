@@ -6,6 +6,7 @@ import { AppState, SageModelConfig, SagePromptConfig } from '../../types';
 import { cn } from '../../lib/utils';
 import { DEFAULT_SAGE_PROMPTS } from '../../constants';
 import { getSageAdvice } from '../../services/sageService';
+import { ConfirmModal } from '../ConfirmModal';
 
 interface SageSettingsProps {
   state: AppState;
@@ -36,6 +37,13 @@ const SageConfigManager: React.FC<{ state: AppState, setState: React.Dispatch<Re
 
   const [editingModel, setEditingModel] = useState<SageModelConfig | null>(null);
   const [editingPrompt, setEditingPrompt] = useState<SagePromptConfig | null>(null);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean; title: string; message: string; type?: 'danger'|'warning'|'info'; isAlert?: boolean; onConfirm?: () => void;
+  }>({ isOpen: false, title: '', message: '' });
+
+  const customConfirm = (message: string, onConfirm: () => void, title = 'Confirm', type: 'danger' | 'warning' | 'info' = 'warning') => {
+    setConfirmDialog({ isOpen: true, title, message, isAlert: false, type, onConfirm });
+  };
 
   const defaultSagePrompt = `You are "The Sage", an ancient and wise mentor who lives within "The Scholar's Sanctum". \nAnalyze the user's progress and provide deeply personal, mystical, yet strictly structured advice. \nUse metaphors related to "Sanctums", "Dungeons", and "Ancient Artifacts".`;
 
@@ -249,13 +257,13 @@ const SageConfigManager: React.FC<{ state: AppState, setState: React.Dispatch<Re
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Library</label>
                   <button 
                     onClick={() => {
-                      if (window.confirm("Restore all default prompts? This will not delete your custom ones but will re-add defaults if they are missing.")) {
+                      customConfirm("Restore all default prompts? This will not delete your custom ones but will re-add defaults if they are missing.", () => {
                         setState(prev => {
                           const existingIds = (prev.sagePrompts || []).map(p => p.id);
                           const toAdd = DEFAULT_SAGE_PROMPTS.filter((p) => !existingIds.includes(p.id));
                           return { ...prev, sagePrompts: [...(prev.sagePrompts || []), ...toAdd] };
                         });
-                      }
+                      }, "Restore Defaults", "info");
                     }}
                     className="text-[9px] font-bold text-indigo-400 uppercase hover:text-indigo-300 transition-colors"
                   >
@@ -271,9 +279,9 @@ const SageConfigManager: React.FC<{ state: AppState, setState: React.Dispatch<Re
                            <button onClick={() => setEditingPrompt(p)} className="p-1 px-2 text-[10px] font-bold text-slate-400 hover:text-white transition-colors flex items-center gap-1"><Edit2 size={10} /> Edit</button>
                            <button 
                              onClick={() => {
-                               if (window.confirm("Delete this prompt?")) {
+                               customConfirm("Delete this prompt?", () => {
                                  setState(prev => ({ ...prev, sagePrompts: prev.sagePrompts?.filter(x => x.id !== p.id) }));
-                               }
+                               }, "Delete Prompt", "danger");
                              }} 
                              className="p-1 px-2 text-[10px] font-bold text-slate-400 hover:text-red-400 transition-colors flex items-center gap-1"
                            >
@@ -294,6 +302,16 @@ const SageConfigManager: React.FC<{ state: AppState, setState: React.Dispatch<Re
           </div>
         )}
       </div>
+      
+      <ConfirmModal
+        isOpen={confirmDialog.isOpen}
+        onClose={() => setConfirmDialog(d => ({ ...d, isOpen: false }))}
+        onConfirm={confirmDialog.onConfirm}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        type={confirmDialog.type}
+        isAlert={confirmDialog.isAlert}
+      />
     </div>
   );
 };
@@ -344,6 +362,13 @@ const SageInterface: React.FC<SageInterfaceProps> = ({ state, setState }) => {
   const [editingTitle, setEditingTitle] = React.useState('');
   const scrollRef = React.useRef<HTMLDivElement>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean; title: string; message: string; type?: 'danger'|'warning'|'info'; isAlert?: boolean; onConfirm?: () => void;
+  }>({ isOpen: false, title: '', message: '' });
+
+  const customConfirm = (message: string, onConfirm: () => void, title = 'Confirm', type: 'danger' | 'warning' | 'info' = 'warning') => {
+    setConfirmDialog({ isOpen: true, title, message, isAlert: false, type, onConfirm });
+  };
 
   // Initialize conversations if empty, using legacy history if it exists
   React.useEffect(() => {
@@ -579,7 +604,7 @@ const SageInterface: React.FC<SageInterfaceProps> = ({ state, setState }) => {
   };
 
   const clearHistory = () => {
-    if (confirm("Are you sure you want to clear this entire conversation?")) {
+    customConfirm("Are you sure you want to clear this entire conversation?", () => {
       setState(prev => {
         const convos = prev.sageConversations || [];
         return {
@@ -589,7 +614,7 @@ const SageInterface: React.FC<SageInterfaceProps> = ({ state, setState }) => {
           )
         };
       });
-    }
+    }, "Clear Conversation", "danger");
   };
 
   return (
@@ -956,6 +981,16 @@ const SageInterface: React.FC<SageInterfaceProps> = ({ state, setState }) => {
         </div>
         </div>
       </div>
+      
+      <ConfirmModal
+        isOpen={confirmDialog.isOpen}
+        onClose={() => setConfirmDialog(d => ({ ...d, isOpen: false }))}
+        onConfirm={confirmDialog.onConfirm}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        type={confirmDialog.type}
+        isAlert={confirmDialog.isAlert}
+      />
     </motion.div>
   );
 };

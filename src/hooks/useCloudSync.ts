@@ -91,9 +91,9 @@ export function useCloudSync(
     const currentState = specificState || state;
     const isGoogleDrive = currentState.syncProvider === 'Google Drive';
     const isWebDav = currentState.syncProvider === 'WebDAV';
-    if (!isGoogleDrive && !isWebDav && !currentState.secretCode) return;
+    if (!isGoogleDrive && !isWebDav && (!currentState.secretCode || !currentState.isRedisUnlocked)) return;
     if (isGoogleDrive && !currentState.googleDriveTokens) return;
-    if (isWebDav && (!currentState.webdavSettings || !currentState.webdavSettings.url)) return;
+    if (isWebDav && (!currentState.webdavSettings || !currentState.webdavSettings.url || !currentState.isRedisUnlocked)) return;
 
     // Prevent overlapping during active verification
     if (isVerifying) return;
@@ -642,9 +642,9 @@ export function useCloudSync(
     const isGoogleDrive = state.syncProvider === 'Google Drive';
     const isWebDav = state.syncProvider === 'WebDAV';
 
-    if (!isGoogleDrive && !isWebDav && !state.secretCode) return;
+    if (!isGoogleDrive && !isWebDav && (!state.secretCode || !state.isRedisUnlocked)) return;
     if (isGoogleDrive && !state.googleDriveTokens) return;
-    if (isWebDav && (!state.webdavSettings || !state.webdavSettings.url)) return;
+    if (isWebDav && (!state.webdavSettings || !state.webdavSettings.url || !state.isRedisUnlocked)) return;
 
     // Prevent overlapping sync operations
     if (isSyncing || isVerifying) return;

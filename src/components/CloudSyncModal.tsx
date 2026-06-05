@@ -35,6 +35,7 @@ interface CloudSyncModalProps {
   }[];
   localState?: any;
   isVerifying?: boolean;
+  syncProvider?: 'Redis' | 'Google Drive' | 'WebDAV';
 }
 
 // Phrase cycling for sync overlay
@@ -118,7 +119,8 @@ export function CloudSyncModal({
   onVerify,
   onCancelSync,
   syncHistory,
-  localState
+  localState,
+  syncProvider = 'Redis'
 }: CloudSyncModalProps) {
   const [inputCode, setInputCode] = useState(secretCode || '');
   const [showHelp, setShowHelp] = useState(false);
@@ -360,7 +362,7 @@ export function CloudSyncModal({
               <div className="p-2 bg-indigo-500/20 rounded-xl">
                 <Cloud className="text-indigo-400" size={24} />
               </div>
-              The Astral Archives
+              {syncProvider === 'Google Drive' ? 'Google Drive Sync' : syncProvider === 'WebDAV' ? 'WebDAV Sync' : 'The Astral Archives'}
               <div className="flex items-center gap-1">
                 <button 
                   onClick={() => {
@@ -869,51 +871,53 @@ export function CloudSyncModal({
               </div>
             ) : (
               <>
-                <div className="space-y-2">
-                  <div className="relative">
-                    <input 
-                      type={showPassword ? "text" : "password"}
-                      value={inputCode}
-                      onChange={handleInputChange}
-                      placeholder="Enter 6-12 char code"
-                      className="w-full bg-slate-950/50 border-b-2 border-slate-800 py-4 px-4 pr-12 text-center text-lg text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-indigo-500 transition-all font-medium tracking-widest"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
-                    >
-                      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                    </button>
-                  </div>
-                  
-                  {!secretCode && (
-                    <div className="flex gap-2 mt-2">
+                {syncProvider === 'Redis' && (
+                  <div className="space-y-2">
+                    <div className="relative">
+                      <input 
+                        type={showPassword ? "text" : "password"}
+                        value={inputCode}
+                        onChange={handleInputChange}
+                        placeholder="Enter 6-12 char code"
+                        className="w-full bg-slate-950/50 border-b-2 border-slate-800 py-4 px-4 pr-12 text-center text-lg text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-indigo-500 transition-all font-medium tracking-widest"
+                      />
                       <button
                         type="button"
-                        onClick={generatePassword}
-                        className="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
                       >
-                        <RefreshCw size={14} />
-                        Generate
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (inputCode) {
-                            navigator.clipboard.writeText(inputCode);
-                            setCopied(true);
-                            setTimeout(() => setCopied(false), 2000);
-                          }
-                        }}
-                        className="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2"
-                      >
-                        {copied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
-                        {copied ? 'Copied!' : 'Copy'}
+                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                       </button>
                     </div>
-                  )}
-                </div>
+                    
+                    {!secretCode && (
+                      <div className="flex gap-2 mt-2">
+                        <button
+                          type="button"
+                          onClick={generatePassword}
+                          className="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                        >
+                          <RefreshCw size={14} />
+                          Generate
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (inputCode) {
+                              navigator.clipboard.writeText(inputCode);
+                              setCopied(true);
+                              setTimeout(() => setCopied(false), 2000);
+                            }
+                          }}
+                          className="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                        >
+                          {copied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
+                          {copied ? 'Copied!' : 'Copy'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {enhancedErr && (
                   <div className={`p-4 ${enhancedErr.bg} border ${enhancedErr.border} rounded-2xl space-y-3 shadow-inner`}>
@@ -937,7 +941,7 @@ export function CloudSyncModal({
                 )}
 
                 <div className="pt-4 flex flex-col gap-3">
-                  {!secretCode || secretCode !== inputCode ? (
+                  {(syncProvider === 'Redis' && (!secretCode || secretCode !== inputCode)) ? (
                     <button 
                       onClick={() => onConnect(inputCode)}
                       disabled={!isInputValid || isSyncing}
@@ -956,7 +960,7 @@ export function CloudSyncModal({
                     <>
                       <div className="flex items-center justify-center gap-2 text-emerald-400 bg-emerald-500/10 py-3 rounded-xl border border-emerald-500/20">
                         <Check size={18} />
-                        <span className="text-sm font-bold">Bound to Astral Archives</span>
+                        <span className="text-sm font-bold">Bound to {syncProvider === 'Google Drive' ? 'Google Drive' : syncProvider === 'WebDAV' ? 'WebDAV' : 'Astral Archives'}</span>
                       </div>
                       
                       {onVerify && (

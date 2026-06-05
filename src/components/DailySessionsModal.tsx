@@ -21,6 +21,7 @@ import { cn } from '../lib/utils';
 import { format, parseISO, isSameDay } from 'date-fns';
 import { SpinnerInput } from './SpinnerInput';
 import { createPortal } from 'react-dom';
+import { ConfirmModal } from './ConfirmModal';
 
 interface DailySessionsModalProps {
   isOpen: boolean;
@@ -51,6 +52,13 @@ export const DailySessionsModal: React.FC<DailySessionsModalProps> = ({
 }) => {
   const [editingSession, setEditingSession] = useState<StudySession | null>(null);
   const [viewingRewardName, setViewingRewardName] = useState<string | null>(null);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean; title: string; message: string; type?: 'danger'|'warning'|'info'; isAlert?: boolean; onConfirm?: () => void;
+  }>({ isOpen: false, title: '', message: '' });
+
+  const customConfirm = (message: string, onConfirm: () => void, title = 'Confirm', type: 'danger' | 'warning' | 'info' = 'warning') => {
+    setConfirmDialog({ isOpen: true, title, message, isAlert: false, type, onConfirm });
+  };
 
   const getPeriod = useCallback((timestamp: string) => {
     if (!timeSettings) return { name: 'Other' };
@@ -279,9 +287,9 @@ export const DailySessionsModal: React.FC<DailySessionsModalProps> = ({
                             </button>
                             <button
                               onClick={() => {
-                                if (confirm('Erase this record from time? Progress will be lost.')) {
+                                customConfirm('Erase this record from time? Progress will be lost.', () => {
                                   deleteSession(session.id);
-                                }
+                                }, "Erase Record", "danger");
                               }}
                               className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all"
                             >
@@ -417,10 +425,23 @@ export const DailySessionsModal: React.FC<DailySessionsModalProps> = ({
     </div>
   );
 
-  return createPortal(
-    <AnimatePresence>
-      {isOpen && modalContent}
-    </AnimatePresence>,
-    document.body
+  return (
+    <>
+      {createPortal(
+        <AnimatePresence>
+          {isOpen && modalContent}
+        </AnimatePresence>,
+        document.body
+      )}
+      <ConfirmModal
+        isOpen={confirmDialog.isOpen}
+        onClose={() => setConfirmDialog(d => ({ ...d, isOpen: false }))}
+        onConfirm={confirmDialog.onConfirm}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        type={confirmDialog.type}
+        isAlert={confirmDialog.isAlert}
+      />
+    </>
   );
 };

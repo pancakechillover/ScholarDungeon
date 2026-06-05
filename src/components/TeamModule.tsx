@@ -3,12 +3,13 @@ import { motion, AnimatePresence } from 'motion/react';
 import { createPortal } from 'react-dom';
 import { 
   Users, LogIn, Plus, X, MessageSquare, Activity, Crown, Clock, Target, Check, AlertCircle, RefreshCw, Send, Settings, User, UserCheck, Landmark,
-  Cat, Dog, Ghost, Bot, Skull
+  Cat, Dog, Ghost, Bot, Skull, Lock
 } from 'lucide-react';
 import { AppState, Team, TeamMessage, TeamEvent, TeamMember, TeamSettingProposal } from '../types';
 import { cn, getTitleForLevel } from '../lib/utils';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { ProfileModal } from './ProfileModal';
+import { ConfirmModal } from './ConfirmModal';
 
 interface TeamModuleProps {
   state: AppState;
@@ -54,6 +55,37 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
   const [viewingProfile, setViewingProfile] = useState<string | null>(null);
   const [showPlazaModal, setShowPlazaModal] = useState(false);
   const [showDetailedGoal, setShowDetailedGoal] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    confirmText?: string;
+    type?: 'danger' | 'warning' | 'info';
+    isAlert?: boolean;
+    onConfirm?: () => void;
+  }>({ isOpen: false, title: '', message: '' });
+
+  const customAlert = (message: string, title = 'Notification') => {
+    setConfirmDialog({
+      isOpen: true,
+      title,
+      message,
+      isAlert: true,
+      type: 'info'
+    });
+  };
+
+  const customConfirm = (message: string, onConfirm: () => void, title = 'Confirm', type: 'danger' | 'warning' | 'info' = 'warning', confirmText = 'Confirm') => {
+    setConfirmDialog({
+      isOpen: true,
+      title,
+      message,
+      isAlert: false,
+      type,
+      confirmText,
+      onConfirm
+    });
+  };
 
   const fetchLobby = async () => {
     setLoading(true);
@@ -139,12 +171,12 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
       const data = await res.json();
       if (data.success) {
         if (data.pendingApproval) {
-          alert("Your application request has been submitted to the team captain for approval.");
+          customAlert("Your application request has been submitted to the team captain for approval.", "Application Sent");
         } else {
           setState(s => ({ ...s, teamId: id }));
         }
       } else {
-        alert(data.error || 'Failed to join');
+        customAlert(data.error || 'Failed to join', "Error Joining Guild");
       }
     } catch (e) {
       console.error(e);
@@ -171,7 +203,7 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
       if (data.success) {
         fetchTeam();
       } else {
-        alert(data.error || 'Failed to handle request');
+        customAlert(data.error || 'Failed to handle request', "Error");
       }
     } catch (e) {
       console.error(e);
@@ -232,7 +264,7 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
         })
       });
       const data = await res.json();
-      if (!data.success) alert(data.error || 'Failed to update settings');
+      if (!data.success) customAlert(data.error || 'Failed to update settings', 'Settings Error');
       setShowSettings(false);
       fetchTeam();
     } catch (e) {
@@ -671,6 +703,22 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
     );
   };
 
+  if (!state.isRedisUnlocked) {
+    return (
+      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 relative overflow-hidden group mb-6 text-center">
+        <div className="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center mx-auto mb-4 text-indigo-400">
+          <Lock size={32} />
+        </div>
+        <h2 className="text-xl font-black text-white italic uppercase tracking-tight mb-2">
+          Sanctum Plaza Locked
+        </h2>
+        <p className="text-sm text-slate-400 mb-6 max-w-md mx-auto leading-relaxed">
+          Due to free-tier cloud limits, Fellowship network capabilities are currently restricted to authorized testers via an invite code. You can enter your invite code in the <strong className="text-slate-300">Settings -&gt; Data Management -&gt; Developer Access</strong> to unlock these features.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 relative overflow-hidden group mb-6">
       <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none group-hover:scale-110 transition-transform duration-700">
@@ -692,12 +740,14 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
            onClose={() => setShowSettings(false)} 
            onSave={proposeSettings} 
            isCaptain={team.members.find(x => x.userId === team.myUserId)?.isCaptain}
-           onLeave={async () => {
+           onLeave={() => {
              const isCap = team.members.find(x => x.userId === team.myUserId)?.isCaptain;
              const msg = isCap 
                ? "Are you sure you want to disband this guild? This will remove all members."
                : "Are you sure you want to leave this guild?";
-             if (confirm(msg)) {
+             const title = isCap ? "Disband Guild" : "Leave Guild";
+             
+             customConfirm(msg, async () => {
                 const identityCode = getOrGenerateIdentity();
                 await fetch('/api/teams?action=leave', {
                   method: 'POST',
@@ -706,7 +756,7 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
                 });
                 setState(s => ({ ...s, teamId: undefined }));
                 setShowSettings(false);
-             }
+             }, title, 'danger', isCap ? 'Disband' : 'Leave');
            }}
         />
       )}
@@ -757,27 +807,29 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
            onClose={() => setViewingProfile(null)}
            isCurrentUserCaptain={team.members.find(m => m.userId === team.myUserId)?.isCaptain}
            isTargetSelf={viewingProfile === team.myUserId}
-           onTransferCaptain={async (targetId) => {
-              if (!confirm("Are you sure you want to transfer guild leadership? You will become a regular member.")) return;
-              const identityCode = state.secretCode || getOrGenerateIdentity();
-              await fetch('/api/teams?action=transfer', {
-                 method: 'POST',
-                 headers: { 'Content-Type': 'application/json' },
-                 body: JSON.stringify({ teamId: team.id, secretCode: identityCode, targetMemberId: targetId })
-              });
-              setViewingProfile(null);
+           onTransferCaptain={(targetId) => {
+              customConfirm("Are you sure you want to transfer guild leadership? You will become a regular member.", async () => {
+                 const identityCode = state.secretCode || getOrGenerateIdentity();
+                 await fetch('/api/teams?action=transfer', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ teamId: team.id, secretCode: identityCode, targetMemberId: targetId })
+                 });
+                 setViewingProfile(null);
+              }, "Transfer Leadership", "warning", "Transfer");
            }}
-           onKickMember={async (targetId) => {
-              if (!confirm("Are you sure you want to banish this member from the guild?")) return;
-              const identityCode = state.secretCode || getOrGenerateIdentity();
-              await fetch('/api/teams?action=kick', {
-                 method: 'POST',
-                 headers: { 'Content-Type': 'application/json' },
-                 body: JSON.stringify({ teamId: team.id, secretCode: identityCode, targetMemberId: targetId })
-              });
-              setViewingProfile(null);
-              // Optimistically UI update
-              fetchTeam();
+           onKickMember={(targetId) => {
+              customConfirm("Are you sure you want to banish this member from the guild?", async () => {
+                 const identityCode = state.secretCode || getOrGenerateIdentity();
+                 await fetch('/api/teams?action=kick', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ teamId: team.id, secretCode: identityCode, targetMemberId: targetId })
+                 });
+                 setViewingProfile(null);
+                 // Optimistically UI update
+                 fetchTeam();
+              }, "Banish Member", "danger", "Banish");
            }}
         />
       )}

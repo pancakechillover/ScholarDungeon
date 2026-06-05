@@ -102,6 +102,18 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
     }
 
     // Subscribe
+    if (!state.isRedisUnlocked) {
+      setModalConfig({
+        isOpen: true,
+        title: "Developer Access Required",
+        message: "Due to free-tier cloud quotas, Push Notifications and Cloud Sync are currently restricted to authorized testers via an invite code. You can enter your invite code in the Data Management section below.",
+        confirmText: "Got it",
+        type: "warning",
+        isAlert: true
+      });
+      return;
+    }
+    
     setIsSubscribing(true);
     try {
       if (typeof Notification === 'undefined') {
@@ -216,6 +228,18 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
   };
 
   const forceSyncNotifications = async () => {
+    if (!state.isRedisUnlocked) {
+      setModalConfig({
+        isOpen: true,
+        title: "Developer Access Required",
+        message: "Due to free-tier cloud quotas, Push Notifications and Cloud Sync are currently restricted to authorized testers via an invite code. You can enter your invite code in the Data Management section below.",
+        confirmText: "Got it",
+        type: "warning",
+        isAlert: true
+      });
+      return;
+    }
+
     if (!state.secretCode) {
       setModalConfig({
         isOpen: true,
