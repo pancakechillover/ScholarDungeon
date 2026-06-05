@@ -413,7 +413,7 @@ export const ShareRecordModal: React.FC<ShareRecordModalProps> = ({ onClose, con
           ) : exportMode === 'diary' && filteredLogs.length === 0 ? (
             <div className="flex flex-col items-center justify-center m-auto gap-3 text-slate-500">
               <Calendar size={48} className="opacity-20" />
-              <p className="font-bold text-lg">无日记记录</p>
+              <p className="font-bold text-lg">No Diary Entries</p>
               <p className="text-sm">No diary entries found for the selected date range.</p>
             </div>
           ) : previewUrls.length > 0 ? (

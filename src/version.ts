@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v8.4.8';
+export const APP_VERSION = 'v8.5.0';
 export const LAST_UPDATE_DATE = '2026-06-05';
-export const LAST_UPDATE_TIME = '04:30:00';
+export const LAST_UPDATE_TIME = '05:46:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,40 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v8.5.0',
+    date: '2026-06-05',
+    time: '05:46:00',
+    title: 'Standardized Nickname Formatting & Multi-Language Translation',
+    items: [
+      { category: 'Feature', description: 'Implemented adaptive username validation (maximum 10 Chinese characters or 15 Latin characters) with interactive mode switches and real-time character meters.' },
+      { category: 'Feature', description: 'Added a customized, fully high-contrast English confirmation option box (ConfirmModal) explaining that chosen nicknames are visible publicly and will be referenced in notification alerts.' },
+      { category: 'UI/UX', description: 'Standardized the chat workspace in TeamModule.tsx to automatically append user student IDs as a neat (ID-XXXXX) suffix directly following the sender\'s nickname.' },
+      { category: 'UI/UX', description: 'Eliminated all remaining user-facing Chinese labels in ProfileModal, CloudSettingsSection, ShareRecordModal, DatePicker, and SageSettingsSection, aligning the entire applet to global English localized aesthetics.' }
+    ]
+  },
+  {
+    version: 'v8.4.10',
+    date: '2026-06-05',
+    time: '05:10:00',
+    title: 'Synchronized Web Push VAPID Keys & Fallback Engine Alignment',
+    items: [
+      { category: 'Bug Fix', description: 'Synchronized mismatched default fallback VAPID key pairs between the background tick scheduler (server.ts) and the serverless endpoint (api/push.ts).' },
+      { category: 'Bug Fix', description: 'Unified JWT signing key validation and sanitization filters to safeguard against BadJwtToken exceptions, fully preventing server-side purging of valid subscriptions.' }
+    ]
+  },
+  {
+    version: 'v8.4.9',
+    date: '2026-06-05',
+    time: '05:00:00',
+    title: 'Upgraded Looping TimePicker & Global English Standardization',
+    items: [
+      { category: 'Feature', description: 'Implemented custom 3-cycle circular loop infinite scrolling list columns for HH and MM time selectors, enabling seamless wrap-around navigation.' },
+      { category: 'UI/UX', description: 'Activated auto-commit value matching immediately on wheel scroll-snapping, rendering click confirmation redundant.' },
+      { category: 'UI/UX', description: 'Eradicated all native and custom literal Chinese text labels from the popover display coordinates to serve internationalization standards.' },
+      { category: 'UI/UX', description: 'Constrained time selection slider rails with strict horizontal overflow-x-hidden, touch-pan-y, and pointer interaction lock behaviors to prevent sliding jitter.' }
+    ]
+  },
   {
     version: 'v8.4.8',
     date: '2026-06-05',

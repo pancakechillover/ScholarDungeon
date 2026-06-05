@@ -230,7 +230,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, classNa
               className="w-full py-1.5 px-3 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1 shadow-md cursor-pointer"
             >
               <CalendarIcon size={12} />
-              Use Current Date (本日)
+              Use Current Date (Today)
             </button>
           </div>
         </div>,

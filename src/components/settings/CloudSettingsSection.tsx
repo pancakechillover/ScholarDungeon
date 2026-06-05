@@ -266,7 +266,7 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
               <div className="mt-1 flex items-center gap-2">
                 {!isOnline ? (
                   <span className="flex items-center gap-1.5 px-2 py-0.5 bg-slate-800 text-slate-400 text-[10px] font-black uppercase tracking-widest rounded-md border border-slate-700 w-max">
-                    <WifiOff size={10} /> 未联网
+                    <WifiOff size={10} /> Offline
                   </span>
                 ) : isSyncing ? (
                   <span className="flex items-center gap-1.5 px-2 py-0.5 bg-amber-500/10 text-amber-500 text-[10px] font-black uppercase tracking-widest rounded-md border border-amber-500/20 w-max">
@@ -928,7 +928,7 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
                   <h3 className="text-lg font-black text-white uppercase tracking-widest mb-2">Developer Access</h3>
                   <p className="text-xs text-slate-400 leading-relaxed max-w-xs">
                     {unlockTarget === 'redis' 
-                      ? '由于目前Redis数据储存量小，所以只有开发者或受邀请的人才能使用这个同步方案。请输入开发者预设的密码后启用。'
+                      ? 'Due to storage limitations, Redis sync is restricted to developers and invited testers. Please enter the pre-configured access code to enable it.'
                       : 'Google Drive Auth is currently restricted to approved internal testers only due to pending Google Verification. Please enter the test password to proceed.'
                     }
                   </p>

@@ -78,6 +78,40 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   const [isOnline, setIsOnline] = useState(typeof window !== 'undefined' ? window.navigator.onLine : true);
   const [showStreakModal, setShowStreakModal] = useState(false);
   const [patchCandidate, setPatchCandidate] = useState<string | null>(null);
+  
+  const [showConfirmSave, setShowConfirmSave] = useState(false);
+  const [nameError, setNameError] = useState<string | null>(null);
+
+  // Reset nameError if they change editing state
+  useEffect(() => {
+    setNameError(null);
+  }, [editName, isEditingProfile]);
+
+  const handleValidateAndPreSave = () => {
+    const trimmed = editName.trim();
+    if (!trimmed) {
+      setNameError("Nickname cannot be empty");
+      return;
+    }
+
+    const hasChinese = /[\u4e00-\u9fa5]/.test(editName);
+    if (hasChinese && editName.length > 10) {
+      setNameError("Chinese nickname must not exceed 10 characters");
+      return;
+    }
+    if (!hasChinese && editName.length > 15) {
+      setNameError("Nickname must not exceed 15 characters");
+      return;
+    }
+
+    setNameError(null);
+    setShowConfirmSave(true);
+  };
+
+  const handleConfirmSave = () => {
+    handleSaveProfile();
+    setShowConfirmSave(false);
+  };
 
   const AvatarIcon = {
     User, Cat, Dog, Ghost, Bot, Skull
@@ -168,22 +202,42 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
               
               <div className="space-y-1 flex-grow w-full">
                 {isEditingProfile ? (
-                  <div className="space-y-2 w-full">
-                    <input 
-                      value={editName}
-                      onChange={(e) => setEditName(e.target.value)}
-                      className="bg-transparent border-b-2 border-indigo-500 text-2xl sm:text-3xl font-black text-white tracking-tight italic pr-1 uppercase focus:outline-none w-full"
-                      placeholder="Your Name"
-                      autoFocus
-                    />
-                    <input 
-                      value={editBio}
-                      onChange={(e) => setEditBio(e.target.value)}
-                      className="bg-transparent border-b border-slate-700 text-sm sm:text-base text-slate-400 font-medium focus:outline-none w-full mt-1"
-                      placeholder="Your Signature"
-                    />
+                  <div className="space-y-3 w-full">
+                    <div className="space-y-1">
+                      <input 
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                        className="bg-transparent border-b-2 border-indigo-500 text-2xl sm:text-3xl font-black text-white tracking-tight italic pr-1 uppercase focus:outline-none w-full"
+                        placeholder="Your Name"
+                        autoFocus
+                      />
+                      <div className="flex justify-between items-center text-[10px] text-slate-500 font-bold tracking-wider pt-0.5">
+                        <span>
+                          {/[\u4e00-\u9fa5]/.test(editName) ? "Chinese Character Mode" : "Latin Character Mode"}
+                        </span>
+                        <span className={cn(
+                          ((/[\u4e00-\u9fa5]/.test(editName) && editName.length > 10) || (!/[\u4e00-\u9fa5]/.test(editName) && editName.length > 15)) 
+                            ? "text-rose-400 font-black animate-pulse" 
+                            : "text-slate-400"
+                        )}>
+                          {editName.length} / {/[\u4e00-\u9fa5]/.test(editName) ? 10 : 15} max
+                        </span>
+                      </div>
+                      {nameError && (
+                        <p className="text-[11px] text-rose-400 font-bold mt-1 tracking-wide">{nameError}</p>
+                      )}
+                    </div>
                     
-                    <div className="flex flex-wrap gap-2 py-2">
+                    <div className="space-y-1">
+                      <input 
+                        value={editBio}
+                        onChange={(e) => setEditBio(e.target.value)}
+                        className="bg-transparent border-b border-slate-700 text-sm sm:text-base text-slate-400 font-medium focus:outline-none w-full"
+                        placeholder="Your Signature"
+                      />
+                    </div>
+                    
+                    <div className="flex flex-wrap gap-2 py-1">
                       {availableAvatars.map(av => {
                         const IconComponent = { User, Cat, Dog, Ghost, Bot, Skull }[av as keyof typeof availableAvatars] || User;
                         return (
@@ -204,7 +258,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                     </div>
 
                     <div className="flex gap-2 pt-1 w-full max-w-xs">
-                      <button onClick={handleSaveProfile} className="flex-1 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black uppercase tracking-widest rounded-lg transition-all">Save</button>
+                      <button onClick={handleValidateAndPreSave} className="flex-1 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black uppercase tracking-widest rounded-lg transition-all">Save</button>
                       <button onClick={() => setIsEditingProfile(false)} className="flex-1 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-400 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all">Cancel</button>
                     </div>
                   </div>
@@ -225,7 +279,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                     <div className="flex flex-wrap items-center gap-2 mt-2 font-mono">
                       {state.userUniqueId && (
                         <span className="px-2 py-0.5 bg-slate-500/10 text-slate-400 text-[9px] sm:text-[10px] font-bold rounded-md border border-slate-500/20 pr-1">
-                          #{state.userUniqueId}
+                          #{state.userUniqueId.startsWith('SD-') ? state.userUniqueId.replace('SD-', 'ID-') : state.userUniqueId}
                         </span>
                       )}
                       <span className="px-2 py-0.5 bg-indigo-500/10 text-indigo-400 text-[9px] sm:text-[10px] font-black uppercase tracking-widest rounded-md border border-indigo-500/20 pr-1">
@@ -357,7 +411,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                   <div>
                     {!isOnline ? (
                       <span className="flex items-center gap-1.5 px-2 py-0.5 bg-slate-800 text-slate-400 text-[9px] font-black uppercase tracking-widest rounded-md border border-slate-700 w-max">
-                        <WifiOff size={10} /> 未联网
+                        <WifiOff size={10} /> Offline
                       </span>
                     ) : isSyncing ? (
                       <span className="flex items-center gap-1.5 px-2 py-0.5 bg-amber-500/10 text-amber-500 text-[9px] font-black uppercase tracking-widest rounded-md border border-amber-500/20 w-max">
@@ -438,6 +492,19 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
           onClose={() => setShowStreakModal(false)}
           repairStreak={repairStreak}
           openGuideBook={openGuideBook}
+        />
+      )}
+
+      {showConfirmSave && (
+        <ConfirmModal
+          isOpen={showConfirmSave}
+          onClose={() => setShowConfirmSave(false)}
+          onConfirm={handleConfirmSave}
+          title="Confirm Profile Changes"
+          message="Please note that this nickname will be displayed publicly to others and will be used to address you in notifications."
+          confirmText="Confirm & Save"
+          cancelText="Cancel"
+          type="info"
         />
       )}
       

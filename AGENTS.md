@@ -23,9 +23,9 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v8.4.8
+- **Current Version:** v8.5.0
 - **Last Update Date:** 2026-06-05
-- **Last Update Time:** 04:30:00
+- **Last Update Time:** 05:46:00
 
 ## Dark Themes Definition
 The following themes are considered "Dark Themes" and form the baseline for vibrant visual effects and high-contrast glowing elements:
@@ -50,6 +50,22 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v8.5.0 (2026-06-05):** Standardized Nickname Formatting & Multi-Language Translation.
+  - *Feature:* Implemented adaptive username validation (maximum 10 Chinese characters or 15 Latin characters) with interactive mode switches and real-time character meters.
+  - *Feature:* Added a customized, fully high-contrast English confirmation option box (`ConfirmModal`) explaining that chosen nicknames are visible publicly and will be referenced in notification alerts.
+  - *UI/UX:* Standardized the chat workspace in `TeamModule.tsx` to automatically append user student IDs as a neat `(ID-XXXXX)` suffix directly following the sender's nickname.
+  - *UI/UX:* Eliminated all remaining user-facing Chinese labels in `ProfileModal`, `CloudSettingsSection`, `ShareRecordModal`, `DatePicker`, and `SageSettingsSection`, aligning the entire applet to global English localized aesthetics.
+
+- **v8.4.10 (2026-06-05):** Synchronized Web Push VAPID Keys & Fallback Engine Alignment.
+  - *Bug Fix:* Synchronized mismatched default fallback VAPID key pairs between the background tick scheduler (`server.ts`) and the serverless endpoint (`api/push.ts`).
+  - *Bug Fix:* Unified JWT signing key validation and sanitization filters to safeguard against `BadJwtToken` exceptions, fully preventing server-side purging of valid subscriptions.
+
+- **v8.4.9 (2026-06-05):** Upgraded Looping TimePicker & Global English Standardization.
+  - *Feature:* Implemented custom 3-cycle circular loop infinite scrolling list columns for HH and MM time selectors, enabling seamless wrap-around navigation.
+  - *UI/UX:* Activated auto-commit value matching immediately on wheel scroll-snapping, rendering click confirmation redundant.
+  - *UI/UX:* Eradicated all native and custom literal Chinese text labels from the popover display coordinates to serve internationalization standards.
+  - *UI/UX:* Constrained time selection slider rails with strict horizontal overflow-x-hidden, touch-pan-y, and pointer interaction lock behaviors to prevent sliding jitter.
 
 - **v8.4.8 (2026-06-05):** Permanent Student IDs & Roster Layout Polish.
   - *Feature:* Assigned unique, stable, random alphanumeric IDs (SD-XXXXX) for every student. This stable ID is preserved securely in local state and synchronized on redis database tables.

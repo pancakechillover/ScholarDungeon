@@ -172,9 +172,9 @@ const SageConfigManager: React.FC<{ state: AppState, setState: React.Dispatch<Re
                   <option value="google">Gemini</option>
                   <option value="openai">ChatGPT / OpenAI</option>
                   <option value="deepseek">DeepSeek</option>
-                  <option value="doubao">豆包 (Doubao)</option>
+                  <option value="doubao">Doubao</option>
                   <option value="claude">Claude / Anthropic</option>
-                  <option value="siliconflow">硅基流动 (SiliconFlow)</option>
+                  <option value="siliconflow">SiliconFlow</option>
                   <option value="custom">Other Compatible</option>
                 </select>
                 <input type="text" list="popular-models" placeholder="Model Name (e.g. gemini-1.5-flash)" value={editingModel.modelName} onChange={(e) => setEditingModel({...editingModel, modelName: e.target.value})} className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-white text-sm" />
@@ -184,8 +184,8 @@ const SageConfigManager: React.FC<{ state: AppState, setState: React.Dispatch<Re
                   <option value="deepseek-chat">DeepSeek (V3)</option>
                   <option value="deepseek-reasoner">DeepSeek (R1)</option>
                   <option value="claude-3-7-sonnet-20250219">Claude (3.7 Sonnet)</option>
-                  <option value="doubao-pro-32k">豆包 (doubao-pro)</option>
-                  <option value="Pro/deepseek-ai/DeepSeek-R1">硅基流动 (DeepSeek-R1)</option>
+                  <option value="doubao-pro-32k">Doubao (doubao-pro)</option>
+                  <option value="Pro/deepseek-ai/DeepSeek-R1">SiliconFlow (DeepSeek-R1)</option>
                 </datalist>
                 <input type="password" placeholder="API Key" value={editingModel.apiKey || ''} onChange={(e) => setEditingModel({...editingModel, apiKey: e.target.value})} className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-white text-sm" />
                 {editingModel.provider !== 'google' && (

@@ -139,7 +139,7 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
       const data = await res.json();
       if (data.success) {
         if (data.pendingApproval) {
-          alert("Your application request has been submitted to the team captain for approval. (您的加入申请已提交，等待队长审核！)");
+          alert("Your application request has been submitted to the team captain for approval.");
         } else {
           setState(s => ({ ...s, teamId: id }));
         }
@@ -450,7 +450,7 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
                           {m.name} {m.isCaptain && <Crown size={10} className="text-amber-400" />}
                         </span>
                         <div className="flex items-center gap-1.5 mt-0.5">
-                          {m.uniqueId && <span className="font-mono text-[9px] text-indigo-400/80 font-semibold">#{m.uniqueId}</span>}
+                          {m.uniqueId && <span className="font-mono text-[9px] text-indigo-400/80 font-semibold">#{m.uniqueId.startsWith('SD-') ? m.uniqueId.replace('SD-', 'ID-') : m.uniqueId}</span>}
                           <span className="text-[10px] text-slate-500">{m.totalFocusTime}m focus</span>
                         </div>
                       </div>
@@ -558,6 +558,9 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
                 <div className="space-y-4 flex flex-col justify-end">
                   {messages.slice().reverse().map(m => {
                     const isMe = m.userId === team?.myUserId;
+                    const senderMember = team?.members?.find(member => member.id === m.userId);
+                    const rawId = senderMember?.uniqueId || (isMe ? state.userUniqueId : null);
+                    const senderUniqueId = rawId ? (rawId.startsWith('SD-') ? rawId.replace('SD-', 'ID-') : rawId) : null;
                     return (
                       <div key={m.id} className={cn("flex flex-col w-full", isMe ? "items-end" : "items-start")}>
                         <div className={cn("flex items-end gap-2", isMe ? "flex-row-reverse" : "flex-row")}>
@@ -566,7 +569,9 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
                           </div>
                           <div className={cn("flex flex-col", isMe ? "items-end" : "items-start")}>
                             <div className={cn("flex items-center gap-2 mb-1", isMe ? "flex-row-reverse" : "flex-row")}>
-                              <span className="text-xs font-bold text-slate-400">{m.name}</span>
+                              <span className="text-xs font-bold text-slate-400">
+                                {m.name} {senderUniqueId ? `(${senderUniqueId})` : ''}
+                              </span>
                               <span className="text-[9px] text-slate-600">{new Date(m.timestamp).toLocaleTimeString()}</span>
                             </div>
                             <div className={cn(
@@ -650,8 +655,8 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
            onLeave={async () => {
              const isCap = team.members.find(x => x.userId === team.myUserId)?.isCaptain;
              const msg = isCap 
-               ? "Are you sure you want to disband this guild? This will remove all members. (您确定要解散并退出该公队吗？)"
-               : "Are you sure you want to leave this guild? (您确定要退出当前公队吗？)";
+               ? "Are you sure you want to disband this guild? This will remove all members."
+               : "Are you sure you want to leave this guild?";
              if (confirm(msg)) {
                 const identityCode = getOrGenerateIdentity();
                 await fetch('/api/teams?action=leave', {
@@ -939,7 +944,7 @@ const TeamMemberProfileModal = ({ member, onClose, isCurrentUserCaptain, isTarge
             </div>
             {member.uniqueId && (
               <div className="text-[11px] font-bold text-slate-400 bg-slate-500/10 px-3 py-1 rounded-full border border-slate-500/20 pr-1">
-                #{member.uniqueId}
+                #{member.uniqueId.startsWith('SD-') ? member.uniqueId.replace('SD-', 'ID-') : member.uniqueId}
               </div>
             )}
             <div className="text-xs font-bold text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/20 pr-1">

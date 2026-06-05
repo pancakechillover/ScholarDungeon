@@ -16,6 +16,7 @@ export const TimePicker: React.FC<TimePickerProps> = ({ value, onChange, classNa
   const popoverRef = useRef<HTMLDivElement>(null);
   const hourRef = useRef<HTMLDivElement>(null);
   const minRef = useRef<HTMLDivElement>(null);
+  const isScrollingToActive = useRef(false);
   
   const [popoverStyle, setPopoverStyle] = useState<React.CSSProperties>({});
   const [hours, setHours] = useState('00');
@@ -90,24 +91,41 @@ export const TimePicker: React.FC<TimePickerProps> = ({ value, onChange, classNa
   };
 
   const scrollToActive = (hVal = hours, mVal = minutes, smooth = true) => {
+    isScrollingToActive.current = true;
     setTimeout(() => {
+      let count = 2;
+      const decrementCount = () => {
+        count--;
+        if (count === 0) {
+          // Add a short delay after scroll instruction before releasing flag
+          setTimeout(() => {
+            isScrollingToActive.current = false;
+          }, 150);
+        }
+      };
+
       if (hourRef.current) {
-        const activeItem = hourRef.current.querySelector(`[data-hour="${hVal}"]`) as HTMLElement;
-        if (activeItem) {
-          hourRef.current.scrollTo({
-            top: activeItem.offsetTop - hourRef.current.clientHeight / 2 + activeItem.clientHeight / 2,
-            behavior: smooth ? 'smooth' : 'auto'
-          });
-        }
+        const targetIndex = 24 + parseInt(hVal, 10);
+        const targetScrollTop = targetIndex * 36 - 37;
+        hourRef.current.scrollTo({
+          top: targetScrollTop,
+          behavior: smooth ? 'smooth' : 'auto'
+        });
+        decrementCount();
+      } else {
+        decrementCount();
       }
+
       if (minRef.current) {
-        const activeItem = minRef.current.querySelector(`[data-minute="${mVal}"]`) as HTMLElement;
-        if (activeItem) {
-          minRef.current.scrollTo({
-            top: activeItem.offsetTop - minRef.current.clientHeight / 2 + activeItem.clientHeight / 2,
-            behavior: smooth ? 'smooth' : 'auto'
-          });
-        }
+        const targetIndex = 60 + parseInt(mVal, 10);
+        const targetScrollTop = targetIndex * 36 - 37;
+        minRef.current.scrollTo({
+          top: targetScrollTop,
+          behavior: smooth ? 'smooth' : 'auto'
+        });
+        decrementCount();
+      } else {
+        decrementCount();
       }
     }, 30);
   };
@@ -127,8 +145,54 @@ export const TimePicker: React.FC<TimePickerProps> = ({ value, onChange, classNa
     }
   }, [isOpen]);
 
-  const commitChange = (h: string, m: string) => {
-     onChange(`${h}:${m}`);
+  const handleHourScroll = () => {
+    if (!hourRef.current) return;
+    const scrollTop = hourRef.current.scrollTop;
+    
+    // Total cycle is 24 * 36 = 864px
+    if (scrollTop < 400) {
+      hourRef.current.scrollTop = scrollTop + 864;
+      return;
+    }
+    if (scrollTop > 2000) {
+      hourRef.current.scrollTop = scrollTop - 864;
+      return;
+    }
+
+    if (isScrollingToActive.current) return;
+
+    const centeredIndex = Math.round((scrollTop + 37) / 36);
+    const currentHour = String(centeredIndex % 24).padStart(2, '0');
+    
+    if (currentHour !== hours) {
+       setHours(currentHour);
+       onChange(`${currentHour}:${minutes}`);
+    }
+  };
+
+  const handleMinScroll = () => {
+    if (!minRef.current) return;
+    const scrollTop = minRef.current.scrollTop;
+    
+    // Total cycle is 60 * 36 = 2160px
+    if (scrollTop < 1000) {
+      minRef.current.scrollTop = scrollTop + 2160;
+      return;
+    }
+    if (scrollTop > 5000) {
+      minRef.current.scrollTop = scrollTop - 2160;
+      return;
+    }
+
+    if (isScrollingToActive.current) return;
+
+    const centeredIndex = Math.round((scrollTop + 37) / 36);
+    const currentMin = String(centeredIndex % 60).padStart(2, '0');
+    
+    if (currentMin !== minutes) {
+       setMinutes(currentMin);
+       onChange(`${hours}:${currentMin}`);
+    }
   };
 
   // Support circular loops for incrementing / decrementing values
@@ -137,7 +201,7 @@ export const TimePicker: React.FC<TimePickerProps> = ({ value, onChange, classNa
     const prev = (parseInt(hours, 10) - 1 + 24) % 24;
     const formatted = String(prev).padStart(2, '0');
     setHours(formatted);
-    commitChange(formatted, minutes);
+    onChange(`${formatted}:${minutes}`);
     scrollToActive(formatted, minutes, true);
   };
 
@@ -146,7 +210,7 @@ export const TimePicker: React.FC<TimePickerProps> = ({ value, onChange, classNa
     const next = (parseInt(hours, 10) + 1) % 24;
     const formatted = String(next).padStart(2, '0');
     setHours(formatted);
-    commitChange(formatted, minutes);
+    onChange(`${formatted}:${minutes}`);
     scrollToActive(formatted, minutes, true);
   };
 
@@ -155,7 +219,7 @@ export const TimePicker: React.FC<TimePickerProps> = ({ value, onChange, classNa
     const prev = (parseInt(minutes, 10) - 1 + 60) % 60;
     const formatted = String(prev).padStart(2, '0');
     setMinutes(formatted);
-    commitChange(hours, formatted);
+    onChange(`${hours}:${formatted}`);
     scrollToActive(hours, formatted, true);
   };
 
@@ -164,7 +228,7 @@ export const TimePicker: React.FC<TimePickerProps> = ({ value, onChange, classNa
     const next = (parseInt(minutes, 10) + 1) % 60;
     const formatted = String(next).padStart(2, '0');
     setMinutes(formatted);
-    commitChange(hours, formatted);
+    onChange(`${hours}:${formatted}`);
     scrollToActive(hours, formatted, true);
   };
 
@@ -175,7 +239,7 @@ export const TimePicker: React.FC<TimePickerProps> = ({ value, onChange, classNa
     const formattedM = String(now.getMinutes()).padStart(2, '0');
     setHours(formattedH);
     setMinutes(formattedM);
-    commitChange(formattedH, formattedM);
+    onChange(`${formattedH}:${formattedM}`);
     scrollToActive(formattedH, formattedM, true);
   };
 
@@ -201,12 +265,12 @@ export const TimePicker: React.FC<TimePickerProps> = ({ value, onChange, classNa
     const [h, m] = time.split(':');
     setHours(h);
     setMinutes(m);
-    commitChange(h, m);
+    onChange(`${h}:${m}`);
     scrollToActive(h, m, true);
   };
 
-  const ALL_HOURS = Array.from({length: 24}, (_, i) => String(i).padStart(2, '0'));
-  const ALL_MINS = Array.from({length: 60}, (_, i) => String(i).padStart(2, '0'));
+  const ALL_HOURS_INFINITE = Array.from({length: 72}, (_, i) => String(i % 24).padStart(2, '0'));
+  const ALL_MINS_INFINITE = Array.from({length: 180}, (_, i) => String(i % 60).padStart(2, '0'));
 
   return (
     <>
@@ -231,8 +295,8 @@ export const TimePicker: React.FC<TimePickerProps> = ({ value, onChange, classNa
         >
            {/* Section 1: Column Headings */}
            <div className="grid grid-cols-2 text-center text-[10px] font-bold text-slate-500 uppercase tracking-widest pb-1 border-b border-slate-800">
-              <div>HH (时)</div>
-              <div>MM (分)</div>
+              <div>HH</div>
+              <div>MM</div>
            </div>
            
            {/* Section 2: Increment/Loop Chevrons */}
@@ -257,53 +321,63 @@ export const TimePicker: React.FC<TimePickerProps> = ({ value, onChange, classNa
               <div className="absolute top-1/2 left-0 right-0 h-9 -mt-4.5 bg-indigo-500/15 border-y border-indigo-500/35 pointer-events-none" />
               
               {/* Hours Scroll Column */}
-              <div ref={hourRef} className="flex-1 overflow-y-auto no-scrollbar snap-y snap-mandatory scroll-smooth">
-                 <div className="h-9" /> {/* Padding spacer */}
-                 {ALL_HOURS.map(h => (
-                   <div 
-                     key={h}
-                     data-hour={h}
-                     onClick={(e) => {
-                        e.stopPropagation();
-                        setHours(h);
-                        commitChange(h, minutes);
-                        scrollToActive(h, minutes, true);
-                     }}
-                     className={cn(
-                       "h-9 flex items-center justify-center cursor-pointer snap-center text-base transition-all",
-                       h === hours ? "active-h text-indigo-400 font-bold scale-110" : "text-slate-400 hover:text-slate-200"
-                     )}
-                   >
-                     {h}
-                   </div>
-                 ))}
-                 <div className="h-9" /> {/* Padding spacer */}
+              <div 
+                ref={hourRef} 
+                onScroll={handleHourScroll}
+                className="flex-1 overflow-y-auto overflow-x-hidden select-none touch-pan-y no-scrollbar snap-y snap-mandatory scroll-smooth"
+              >
+                 {ALL_HOURS_INFINITE.map((h, i) => {
+                   const isSelected = h === hours;
+                   return (
+                     <div 
+                       key={`h-${i}`}
+                       data-hour={h}
+                       onClick={(e) => {
+                          e.stopPropagation();
+                          setHours(h);
+                          onChange(`${h}:${minutes}`);
+                          scrollToActive(h, minutes, true);
+                       }}
+                       className={cn(
+                         "h-9 flex items-center justify-center cursor-pointer snap-center text-base transition-all",
+                         isSelected ? "active-h text-indigo-400 font-bold scale-110" : "text-slate-400 hover:text-slate-200"
+                       )}
+                     >
+                       {h}
+                     </div>
+                   );
+                 })}
               </div>
               
               <div className="w-px bg-slate-800" />
               
               {/* Minutes Scroll Column */}
-              <div ref={minRef} className="flex-1 overflow-y-auto no-scrollbar snap-y snap-mandatory scroll-smooth">
-                 <div className="h-9" /> {/* Padding spacer */}
-                 {ALL_MINS.map(m => (
-                   <div 
-                     key={m}
-                     data-minute={m}
-                     onClick={(e) => {
-                        e.stopPropagation();
-                        setMinutes(m);
-                        commitChange(hours, m);
-                        scrollToActive(hours, m, true);
-                     }}
-                     className={cn(
-                       "h-9 flex items-center justify-center cursor-pointer snap-center text-base transition-all",
-                       m === minutes ? "active-m text-indigo-400 font-bold scale-110" : "text-slate-400 hover:text-slate-200"
-                     )}
-                   >
-                     {m}
-                   </div>
-                 ))}
-                 <div className="h-9" /> {/* Padding spacer */}
+              <div 
+                ref={minRef} 
+                onScroll={handleMinScroll}
+                className="flex-1 overflow-y-auto overflow-x-hidden select-none touch-pan-y no-scrollbar snap-y snap-mandatory scroll-smooth"
+              >
+                 {ALL_MINS_INFINITE.map((m, i) => {
+                   const isSelected = m === minutes;
+                   return (
+                     <div 
+                       key={`m-${i}`}
+                       data-minute={m}
+                       onClick={(e) => {
+                          e.stopPropagation();
+                          setMinutes(m);
+                          onChange(`${hours}:${m}`);
+                          scrollToActive(hours, m, true);
+                       }}
+                       className={cn(
+                         "h-9 flex items-center justify-center cursor-pointer snap-center text-base transition-all",
+                         isSelected ? "active-m text-indigo-400 font-bold scale-110" : "text-slate-400 hover:text-slate-200"
+                       )}
+                     >
+                       {m}
+                     </div>
+                   );
+                 })}
               </div>
            </div>
 
@@ -331,7 +405,7 @@ export const TimePicker: React.FC<TimePickerProps> = ({ value, onChange, classNa
                 className="flex items-center justify-center gap-1 py-1 px-2 bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 hover:bg-indigo-600 hover:text-white rounded-lg text-xs font-bold transition-all cursor-pointer shadow-sm"
               >
                 <Clock size={12} />
-                Now (现在)
+                Now
               </button>
               <button
                 type="button"
@@ -339,14 +413,14 @@ export const TimePicker: React.FC<TimePickerProps> = ({ value, onChange, classNa
                 className="flex items-center justify-center gap-1 py-1 px-2 bg-slate-800 text-slate-300 hover:bg-slate-700 rounded-lg text-xs font-bold transition-all cursor-pointer border border-slate-700 shadow-sm"
               >
                 <Plus size={12} />
-                Save (常用)
+                Save
               </button>
            </div>
 
            {/* Section 6: Presets / Fast Choice List */}
            <div className="mt-3 flex-1 flex flex-col min-h-0">
              <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 flex justify-between items-center">
-               <span>Favorite Presets (常用时间)</span>
+               <span>Favorite Presets</span>
              </div>
              <div className="flex flex-wrap gap-1.5 overflow-y-auto max-h-[85px] py-0.5 no-scrollbar">
                {favoriteTimes.map((time) => (
@@ -372,7 +446,7 @@ export const TimePicker: React.FC<TimePickerProps> = ({ value, onChange, classNa
                  </div>
                ))}
                {favoriteTimes.length === 0 && (
-                 <span className="text-[10px] text-slate-500 italic">No favorite times saved.</span>
+                 <span className="text-[10px] text-slate-500 italic">No presets.</span>
                )}
              </div>
            </div>

@@ -5,16 +5,20 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 // Configure Web Push
 // RESTORED FALLBACKS to prevent UI hang. 
 // SECURITY NOTE: Please set VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY in your Secrets for production.
-const cleanKey = (key?: string) => key ? key.replace(/['"]/g, '').trim() : '';
+const cleanKey = (key?: string) => key ? key.replace(/[^a-zA-Z0-9_-]/g, '').trim() : '';
 
 const envPublic = cleanKey(process.env.VAPID_PUBLIC_KEY);
 const envPrivate = cleanKey(process.env.VAPID_PRIVATE_KEY);
-const fallbackPublic = "BJgimrTgCLcXvp_P1leS8zy56ZKqfMueXM5iitrQyLMmA1swEho4wNXRovLGJdwP0mftM9-s-EkH_15PyiyM0aw";
-const fallbackPrivate = "UKT36f_f6QUyadIQ0JK1PR4rD46bjeQVSCqDvmSfuO4";
 
-const vapidPublicKey = envPublic || fallbackPublic;
-const vapidPrivateKey = envPrivate || fallbackPrivate;
-const vapidEmailInput = process.env.VAPID_EMAIL || "jl3190264398@163.com";
+// Valid fallback keys (Generated via web-push, guaranteed to be 65 bytes public / 32 bytes private when decoded)
+const fallbackPublic = "BJ8Pb6twxvV5B43gsnSi5uDbehVnQX2s4c5qJP4yBywPitfec3XtUuxig5d8iWFnSueH284uhMl2FpU1wSFKSGM";
+const fallbackPrivate = "9002rSo2Hgz3P9MTR95Gh6BNST8QCqhCAAGXi5M3lz0";
+
+// Only use environment keys if they look like real VAPID keys (87-88 chars for public, 43-44 for private)
+// This prevents placeholders like "your_public_key_here" from causing startup crashes
+const vapidPublicKey = (envPublic && envPublic.length >= 87 && envPublic.length <= 88) ? envPublic : fallbackPublic;
+const vapidPrivateKey = (envPrivate && envPrivate.length >= 43 && envPrivate.length <= 44) ? envPrivate : fallbackPrivate;
+const vapidEmailInput = process.env.VAPID_EMAIL || "iz.karakarakarakan@gmail.com";
 const vapidSubject = vapidEmailInput.startsWith('http') || vapidEmailInput.startsWith('mailto:') 
   ? vapidEmailInput 
   : `mailto:${cleanKey(vapidEmailInput)}`;

@@ -32,7 +32,7 @@ const generateUniqueId = () => {
   for (let i = 0; i < 5; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
   }
-  return `SD-${result}`;
+  return `ID-${result}`;
 };
 
 export function useGameState() {
@@ -170,6 +170,8 @@ export function useGameState() {
 
         if (!parsed.userUniqueId) {
           parsed.userUniqueId = generateUniqueId();
+        } else if (parsed.userUniqueId.startsWith('SD-')) {
+          parsed.userUniqueId = parsed.userUniqueId.replace('SD-', 'ID-');
         }
         
         // Migration: gachaEffect to split animations
