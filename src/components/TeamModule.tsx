@@ -37,11 +37,11 @@ const renderAvatar = (avatarValue: string | undefined, size: number = 14) => {
 };
 
 export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
-  const [view, setView] = useState<'lobby' | 'team'>('lobby');
+  const [view, setView] = useState<'lobby' | 'team'>(state.teamId ? 'team' : 'lobby');
   const [lobbyTeams, setLobbyTeams] = useState<any[]>([]);
-  const [team, setTeam] = useState<Team | null>(null);
-  const [messages, setMessages] = useState<TeamMessage[]>([]);
-  const [events, setEvents] = useState<TeamEvent[]>([]);
+  const [team, setTeam] = useState<Team | null>(state.lastTeamData?.team || null);
+  const [messages, setMessages] = useState<TeamMessage[]>(state.lastTeamData?.messages || []);
+  const [events, setEvents] = useState<TeamEvent[]>(state.lastTeamData?.events || []);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'chat' | 'events'>('chat');
   const [chatInput, setChatInput] = useState('');
@@ -79,7 +79,8 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
           'x-user-avatar': state.userAvatar || 'User',
           'x-user-bio': encodeURIComponent(state.userBio || ''),
           'x-user-title': encodeURIComponent(state.userTitle || getTitleForLevel(state.level || 1)),
-          'x-user-level': String(state.level || 1)
+          'x-user-level': String(state.level || 1),
+          'x-user-unique-id': state.userUniqueId || ''
         }
       });
       if (!res.ok) return;
@@ -89,6 +90,7 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
         setMessages(data.messages || []);
         setEvents(data.events || []);
         setView('team');
+        setState(s => ({ ...s, lastTeamData: { team: data.team, messages: data.messages, events: data.events } }));
       } else {
         setState(s => ({ ...s, teamId: undefined }));
         setView('lobby');
@@ -127,6 +129,7 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
           teamId: id, 
           secretCode: identityCode,
           userName: state.userName || 'Scholar',
+          userUniqueId: state.userUniqueId || '',
           userAvatar: state.userAvatar || 'User',
           userBio: state.userBio,
           userTitle: state.userTitle,
@@ -339,7 +342,12 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
   };
 
   const renderTeamDashboard = () => {
-    if (!team) return null;
+    if (!team) return (
+      <div className="flex flex-col h-[500px] items-center justify-center text-slate-500">
+         <RefreshCw className="animate-spin mb-4" size={24} />
+         <p className="text-sm font-bold animate-pulse">Summoning Guild Data...</p>
+      </div>
+    );
     
     // Calc total progress
     let totalProgress = team.members.reduce((acc, m) => acc + m.totalFocusTime, 0);
@@ -357,6 +365,13 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
             <p className="text-xs text-slate-400">{team.description}</p>
           </div>
           <div className="flex gap-2">
+            <button
+              onClick={() => setShowPlazaModal(true)}
+              className="px-3 py-1.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 font-bold border border-indigo-500/20 rounded-xl text-xs transition-all flex items-center gap-1.5 cursor-pointer hover:scale-105 active:scale-95"
+              title="Sanctum Plaza"
+            >
+              <Landmark size={14} /> <span className="hidden sm:inline">Plaza</span>
+            </button>
             <button onClick={() => setShowSettings(true)} className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-400 rounded-xl transition-colors">
               <Settings size={18} />
             </button>
@@ -411,33 +426,6 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
             
             <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4 flex-1 overflow-y-auto custom-scrollbar flex flex-col">
               <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Members ({team.members.length})</div>
-              
-              {totalProgress > 0 && (
-                <div className="h-32 mb-4 shrink-0">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={team.members.filter(m => m.totalFocusTime > 0)}
-                        dataKey="totalFocusTime"
-                        nameKey="name"
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={30}
-                        outerRadius={50}
-                        stroke="none"
-                      >
-                        {team.members.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={['#6366f1', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6'][index % 5]} />
-                        ))}
-                      </Pie>
-                      <Tooltip 
-                        contentStyle={{ backgroundColor: '#020617', borderColor: '#1e293b', borderRadius: '12px' }}
-                        itemStyle={{ color: '#94a3b8', fontSize: '12px' }}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              )}
 
               <div className="space-y-3">
                 {[...team.members].sort((a,b) => (b.level||1) - (a.level||1)).map(m => {
@@ -461,7 +449,10 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
                         <span className="text-sm font-bold text-slate-300 flex items-center gap-1">
                           {m.name} {m.isCaptain && <Crown size={10} className="text-amber-400" />}
                         </span>
-                        <span className="text-[10px] text-slate-500">{m.totalFocusTime}m focus</span>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          {m.uniqueId && <span className="font-mono text-[9px] text-indigo-400/80 font-semibold">#{m.uniqueId}</span>}
+                          <span className="text-[10px] text-slate-500">{m.totalFocusTime}m focus</span>
+                        </div>
                       </div>
                     </div>
                     <span className="text-[10px] font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-full">Lv. {m.level || 1}</span>
@@ -689,6 +680,7 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
                    config: cfg.config,
                    secretCode: identityCode,
                    userName: state.userName || 'Scholar',
+                   userUniqueId: state.userUniqueId || '',
                    userAvatar: state.userAvatar,
                    userBio: state.userBio,
                    userTitle: state.userTitle,
@@ -941,11 +933,16 @@ const TeamMemberProfileModal = ({ member, onClose, isCurrentUserCaptain, isTarge
           
           <h2 className="text-2xl font-black text-white italic tracking-tight">{member.name} {member.isCaptain && <span className="text-amber-500 text-base" title="Captain">♔</span>}</h2>
           
-          <div className="flex items-center gap-2 mt-2">
+          <div className="flex items-center gap-2 mt-2 flex-wrap justify-center font-mono">
             <div className="text-xs font-bold text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">
               Lv. {member.level || 1}
             </div>
-            <div className="text-xs font-bold text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/20">
+            {member.uniqueId && (
+              <div className="text-[11px] font-bold text-slate-400 bg-slate-500/10 px-3 py-1 rounded-full border border-slate-500/20 pr-1">
+                #{member.uniqueId}
+              </div>
+            )}
+            <div className="text-xs font-bold text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/20 pr-1">
               {member.title || "Wandering Scholar"}
             </div>
           </div>

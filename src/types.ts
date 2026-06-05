@@ -212,7 +212,9 @@ export interface AppState {
   dailyRerollUsed: boolean; // Track if Shuffler reroll was used today
   inventory: string[]; // IDs of functional cards active for next session
   userName?: string;
+  userUniqueId?: string; // Random short permanent user identifier
   teamId?: string;
+  lastTeamData?: any;
   userBio?: string;
   userAvatar?: string;
   userTitle?: string;
@@ -393,6 +395,7 @@ export interface TeamMember {
   totalFocusTime: number; // minutes contributed
   isCaptain: boolean;
   lastActive?: number;
+  uniqueId?: string; // Short permanent identifier
 }
 
 export interface TeamMessage {

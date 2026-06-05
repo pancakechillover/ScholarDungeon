@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v8.4.6';
+export const APP_VERSION = 'v8.4.8';
 export const LAST_UPDATE_DATE = '2026-06-05';
-export const LAST_UPDATE_TIME = '03:50:00';
+export const LAST_UPDATE_TIME = '04:30:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,30 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v8.4.8',
+    date: '2026-06-05',
+    time: '04:30:00',
+    title: 'Permanent Student IDs & Roster Layout Polish',
+    items: [
+      { category: 'Feature', description: 'Assigned unique, stable, random alphanumeric IDs (SD-XXXXX) for every student. This stable ID is preserved securely in local state and synchronized on redis database tables.' },
+      { category: 'UI/UX', description: 'Displayed user unique IDs immediately to the left of the honorary titles on both the current user\'s profile modal and within general Fellowship member viewer popups.' },
+      { category: 'UI/UX', description: 'Removed the bulky PieChart container from the Fellowship panel, replacing it with focused, elegant member listings pairing custom statuses to individual student profiles.' }
+    ]
+  },
+  {
+    version: 'v8.4.7',
+    date: '2026-06-05',
+    time: '04:05:00',
+    title: 'Guild Persistence & Timer Synchronization',
+    items: [
+      { category: 'Feature', description: 'Synchronized the local Timer Engine directly with the Guild Cloud Service. Automatically dispatches Focus XP and duration metrics to Guild rosters upon successful completion.' },
+      { category: 'UI/UX', description: 'Overhauled the Fellowship load lifecycle. If you belong to a guild, the Sanctum now renders an immediate Loading Skeleton instead of flashing the public Plaza.' },
+      { category: 'UI/UX', description: 'Restored the overarching Sanctum Plaza navigation button within active Guild dashboards, allowing members to freely browse global public guilds.' },
+      { category: 'Bug Fix', description: 'Repaired the global Top Navigation scroll stickiness. Replaced aggressive overflow-hidden directives with overflow-clip to restore native browser CSS sticky behavior.' },
+      { category: 'Bug Fix', description: 'Resurrected dynamic Theme-aware styling to the top navigation header which had lost its color synchronization across various environments.' }
+    ]
+  },
   {
     version: 'v8.4.6',
     date: '2026-06-05',

@@ -138,60 +138,83 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const nextTasks = await client.zRangeWithScores('scholar_push_tasks', 0, 0);
       const nextTaskTime = nextTasks.length > 0 ? nextTasks[0].score : null;
 
-      const results = [];
+      let processedCount = tasks.length;
+      const results: any[] = [];
 
-      for (const taskStr of tasks) {
-        const task = JSON.parse(taskStr.toString());
-        const subs = await client.sMembers(`scholar_push_subs_${task.secretCode}`);
-        
-        if (subs && subs.length > 0) {
-          for (const subStr of subs) {
-            const subscription = JSON.parse(subStr.toString());
-            const subTTL = task.type === 'streak_reminder' ? 86400 : 300;
-            try {
-              await webpush.sendNotification(subscription, JSON.stringify({
-                title: task.title,
-                body: task.body,
-                data: task.data || { type: task.type }
-              }), { urgency: 'high', TTL: subTTL });
-              results.push({ secretCode: task.secretCode, status: 'sent', endpoint: subscription.endpoint.substring(0, 20) });
-            } catch (err: any) {
-              console.error(`Push failed for sub:`, err.message, err.body ? err.body : '');
-              if (err.statusCode === 410 || err.statusCode === 404 || err.statusCode === 400 || err.statusCode === 401 || err.statusCode === 403) {
-                await client.sRem(`scholar_push_subs_${task.secretCode}`, subStr);
-              }
-              results.push({ secretCode: task.secretCode, status: 'failed_sub', error: err.message });
-            }
-          }
-        } else {
-          // Compatibility with old key format
-          const oldSubStr = await client.get(`scholar_push_sub_${task.secretCode}`);
-          if (oldSubStr) {
-            const subscription = JSON.parse(oldSubStr.toString());
-            const subTTL = task.type === 'streak_reminder' ? 86400 : 300;
-            try {
-              await webpush.sendNotification(subscription, JSON.stringify({
-                title: task.title,
-                body: task.body,
-                data: task.data || { type: task.type }
-              }), { urgency: 'high', TTL: subTTL });
-              results.push({ secretCode: task.secretCode, status: 'sent_legacy' });
-            } catch (err: any) {
-              console.error(`Legacy push failed for sub:`, err.message, err.body ? err.body : '');
-              if (err.statusCode === 410 || err.statusCode === 404 || err.statusCode === 400 || err.statusCode === 401 || err.statusCode === 403) {
-                await client.del(`scholar_push_sub_${task.secretCode}`);
+      const processTasks = async (tasksToProcess: any[]) => {
+        for (const taskStr of tasksToProcess) {
+          const task = JSON.parse(taskStr.toString());
+          const subs = await client.sMembers(`scholar_push_subs_${task.secretCode}`);
+          
+          if (subs && subs.length > 0) {
+            for (const subStr of subs) {
+              const subscription = JSON.parse(subStr.toString());
+              const subTTL = task.type === 'streak_reminder' ? 86400 : 300;
+              try {
+                await webpush.sendNotification(subscription, JSON.stringify({
+                  title: task.title,
+                  body: task.body,
+                  data: task.data || { type: task.type }
+                }), { urgency: 'high', TTL: subTTL });
+                results.push({ secretCode: task.secretCode, status: 'sent', endpoint: subscription.endpoint.substring(0, 20) });
+              } catch (err: any) {
+                console.error(`Push failed for sub:`, err.message, err.body ? err.body : '');
+                if (err.statusCode === 410 || err.statusCode === 404 || err.statusCode === 400 || err.statusCode === 401 || err.statusCode === 403) {
+                  await client.sRem(`scholar_push_subs_${task.secretCode}`, subStr);
+                }
+                results.push({ secretCode: task.secretCode, status: 'failed_sub', error: err.message });
               }
             }
           } else {
-            results.push({ secretCode: task.secretCode, status: 'no_subscriptions' });
+            // Legacy sub handling
+            const oldSubStr = await client.get(`scholar_push_sub_${task.secretCode}`);
+            if (oldSubStr) {
+              const subscription = JSON.parse(oldSubStr.toString());
+              const subTTL = task.type === 'streak_reminder' ? 86400 : 300;
+              try {
+                await webpush.sendNotification(subscription, JSON.stringify({
+                  title: task.title,
+                  body: task.body,
+                  data: task.data || { type: task.type }
+                }), { urgency: 'high', TTL: subTTL });
+                results.push({ secretCode: task.secretCode, status: 'sent_legacy' });
+              } catch (err: any) {
+                console.error(`Legacy push failed for sub:`, err.message, err.body ? err.body : '');
+                if (err.statusCode === 410 || err.statusCode === 404 || err.statusCode === 400 || err.statusCode === 401 || err.statusCode === 403) {
+                  await client.del(`scholar_push_sub_${task.secretCode}`);
+                }
+              }
+            } else {
+              results.push({ secretCode: task.secretCode, status: 'no_subscriptions' });
+            }
           }
+          await client.zRem('scholar_push_tasks', taskStr.toString());
         }
-        await client.zRem('scholar_push_tasks', taskStr.toString());
+      };
+
+      // Process immediately due tasks
+      if (tasks.length > 0) {
+        await processTasks(tasks);
+      }
+
+      // Vercel Wake-Lock Engine: If there's a task due within the next 55 seconds, sleep and execute it before answering the ping
+      if (nextTaskTime && (nextTaskTime - now > 0) && (nextTaskTime - now <= 55000)) {
+        const delayMs = nextTaskTime - Date.now();
+        if (delayMs > 0) {
+           console.log(`[Wake-Lock] Task due in ${Math.round(delayMs/1000)}s. Suspending ping to deliver precisely on time.`);
+           await new Promise(resolve => setTimeout(resolve, delayMs));
+           const delayedNow = Date.now();
+           const delayedTasks = await client.zRangeByScore('scholar_push_tasks', 0, delayedNow);
+           if (delayedTasks.length > 0) {
+             processedCount += delayedTasks.length;
+             await processTasks(delayedTasks);
+           }
+        }
       }
 
       return res.json({ 
         success: true, 
-        processed: tasks.length, 
+        processed: processedCount, 
         debug: {
           serverTime: now,
           totalPendingInQueue: totalCount,

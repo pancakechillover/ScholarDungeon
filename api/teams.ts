@@ -52,6 +52,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     };
 
     const userName = req.body?.userName || decodeHeader(req.headers['x-user-name']) || req.query?.userName || 'Scholar';
+    const userUniqueId = req.body?.userUniqueId || req.headers['x-user-unique-id'] || req.query?.userUniqueId || '';
     const userAvatar = req.body?.userAvatar || req.headers['x-user-avatar'] || req.query?.userAvatar || '';
     const userBio = req.body?.userBio || decodeHeader(req.headers['x-user-bio']) || req.query?.userBio || '';
     const userTitle = req.body?.userTitle || decodeHeader(req.headers['x-user-title']) || req.query?.userTitle || '';
@@ -97,6 +98,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
              if (userBio && m.bio !== userBio) { m.bio = userBio; updated = true; }
              if (userTitle && m.title !== userTitle) { m.title = userTitle; updated = true; }
              if (userLevel && m.level !== userLevel) { m.level = userLevel; updated = true; }
+             if (userUniqueId && m.uniqueId !== userUniqueId) { m.uniqueId = userUniqueId; updated = true; }
              m.lastActive = Date.now();
              updated = true;
              
@@ -180,6 +182,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           title: userTitle,
           bio: userBio,
           level: userLevel,
+          uniqueId: userUniqueId,
           joinedAt: now,
           totalFocusTime: 0,
           isCaptain: true
@@ -210,6 +213,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
              title: userTitle,
              bio: userBio,
              level: userLevel,
+             uniqueId: userUniqueId,
              appliedAt: Date.now()
           };
           await client.hSet(`scholar_team:${teamId}:applicants`, userId, JSON.stringify(applicant));
@@ -232,6 +236,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           title: userTitle,
           bio: userBio,
           level: userLevel,
+          uniqueId: userUniqueId,
           joinedAt: Date.now(),
           totalFocusTime: 0,
           isCaptain: false
@@ -276,12 +281,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (method === 'POST' && action === 'event') {
        const { teamId, type, content, duration } = req.body;
        
-       // if duration is passed, increment member's totalFocusTime
-       if (duration) {
+       // safely handle duration parsing
+       const timeVal = duration !== undefined ? Number(duration) : 0;
+       
+       if (timeVal > 0) {
           const memberStr = await client.hGet(`scholar_team:${teamId}:members`, userId);
           if (memberStr) {
              const m = JSON.parse(memberStr);
-             m.totalFocusTime += duration;
+             m.totalFocusTime = (m.totalFocusTime || 0) + timeVal;
              await client.hSet(`scholar_team:${teamId}:members`, userId, JSON.stringify(m));
           }
        }
@@ -444,6 +451,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
              title: applicant.title,
              bio: applicant.bio,
              level: applicant.level,
+             uniqueId: applicant.uniqueId || '',
              joinedAt: Date.now(),
              totalFocusTime: 0,
              isCaptain: false

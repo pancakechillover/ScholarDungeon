@@ -1053,7 +1053,7 @@ function App() {
 
       <UpdateChecker />
 
-      <div className="min-h-[100dvh] w-full max-w-full bg-slate-950 text-slate-200 font-sans selection:bg-indigo-500/30 overflow-x-hidden relative">
+      <div className="min-h-[100dvh] w-full max-w-full bg-slate-950 text-slate-200 font-sans selection:bg-indigo-500/30 relative">
       {/* Sidebar Navigation - Hidden on mobile, visible on tablet/desktop */}
       {!isFullscreenExplore && (
         <nav className={cn(

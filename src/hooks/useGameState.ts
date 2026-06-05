@@ -26,6 +26,15 @@ const getAddedProgress = (
   return Math.max(1, val) / denom;
 };
 
+const generateUniqueId = () => {
+  const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  let result = '';
+  for (let i = 0; i < 5; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return `SD-${result}`;
+};
+
 export function useGameState() {
   const [state, setState] = useState<AppState>(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -51,6 +60,7 @@ export function useGameState() {
       dailyRerollUsed: false,
       inventory: [],
       userName: 'Scholar',
+      userUniqueId: generateUniqueId(),
       userBio: 'Master of the Study Dungeon',
       quests: DEFAULT_QUESTS,
       questNotificationStyle: 'red_dot',
@@ -157,6 +167,10 @@ export function useGameState() {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
+
+        if (!parsed.userUniqueId) {
+          parsed.userUniqueId = generateUniqueId();
+        }
         
         // Migration: gachaEffect to split animations
         if (parsed.gachaEffect) {
@@ -1193,8 +1207,31 @@ export function useGameState() {
       });
     }
 
+    // Broadcast focus session to Guild Team
+    if (state.teamId && state.secretCode) {
+      const finalDuration = Math.max(1, Math.round(sessionDurationVal));
+      fetch('/api/teams?action=event', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-secret-code': state.secretCode || '',
+          'x-user-name': encodeURIComponent(state.userName || 'Scholar'),
+          'x-user-avatar': state.userAvatar || 'User',
+          'x-user-level': String(state.level || 1),
+          'x-user-unique-id': state.userUniqueId || ''
+        },
+        body: JSON.stringify({
+          teamId: state.teamId,
+          type: 'focus',
+          duration: finalDuration,
+          userUniqueId: state.userUniqueId,
+          content: `${state.userName || 'Scholar'} just finished a ${finalDuration}m focus session.`
+        })
+      }).catch(console.error);
+    }
+
     return session;
-  }, [addXP, addCoins, state.activeTalents, state.dailySessions, state.streak, state.inventory, state.rewardPool, state.devModeEnabled, state.devBaseXP, state.devXpMode, state.devMinXP, state.devMaxXP, state.devCoinMode, state.devBaseCoins, state.devMinCoins, state.devMaxCoins, state.devCritChance, state.devCritMultiplier, state.timezone, state.timeSettings]);
+  }, [addXP, addCoins, state.activeTalents, state.dailySessions, state.streak, state.inventory, state.rewardPool, state.devModeEnabled, state.devBaseXP, state.devXpMode, state.devMinXP, state.devMaxXP, state.devCoinMode, state.devBaseCoins, state.devMinCoins, state.devMaxCoins, state.devCritChance, state.devCritMultiplier, state.timezone, state.timeSettings, state.teamId, state.secretCode, state.userName, state.userAvatar, state.level]);
 
   const forceCompleteSubDungeon = useCallback((dungeonId: string) => {
     setDungeons(prevDungeons => {

@@ -222,7 +222,12 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                       </button>
                     </div>
                     <p className="text-xs sm:text-sm text-slate-400 font-medium line-clamp-2">{state.userBio || 'Master of the Study Dungeon'}</p>
-                    <div className="flex flex-wrap items-center gap-2 mt-2">
+                    <div className="flex flex-wrap items-center gap-2 mt-2 font-mono">
+                      {state.userUniqueId && (
+                        <span className="px-2 py-0.5 bg-slate-500/10 text-slate-400 text-[9px] sm:text-[10px] font-bold rounded-md border border-slate-500/20 pr-1">
+                          #{state.userUniqueId}
+                        </span>
+                      )}
                       <span className="px-2 py-0.5 bg-indigo-500/10 text-indigo-400 text-[9px] sm:text-[10px] font-black uppercase tracking-widest rounded-md border border-indigo-500/20 pr-1">
                         {getTitleForLevel(state.level)}
                       </span>
