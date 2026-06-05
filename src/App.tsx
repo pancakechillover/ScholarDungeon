@@ -486,6 +486,20 @@ function App() {
         pipWindow.document.documentElement.removeAttribute('data-theme');
       }
     }
+    
+    // Dynamically update theme-color meta tag for PWA status bar
+    setTimeout(() => {
+      const bgColor = getComputedStyle(document.body).getPropertyValue('background-color');
+      if (bgColor) {
+        let metaThemeColor = document.querySelector('meta[name="theme-color"]');
+        if (!metaThemeColor) {
+          metaThemeColor = document.createElement('meta');
+          metaThemeColor.setAttribute('name', 'theme-color');
+          document.head.appendChild(metaThemeColor);
+        }
+        metaThemeColor.setAttribute('content', bgColor);
+      }
+    }, 50);
   }, [state.theme, pipWindow]);
 
   React.useEffect(() => {
@@ -1032,7 +1046,7 @@ function App() {
 
       <UpdateChecker />
 
-      <div className="min-h-[100dvh] bg-slate-950 text-slate-200 font-sans selection:bg-indigo-500/30">
+      <div className="min-h-[100dvh] bg-slate-950 text-slate-200 font-sans selection:bg-indigo-500/30 overflow-x-hidden">
       {/* Sidebar Navigation - Hidden on mobile, visible on tablet/desktop */}
       {!isFullscreenExplore && (
         <nav className={cn(

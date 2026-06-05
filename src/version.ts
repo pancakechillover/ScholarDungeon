@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v8.4.2';
-export const LAST_UPDATE_DATE = '2026-06-04';
-export const LAST_UPDATE_TIME = '17:35:00';
+export const APP_VERSION = 'v8.4.3';
+export const LAST_UPDATE_DATE = '2026-06-05';
+export const LAST_UPDATE_TIME = '02:45:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,16 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v8.4.3',
+    date: '2026-06-05',
+    time: '02:45:00',
+    title: 'iOS PWA Engine Polish',
+    items: [
+      { category: 'UI/UX', description: 'Embedded dynamic <meta name="theme-color"> mutations mapped precisely to the active aesthetic theme (e.g. Daylight, Warm Sun). This gracefully merges the persistent iOS top status bar into the designated theme background.' },
+      { category: 'Bug Fix', description: 'Intercepted horizontal boundary overflow by aggressively locking overflow-x-hidden onto the absolute root entry wrapper, eliminating unintended lateral swiping jitter.' }
+    ]
+  },
   {
     version: 'v8.4.2',
     date: '2026-06-04',
