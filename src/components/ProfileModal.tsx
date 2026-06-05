@@ -185,7 +185,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
           <div className="relative p-4 sm:p-8 pr-12 sm:pr-24 flex justify-between items-start shrink-0">
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 w-full">
               <div className="relative group shrink-0">
-                <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-3xl bg-slate-900 border-2 border-slate-800 flex items-center justify-center text-indigo-400 shadow-2xl relative overflow-hidden">
+                <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-3xl bg-slate-900 flex items-center justify-center text-indigo-400 relative overflow-hidden">
                   {isEditingProfile ? (
                     <ActiveEditAvatarIcon className="w-10 h-10 sm:w-14 sm:h-14" />
                   ) : (

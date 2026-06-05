@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v8.6.8';
+export const APP_VERSION = 'v8.6.10';
 export const LAST_UPDATE_DATE = '2026-06-05';
-export const LAST_UPDATE_TIME = '12:55:00';
+export const LAST_UPDATE_TIME = '13:20:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,26 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v8.6.10',
+    date: '2026-06-05',
+    time: '13:20:00',
+    title: 'Chat Layout & Avatar Polish',
+    items: [
+      { category: 'UI/UX', description: 'Stripped away unnecessary borders, rings, and inner drop-shadows across all User / Guild avatars universally.' },
+      { category: 'Bug Fix', description: 'Prevented the Fellowship Chat Message Board from infinitely stretching the parent container and instead explicitly enforcing scrolling bounds so the chat input strictly pins to the bottom.' }
+    ]
+  },
+  {
+    version: 'v8.6.9',
+    date: '2026-06-05',
+    time: '13:10:00',
+    title: 'User Profile Dashboard Enhancements',
+    items: [
+      { category: 'UI/UX', description: 'Replaced the generic level indicator and placeholder icon in the main layout\'s left navigation sidebar with dynamic, real-time user avatars and custom nicknames.' },
+      { category: 'UI/UX', description: 'Upgraded the mobile top-left profile entry button to accurately reflect the user-selected avatar.' }
+    ]
+  },
   {
     version: 'v8.6.8',
     date: '2026-06-05',

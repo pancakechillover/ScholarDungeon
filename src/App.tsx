@@ -52,6 +52,7 @@ import { CloudSyncModal } from './components/CloudSyncModal';
 import { SplashScreen } from './components/SplashScreen';
 import { CompactTimer } from './components/CompactTimer';
 import { UpdateChecker } from './components/UpdateChecker';
+import { renderAvatar } from './components/TeamModule';
 
 const isTalentLevel = (lvl: number) => {
   if (lvl <= 4) return true;
@@ -1110,8 +1111,8 @@ function App() {
               isSidebarCollapsed ? "justify-center" : "space-x-3"
             )}
           >
-            <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center text-indigo-400 group-hover:bg-indigo-500 group-hover:text-white transition-all shrink-0">
-              <User size={20} />
+            <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-indigo-400 group-hover:bg-indigo-500/20 group-hover:text-indigo-300 transition-all shrink-0 overflow-hidden">
+              {renderAvatar(state.userAvatar, 20)}
             </div>
             {!isSidebarCollapsed && (
               <motion.div 
@@ -1119,8 +1120,8 @@ function App() {
                 animate={{ opacity: 1, x: 0 }}
                 className="text-left overflow-hidden"
               >
-                <p className="text-sm font-bold text-white">Level {state.level}</p>
-                <p className="text-xs text-slate-500">View Profile</p>
+                <p className="text-sm font-bold text-white truncate">{state.userName || 'Scholar'}</p>
+                <p className="text-xs text-slate-500">Lv. {state.level}</p>
               </motion.div>
             )}
           </button>
@@ -1342,9 +1343,9 @@ function App() {
               <div className="relative">
                 <button 
                   onClick={openProfile}
-                  className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-800 flex items-center justify-center text-indigo-400 border border-slate-700 hover:bg-slate-700 transition-all"
+                  className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-800 flex items-center justify-center text-indigo-400 hover:bg-slate-700 transition-all overflow-hidden"
                 >
-                  <User size={16} />
+                  {renderAvatar(state.userAvatar, 16)}
                 </button>
                 {(state.secretCode || state.syncProvider) && (hasUnsyncedChanges || isSyncing || isVerifying || syncError) && (
                   <button

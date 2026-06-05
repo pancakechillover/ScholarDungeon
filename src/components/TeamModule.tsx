@@ -17,7 +17,7 @@ interface TeamModuleProps {
   setState: React.Dispatch<React.SetStateAction<AppState>>;
 }
 
-const renderAvatar = (avatarValue: string | undefined, size: number = 14) => {
+export const renderAvatar = (avatarValue: string | undefined, size: number = 14) => {
   if (!avatarValue) {
     return <User size={size} className="text-slate-500 m-auto" />;
   }
@@ -421,7 +421,7 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
         
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <div className="flex items-center gap-4 max-w-full truncate">
-            <div className="w-14 h-14 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center shadow-inner shrink-0 overflow-hidden text-2xl">
+            <div className="w-14 h-14 rounded-2xl bg-slate-800 flex items-center justify-center shrink-0 overflow-hidden text-2xl">
               {renderGuildIcon((team as any).avatar, 28)}
             </div>
             <div className="truncate max-w-full">
@@ -443,9 +443,9 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
           </div>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-6 flex-1 overflow-hidden lg:overflow-visible">
+        <div className="flex flex-col lg:flex-row gap-6 flex-1 overflow-hidden">
           {/* Left: Progress & Members */}
-          <div className="w-full lg:w-1/3 flex flex-col gap-4 shrink-0">
+          <div className="w-full lg:w-1/3 flex flex-col gap-4 shrink-0 overflow-y-auto custom-scrollbar pr-2">
             <div 
               onClick={() => setShowDetailedGoal(true)}
               className="bg-slate-900 border border-slate-800 rounded-2xl p-5 text-center cursor-pointer group hover:border-indigo-500/50 hover:shadow-[0_0_20px_rgba(99,102,241,0.15)] transition-all overflow-hidden relative"
@@ -543,7 +543,7 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
                   >
                     <div className="flex items-center gap-2">
                       <div className="relative">
-                        <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center overflow-hidden text-lg">
+                        <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center overflow-hidden text-lg">
                           {renderAvatar(m.avatar, 14)}
                         </div>
                         {isOnline ? (
@@ -575,7 +575,7 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
                       <div key={app.userId} className="bg-indigo-950/10 border border-indigo-500/10 p-2.5 rounded-xl flex flex-col gap-2">
                         <div className="flex justify-between items-center">
                           <div className="flex items-center gap-2">
-                            <div className="w-7 h-7 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center overflow-hidden">
+                            <div className="w-7 h-7 rounded-full bg-slate-800 flex items-center justify-center overflow-hidden">
                               {renderAvatar(app.avatar, 12)}
                             </div>
                             <div className="flex flex-col">
@@ -612,7 +612,7 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
           </div>
           
           {/* Right: Board */}
-          <div className="w-full lg:w-2/3 bg-slate-950 border border-slate-800 rounded-2xl flex flex-col min-h-[450px] lg:min-h-0">
+          <div className="w-full lg:w-2/3 bg-slate-950 border border-slate-800 rounded-2xl flex flex-col h-[450px] sm:h-[500px] lg:h-auto lg:flex-1 shrink-0 lg:shrink">
             <div className="flex border-b border-slate-800 p-1">
               <button 
                 onClick={() => setActiveTab('chat')} 
@@ -669,7 +669,7 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
                     return (
                       <div key={m.id} className={cn("flex flex-col w-full", isMe ? "items-end" : "items-start")}>
                         <div className={cn("flex items-end gap-2", isMe ? "flex-row-reverse" : "flex-row")}>
-                          <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 overflow-hidden shrink-0 translate-y-1 flex items-center justify-center">
+                          <div className="w-8 h-8 rounded-full bg-slate-800 overflow-hidden shrink-0 translate-y-1 flex items-center justify-center">
                             {renderAvatar(m.avatar, 14)}
                           </div>
                           <div className={cn("flex flex-col", isMe ? "items-end" : "items-start")}>
@@ -1097,7 +1097,7 @@ const TeamMemberProfileModal = ({ member, onClose, isCurrentUserCaptain, isTarge
         <button onClick={onClose} className="absolute top-4 right-4 text-slate-500 hover:text-white z-20"><X size={20}/></button>
         
         <div className="flex flex-col items-center relative z-10 text-center">
-          <div className="w-24 h-24 rounded-full bg-slate-800 border-4 border-slate-700 flex items-center justify-center text-4xl shadow-xl shadow-black/50 mb-4 overflow-hidden relative">
+          <div className="w-24 h-24 rounded-full bg-slate-800 flex items-center justify-center text-4xl mb-4 overflow-hidden relative">
             {renderAvatar(member.avatar, 40)}
           </div>
           
@@ -1217,7 +1217,7 @@ const GoalDetailsModal = ({ team, onClose }: any) => {
             {sortedMembers.map((m: any, idx: number) => (
                <div key={m.userId} className="flex items-center gap-4 p-3 bg-slate-800/30 rounded-xl border border-slate-800/50">
                   <div className="w-6 text-center font-black text-slate-600 italic">#{idx + 1}</div>
-                  <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center overflow-hidden">
+                  <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center overflow-hidden">
                     {renderAvatar(m.avatar, 14)}
                   </div>
                   <div className="flex-1 font-bold text-slate-300 text-sm truncate">{m.name}</div>

@@ -23,9 +23,9 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v8.6.8
+- **Current Version:** v8.6.10
 - **Last Update Date:** 2026-06-05
-- **Last Update Time:** 12:55:00
+- **Last Update Time:** 13:20:00
 
 ## Dark Themes Definition
 The following themes are considered "Dark Themes" and form the baseline for vibrant visual effects and high-contrast glowing elements:
@@ -50,6 +50,14 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v8.6.10 (2026-06-05):** Chat Layout & Avatar Polish.
+  - *UI/UX:* Stripped away unnecessary borders, rings, and inner drop-shadows across all User / Guild avatars universally.
+  - *Bug Fix:* Prevented the Fellowship Chat Message Board from infinitely stretching the parent container and instead explicitly enforcing scrolling bounds so the chat input strictly pins to the bottom.
+
+- **v8.6.9 (2026-06-05):** User Profile Dashboard Enhancements.
+  - *UI/UX:* Replaced the generic level indicator and placeholder icon in the main layout's left navigation sidebar with dynamic, real-time user avatars and custom nicknames.
+  - *UI/UX:* Upgraded the mobile top-left profile entry button to accurately reflect the user-selected avatar.
 
 - **v8.6.8 (2026-06-05):** Guild Avatars SVG Overhaul & UI Polish.
   - *UI/UX:* Replaced emoji placeholders with high-fidelity Lucide-React SVG icons (Scholarly, Adventure, Fantasy themes), enhancing immersion.
