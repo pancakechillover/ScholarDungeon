@@ -1153,7 +1153,7 @@ function App() {
               </div>
               <div className="flex flex-col min-w-0">
                 <div className="flex items-center gap-1.5 sm:gap-2">
-                  <span className="text-[10px] sm:text-xs font-bold text-white truncate max-w-[60px] xs:max-w-[100px] sm:max-w-[180px] leading-tight">
+                  <span className="text-[10px] sm:text-xs font-bold text-white truncate max-w-[45px] xs:max-w-[80px] sm:max-w-[180px] leading-tight">
                     {currentDungeon.name}
                   </span>
                   <span className="text-[9px] font-black text-slate-600 tabular-nums shrink-0">
@@ -1183,13 +1183,13 @@ function App() {
               <div className="flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
                 <Sword size={14} className="text-slate-500 group-hover:text-indigo-400" />
               </div>
-              <span className="text-[10px] sm:text-[11px] font-black text-slate-500 group-hover:text-white uppercase tracking-[0.15em] italic pr-1 transition-colors">
+              <span className="hidden sm:inline text-[10px] sm:text-[11px] font-black text-slate-500 group-hover:text-white uppercase tracking-[0.15em] italic pr-1 transition-colors">
                 Go Dungeons
               </span>
             </motion.div>
           )}
           
-          <div className="flex-1 flex items-center justify-between sm:justify-end gap-2 sm:gap-4 md:gap-6">
+          <div className="flex-1 flex items-center justify-end gap-2 sm:gap-4 md:gap-6">
 
             {/* Cloud Status */}
             {(state.secretCode || state.syncProvider) && (
@@ -1220,7 +1220,7 @@ function App() {
 
             {/* XP Bar */}
             <div 
-              className="flex flex-col sm:flex-row items-center sm:items-center gap-0.5 sm:gap-2 relative cursor-pointer" 
+              className="flex items-center gap-1 sm:gap-2 mr-auto sm:mr-0 relative cursor-pointer" 
               onClick={() => setShowXpTooltip(!showXpTooltip)}
               title="Experience"
             >
@@ -1229,14 +1229,14 @@ function App() {
               )}>
                 LV.{state.level}
               </span>
-              <div className="flex items-center gap-1.5 sm:gap-2">
+              <div className="hidden sm:flex items-center gap-1.5 sm:gap-2">
                 <div className="w-10 sm:w-16 md:w-20 h-1 sm:h-2 bg-slate-800/80 rounded-full overflow-hidden border border-slate-700/50 shrink-0">
                   <div 
                     className="h-full bg-gradient-to-r from-indigo-400 to-indigo-600 shadow-[0_0_8px_rgba(99,102,241,0.4)] transition-all duration-700 ease-in-out" 
                     style={{ width: `${(state.xp / getXPForLevel(state.level)) * 100}%` }} 
                   />
                 </div>
-                <div className="hidden sm:flex items-center gap-1 shrink-0">
+                <div className="flex items-center gap-1 shrink-0">
                   <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 tabular-nums whitespace-nowrap">
                     {state.xp.toLocaleString()}
                     <span className="text-slate-600 ml-1">/ {getXPForLevel(state.level).toLocaleString()}</span>
@@ -1250,6 +1250,11 @@ function App() {
                 showXpTooltip ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"
               )}>
                 <div className="flex flex-col gap-1">
+                  <div className="flex items-center justify-between gap-6">
+                    <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Progress</span>
+                    <span className="text-xs font-bold text-white italic pr-1">{state.xp.toLocaleString()} / {getXPForLevel(state.level).toLocaleString()}</span>
+                  </div>
+                  <div className="h-[1px] w-full bg-slate-800 my-1" />
                   <div className="flex items-center justify-between gap-6">
                     <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Next Level</span>
                     <span className="text-[10px] font-bold text-slate-500 italic pr-1">{(state.xp / getXPForLevel(state.level) * 100).toFixed(1)}%</span>

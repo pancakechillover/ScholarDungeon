@@ -433,6 +433,7 @@ export interface TeamConfig {
   rewardType: 'item' | 'text' | 'coins' | 'xp' | string;
   rewardContent: string; // e.g. "Pizza party!" or "{ type: 'item', id: '123' }"
   joinRule?: 'direct' | 'approval' | string;
+  resetTime?: string; // e.g. "00:00" or "04:00"
 }
 
 export interface Team {

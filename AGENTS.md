@@ -23,9 +23,9 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v8.5.0
+- **Current Version:** v8.6.0
 - **Last Update Date:** 2026-06-05
-- **Last Update Time:** 05:46:00
+- **Last Update Time:** 07:35:00
 
 ## Dark Themes Definition
 The following themes are considered "Dark Themes" and form the baseline for vibrant visual effects and high-contrast glowing elements:
@@ -50,6 +50,30 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v8.6.0 (2026-06-05):** Fellowship Horizon Enhancements.
+  - *Feature:* Enabled Captains to configure an exact daily "Goal Refresh Schedule" (e.g. 00:00, 03:00, 04:00) during Guild creation and inside Guild Settings.
+  - *UI/UX:* Redesigned the Guild Goal modal to prominently center the progress percentage within a larger tracking ring.
+  - *UI/UX:* Promoted the Guild Vault Reward into a standalone, high-contrast, hovered display card to significantly increase visibility and motivation.
+  - *UI/UX:* Integrated a dynamically calculated "CYCLE" time-boundary banner beneath the horizon title to display the precise start and end dates based on the active refresh schedule.
+
+- **v8.5.4 (2026-06-05):** Streamlined Navigation Experience Tracking on Mobile.
+  - *UI/UX:* Simplified mobile XP bar layout by hiding graphic progress indicators and numerical trackers by default, maximizing whitespace.
+  - *UI/UX:* Preserved level click functionality so tapping the level label instantly triggers the comprehensive floating progress sheet.
+
+- **v8.5.3 (2026-06-05):** Restored Classic Top Level & XP Module and Corrected Far-Right Alignment on Mobile.
+  - *UI/UX:* Restored the high-durability classic layout for mobile Level/XP badges and detailed XP progress bars to their responsive visual format.
+  - *UI/UX:* Repositioned status submodules including talent scrolls and gold coins to group elegantly next to mobile navigation buttons on the far-right edge via custom margin pushers.
+
+- **v8.5.2 (2026-06-05):** Optimized Top Navigation Status Layout for Compact Mobile Views.
+  - *UI/UX:* Transformed raw multi-row XP Progress track into a clickable floating tooltip toggle on screens smaller than sm (mobile devices), preserving core visual estate.
+  - *UI/UX:* Styled the compact Level indicator as a border-accentuated, theme-aware mini badge on mobile, automatically scaling back to its standard full size on tablet and desktop viewports.
+  - *UI/UX:* Collapsed unnecessary inactive dungeon navigation text labels and restricted maximum text limits of active dungeons on portrait layouts, fully resolving coin spacing overlap.
+
+- **v8.5.1 (2026-06-05):** Polished Responsive Fellowship Layout for Mobile PWAs.
+  - *UI/UX:* Restructured active Fellowship dashboard grid into dynamic layouts that collapse cleanly into continuous columns on mobile views, enhancing responsiveness on touchscreens.
+  - *UI/UX:* Enforced custom scroll limitations and vertical min-height parameters on Team members list boxes and chat workspaces, avoiding container squashing.
+  - *UI/UX:* Enhanced Lobby menus to wrap gracefully and resolved mobile touchscreen touch interaction issues by keeping the "Join" actions visible.
 
 - **v8.5.0 (2026-06-05):** Standardized Nickname Formatting & Multi-Language Translation.
   - *Feature:* Implemented adaptive username validation (maximum 10 Chinese characters or 15 Latin characters) with interactive mode switches and real-time character meters.

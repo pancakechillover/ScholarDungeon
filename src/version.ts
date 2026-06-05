@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v8.5.0';
+export const APP_VERSION = 'v8.6.0';
 export const LAST_UPDATE_DATE = '2026-06-05';
-export const LAST_UPDATE_TIME = '05:46:00';
+export const LAST_UPDATE_TIME = '07:35:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,60 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v8.6.0',
+    date: '2026-06-05',
+    time: '07:35:00',
+    title: 'Fellowship Horizon Enhancements',
+    items: [
+      { category: 'Feature', description: 'Enabled Captains to configure an exact daily Goal Refresh Schedule (e.g. Midnight, 3 AM, 4 AM) during Guild creation and inside Guild Settings.' },
+      { category: 'UI/UX', description: 'Redesigned the Guild Goal modal to prominently center the progress percentage within a larger tracking ring.' },
+      { category: 'UI/UX', description: 'Promoted the Guild Vault Reward into a standalone, high-contrast, hovered display card to significantly increase visibility.' },
+      { category: 'UI/UX', description: 'Integrated a dynamically calculated CYCLE time-boundary banner to display the precise start and end dates based on the active refresh schedule.' }
+    ]
+  },
+  {
+    version: 'v8.5.4',
+    date: '2026-06-05',
+    time: '07:20:00',
+    title: 'Streamlined Navigation Experience Tracking on Mobile',
+    items: [
+      { category: 'UI/UX', description: 'Simplified mobile XP bar layout by hiding graphic progress indicators and numerical trackers by default, maximizing whitespace.' },
+      { category: 'UI/UX', description: 'Preserved level click functionality so tapping the level label instantly triggers the comprehensive floating progress sheet.' }
+    ]
+  },
+  {
+    version: 'v8.5.3',
+    date: '2026-06-05',
+    time: '07:15:00',
+    title: 'Restored Classic Top Navigation Level Panel & Perfected Right Alignment',
+    items: [
+      { category: 'UI/UX', description: 'Restored the high-fidelity, classic responsive layout for Level indicators and detailed XP tracking rails to their highly polished format.' },
+      { category: 'UI/UX', description: 'Repositioned status submodules including talent scrolls and gold coins to group elegantly next to mobile navigation buttons on the far-right edge.' }
+    ]
+  },
+  {
+    version: 'v8.5.2',
+    date: '2026-06-05',
+    time: '07:05:00',
+    title: 'Optimized Top Navigation Status Layout for Compact Mobile Views',
+    items: [
+      { category: 'UI/UX', description: 'Transformed raw multi-row XP Progress track into a clickable floating tooltip toggle on screens smaller than sm (mobile devices), preserving core visual estate.' },
+      { category: 'UI/UX', description: 'Styled the compact Level indicator as a border-accentuated, theme-aware mini badge on mobile, automatically scaling back to its standard full size on tablet and desktop viewports.' },
+      { category: 'UI/UX', description: 'Collapsed unnecessary inactive dungeon navigation text labels and restricted maximum text limits of active dungeons on portrait layouts, fully resolving coin spacing overlap.' }
+    ]
+  },
+  {
+    version: 'v8.5.1',
+    date: '2026-06-05',
+    time: '06:50:00',
+    title: 'Polished Responsive Fellowship Layout for Mobile PWAs',
+    items: [
+      { category: 'UI/UX', description: 'Restructured the active Fellowship dashboard layout from a rigid grid into a modern, fluid column system that stacks elegantly on mobile devices and narrow Slide-Over panels.' },
+      { category: 'UI/UX', description: 'Equipped the team member lists with explicit scrollable bounding constraints, preventing overflow and ensuring continuous readability on small frames.' },
+      { category: 'UI/UX', description: 'Transformed Lobby search and action menus to wrap cleanly under low screen widths and forced the Join button to be fully visible on touch interfaces.' }
+    ]
+  },
   {
     version: 'v8.5.0',
     date: '2026-06-05',

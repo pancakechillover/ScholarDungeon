@@ -257,24 +257,24 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
 
   const renderLobby = () => (
     <div className="space-y-4">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 mb-6">
         <button
           onClick={() => setShowPlazaModal(true)}
-          className="px-3 py-1.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 font-bold border border-indigo-500/20 rounded-lg text-xs transition-all flex items-center gap-1.5 cursor-pointer hover:scale-105 active:scale-95"
+          className="w-full sm:w-auto px-3 py-1.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 font-bold border border-indigo-500/20 rounded-lg text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer hover:scale-105 active:scale-95"
           id="btn-plaza-tab"
         >
           <Landmark size={14} /> Plaza
         </button>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           <button 
             onClick={() => setShowJoin(true)}
-            className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1.5"
+            className="flex-1 sm:flex-none justify-center px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1.5"
           >
             <LogIn size={14} /> Join Guild
           </button>
           <button 
             onClick={() => setShowCreate(true)}
-            className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1.5"
+            className="flex-1 sm:flex-none justify-center px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1.5"
           >
             <Plus size={14} /> Create Guild
           </button>
@@ -301,7 +301,7 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
                 </span>
                 <button 
                   onClick={() => joinTeam(t.id)}
-                  className="px-4 py-1.5 bg-slate-800 hover:bg-indigo-600 text-indigo-400 hover:text-white rounded-lg text-xs font-bold transition-all opacity-0 group-hover:opacity-100"
+                  className="px-4 py-1.5 bg-slate-800 hover:bg-indigo-600 text-indigo-400 hover:text-white rounded-lg text-xs font-bold transition-all opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
                 >
                   Join
                 </button>
@@ -356,21 +356,21 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
     const isCaptain = team.members.find(x => x.userId === team.myUserId)?.isCaptain;
 
     return (
-      <div className="flex flex-col h-[500px]">
+      <div className="flex flex-col lg:h-[550px] min-h-[500px] h-auto">
         {renderProposal()}
         
-        <div className="flex justify-between items-start mb-6">
-          <div>
-            <h3 className="text-2xl font-black text-white italic uppercase tracking-tighter mb-1">{team.name}</h3>
-            <p className="text-xs text-slate-400">{team.description}</p>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+          <div className="truncate max-w-full">
+            <h3 className="text-2xl font-black text-white italic uppercase tracking-tighter mb-1 truncate">{team.name}</h3>
+            <p className="text-xs text-slate-400 line-clamp-2 md:line-clamp-1">{team.description}</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 w-full sm:w-auto justify-end shrink-0">
             <button
               onClick={() => setShowPlazaModal(true)}
               className="px-3 py-1.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 font-bold border border-indigo-500/20 rounded-xl text-xs transition-all flex items-center gap-1.5 cursor-pointer hover:scale-105 active:scale-95"
               title="Sanctum Plaza"
             >
-              <Landmark size={14} /> <span className="hidden sm:inline">Plaza</span>
+              <Landmark size={14} /> <span>Plaza</span>
             </button>
             <button onClick={() => setShowSettings(true)} className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-400 rounded-xl transition-colors">
               <Settings size={18} />
@@ -378,9 +378,9 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
           </div>
         </div>
 
-        <div className="flex gap-6 flex-1 overflow-hidden">
+        <div className="flex flex-col lg:flex-row gap-6 flex-1 overflow-hidden lg:overflow-visible">
           {/* Left: Progress & Members */}
-          <div className="w-1/3 flex flex-col gap-4">
+          <div className="w-full lg:w-1/3 flex flex-col gap-4 shrink-0">
             <div 
               onClick={() => setShowDetailedGoal(true)}
               className="bg-slate-900 border border-slate-800 rounded-2xl p-5 text-center cursor-pointer group hover:border-indigo-500/50 hover:shadow-[0_0_20px_rgba(99,102,241,0.15)] transition-all overflow-hidden relative"
@@ -424,7 +424,7 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
               )}
             </div>
             
-            <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4 flex-1 overflow-y-auto custom-scrollbar flex flex-col">
+            <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4 flex-1 min-h-[220px] lg:min-h-0 overflow-y-auto custom-scrollbar flex flex-col">
               <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Members ({team.members.length})</div>
 
               <div className="space-y-3">
@@ -507,7 +507,7 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
           </div>
           
           {/* Right: Board */}
-          <div className="w-2/3 bg-slate-950 border border-slate-800 rounded-2xl flex flex-col">
+          <div className="w-full lg:w-2/3 bg-slate-950 border border-slate-800 rounded-2xl flex flex-col min-h-[450px] lg:min-h-0">
             <div className="flex border-b border-slate-800 p-1">
               <button 
                 onClick={() => setActiveTab('chat')} 
@@ -762,7 +762,8 @@ const CreateTeamModal = ({ onClose, onCreate }: any) => {
         targetType: 'total_time',
         targetValue: 1000,
         rewardType: 'text',
-        rewardContent: ''
+        rewardContent: '',
+        resetTime: '00:00'
      }
   });
 
@@ -863,6 +864,23 @@ const CreateTeamModal = ({ onClose, onCreate }: any) => {
                     className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:border-indigo-500 outline-none tabular-nums" />
                </div>
              </div>
+
+             {cfg.config.targetType !== 'total_time' && (
+               <div className="pt-2">
+                 <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-1 mb-1 block flex items-center gap-2"><Clock size={12} className="text-indigo-400" /> Goal Refresh Schedule</label>
+                 <select 
+                   value={cfg.config.resetTime || '00:00'} 
+                   onChange={e => setCfg({...cfg, config: {...cfg.config, resetTime: e.target.value}})}
+                   className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:border-indigo-500 outline-none"
+                 >
+                   <option value="00:00">Midnight (00:00)</option>
+                   <option value="03:00">Late Night (03:00 AM)</option>
+                   <option value="04:00">Early Morning (04:00 AM)</option>
+                   <option value="05:00">Dawn (05:00 AM)</option>
+                   <option value="06:00">Morning (06:00 AM)</option>
+                 </select>
+               </div>
+             )}
 
              <div className="grid grid-cols-2 gap-4">
                <div>
@@ -1203,6 +1221,24 @@ const SettingsModal = ({ team, onClose, onSave, isCaptain, onLeave }: any) => {
                  </div>
                </div>
 
+               {cfg.targetType !== 'total_time' && (
+                 <div>
+                   <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-1 mb-1 block flex items-center gap-2"><Clock size={12} className="text-indigo-400" /> Goal Refresh Schedule</label>
+                   <select 
+                     value={cfg.resetTime || '00:00'} 
+                     onChange={e => setCfg({...cfg, resetTime: e.target.value})}
+                     disabled={!isCaptain && team.config.permission !== 'unanimous'}
+                     className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white outline-none disabled:opacity-50"
+                   >
+                     <option value="00:00">Midnight (00:00) / End of Day</option>
+                     <option value="03:00">Late Night (03:00 AM)</option>
+                     <option value="04:00">Early Morning (04:00 AM)</option>
+                     <option value="05:00">Dawn (05:00 AM)</option>
+                     <option value="06:00">Morning (06:00 AM)</option>
+                   </select>
+                 </div>
+               )}
+
                <div className="grid grid-cols-2 gap-4">
                  <div>
                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-1 mb-1 block">Reward Type</label>
@@ -1384,9 +1420,44 @@ const DetailedGoalModal = ({ team, onClose }: { team: Team, onClose: () => void 
              <Target size={32} />
            </div>
            <h2 className="text-3xl font-black text-white italic tracking-tighter uppercase mb-1">Guild Horizon</h2>
-           <p className="text-sm text-slate-500 font-medium max-w-sm">
+           <p className="text-sm text-slate-500 font-medium max-w-sm mb-4">
              The collective target for {(team.name).toUpperCase()}
            </p>
+           {team.config.targetType !== 'total_time' && (
+             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-950 border border-slate-800 shadow-sm">
+               <Clock size={12} className="text-indigo-400" />
+               <span className="text-[10px] sm:text-xs font-bold text-slate-400 font-mono tracking-widest whitespace-nowrap">
+                 CYCLE: {(() => {
+                   const now = new Date();
+                   const resetHour = parseInt(team.config.resetTime?.split(':')[0] || '0');
+                   let start = new Date(now);
+                   start.setHours(resetHour, 0, 0, 0);
+                   if (now.getHours() < resetHour) start.setDate(start.getDate() - 1);
+                   let end = new Date(start);
+                   
+                   if (team.config.targetType === 'weekly_time') {
+                     const day = start.getDay();
+                     start.setDate(start.getDate() - day + (day === 0 ? -6 : 1));
+                     end = new Date(start);
+                     end.setDate(end.getDate() + 7);
+                   } else if (team.config.targetType === 'monthly_time') {
+                     start.setDate(1);
+                     end = new Date(start);
+                     end.setMonth(end.getMonth() + 1);
+                   } else if (team.config.targetType === 'yearly_time') {
+                     start.setMonth(0, 1);
+                     end = new Date(start);
+                     end.setFullYear(end.getFullYear() + 1);
+                   } else {
+                     end.setDate(end.getDate() + 1);
+                   }
+                   
+                   const pad = (n: number) => n.toString().padStart(2, '0');
+                   return `${pad(start.getMonth()+1)}/${pad(start.getDate())} ${pad(start.getHours())}:00 — ${pad(end.getMonth()+1)}/${pad(end.getDate())} ${pad(end.getHours())}:00`;
+                 })()}
+               </span>
+             </div>
+           )}
         </div>
 
         <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1394,9 +1465,9 @@ const DetailedGoalModal = ({ team, onClose }: { team: Team, onClose: () => void 
             {isCompleted && (
                <div className="absolute inset-0 bg-indigo-500/5 mix-blend-screen pointer-events-none" />
             )}
-            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">Progress Target</div>
+            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4 text-center">Progress Target</div>
             
-            <div className="relative w-40 h-40 flex items-center justify-center mb-4">
+            <div className="relative w-48 h-48 flex items-center justify-center mb-6">
               <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
                 <circle cx="50" cy="50" r="45" fill="none" className="stroke-slate-800" strokeWidth="6" />
                 <circle 
@@ -1408,36 +1479,39 @@ const DetailedGoalModal = ({ team, onClose }: { team: Team, onClose: () => void 
                   strokeDashoffset={282.7 - Math.min(282.7, (totalProgress / Math.max(1, target)) * 282.7)}
                 />
               </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                 <span className={cn("text-4xl font-black tracking-tighter leading-none mb-1", isCompleted ? "text-indigo-500" : "text-white")}>{Math.round(Math.min(100, (totalProgress / Math.max(1, target)) * 100))}%</span>
+              <div className="absolute inset-0 flex flex-col items-center justify-center pt-2">
+                 <span className={cn("text-5xl font-black tracking-tighter leading-none mb-1", isCompleted ? "text-indigo-500" : "text-white")}>{Math.round(Math.min(100, (totalProgress / Math.max(1, target)) * 100))}%</span>
+                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Completed</span>
               </div>
             </div>
             
-            <div className="flex gap-6">
+            <div className="flex gap-8 w-full justify-center">
                <div className="text-center">
                  <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-0.5">Current</div>
-                 <div className="text-lg font-black text-white tabular-nums">{totalProgress} <span className="text-[10px] text-slate-500">min</span></div>
+                 <div className="text-xl font-black text-white tabular-nums">{totalProgress} <span className="text-[10px] text-slate-500">min</span></div>
                </div>
+               <div className="w-px h-8 bg-slate-800 self-center" />
                <div className="text-center">
                  <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-0.5">Target</div>
-                 <div className="text-lg font-black text-white tabular-nums">{target} <span className="text-[10px] text-slate-500">min</span></div>
+                 <div className="text-xl font-black text-white tabular-nums">{target} <span className="text-[10px] text-slate-500">min</span></div>
                </div>
             </div>
             
             {isCompleted && (
-              <div className="mt-4 absolute bottom-0 left-0 w-full bg-indigo-500 text-white-pure font-black italic tracking-widest uppercase text-xs py-1.5 flex justify-center items-center gap-2 shadow-sm">
-                 <Check size={14} /> Target Conquered
+              <div className="mt-6 absolute bottom-0 left-0 w-full bg-indigo-500 text-white-pure font-black italic tracking-widest uppercase text-xs py-2 flex justify-center items-center gap-2 shadow-[0_0_20px_rgba(99,102,241,0.5)]">
+                 <Check size={16} /> Target Conquered
               </div>
             )}
           </div>
 
           <div className="flex flex-col gap-4">
-            <div className="bg-slate-950/80 border border-slate-800 rounded-3xl p-5 flex flex-col items-center text-center h-full justify-center">
-               <div className="w-10 h-10 bg-indigo-500/10 text-indigo-500 rounded-xl flex items-center justify-center mb-3 shadow-sm border border-indigo-500/10">
-                 <Crown size={20} />
+            <div className="bg-slate-950/80 border border-slate-800 rounded-3xl p-6 flex flex-col items-center text-center h-[180px] justify-center relative overflow-hidden group hover:border-indigo-500/30 transition-colors">
+               <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+               <div className="w-12 h-12 bg-indigo-500/10 text-indigo-400 rounded-2xl flex items-center justify-center mb-3 shadow-[0_0_15px_rgba(99,102,241,0.15)] border border-indigo-500/20 relative z-10">
+                 <Crown size={24} />
                </div>
-               <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Guild Vault Reward</div>
-               <div className="text-sm font-bold text-slate-600">
+               <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 relative z-10">Guild Vault Reward</div>
+               <div className="text-xl font-black text-indigo-300 drop-shadow-sm truncate w-full px-2 relative z-10">
                  {team.config.rewardContent || "No specific reward assigned."}
                </div>
             </div>
