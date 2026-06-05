@@ -558,7 +558,7 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
                 <div className="space-y-4 flex flex-col justify-end">
                   {messages.slice().reverse().map(m => {
                     const isMe = m.userId === team?.myUserId;
-                    const senderMember = team?.members?.find(member => member.id === m.userId);
+                    const senderMember = team?.members?.find(member => member.userId === m.userId);
                     const rawId = senderMember?.uniqueId || (isMe ? state.userUniqueId : null);
                     const senderUniqueId = rawId ? (rawId.startsWith('SD-') ? rawId.replace('SD-', 'ID-') : rawId) : null;
                     return (
