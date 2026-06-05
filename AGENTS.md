@@ -23,9 +23,9 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v8.6.0
+- **Current Version:** v8.6.1
 - **Last Update Date:** 2026-06-05
-- **Last Update Time:** 07:35:00
+- **Last Update Time:** 08:00:00
 
 ## Dark Themes Definition
 The following themes are considered "Dark Themes" and form the baseline for vibrant visual effects and high-contrast glowing elements:
@@ -50,6 +50,10 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v8.6.1 (2026-06-05):** Push Notification Deduplication & Fellowship Dash.
+  - *Bug Fix:* Implemented strict Web Push endpoint deduplication and capped maximum active device signatures to prevent users from receiving duplicated notifications (caused by browser subscription rotations or lingering uninstalled PWA profiles on iOS).
+  - *UI/UX:* Replicated the centered progress percentage, prominently centered Guild Vault Reward with glowing visual queues, and dynamic 'CYCLE' timeline layout directly onto the primary Fellowship goal dashboard card to match the recently enhanced Detailed Goal Modal.
 
 - **v8.6.0 (2026-06-05):** Fellowship Horizon Enhancements.
   - *Feature:* Enabled Captains to configure an exact daily "Goal Refresh Schedule" (e.g. 00:00, 03:00, 04:00) during Guild creation and inside Guild Settings.

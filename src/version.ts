@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v8.6.0';
+export const APP_VERSION = 'v8.6.1';
 export const LAST_UPDATE_DATE = '2026-06-05';
-export const LAST_UPDATE_TIME = '07:35:00';
+export const LAST_UPDATE_TIME = '08:00:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,16 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v8.6.1',
+    date: '2026-06-05',
+    time: '08:00:00',
+    title: 'Push Notification Deduplication & Fellowship Dash',
+    items: [
+      { category: 'Bug Fix', description: 'Implemented strict Web Push endpoint deduplication and capped maximum active device signatures to prevent users from receiving duplicated notifications.' },
+      { category: 'UI/UX', description: 'Replicated the centered progress percentage, prominently centered Guild Vault Reward with glowing visual queues, and dynamic \'CYCLE\' timeline layout directly onto the primary Fellowship goal dashboard card.' }
+    ]
+  },
   {
     version: 'v8.6.0',
     date: '2026-06-05',

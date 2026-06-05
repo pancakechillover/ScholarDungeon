@@ -142,6 +142,29 @@ app.post("/api/push/subscribe", async (req, res) => {
       return res.json({ success: true, message: "All subscriptions cleared" });
     }
     
+    // Deduplicate by endpoint to prevent multi-push bugs (browser rotating keys/expiration)
+    const existingSubsStr = await client.sMembers(key);
+    let currentCount = 0;
+    if (existingSubsStr && existingSubsStr.length > 0) {
+      for (const subStr of existingSubsStr) {
+        try {
+          const parsed = JSON.parse(subStr);
+          if (parsed.endpoint === subscription.endpoint) {
+            await client.sRem(key, subStr);
+          } else {
+            currentCount++;
+          }
+        } catch (e) {
+          await client.sRem(key, subStr);
+        }
+      }
+    }
+    
+    // Safety net: Max 5 devices to prevent ghost push buildup from uninstalled PWAs
+    if (currentCount >= 5) {
+       await client.del(key);
+    }
+    
     // Use multi-device set storage (sync with api/push.ts)
     await client.sAdd(key, JSON.stringify(subscription));
     res.json({ success: true });

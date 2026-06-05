@@ -74,7 +74,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       
       if (subscription === null) {
         await client.del(key);
+        // Also clear legacy format
+        await client.del(`scholar_push_sub_${secretCode}`);
         return res.json({ success: true, message: "All subscriptions cleared" });
+      }
+      
+      // Deduplicate by endpoint to prevent multi-push bugs
+      const existingSubsStr = await client.sMembers(key);
+      let currentCount = 0;
+      if (existingSubsStr && existingSubsStr.length > 0) {
+        for (const subStr of existingSubsStr) {
+          try {
+            const parsed = JSON.parse(subStr);
+            if (parsed.endpoint === subscription.endpoint) {
+              await client.sRem(key, subStr);
+            } else {
+              currentCount++;
+            }
+          } catch (e) {
+            await client.sRem(key, subStr);
+          }
+        }
+      }
+      
+      // Safety net: Max 5 devices
+      if (currentCount >= 5) {
+         await client.del(key);
       }
       
       await client.sAdd(key, JSON.stringify(subscription));

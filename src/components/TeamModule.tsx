@@ -388,10 +388,46 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
               <div className="absolute inset-0 bg-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
               {isCompleted && <div className="absolute -top-10 -right-10 w-24 h-24 bg-indigo-500/20 blur-2xl rounded-full pointer-events-none" />}
               
-              <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 flex items-center justify-center gap-1.5 relative z-10">
+              <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 flex items-center justify-center gap-1.5 relative z-10">
                 <Target size={12} className={isCompleted ? "text-indigo-500" : "text-indigo-400"} />
                 Team Goal ({{'daily_time': 'Daily', 'weekly_time': 'Weekly', 'monthly_time': 'Monthly', 'yearly_time': 'Yearly', 'total_time': 'Total'}[team.config.targetType] || 'Total'})
               </div>
+              
+              {team.config.targetType !== 'total_time' && (
+                <div className="inline-flex justify-center items-center gap-1.5 px-3 py-1 mb-4 rounded-full bg-slate-950 border border-slate-800 shadow-sm relative z-10">
+                  <Clock size={10} className="text-indigo-400" />
+                  <span className="text-[9px] font-bold text-slate-400 font-mono tracking-widest whitespace-nowrap">
+                    CYCLE: {(() => {
+                      const now = new Date();
+                      const resetHour = parseInt(team.config.resetTime?.split(':')[0] || '0');
+                      let start = new Date(now);
+                      start.setHours(resetHour, 0, 0, 0);
+                      if (now.getHours() < resetHour) start.setDate(start.getDate() - 1);
+                      let end = new Date(start);
+                      
+                      if (team.config.targetType === 'weekly_time') {
+                        const day = start.getDay();
+                        start.setDate(start.getDate() - day + (day === 0 ? -6 : 1));
+                        end = new Date(start);
+                        end.setDate(end.getDate() + 7);
+                      } else if (team.config.targetType === 'monthly_time') {
+                        start.setDate(1);
+                        end = new Date(start);
+                        end.setMonth(end.getMonth() + 1);
+                      } else if (team.config.targetType === 'yearly_time') {
+                        start.setMonth(0, 1);
+                        end = new Date(start);
+                        end.setFullYear(end.getFullYear() + 1);
+                      } else {
+                        end.setDate(end.getDate() + 1);
+                      }
+                      
+                      const pad = (n: number) => n.toString().padStart(2, '0');
+                      return `${pad(start.getMonth()+1)}/${pad(start.getDate())} ${pad(start.getHours())}:00 — ${pad(end.getMonth()+1)}/${pad(end.getDate())} ${pad(end.getHours())}:00`;
+                    })()}
+                  </span>
+                </div>
+              )}
               
               <div className="flex justify-center items-end gap-1 mb-3 relative z-10">
                 <span className={cn("text-4xl font-black tabular-nums tracking-tighter leading-none transition-colors", isCompleted ? "text-indigo-500 drop-shadow-sm" : "text-white")}>
@@ -409,17 +445,21 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
                 </div>
               </div>
               
-              <div className="mt-3 flex justify-between items-center relative z-10">
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+              <div className="mt-3 flex justify-center items-center gap-2 relative z-10">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                   {Math.round(Math.min(100, (totalProgress / Math.max(1, target)) * 100))}% Completed
                 </span>
-                {isCompleted && <div className="text-[9px] font-black text-white-pure bg-indigo-500 px-2 py-0.5 rounded-sm uppercase tracking-widest">Victory</div>}
+                {isCompleted && <div className="text-[9px] font-black text-white-pure bg-indigo-500 px-2 py-0.5 rounded-sm uppercase tracking-widest flex items-center gap-1 shadow-sm"><Check size={10} /> Victory</div>}
               </div>
               
               {team.config.rewardContent && (
-                <div className="mt-4 pt-3 border-t border-slate-800/50 flex flex-col gap-1">
-                  <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest text-left">Reward Pool</span>
-                  <span className="text-xs text-slate-600 font-medium text-left truncate">{team.config.rewardContent}</span>
+                <div className="mt-5 pt-4 border-t border-slate-800/50 flex flex-col items-center justify-center gap-1 relative z-10">
+                  <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest flex items-center justify-center gap-1 mb-0.5">
+                    <Crown size={12} className="text-amber-500/80" /> Vault Reward
+                  </div>
+                  <div className="text-sm font-black text-amber-400/90 truncate w-full px-2 text-center drop-shadow-sm">
+                    {team.config.rewardContent}
+                  </div>
                 </div>
               )}
             </div>

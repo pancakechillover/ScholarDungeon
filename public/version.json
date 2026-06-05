@@ -1,21 +1,17 @@
 {
-  "version": "v8.5.4",
+  "version": "v8.6.1",
   "date": "2026-06-05",
   "latestRelease": {
-    "version": "v8.5.4",
+    "version": "v8.6.1",
     "date": "2026-06-05",
-    "time": "07:20:00",
-    "title": "Streamlined Navigation Experience Tracking on Mobile",
+    "time": "08:00:00",
+    "title": "Fellowship Dashboard Goal Card Optimization",
     "items": [
       {
         "category": "UI/UX",
-        "description": "Simplified mobile XP bar layout by hiding graphic progress indicators and numerical trackers by default, maximizing whitespace."
-      },
-      {
-        "category": "UI/UX",
-        "description": "Preserved level click functionality so tapping the level label instantly triggers the comprehensive floating progress sheet."
+        "description": "Replicated the centered progress percentage, prominently centered Guild Vault Reward with glowing visual queues, and dynamic 'CYCLE' timeline layout directly onto the primary Fellowship goal dashboard card to match the Detailed Goal Modal."
       }
     ]
   },
-  "timestamp": 1780646200000
+  "timestamp": 1780646400000
 }
