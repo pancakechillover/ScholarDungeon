@@ -312,6 +312,20 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
   };
 
   const handleExport = (includeSensitiveData: boolean = true) => {
+    if (includeSensitiveData) {
+      setModalConfig({
+        isOpen: true,
+        title: "Full Export Warning",
+        message: "This full export will include all your personal information, including your unique user ID and active cloud sync credentials. Are you sure you want to proceed?",
+        confirmText: "Export Full Data",
+        onConfirm: () => executeExport(true)
+      });
+    } else {
+      executeExport(false);
+    }
+  };
+
+  const executeExport = (includeSensitiveData: boolean = true) => {
     const fullLocalStorage: Record<string, string> = {};
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
@@ -342,6 +356,11 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
         syncHistory,
         pushEnabled,
         pushSubscription,
+        userName,
+        userAvatar,
+        userBio,
+        userTitle,
+        userUniqueId,
         ...safeState 
       } = dataToExport;
 
@@ -361,7 +380,12 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
         syncHistory: [],
         autoSyncMode: 'manual',
         autoSyncDebounceSeconds: 10,
-        autoSyncIntervalMinutes: 1
+        autoSyncIntervalMinutes: 1,
+        userName: undefined,
+        userAvatar: undefined,
+        userBio: undefined,
+        userTitle: undefined,
+        userUniqueId: undefined
       };
 
       // Also clean up fullLocalStorage if it's being used as the main source of truth
@@ -394,6 +418,11 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
             parsed.autoSyncMode = 'manual';
             parsed.autoSyncDebounceSeconds = 10;
             parsed.autoSyncIntervalMinutes = 1;
+            delete parsed.userName;
+            delete parsed.userAvatar;
+            delete parsed.userBio;
+            delete parsed.userTitle;
+            delete parsed.userUniqueId;
             safeLocal['scholars_dungeon_state'] = JSON.stringify(parsed);
           } catch (e) {}
         }
@@ -409,6 +438,8 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
     document.body.appendChild(downloadAnchorNode);
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
+    
+    setModalConfig(prev => ({ ...prev, isOpen: false }));
   };
 
   const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {

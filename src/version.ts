@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v8.6.1';
+export const APP_VERSION = 'v8.6.3';
 export const LAST_UPDATE_DATE = '2026-06-05';
-export const LAST_UPDATE_TIME = '08:00:00';
+export const LAST_UPDATE_TIME = '09:47:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,26 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v8.6.3',
+    date: '2026-06-05',
+    time: '09:47:00',
+    title: 'Data Management Privacy Enhancements',
+    items: [
+      { category: 'Feature', description: 'Safe Export now completely scrubs all user identity fields including unique ID, custom avatar, and titles to ensure absolute privacy during data sharing.' },
+      { category: 'UI/UX', description: 'Implemented a mandatory confirmation prompt before performing a Full Export to warn users about the inclusion of personal information and cloud sync credentials.' }
+    ]
+  },
+  {
+    version: 'v8.6.2',
+    date: '2026-06-05',
+    time: '08:37:00',
+    title: 'Fellowship Goal Appearance Hotfix',
+    items: [
+      { category: 'UI/UX', description: 'Resolved an issue where long Guild Vault Rewards were being unreadably truncated ("...") by swapping single-line truncations with responsive multi-line line-clamp limits.' },
+      { category: 'UI/UX', description: 'Refined typography readability by stripping highly stylized amber glowing text shadows from reward fonts in exchange for clean, elegant indigo solid variations.' }
+    ]
+  },
   {
     version: 'v8.6.1',
     date: '2026-06-05',

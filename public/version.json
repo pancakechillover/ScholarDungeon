@@ -1,17 +1,21 @@
 {
-  "version": "v8.6.1",
+  "version": "v8.6.3",
   "date": "2026-06-05",
   "latestRelease": {
-    "version": "v8.6.1",
+    "version": "v8.6.3",
     "date": "2026-06-05",
-    "time": "08:00:00",
-    "title": "Fellowship Dashboard Goal Card Optimization",
+    "time": "09:47:00",
+    "title": "Data Management Privacy Enhancements",
     "items": [
       {
+        "category": "Feature",
+        "description": "Safe Export now completely scrubs all user identity fields including unique ID, custom avatar, and titles to ensure absolute privacy during data sharing."
+      },
+      {
         "category": "UI/UX",
-        "description": "Replicated the centered progress percentage, prominently centered Guild Vault Reward with glowing visual queues, and dynamic 'CYCLE' timeline layout directly onto the primary Fellowship goal dashboard card to match the Detailed Goal Modal."
+        "description": "Implemented a mandatory confirmation prompt before performing a Full Export to warn users about the inclusion of personal information and cloud sync credentials."
       }
     ]
   },
-  "timestamp": 1780646400000
+  "timestamp": 1780652820000
 }

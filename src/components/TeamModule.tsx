@@ -453,11 +453,11 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
               </div>
               
               {team.config.rewardContent && (
-                <div className="mt-5 pt-4 border-t border-slate-800/50 flex flex-col items-center justify-center gap-1 relative z-10">
-                  <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest flex items-center justify-center gap-1 mb-0.5">
-                    <Crown size={12} className="text-amber-500/80" /> Vault Reward
+                <div className="mt-5 pt-4 border-t border-slate-800/50 flex flex-col items-center justify-center gap-1.5 relative z-10">
+                  <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest flex items-center justify-center gap-1">
+                    <Crown size={12} className="text-indigo-400" /> Vault Reward
                   </div>
-                  <div className="text-sm font-black text-amber-400/90 truncate w-full px-2 text-center drop-shadow-sm">
+                  <div className="text-xs font-bold text-indigo-300 w-full px-2 text-center leading-relaxed break-words line-clamp-2">
                     {team.config.rewardContent}
                   </div>
                 </div>
@@ -1547,11 +1547,11 @@ const DetailedGoalModal = ({ team, onClose }: { team: Team, onClose: () => void 
           <div className="flex flex-col gap-4">
             <div className="bg-slate-950/80 border border-slate-800 rounded-3xl p-6 flex flex-col items-center text-center h-[180px] justify-center relative overflow-hidden group hover:border-indigo-500/30 transition-colors">
                <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-               <div className="w-12 h-12 bg-indigo-500/10 text-indigo-400 rounded-2xl flex items-center justify-center mb-3 shadow-[0_0_15px_rgba(99,102,241,0.15)] border border-indigo-500/20 relative z-10">
+               <div className="w-12 h-12 bg-indigo-500/10 text-indigo-400 rounded-2xl flex items-center justify-center mb-3 shadow-[0_0_15px_rgba(99,102,241,0.15)] border border-indigo-500/20 relative z-10 shrink-0">
                  <Crown size={24} />
                </div>
-               <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 relative z-10">Guild Vault Reward</div>
-               <div className="text-xl font-black text-indigo-300 drop-shadow-sm truncate w-full px-2 relative z-10">
+               <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 relative z-10 shrink-0">Guild Vault Reward</div>
+               <div className="text-sm font-bold text-indigo-300 w-full px-2 relative z-10 leading-relaxed break-words line-clamp-3">
                  {team.config.rewardContent || "No specific reward assigned."}
                </div>
             </div>
