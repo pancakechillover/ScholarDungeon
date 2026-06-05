@@ -264,8 +264,40 @@ app.get("/api/push/check", async (req, res) => {
   try {
     const client = await getRedisClient();
     if (!client) return res.status(500).json({ error: "Redis not configured" });
-    const processed = await processPushQueue(client);
-    res.json({ success: true, processed });
+
+    // 1. Process anything currently due immediately
+    let processed = await processPushQueue(client);
+
+    // 2. Look ahead 58 seconds
+    const now = Date.now();
+    const lookAhead = now + 58000;
+    const futureTasks = await client.zRangeByScore('scholar_push_tasks', now + 1, lookAhead);
+
+    if (futureTasks && futureTasks.length > 0) {
+      let maxTargetTime = 0;
+      
+      // Schedule each future task to trigger exactly when needed
+      for (const tStr of futureTasks) {
+        const t = JSON.parse(tStr.toString());
+        if (t.targetTime > maxTargetTime) maxTargetTime = t.targetTime;
+        
+        const timeUntilStart = t.targetTime - Date.now();
+        if (timeUntilStart > 0) {
+           setTimeout(() => {
+             processPushQueue(client).catch(e => console.error("Future task error:", e));
+           }, timeUntilStart);
+        }
+      }
+      
+      const holdTimeMs = maxTargetTime - Date.now();
+      if (holdTimeMs > 0) {
+        console.log(`[Push Check] Found future tasks. Holding CPU awake for ${holdTimeMs}ms...`);
+        // Hold the HTTP response open so the Serverless CPU stays active for the timers
+        await new Promise(resolve => setTimeout(resolve, holdTimeMs + 500)); 
+      }
+    }
+
+    res.json({ success: true, processed, cpu_awake_applied: futureTasks?.length > 0 });
   } catch (error) {
     console.error("Manual check error:", error);
     res.status(500).json({ error: "Check failed" });

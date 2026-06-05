@@ -23,9 +23,9 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v8.4.5
+- **Current Version:** v8.4.6
 - **Last Update Date:** 2026-06-05
-- **Last Update Time:** 03:45:00
+- **Last Update Time:** 03:50:00
 
 ## Dark Themes Definition
 The following themes are considered "Dark Themes" and form the baseline for vibrant visual effects and high-contrast glowing elements:
@@ -50,6 +50,9 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v8.4.6 (2026-06-05):** Cloud Run CPU Wake-Lock Engine.
+  - *Architecture:* Developed a sophisticated HTTP "Wake-Lock" strategy for the Vercel/Cloud Run serverless environments. The backend now strategically delays the response lifecycle of 1-minute cron-job pings if it detects any pending notification tasks within the next 58 seconds. This entirely circumvents the CPU freeze mechanism of Serverless containers, guaranteeing absolute second-perfect precision for timer notifications without needing the app to be active in the foreground.
 
 - **v8.4.5 (2026-06-05):** iOS PWA UX Polish.
   - *UI/UX:* Rebased dynamic `theme-color` mutations to strictly utilize hex arrays, explicitly bypassing Safari's broken rgb compilation sequence and correcting the black Slide-Over interaction bar on DayLight themes. Hardcoded dynamic conditional classes for translucent headers instead of tailwind color-mixing for older iOS stability.

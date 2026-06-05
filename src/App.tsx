@@ -1134,10 +1134,7 @@ function App() {
         isFullscreenExplore ? "m-0 p-0" : (isSidebarCollapsed ? "md:ml-20" : "md:ml-64")
       )}>
         {!isFullscreenExplore && (
-          <header className={cn(
-            "sticky top-0 z-40 backdrop-blur-md border-b px-3 sm:px-8 py-2.5 pt-[calc(0.625rem+env(safe-area-inset-top))] flex items-center justify-between gap-2",
-            ['night', 'forest', 'ocean'].includes(state.theme) ? "bg-slate-950/80 border-slate-800" : "bg-white/80 border-slate-200"
-          )}>
+          <header className="sticky top-0 z-40 bg-slate-950/80 backdrop-blur-md border-b border-slate-800 px-3 sm:px-8 py-2.5 pt-[calc(0.625rem+env(safe-area-inset-top))] flex items-center justify-between gap-2">
           {/* Top Bar Left Content */}
           <div className="hidden lg:flex items-center">
             {/* Title removed for cleaner UI */}

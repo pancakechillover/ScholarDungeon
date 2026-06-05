@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v8.4.5';
+export const APP_VERSION = 'v8.4.6';
 export const LAST_UPDATE_DATE = '2026-06-05';
-export const LAST_UPDATE_TIME = '03:45:00';
+export const LAST_UPDATE_TIME = '03:50:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,15 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v8.4.6',
+    date: '2026-06-05',
+    time: '03:50:00',
+    title: 'Cloud Run CPU Wake-Lock Engine',
+    items: [
+      { category: 'Architecture', description: 'Implemented an advanced HTTP Response Hold queue within the push check endpoint. This intentionally delays cron responses to keep the Serverless CPU active, resolving 1-minute cron precision limitations and delivering push notifications with exact millisecond precision.' }
+    ]
+  },
   {
     version: 'v8.4.5',
     date: '2026-06-05',
