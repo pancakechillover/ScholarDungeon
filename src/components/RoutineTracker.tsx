@@ -2,8 +2,9 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { StudySession, Dungeon, MajorDungeon } from '../types';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, startOfYear, eachMonthOfInterval, endOfYear, subDays } from 'date-fns';
 import { cn } from '../lib/utils';
-import { Calendar, ChevronLeft, ChevronRight, Check } from 'lucide-react';
+import { CalendarCheck2, ChevronLeft, ChevronRight, Check } from 'lucide-react';
 import { AppState } from '../types';
+import { PopoverPortal } from './PopoverPortal';
 
 interface RoutineTrackerProps {
   history: StudySession[];
@@ -17,12 +18,12 @@ interface RoutineTrackerProps {
 export const RoutineTracker: React.FC<RoutineTrackerProps> = ({ history, dungeons = [], majorDungeons = [], timeSettings, timezone, renderPopover }) => {
   const [activeTab, setActiveTab] = useState<'daily' | 'weekly' | 'monthly'>('daily');
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedCell, setSelectedCell] = useState<{date: number, routineId: string} | null>(null);
+  const [selectedCell, setSelectedCell] = useState<{date: number, routineId: string, element?: HTMLElement} | null>(null);
 
   useEffect(() => {
     const handleOutside = (e: MouseEvent | TouchEvent) => {
       const target = e.target as Element;
-      if (!target.closest('.routine-cell-container')) {
+      if (!target.closest('.routine-cell-container') && !target.closest('.shared-popover-content')) {
         setSelectedCell(null);
       }
     };
@@ -127,10 +128,10 @@ export const RoutineTracker: React.FC<RoutineTrackerProps> = ({ history, dungeon
 
   return (
     <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800 lg:col-span-2">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 border-b border-slate-800/50 pb-4">
         <div className="flex items-center gap-4">
-          <h3 className="text-lg font-bold text-slate-100 flex items-center gap-2">
-            <Calendar size={20} className="text-indigo-400" />
+          <h3 className="text-lg font-bold text-slate-100 flex items-center gap-2 uppercase tracking-widest">
+            <CalendarCheck2 size={20} className="text-indigo-400" />
             Routine Tracker
           </h3>
         </div>
@@ -221,7 +222,7 @@ export const RoutineTracker: React.FC<RoutineTrackerProps> = ({ history, dungeon
                       <td key={col.toISOString()} className="p-1 text-center relative routine-cell-container">
                         <button
                           type="button"
-                          onClick={() => activeTab !== 'monthly' ? setSelectedCell(selectedCell?.date === col.getTime() && selectedCell?.routineId === routine.id ? null : { date: col.getTime(), routineId: routine.id }) : undefined}
+                          onClick={(e) => activeTab !== 'monthly' ? setSelectedCell(selectedCell?.date === col.getTime() && selectedCell?.routineId === routine.id ? null : { date: col.getTime(), routineId: routine.id, element: e.currentTarget }) : undefined}
                           className={cn(
                             "mx-auto w-5 h-5 rounded-md flex items-center justify-center transition-all cursor-pointer",
                             isChecked ? "bg-indigo-500/20 text-indigo-400" : "bg-slate-800/30 text-transparent hover:bg-slate-800/60"
@@ -229,7 +230,6 @@ export const RoutineTracker: React.FC<RoutineTrackerProps> = ({ history, dungeon
                         >
                           {isChecked && <Check size={12} strokeWidth={3} />}
                         </button>
-                        {selectedCell?.date === col.getTime() && selectedCell?.routineId === routine.id && renderPopover?.(col)}
                       </td>
                     );
                   })}
@@ -237,6 +237,10 @@ export const RoutineTracker: React.FC<RoutineTrackerProps> = ({ history, dungeon
               ))}
             </tbody>
           </table>
+          
+          <PopoverPortal anchorElement={selectedCell?.element || null}>
+             {selectedCell?.date && renderPopover?.(new Date(selectedCell.date))}
+          </PopoverPortal>
         </div>
       )}
     </div>

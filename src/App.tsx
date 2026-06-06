@@ -361,6 +361,8 @@ function App() {
 
   // Auto show start of day modal
   useEffect(() => {
+    if (!appReady) return;
+    
     if (!state.lastStartOfDayPrompt) {
       setShowStartOfDayModal(true);
       return;
@@ -376,7 +378,7 @@ function App() {
     if (state.lastStartOfDayPrompt !== todayStr) {
       setShowStartOfDayModal(true);
     }
-  }, [state.lastStartOfDayPrompt, state.timezone, state.timeSettings]);
+  }, [state.lastStartOfDayPrompt, state.timezone, state.timeSettings, appReady]);
 
   const [hasUnsyncedChanges, setHasUnsyncedChanges] = useState(() => {
     return localStorage.getItem('scholars_dungeon_unsynced') === 'true';

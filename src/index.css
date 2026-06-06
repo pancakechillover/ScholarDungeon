@@ -52,26 +52,37 @@ html {
     overscroll-behavior-y: auto;
   }
   
-  /* Custom Scrollbar - Global */
-  ::-webkit-scrollbar {
+  /* Hide browser scrollbar on body for native PWA feel */
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar,
+  #root::-webkit-scrollbar {
+    display: none;
+    width: 0;
+  }
+  
+  /* Custom Scrollbar - Apply specifically to inner scrollable containers */
+  .custom-scrollbar::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
   
-  ::-webkit-scrollbar-track {
+  .custom-scrollbar::-webkit-scrollbar-track {
     background: transparent;
   }
   
-  ::-webkit-scrollbar-thumb {
+  .custom-scrollbar::-webkit-scrollbar-thumb {
     @apply bg-slate-800/50 rounded-full transition-colors;
   }
   
-  ::-webkit-scrollbar-thumb:hover {
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     @apply bg-slate-700;
   }
 
   /* Firefox */
-  * {
+  html, body, #root {
+    scrollbar-width: none;
+  }
+  .custom-scrollbar {
     scrollbar-width: thin;
     scrollbar-color: rgba(30, 41, 59, 0.5) transparent;
   }

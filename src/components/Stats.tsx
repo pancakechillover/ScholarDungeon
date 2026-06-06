@@ -9,7 +9,7 @@ import {
 import { StudySession, AppState, RewardHistoryItem, Dungeon, MajorDungeon } from '../types';
 import { cn } from '../lib/utils';
 import { 
-  BarChart2, Zap, Coins, ChevronLeft, ChevronRight, ChevronDown, Calendar, Star, StarHalf, Edit2, Save, X, Eye, EyeOff, LineChart as LineChartIcon, Trophy, Sword, Heart, Maximize2, Minimize2, LayoutTemplate, File, FileText, RotateCcw, Share2, Moon
+  BarChart2, Zap, Coins, ChevronLeft, ChevronRight, ChevronDown, Calendar, CalendarDays, Flame, Star, StarHalf, Edit2, Save, X, Eye, EyeOff, LineChart as LineChartIcon, Trophy, Sword, Heart, Maximize2, Minimize2, LayoutTemplate, File, FileText, RotateCcw, Share2, Moon
 } from 'lucide-react';
 import { MOOD_OPTIONS, DEFAULT_ENABLED_MOODS } from '../constants';
 
@@ -26,6 +26,7 @@ import { ViewSettingsModal } from './ViewSettingsModal';
 import { DailyPieChart } from './DailyPieChart';
 import { WeeklyPieChart } from './WeeklyPieChart';
 import { BulkSleepModal } from './BulkSleepModal';
+import { PopoverPortal } from './PopoverPortal';
 
 export interface ShareConfig {
   showDaily: boolean;
@@ -66,7 +67,7 @@ const SharedPopoverContent = ({
   const MoodIcon = moodObj ? moodObj.icon : null;
 
   return (
-    <div className="bg-slate-900/95 backdrop-blur-md border border-slate-700/50 shadow-xl shadow-indigo-500/10 rounded-xl p-3 sm:p-4 z-[100] w-[180px] sm:w-[200px]">
+    <div className="shared-popover-content bg-slate-900/95 backdrop-blur-md border border-slate-700/50 shadow-xl shadow-indigo-500/10 rounded-xl p-3 sm:p-4 z-[100] w-[180px] sm:w-[200px]">
       <p className="text-slate-50 font-bold mb-2 pb-2 border-b border-slate-800/50 text-[13px] sm:text-sm">{label}</p>
       <div className="space-y-1.5 text-xs text-slate-300">
         {totalSessions > 0 ? (
@@ -199,14 +200,24 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
   const [showDailySessionsPeriod, setShowDailySessionsPeriod] = useState<string | undefined>();
   const [showShareModal, setShowShareModal] = useState(false);
   const [showViewSettings, setShowViewSettings] = useState(false);
-  const [shareConfig, setShareConfig] = useState<ShareConfig>({
-    showDaily: true,
-    showWeekly: true,
-    showRoutine: true,
-    showHeatmap: true,
-    showReflection: true,
-    aspectRatio: 'auto'
+  const [shareConfig, setShareConfig] = useState<ShareConfig>(() => {
+    try {
+      const saved = localStorage.getItem('scholar_dungeon_share_config');
+      if (saved) return JSON.parse(saved);
+    } catch(e){}
+    return {
+      showDaily: true,
+      showWeekly: true,
+      showRoutine: true,
+      showHeatmap: true,
+      showReflection: true,
+      aspectRatio: 'auto'
+    };
   });
+
+  useEffect(() => {
+    localStorage.setItem('scholar_dungeon_share_config', JSON.stringify(shareConfig));
+  }, [shareConfig]);
   const statsContainerRef = useRef<HTMLDivElement>(null);
   
   const viewOpts: NonNullable<AppState['statsViewOpts']> = state.statsViewOpts || {
@@ -250,13 +261,53 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
 
   const [dailyDate, setDailyDate] = useState(getInitialPeakDate());
   const [weeklyDate, setWeeklyDate] = useState(getInitialPeakDate());
-  const [weeklyMode, setWeeklyMode] = useState<'calendar' | 'rolling'>('calendar');
+  const [weeklyMode, setWeeklyMode] = useState<'calendar' | 'rolling'>(() => {
+    try {
+      const saved = localStorage.getItem('scholar_dungeon_stats_weeklyMode');
+      if (saved === 'calendar' || saved === 'rolling') return saved;
+    } catch(e){}
+    return 'calendar';
+  });
   const [sleepDate, setSleepDate] = useState(getInitialPeakDate());
-  const [sleepMode, setSleepMode] = useState<'calendar' | 'rolling'>('calendar');
+  const [sleepMode, setSleepMode] = useState<'calendar' | 'rolling'>(() => {
+    try {
+      const saved = localStorage.getItem('scholar_dungeon_stats_sleepMode');
+      if (saved === 'calendar' || saved === 'rolling') return saved;
+    } catch(e){}
+    return 'calendar';
+  });
   const [showBulkSleepModal, setShowBulkSleepModal] = useState(false);
-  const [heatmapMode, setHeatmapMode] = useState<'30days' | 'month' | 'year'>('30days');
+  const [heatmapMode, setHeatmapMode] = useState<'30days' | 'month' | 'year'>(() => {
+    try {
+      const saved = localStorage.getItem('scholar_dungeon_stats_heatmapMode');
+      if (saved === '30days' || saved === 'month' || saved === 'year') return saved;
+    } catch(e){}
+    return '30days';
+  });
+  const [showHeatmapMood, setShowHeatmapMood] = useState(() => {
+    try {
+      return localStorage.getItem('scholar_dungeon_stats_heatmapMood') === 'true';
+    } catch(e){}
+    return false;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('scholar_dungeon_stats_weeklyMode', weeklyMode);
+  }, [weeklyMode]);
+  
+  useEffect(() => {
+    localStorage.setItem('scholar_dungeon_stats_sleepMode', sleepMode);
+  }, [sleepMode]);
+  
+  useEffect(() => {
+    localStorage.setItem('scholar_dungeon_stats_heatmapMode', heatmapMode);
+  }, [heatmapMode]);
+  
+  useEffect(() => {
+    localStorage.setItem('scholar_dungeon_stats_heatmapMood', String(showHeatmapMood));
+  }, [showHeatmapMood]);
   const [heatmapMetric, setHeatmapMetric] = useState<'time' | 'efficiency'>('time');
-  const [selectedHeatmapDate, setSelectedHeatmapDate] = useState<number | null>(null);
+  const [heatmapPopoverAnchor, setHeatmapPopoverAnchor] = useState<{ date: number, element: HTMLElement | null } | null>(null);
 
   const [chartKeys, setChartKeys] = useState({
     daily: Date.now(),
@@ -341,8 +392,8 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
       if (dismissalTimeout) clearTimeout(dismissalTimeout);
 
       dismissalTimeout = setTimeout(() => {
-        if (!inHeatmap) {
-          setSelectedHeatmapDate(prev => prev !== null ? null : prev);
+        if (!inHeatmap && !target.closest('.shared-popover-content')) {
+          setHeatmapPopoverAnchor(prev => prev !== null ? null : prev);
         }
         
         if (!inTooltip && (!isChart || (isChart && !isDataPoint))) {
@@ -366,7 +417,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
       }
       setDailyDate(new Date(e.detail));
       setWeeklyDate(new Date(e.detail));
-      setSelectedHeatmapDate(null);
+      setHeatmapPopoverAnchor(null);
       setChartKeys({
         daily: Date.now() + Math.random(),
         weeklyBar: Date.now() + Math.random(),
@@ -430,22 +481,20 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
     const totalCount = counts.Morning + counts.Afternoon + counts.Night + counts.Other;
 
     return (
-      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 pointer-events-auto z-[100]">
-        <SharedPopoverContent 
-            label={format(date, 'EEE, MMM d, yyyy')}
-            totalSessions={totalCount}
-            morning={counts.Morning}
-            afternoon={counts.Afternoon}
-            night={counts.Night}
-            other={counts.Other}
-            coins={coins}
-            xp={xp}
-            efficiency={log?.rating}
-            mood={log?.mood}
-            dateTimestamp={date.getTime()}
-            timeBasedMode={state.timeBasedMode}
-        />
-      </div>
+      <SharedPopoverContent 
+          label={format(date, 'EEE, MMM d, yyyy')}
+          totalSessions={totalCount}
+          morning={counts.Morning}
+          afternoon={counts.Afternoon}
+          night={counts.Night}
+          other={counts.Other}
+          coins={coins}
+          xp={xp}
+          efficiency={log?.rating}
+          mood={log?.mood}
+          dateTimestamp={date.getTime()}
+          timeBasedMode={state.timeBasedMode}
+      />
     );
   };
   const [heatmapDate, setHeatmapDate] = useState(getInitialPeakDate());
@@ -1004,6 +1053,32 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
     return days;
   }, [heatmapMode, heatmapDate]);
 
+  const heatmapMonthLabels = useMemo(() => {
+    if (heatmapDays.length === 0) return [];
+    const labels: { month: string, colIndex: number }[] = [];
+    let currentMonth = -1;
+    let currentDayOfWeek = heatmapDays[0].getDay();
+    let currentCol = 0;
+    
+    for (let i = 0; i < heatmapDays.length; i++) {
+      const d = heatmapDays[i];
+      if (d.getMonth() !== currentMonth) {
+        // Only add label if there's enough space from the previous label (e.g. at least 2 columns) so they don't overlap
+        if (labels.length === 0 || currentCol - labels[labels.length - 1].colIndex > 2) {
+           labels.push({ month: format(d, 'MMM'), colIndex: currentCol });
+        }
+        currentMonth = d.getMonth();
+      }
+      currentDayOfWeek++;
+      if (currentDayOfWeek > 6) {
+        currentDayOfWeek = 0;
+        currentCol++;
+      }
+    }
+    return labels;
+  }, [heatmapDays]);
+
+
   const getIntensity = (date: Date) => {
     if (heatmapMetric === 'time') {
       const count = getSessionsForDate(date).length;
@@ -1060,6 +1135,37 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
     );
   };
 
+  const heatmapSummary = useMemo(() => {
+    if (heatmapMode === 'year' || heatmapDays.length === 0) return null;
+    const startObj = heatmapDays[0];
+    const endObj = addDays(heatmapDays[heatmapDays.length - 1], 1);
+    
+    const activeDates = new Set<string>();
+    let gold = 0;
+    let xp = 0;
+    let timeOrTasks = 0;
+
+    history.forEach(session => {
+       const sessionDate = parseISO(session.timestamp || '');
+       if (sessionDate >= startObj && sessionDate < endObj) {
+          activeDates.add(format(sessionDate, 'yyyy-MM-dd'));
+          gold += (session.coins || 0);
+          xp += (session.xp || 0);
+          timeOrTasks += (state.timeBasedMode ? (session.duration || 0) : 1);
+       }
+    });
+
+    const activeDaysCount = activeDates.size;
+    
+    return {
+      activeDays: activeDaysCount,
+      totalTimeOrTasks: timeOrTasks,
+      avgTimeOrTasks: activeDaysCount > 0 ? Math.round(timeOrTasks / activeDaysCount) : 0,
+      avgGold: activeDaysCount > 0 ? Math.round(gold / activeDaysCount) : 0,
+      avgExp: activeDaysCount > 0 ? Math.round(xp / activeDaysCount) : 0,
+    };
+  }, [heatmapDays, heatmapMode, history, state.timeBasedMode]);
+
   return (
     <div ref={statsContainerRef} className="p-6 space-y-8" onClick={() => {}} style={{ cursor: 'auto' }}>
       <PageHeader 
@@ -1067,7 +1173,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
         description="Your journey through the dungeon"
         icon={BarChart2}
         action={
-          <div className="flex gap-2">
+          <div id="stats-header-actions" className="flex gap-2">
             <button
               onClick={() => setShowViewSettings(true)}
               className="p-2 sm:px-4 sm:py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl border border-slate-700/50 text-slate-400 hover:text-white transition-all flex items-center justify-center gap-2 shrink-0"
@@ -1095,9 +1201,10 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
         {/* Daily */}
         {shareConfig.showDaily && (
           <div id="daily-activity-section" className="bg-slate-900 p-6 rounded-3xl border border-slate-800 flex flex-col space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
-            <div className="flex items-center justify-between w-full sm:w-auto">
-              <h3 className="text-lg font-bold text-slate-100">Daily</h3>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 border-b border-slate-800/50 pb-4">
+            <div className="flex items-center justify-between w-full sm:w-auto gap-2">
+              <Calendar className="text-indigo-400" size={20} />
+              <h3 className="text-lg font-bold text-slate-100 uppercase tracking-widest">Daily</h3>
             </div>
             <div className="flex items-center justify-center sm:justify-start gap-1 sm:gap-2 bg-slate-800/50 rounded-lg p-0.5 sm:p-1 w-full sm:w-auto">
               <button onClick={() => handleDailyDateChange(subDays(dailyDate, 1))} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-slate-200"><ChevronLeft size={16} /></button>
@@ -1158,7 +1265,8 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
                       trigger="click"
                       content={<CustomDailyTooltip dateTimestamp={dailyDate.getTime()} timeBasedMode={state.timeBasedMode} />}
                       cursor={{ fill: 'rgba(100, 116, 139, 0.2)' }}
-                      wrapperStyle={{ zIndex: 100, pointerEvents: 'auto' }}
+                      wrapperStyle={{ zIndex: 9999, pointerEvents: 'auto' }}
+                      allowEscapeViewBox={{ x: true, y: true }}
                     />
                     <Bar dataKey="sessions" radius={[4, 4, 0, 0]}>
                       {dailyData.map((entry, index) => (
@@ -1368,9 +1476,12 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
         {/* Weekly */}
         {shareConfig.showWeekly && (
           <div id="weekly-activity-section" className="bg-slate-900 p-6 rounded-3xl border border-slate-800 flex flex-col space-y-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 sm:gap-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 sm:gap-4 border-b border-slate-800/50 pb-4">
             <div className="flex items-center justify-between md:justify-start gap-2 sm:gap-4 w-full md:w-auto">
-              <h3 className="text-lg font-bold text-slate-100">Weekly</h3>
+              <div className="flex items-center gap-2">
+                <CalendarDays className="text-indigo-400" size={20} />
+                <h3 className="text-lg font-bold text-slate-100 uppercase tracking-widest">Weekly</h3>
+              </div>
               <div className="relative bg-slate-800/50 hover:bg-slate-700 transition-colors rounded-lg flex items-center p-0.5 sm:p-1 cursor-pointer group">
                 <span className="px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-black uppercase tracking-wide sm:tracking-widest text-indigo-400 group-hover:text-indigo-300 whitespace-nowrap pointer-events-none flex items-center gap-1">
                   {weeklyMode === 'calendar' ? 'Natural' : 'Last 7d'}
@@ -1433,7 +1544,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
               <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1.5">{state.timeBasedMode ? 'Avg Time (min)' : 'Daily Avg Tasks'}</span>
               <div className="flex items-center gap-1.5 text-emerald-400">
                 <Sword size={12} className="sm:w-4 sm:h-4 shrink-0" />
-                <span className="text-sm sm:text-lg font-black font-mono">{(weeklyGains.tasks / weeklyActiveDaysCount).toFixed(1)}</span>
+                <span className="text-sm sm:text-lg font-black font-mono">{Math.round(weeklyGains.tasks / weeklyActiveDaysCount || 0)}</span>
               </div>
             </div>
           </div>
@@ -1450,7 +1561,8 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
                         trigger="click"
                         content={<CustomWeeklyTooltip timeBasedMode={state.timeBasedMode} />}
                         cursor={{ fill: 'rgba(100, 116, 139, 0.2)' }}
-                        wrapperStyle={{ zIndex: 100, pointerEvents: 'auto' }}
+                        wrapperStyle={{ zIndex: 9999, pointerEvents: 'auto' }}
+                        allowEscapeViewBox={{ x: true, y: true }}
                       />
                       <Bar dataKey="Morning" stackId="a" fill="#fde047" />
                       <Bar dataKey="Afternoon" stackId="a" fill="#f97316" />
@@ -1481,7 +1593,8 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
                           key={chartKeys.weeklyLine}
                           trigger="click"
                           content={<CustomWeeklyTooltip timeBasedMode={state.timeBasedMode} />}
-                          wrapperStyle={{ zIndex: 100, pointerEvents: 'auto' }}
+                          wrapperStyle={{ zIndex: 9999, pointerEvents: 'auto' }}
+                          allowEscapeViewBox={{ x: true, y: true }}
                         />
                         <Line 
                           type="monotone" 
@@ -1534,10 +1647,10 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
 
       {(viewOpts.showSleepTracker ?? true) && (
         <div id="sleep-tracker-section" className="bg-slate-900 rounded-3xl border border-slate-800 p-6 w-full flex flex-col space-y-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800/50 pb-4">
             <div className="flex items-center gap-2">
               <Moon className="text-indigo-400" size={20} />
-              <h3 className="text-lg font-bold text-slate-100">Sleep Tracker</h3>
+              <h3 className="text-lg font-bold text-slate-100 uppercase tracking-widest">Sleep Tracker</h3>
               <div className="relative bg-slate-800/50 hover:bg-slate-700 transition-colors rounded-lg flex items-center p-0.5 sm:p-1 cursor-pointer group ml-2">
                 <span className="px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-black uppercase tracking-wide sm:tracking-widest text-indigo-400 group-hover:text-indigo-300 whitespace-nowrap pointer-events-none flex items-center gap-1">
                   {sleepMode === 'calendar' ? 'Natural' : 'Last 7d'}
@@ -1628,7 +1741,8 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
                 <Tooltip
                   key={chartKeys.sleep}
                   trigger="click"
-                  wrapperStyle={{ zIndex: 100, pointerEvents: 'auto' }}
+                  wrapperStyle={{ zIndex: 9999, pointerEvents: 'auto' }}
+                  allowEscapeViewBox={{ x: true, y: true }}
                   content={({ active, payload }) => {
                     if (active && payload && payload.length) {
                       const data = payload[0].payload;
@@ -1670,9 +1784,12 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
       {/* Study Heatmap */}
       {(shareConfig.showHeatmap && (viewOpts.showHeatmap ?? true)) && (
         <div id="heatmap-section" className="bg-slate-900 p-6 rounded-3xl border border-slate-800 lg:col-span-2">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 border-b border-slate-800/50 pb-4">
             <div className="flex items-center gap-4">
-              <h3 className="text-lg font-bold text-slate-100">Heatmap</h3>
+              <div className="flex items-center gap-2">
+                <Flame className="text-indigo-400" size={20} />
+                <h3 className="text-lg font-bold text-slate-100 uppercase tracking-widest">Heatmap</h3>
+              </div>
               <div className="flex bg-slate-800/50 p-1 rounded-lg">
                 <button
                   onClick={() => setHeatmapMetric('time')}
@@ -1744,39 +1861,215 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
             </div>
           </div>
           
-          <div className={cn(
-            "gap-[2vw] sm:gap-1.5 grid w-full",
-            heatmapMode === 'year' 
-              ? "grid-cols-[repeat(15,minmax(0,1fr))] md:grid-cols-[repeat(30,minmax(0,1fr))] max-w-4xl mx-auto" 
-              : "grid-cols-10"
-          )}>
-            {heatmapDays.map((date, i) => (
-              <div
-                key={i}
-                className="relative heatmap-cell-container"
-              >
-                <button
-                  type="button"
-                  onClick={() => setSelectedHeatmapDate(selectedHeatmapDate === date.getTime() ? null : date.getTime())}
-                  className={cn(
-                    "rounded-sm transition-colors aspect-square w-full cursor-pointer hover:ring-2 hover:ring-indigo-500/50 outline-none",
-                    selectedHeatmapDate === date.getTime() ? "ring-2 ring-indigo-400 scale-110 z-10 relative" : "",
-                    getIntensity(date)
-                  )}
-                />
-                {selectedHeatmapDate === date.getTime() && renderHeatmapPopover(date)}
+          <div className={cn("flex flex-col xl:flex-row gap-6 w-full mt-4", heatmapMode === 'year' ? "justify-center" : "justify-center xl:items-stretch")}>
+            <style>{`
+              .heatmap-responsive {
+                 --cell-size: 24px;
+                 --cell-gap: 4px;
+                 --cell-radius: 4px;
+                 --label-size: 10px;
+                 --mood-size: 16px;
+              }
+              @media (min-width: 640px) {
+                 .heatmap-responsive {
+                   --cell-size: 32px;
+                   --cell-gap: 6px;
+                   --cell-radius: 6px;
+                   --label-size: 11px;
+                   --mood-size: 20px;
+                 }
+              }
+              @media (min-width: 768px) {
+                 .heatmap-responsive {
+                   --cell-size: 40px;
+                   --cell-gap: 6px;
+                   --cell-radius: 8px;
+                   --label-size: 12px;
+                   --mood-size: 24px;
+                 }
+              }
+              .heatmap-year {
+                 --cell-size: 10px;
+                 --cell-gap: 2px;
+                 --cell-radius: 2px;
+                 --label-size: 9px;
+                 --mood-size: 8px;
+              }
+              @media (min-width: 640px) {
+                 .heatmap-year {
+                   --cell-size: 12px;
+                   --cell-gap: 3px;
+                   --cell-radius: 2px;
+                   --label-size: 10px;
+                   --mood-size: 10px;
+                 }
+              }
+              @media (min-width: 1024px) {
+                 .heatmap-year {
+                   --cell-size: 14px;
+                   --cell-gap: 3px;
+                   --cell-radius: 3px;
+                   --label-size: 11px;
+                   --mood-size: 12px;
+                 }
+              }
+              @media (min-width: 1280px) {
+                 .heatmap-year {
+                   --cell-size: 16px;
+                   --cell-gap: 4px;
+                   --cell-radius: 3px;
+                   --label-size: 12px;
+                   --mood-size: 14px;
+                 }
+              }
+            `}</style>
+            
+            <div className={cn("overflow-x-auto pb-4 custom-scrollbar flex", heatmapMode === 'year' ? "w-full justify-center" : "justify-center")}>
+              <div className={cn("min-w-max flex", heatmapMode === 'year' ? "heatmap-year gap-1.5" : "heatmap-responsive gap-2")}>
+                <div 
+                   className="grid grid-rows-7 text-slate-500 font-medium pr-1 text-right mt-6"
+                   style={{ rowGap: 'var(--cell-gap)', fontSize: 'var(--label-size)' }}
+                >
+                   <div style={{ height: 'var(--cell-size)' }} className="invisible" />
+                   <div style={{ height: 'var(--cell-size)' }} className="flex items-center justify-end leading-none">Mon</div>
+                   <div style={{ height: 'var(--cell-size)' }} className="invisible" />
+                   <div style={{ height: 'var(--cell-size)' }} className="flex items-center justify-end leading-none">Wed</div>
+                   <div style={{ height: 'var(--cell-size)' }} className="invisible" />
+                   <div style={{ height: 'var(--cell-size)' }} className="flex items-center justify-end leading-none">Fri</div>
+                   <div style={{ height: 'var(--cell-size)' }} className="invisible" />
+                </div>
+                
+                <div className="flex flex-col">
+                   <div className="h-6 relative">
+                     {heatmapMonthLabels.map((label, i) => (
+                       <span
+                         key={i}
+                         className="absolute text-slate-500 font-medium"
+                         style={{ 
+                            left: `calc(${label.colIndex} * (var(--cell-size) + var(--cell-gap)))`, 
+                            bottom: '4px',
+                            fontSize: 'var(--label-size)'
+                         }}
+                       >
+                         {label.month}
+                       </span>
+                     ))}
+                   </div> 
+                   <div className="grid grid-rows-7 grid-flow-col justify-start auto-cols-max" style={{ gap: 'var(--cell-gap)' }}>
+                     {Array.from({ length: heatmapDays[0].getDay() }).map((_, i) => (
+                       <div key={`empty-${i}`} className="border border-transparent" style={{ width: 'var(--cell-size)', height: 'var(--cell-size)' }} />
+                     ))}
+                     {heatmapDays.map((date, i) => {
+                       const log = dailyLogs[format(date, 'yyyy-MM-dd')];
+                       const moodObj = log?.mood ? MOOD_OPTIONS.find((m) => m.id === log.mood) : null;
+                       const MoodIcon = moodObj ? moodObj.icon : null;
+                       return (
+                         <div
+                           key={i}
+                           className="relative heatmap-cell-container flex items-center justify-center"
+                           style={{ width: 'var(--cell-size)', height: 'var(--cell-size)' }}
+                         >
+                           <button
+                             type="button"
+                             onClick={(e) => {
+                               if (heatmapPopoverAnchor?.date === date.getTime()) {
+                                 setHeatmapPopoverAnchor(null);
+                               } else {
+                                 setHeatmapPopoverAnchor({ date: date.getTime(), element: e.currentTarget });
+                               }
+                             }}
+                             className={cn(
+                               "transition-all cursor-pointer outline-none flex items-center justify-center relative overflow-hidden",
+                               getIntensity(date)
+                             )}
+                             style={{ 
+                               width: '100%', 
+                               height: '100%',
+                               borderRadius: 'var(--cell-radius)',
+                               boxShadow: heatmapPopoverAnchor?.date === date.getTime() ? '0 0 0 2px #818cf8' : 'none',
+                               transform: heatmapPopoverAnchor?.date === date.getTime() ? 'scale(1.25)' : 'none',
+                               zIndex: heatmapPopoverAnchor?.date === date.getTime() ? 10 : 1
+                             }}
+                           >
+                             {showHeatmapMood && MoodIcon && (
+                                <MoodIcon 
+                                   className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 drop-shadow-md text-white" 
+                                   color="white" 
+                                   strokeWidth={2.5}
+                                   style={{ width: 'var(--mood-size)', height: 'var(--mood-size)' }}
+                                />
+                             )}
+                           </button>
+                         </div>
+                       );
+                     })}
+                   </div>
+                </div>
               </div>
-            ))}
+            </div>
+
+            {(heatmapMode === '30days' || heatmapMode === 'month') && heatmapSummary && (
+               <div className="w-full xl:w-64 shrink-0 flex flex-col justify-center bg-slate-950/40 p-5 rounded-2xl border border-slate-800/60 mb-4 xl:mb-0">
+                 <div className="text-center pb-3 border-b border-slate-800/50">
+                    <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest leading-none">
+                       {heatmapMode === '30days' ? '30 Days Summary' : 'Month Summary'}
+                    </span>
+                 </div>
+                 <div className="flex flex-col gap-3">
+                    <div className="flex flex-col text-center">
+                       <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 leading-none">Focused Days</span>
+                       <span className="text-2xl font-black font-mono text-indigo-400">{heatmapSummary.activeDays}</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                        <div className="flex flex-col text-center bg-slate-900/50 rounded-xl p-2 border border-slate-800/30">
+                           <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 leading-none">Total Gold</span>
+                           <span className="text-sm font-black font-mono text-amber-400">+{heatmapSummary.totalGold}</span>
+                        </div>
+                        <div className="flex flex-col text-center bg-slate-900/50 rounded-xl p-2 border border-slate-800/30">
+                           <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 leading-none">Total Exp</span>
+                           <span className="text-sm font-black font-mono text-emerald-400">+{heatmapSummary.totalExp}</span>
+                        </div>
+                        <div className="flex flex-col text-center bg-slate-900/50 rounded-xl p-2 border border-slate-800/30">
+                           <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 leading-none">Avg Gold</span>
+                           <span className="text-sm font-black font-mono text-amber-400">+{heatmapSummary.avgGold}</span>
+                        </div>
+                        <div className="flex flex-col text-center bg-slate-900/50 rounded-xl p-2 border border-slate-800/30">
+                           <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 leading-none">Avg Exp</span>
+                           <span className="text-sm font-black font-mono text-emerald-400">+{heatmapSummary.avgExp}</span>
+                        </div>
+                    </div>
+                    <div className="flex flex-col text-center mt-2">
+                       <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 leading-none">Avg {state.timeBasedMode ? 'Time (min)' : 'Tasks'} / Day</span>
+                       <span className="text-xl font-black font-mono text-slate-200">{heatmapSummary.avgTimeOrTasks}</span>
+                    </div>
+                 </div>
+               </div>
+            )}
           </div>
-          <div className="mt-6 flex items-center justify-end space-x-2 text-[10px] text-slate-500 uppercase font-bold">
-            <span>Less</span>
-            <div className="w-3 h-3 rounded-sm bg-slate-800/50" />
-            <div className="w-3 h-3 rounded-sm bg-indigo-500/20" />
-            <div className="w-3 h-3 rounded-sm bg-indigo-500/40" />
-            <div className="w-3 h-3 rounded-sm bg-indigo-500/70" />
-            <div className="w-3 h-3 rounded-sm bg-indigo-500" />
-            <span>More</span>
+          <div className="mt-2 flex items-center justify-between text-[10px] text-slate-500 uppercase font-bold px-2">
+            <label className="flex items-center gap-2 cursor-pointer hover:text-slate-300 transition-colors">
+              <input 
+                type="checkbox" 
+                className="rounded bg-slate-800 border-slate-700 text-indigo-500 focus:ring-indigo-500/50 cursor-pointer" 
+                checked={showHeatmapMood} 
+                onChange={(e) => setShowHeatmapMood(e.target.checked)} 
+              />
+              Show Mood
+            </label>
+            <div className="flex items-center space-x-2">
+              <span>Less</span>
+              <div className="w-3 h-3 rounded-[2px] bg-slate-800/50" />
+              <div className="w-3 h-3 rounded-[2px] bg-indigo-500/20" />
+              <div className="w-3 h-3 rounded-[2px] bg-indigo-500/40" />
+              <div className="w-3 h-3 rounded-[2px] bg-indigo-500/70" />
+              <div className="w-3 h-3 rounded-[2px] bg-indigo-500" />
+              <span>More</span>
+            </div>
           </div>
+          
+          <PopoverPortal anchorElement={heatmapPopoverAnchor?.element || null}>
+             {heatmapPopoverAnchor && renderHeatmapPopover(new Date(heatmapPopoverAnchor.date))}
+          </PopoverPortal>
         </div>
       )}
 

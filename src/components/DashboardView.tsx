@@ -295,7 +295,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <button
                 onClick={() => {
                   setShowStartOfDayModal(true);
-                  playSound('success', state.soundVolume, state.soundEnabled);
                 }}
                 className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-all border border-slate-700 flex items-center justify-center gap-2"
               >

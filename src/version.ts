@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v8.6.10';
-export const LAST_UPDATE_DATE = '2026-06-05';
-export const LAST_UPDATE_TIME = '13:20:00';
+export const APP_VERSION = 'v8.6.21';
+export const LAST_UPDATE_DATE = '2026-06-06';
+export const LAST_UPDATE_TIME = '13:35:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,127 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v8.6.21',
+    date: '2026-06-06',
+    time: '13:35:00',
+    title: 'Year Heatmap Dynamic Sizing',
+    items: [
+      { category: 'UI/UX', description: "Re-engineered Year Heatmap sizing calculations utilizing media queries to flexibly adapt block sizes perfectly across multiple viewports and desktop screens." }
+    ]
+  },
+  {
+    version: 'v8.6.20',
+    date: '2026-06-06',
+    time: '10:25:00',
+    title: 'Heatmap Dynamic Sizing & Flexible Alignment',
+    items: [
+      { category: 'UI/UX', description: "Re-engineered Heatmap sizing calculations utilizing CSS custom properties and media queries to cleanly enlarge and adapt cell dimensions according to viewing screen sizes (tablets/desktops)." },
+      { category: 'UI/UX', description: "Unified Heatmap and Summary modules within a naturally stretched flex container, securely centering both clusters relative to the parent bounding box." }
+    ]
+  },
+  {
+    version: 'v8.6.19',
+    date: '2026-06-06',
+    time: '10:20:00',
+    title: 'Heatmap Layout Fix & SVG Rendering',
+    items: [
+      { category: 'Bug Fix', description: "Repaired the Heatmap layout engine where the '30 Days Summary' sidebar was inadvertently crushing the heatmap out of bounds by assigning flexible containment via min-w-0." },
+      { category: 'UI/UX', description: "Verified and forced solid white strokes onto the mood SVG embedded within Heatmap grids to stand out against all background colors seamlessly." }
+    ]
+  },
+  {
+    version: 'v8.6.18',
+    date: '2026-06-06',
+    time: '10:10:00',
+    title: 'Heatmap Summary Alignment & Icon Polish',
+    items: [
+      { category: 'UI/UX', description: "Enforced strict horizontal layout for the Heatmap's 30-day and monthly modes, decisively pinning the Month Summary pane to the physical right edge of the screen." },
+      { category: 'UI/UX', description: "Re-rendered the Heatmap mood svg icons with a solid white fill and standard drop-shadows, completely wiping out broken native mixing-blend CSS operations that caused fading visual bugs." }
+    ]
+  },
+  {
+    version: 'v8.6.17',
+    date: '2026-06-05',
+    time: '16:21:00',
+    title: 'Record Dashboard Polish & Analysis Panel',
+    items: [
+      { category: 'Feature', description: 'Persisted Record dashboard view preferences securely via local storage memory buffers, auto-restoring weekly bounds, heatmap configurations, and visual layout states upon every returning session.' },
+      { category: 'UI/UX', description: 'Engineered a highly dense "Month Summary" statistics widget dynamically injected beside 30-day Heatmap graphs, directly addressing trailing empty space layouts with detailed averages and aggregated metadata.' },
+      { category: 'UI/UX', description: 'Unified data widget banner nomenclature across all core sections, assigning absolutely mutually exclusive Lucide visualization symbols for superior structural tracking.' },
+      { category: 'UI/UX', description: 'Eliminated confusing decimal remnants from Weekly average timing logs, standardizing mathematical scaling cleanly.' }
+    ]
+  },
+  {
+    version: 'v8.6.16',
+    date: '2026-06-05',
+    time: '16:05:00',
+    title: 'PWA Immersion & Boot Sequence Polish',
+    items: [
+      { category: 'UI/UX', description: 'Realigned the automatic "Start of Day" popup routine to strictly queue and trigger only after the initial application visual splash sequence has fully resolved.' },
+      { category: 'Bug Fix', description: 'Silenced unintended sound overlap triggers by removing success chimes when loading the Start of Day module.' },
+      { category: 'UI/UX', description: 'Implemented a global viewport CSS override terminating native OS desktop scrollbars across PWA installs, replacing the rigid black vertical track with customized internal invisible fluid scrolling.' }
+    ]
+  },
+  {
+    version: 'v8.6.15',
+    date: '2026-06-05',
+    time: '15:55:00',
+    title: 'Image Export Quality & Sync Patches',
+    items: [
+      { category: 'Feature', description: 'Persisted comprehensive user preferences (export mode, layout options, margin settings) securely in local storage, guaranteeing exact user habits are continuously preserved across sessions.' },
+      { category: 'UI/UX', description: 'Removed automatic aggressive canvas generation when toggling export settings. Generates strictly through a newly added explicit confirm button, vastly improving stability.' },
+      { category: 'Bug Fix', description: 'Resolved severe DOM cloning overlap where asynchronous clicking generated recursive watermarks on continuous diary exports.' },
+      { category: 'Bug Fix', description: 'Eliminated clipping bounds that visually truncated absolute position headers and extreme margins during high-resolution snapshotting of the statistical grid.' }
+    ]
+  },
+  {
+    version: 'v8.6.14',
+    date: '2026-06-05',
+    time: '15:20:00',
+    title: 'Export History & Image Rendering Patches',
+    items: [
+      { category: 'Feature', description: 'Engineered an offline local IndexDB Storage wrapper to preserve a comprehensive history of previously generated image records.' },
+      { category: 'UI/UX', description: 'Integrated an interactive History gallery view directly inside the Share Modal that automatically saves and manages all completed image renders without utilizing any cloud space.' },
+      { category: 'Feature', description: 'Persisted exact Share layout preferences across sessions (including component selections and layout styles) for seamless user transitions.' },
+      { category: 'Performance', description: 'Activated HTML DOM renderer acceleration flags (skipFonts, fontEmbed) drastically cutting image generation times.' },
+      { category: 'Bug Fix', description: 'Repaired the image generation pipeline by systematically neutralizing transparent CSS gradient bands in dynamic watermarks which previously crashed vector generation in certain WebKit branches.' }
+    ]
+  },
+  {
+    version: 'v8.6.13',
+    date: '2026-06-05',
+    time: '14:20:00',
+    title: 'Visual Enhancements & Popover Overhaul',
+    items: [
+      { category: 'UI/UX', description: 'Restored proportional scaling to the Heatmap month and 30-day views by systematically increasing individual grid sizes (w-5 h-5), establishing superior visual balance compared to the compact year view.' },
+      { category: 'Bug Fix', description: 'Engineered a resilient React global portal engine (PopoverPortal) to extract all primary tooltips, bubbles, and interaction popovers (Heatmap, Routine Tracker) dynamically out of their constraining parent contexts and anchor them firmly above all elements with absolute z-[9999] positioning.' },
+      { category: 'Bug Fix', description: 'Implemented native viewport edge detection inside the global popover engine to effortlessly rebound tooltips whenever they collide with the absolute left or right screen boundaries, eradicating off-screen clipping anomalies entirely.' },
+      { category: 'Bug Fix', description: 'Injected allowEscapeViewBox policies into all remaining Recharts tooltip containers ensuring unbounded hover visibility.' }
+    ]
+  },
+  {
+    version: 'v8.6.12',
+    date: '2026-06-05',
+    time: '13:50:00',
+    title: 'Heatmap Layout Refinements',
+    items: [
+      { category: 'UI/UX', description: 'Corrected monthly and weekly heatmap matrix spacing issues that caused squares to over-stretch across containers using tight auto column rendering.' },
+      { category: 'Feature', description: 'Engineered a dynamic Month labeling system seamlessly mapped over the year-based matrix columns.' },
+      { category: 'UI/UX', description: 'Perfectly centered embedded daily mood emojis directly alongside the respective target heatmap cells using precision absolute-positioning.' }
+    ]
+  },
+  {
+    version: 'v8.6.11',
+    date: '2026-06-05',
+    time: '13:35:00',
+    title: 'Heatmap GitHub-Style Redesign',
+    items: [
+      { category: 'UI/UX', description: 'Reconstructed the Heatmap container from a basic flat grid into a strict, horizontally-scrolling grid-flow-col matrix consisting of 7 vertical rows (mimicking the exact layout of a GitHub Contribution Matrix).' },
+      { category: 'UI/UX', description: 'Introduced explicit "Mon", "Wed", and "Fri" row labels on the left Y-axis.' },
+      { category: 'Feature', description: 'Added a customized "Show Mood" toggle on the bottom left corner, allowing users to embed their corresponding daily mood icon as an overlaid emoji within their heatmap squares.' }
+    ]
+  },
   {
     version: 'v8.6.10',
     date: '2026-06-05',

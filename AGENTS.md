@@ -23,9 +23,9 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v8.6.10
-- **Last Update Date:** 2026-06-05
-- **Last Update Time:** 13:20:00
+- **Current Version:** v8.6.21
+- **Last Update Date:** 2026-06-06
+- **Last Update Time:** 13:35:00
 
 ## Dark Themes Definition
 The following themes are considered "Dark Themes" and form the baseline for vibrant visual effects and high-contrast glowing elements:
@@ -50,6 +50,60 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v8.6.21 (2026-06-06):** Year Heatmap Dynamic Sizing.
+  - *UI/UX:* Re-engineered Year Heatmap sizing calculations utilizing CSS custom properties and media queries to cleanly enlarge and adapt cell dimensions according to viewing screen sizes (tablets/desktops).
+
+- **v8.6.20 (2026-06-06):** Heatmap Dynamic Sizing & Flexible Alignment.
+  - *UI/UX:* Re-engineered Heatmap sizing calculations utilizing CSS custom properties and media queries to cleanly enlarge and adapt cell dimensions according to viewing screen sizes (tablets/desktops).
+  - *UI/UX:* Unified Heatmap and Summary modules within a naturally stretched flex container, securely centering both clusters relative to the parent bounding box.
+
+- **v8.6.19 (2026-06-06):** Heatmap Layout Fix & SVG Rendering.
+  - *Bug Fix:* Repaired the Heatmap layout engine where the '30 Days Summary' sidebar was inadvertently crushing the heatmap out of bounds by assigning flexible containment via `min-w-0`.
+  - *UI/UX:* Verified and forced solid white strokes onto the mood SVG embedded within Heatmap grids to stand out against all background colors seamlessly.
+
+- **v8.6.18 (2026-06-06):** Heatmap Summary Alignment & Icon Polish.
+  - *UI/UX:* Enforced strict horizontal layout for the Heatmap's 30-day and monthly modes, decisively pinning the Month Summary pane to the physical right edge of the screen as intelligently requested.
+  - *UI/UX:* Re-rendered the Heatmap mood svg icons with a solid `#ffffff` clean-white fill and standard drop-shadows, completely bypassing broken native mixing-blend operations that caused faded anomalies.
+
+- **v8.6.17 (2026-06-05):** Record Dashboard Polish & Analysis Panel.
+  - *Feature:* Persisted Record dashboard view preferences securely via local storage memory buffers, auto-restoring weekly/heatmap configurations.
+  - *UI/UX:* Engineered a highly dense "Month Summary" statistics widget dynamically injected beside 30-day Heatmap graphs.
+  - *UI/UX:* Unified data widget banner nomenclature across all core sections using exclusively dedicated SVG icons (`Calendar`, `CalendarDays`, `CalendarCheck2`, `Flame`).
+  - *UI/UX:* Eliminated confusing decimal remnants from Weekly average timing logs, strictly rounding numeric arrays.
+
+- **v8.6.16 (2026-06-05):** PWA Immersion & Boot Sequence Polish.
+  - *UI/UX:* Realigned the automatic "Start of Day" popup routine to strictly queue and trigger only after the initial application visual splash sequence has fully resolved.
+  - *Bug Fix:* Silenced unintended sound overlap triggers by removing success chimes when loading the Start of Day module.
+  - *UI/UX:* Implemented a global viewport CSS override terminating native OS desktop scrollbars across PWA installs, replacing the rigid black vertical track with customized internal invisible fluid scrolling.
+
+- **v8.6.15 (2026-06-05):** Image Export Quality & Sync Patches.
+  - *Feature:* Persisted comprehensive user preferences (export mode, layout options, margin settings) securely in local storage.
+  - *UI/UX:* Disabled automatic canvas generation when toggling export settings. Generates strictly through a newly added explicit confirm button, vastly improving stability.
+  - *Bug Fix:* Resolved severe DOM cloning overlap where asynchronous clicking generated recursive watermarks on continuous diary exports.
+  - *Bug Fix:* Eliminated clipping bounding boxes that visually truncated absolute alignment headers and extreme margins during high-resolution snapshotting.
+
+- **v8.6.14 (2026-06-05):** Export History & Image Rendering Patches.
+  - *Feature:* Engineered an offline local IndexDB Storage wrapper to preserve a comprehensive history of previously generated image records.
+  - *UI/UX:* Integrated an interactive History gallery view directly inside the Share Modal that automatically saves and manages all completed image renders without utilizing any cloud space.
+  - *Feature:* Persisted exact Share layout preferences across sessions (including component selections and layout styles) for seamless user transitions.
+  - *Performance:* Activated HTML DOM renderer acceleration flags (`skipFonts`, `fontEmbedCSS`) systematically cutting image generation processing time.
+  - *Bug Fix:* Repaired the image export pipeline by neutralizing transparent CSS gradient borders in generated watermarks, resolving severe Safari/WebKit rendering crashes leading to broken gradient artifacts.
+
+- **v8.6.13 (2026-06-05):** Visual Enhancements & Popover Overhaul.
+  - *UI/UX:* Restored proportional scaling to the Heatmap month and 30-day views by systematically increasing individual grid sizes (w-5 h-5), establishing superior visual balance.
+  - *Bug Fix:* Engineered a resilient React global portal engine (PopoverPortal) to extract all primary tooltips, bubbles, and interaction popovers (Heatmap, Routine Tracker) dynamically out of their constraining parent contexts and anchor them firmly above all elements with absolute z-[9999] positioning. Includes native viewport edge detection to rebound tooltips colliding with absolute left or right screen boundaries.
+  - *Bug Fix:* Injected allowEscapeViewBox policies into all remaining Recharts tooltip containers ensuring unbounded hover visibility.
+
+- **v8.6.12 (2026-06-05):** Heatmap Layout Refinements.
+  - *UI/UX:* Corrected monthly and weekly heatmap matrix spacing issues that caused squares to over-stretch across containers using tight auto column rendering.
+  - *Feature:* Engineered a dynamic Month labeling system seamlessly mapped over the year-based matrix columns.
+  - *UI/UX:* Perfectly centered embedded daily mood emojis directly alongside the respective target heatmap cells using precision absolute-positioning.
+
+- **v8.6.11 (2026-06-05):** Heatmap GitHub-Style Redesign.
+  - *UI/UX:* Reconstructed the Heatmap container from a basic flat grid into a strict, horizontally-scrolling `grid-flow-col` matrix consisting of 7 vertical rows (mimicking the exact layout of a GitHub Contribution Matrix). 
+  - *UI/UX:* Introduced explicit "Mon", "Wed", and "Fri" row labels on the left Y-axis.
+  - *Feature:* Added a customized "Show Mood" toggle on the bottom left corner, allowing users to embed their corresponding daily mood icon as an overlaid, blend-mode adjusted emoji within their heatmap squares.
 
 - **v8.6.10 (2026-06-05):** Chat Layout & Avatar Polish.
   - *UI/UX:* Stripped away unnecessary borders, rings, and inner drop-shadows across all User / Guild avatars universally.

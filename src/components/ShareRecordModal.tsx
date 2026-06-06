@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Image as ImageIcon, Download, Settings, Loader2, FileText, Calendar, BarChart2, Star } from 'lucide-react';
+import { X, Image as ImageIcon, Download, Settings, Loader2, FileText, Calendar, BarChart2, Star, Clock, Trash2 } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import Markdown from 'react-markdown';
 import { AppIcon } from './icons/AppIcon';
@@ -8,9 +8,10 @@ import { cn } from '../lib/utils';
 import { ShareConfig } from './Stats';
 import { MOOD_OPTIONS } from '../constants';
 import { DatePicker } from './DatePicker';
+import { ImageDB } from '../lib/idb';
 
 const getWatermarkHTML = (color: string = 'currentColor') => `
-  <div style="width: 100%; height: 1px; background: linear-gradient(to right, rgba(0,0,0,0), ${color}, rgba(0,0,0,0)); margin-bottom: 16px; opacity: 0.3;"></div>
+  <div style="width: 100%; height: 1px; background-color: ${color}; margin-bottom: 16px; opacity: 0.15;"></div>
   <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
     <svg width="14" height="14" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" style="color: ${color};">
       <g transform="translate(0, -1) scale(1.2)">
@@ -51,15 +52,43 @@ export const ShareRecordModal: React.FC<ShareRecordModalProps> = ({ onClose, con
   const [isGenerating, setIsGenerating] = React.useState(false);
   const [previewUrls, setPreviewUrls] = React.useState<string[]>([]);
   
-  const [exportMode, setExportMode] = React.useState<'statistics' | 'diary'>('statistics');
-  const [diaryConfig, setDiaryConfig] = React.useState({
-    layout: 'continuous',
-    aspectRatio: 'auto',
-    fontSize: 'prose-sm',
-    fontFamily: 'font-sans',
-    removeNewlines: false,
-    indentParagraphs: false
+  const [exportMode, setExportMode] = React.useState<'statistics' | 'diary' | 'history'>(() => {
+    try {
+      const saved = localStorage.getItem('scholar_dungeon_share_export_mode');
+      if (saved === 'statistics' || saved === 'diary' || saved === 'history') return saved;
+    } catch(e){}
+    return 'statistics';
   });
+  const [exportHistory, setExportHistory] = React.useState<any[]>([]);
+  
+  useEffect(() => {
+    localStorage.setItem('scholar_dungeon_share_export_mode', exportMode);
+    if (exportMode === 'history') {
+      ImageDB.getAllImages().then((data) => {
+        const sorted = data.sort((a,b) => b.timestamp - a.timestamp);
+        setExportHistory(sorted);
+        setPreviewUrls(sorted.length > 0 ? [sorted[0].url] : []);
+      });
+    }
+  }, [exportMode]);
+  const [diaryConfig, setDiaryConfig] = React.useState(() => {
+    try {
+       const saved = localStorage.getItem('scholar_dungeon_share_diary_config');
+       if (saved) return JSON.parse(saved);
+    } catch(e){}
+    return {
+      layout: 'continuous',
+      aspectRatio: 'auto',
+      fontSize: 'prose-sm',
+      fontFamily: 'font-sans',
+      removeNewlines: false,
+      indentParagraphs: false
+    };
+  });
+  
+  useEffect(() => {
+    localStorage.setItem('scholar_dungeon_share_diary_config', JSON.stringify(diaryConfig));
+  }, [diaryConfig]);
   const [diaryStartDate, setDiaryStartDate] = React.useState<string>(() => {
     const d = new Date();
     d.setMonth(d.getMonth() - 1);
@@ -85,7 +114,7 @@ export const ShareRecordModal: React.FC<ShareRecordModalProps> = ({ onClose, con
     }
 
     try {
-      const shareBtn = el.querySelector('#share-button') as HTMLElement;
+      const shareBtn = el.querySelector('#stats-header-actions') as HTMLElement;
       const origShareDisplay = shareBtn ? shareBtn.style.display : '';
       if (shareBtn) shareBtn.style.display = 'none';
 
@@ -98,12 +127,30 @@ export const ShareRecordModal: React.FC<ShareRecordModalProps> = ({ onClose, con
 
       const sectionIds = ['charts-grid', 'routine-tracker-section', 'heatmap-section', 'daily-activity-section', 'weekly-activity-section'];
       const origSectionStyles: Record<string, string> = {};
+      
+      const filterIdMap = {
+        'daily-activity-section': config.showDaily,
+        'weekly-activity-section': config.showWeekly,
+        'routine-tracker-section': config.showRoutine,
+        'heatmap-section': config.showHeatmap,
+      };
+      
+      const origDisplays: Record<string, string> = {};
+      Object.entries(filterIdMap).forEach(([id, show]) => {
+         const node = el.querySelector(`#${id}`) as HTMLElement;
+         if (node) {
+            origDisplays[id] = node.style.display;
+            if (!show) node.style.display = 'none';
+         }
+      });
 
       if (config.aspectRatio !== 'auto') {
         let targetRatio = 1;
         if (config.aspectRatio === '4:3') targetRatio = 4 / 3;
         else if (config.aspectRatio === '16:9') targetRatio = 16 / 9;
 
+        targetWidth = el.offsetWidth;
+        targetHeight = el.offsetHeight;
         const currentRatio = targetWidth / targetHeight;
         
         if (currentRatio > targetRatio) {
@@ -152,6 +199,9 @@ export const ShareRecordModal: React.FC<ShareRecordModalProps> = ({ onClose, con
         await new Promise(r => setTimeout(r, 600));
       }
 
+      // Remove any leaked watermarks
+      el.querySelectorAll('#share-watermark').forEach(n => n.remove());
+
       // Add watermark
       const watermark = document.createElement('div');
       const bodyColor = window.getComputedStyle(document.body).color || '#94a3b8';
@@ -170,17 +220,15 @@ export const ShareRecordModal: React.FC<ShareRecordModalProps> = ({ onClose, con
       // Capture beautifully scaled pristine layout
       const dataUrl = await toPng(el, {
         pixelRatio: 2, // High resolution for crystal clear text
-        filter: (node) => {
-          if (node.id === 'share-button') return false;
-          if (!config.showDaily && node.id === 'daily-activity-section') return false;
-          if (!config.showWeekly && node.id === 'weekly-activity-section') return false;
-          if (!config.showRoutine && node.id === 'routine-tracker-section') return false;
-          if (!config.showHeatmap && node.id === 'heatmap-section') return false;
-          return true;
-        },
+        skipFonts: true, // Speeds up generation considerably
+        fontEmbedCSS: '', // Avoid fetching external fonts during rendering
+        width: el.offsetWidth,
+        height: el.offsetHeight,
         style: {
+          transform: 'none',
           backgroundColor: themeBgColor, // Ensure background is filled perfectly
-          padding: '24px' // Safe edge padding
+          margin: '0',
+          padding: window.getComputedStyle(el).padding // Retain original padding without doubling
         }
       });
 
@@ -189,6 +237,13 @@ export const ShareRecordModal: React.FC<ShareRecordModalProps> = ({ onClose, con
       // Cleanup
       watermark.remove();
       if (shareBtn) shareBtn.style.display = origShareDisplay;
+      
+      Object.entries(filterIdMap).forEach(([id]) => {
+         const node = el.querySelector(`#${id}`) as HTMLElement;
+         if (node) {
+            node.style.display = origDisplays[id];
+         }
+      });
 
       if (config.aspectRatio !== 'auto') {
         el.setAttribute('style', origStyle);
@@ -250,6 +305,7 @@ export const ShareRecordModal: React.FC<ShareRecordModalProps> = ({ onClose, con
     
     // Create wrapper
     const wrapper = document.createElement('div');
+    wrapper.className = 'diary-export-wrapper';
     wrapper.style.width = `${targetWidth}px`;
     wrapper.style.height = `${targetHeight}px`;
     wrapper.style.backgroundColor = themeColor;
@@ -294,7 +350,7 @@ export const ShareRecordModal: React.FC<ShareRecordModalProps> = ({ onClose, con
     hiddenDiaryRef.current?.appendChild(wrapper);
     
     await new Promise(r => setTimeout(r, 100)); // Layout
-    const dataUrl = await toPng(wrapper, { pixelRatio: 2, style: { backgroundColor: themeColor }});
+    const dataUrl = await toPng(wrapper, { pixelRatio: 2, skipFonts: true, fontEmbedCSS: '', style: { backgroundColor: themeColor }});
     
     wrapper.remove();
     return dataUrl;
@@ -305,6 +361,10 @@ export const ShareRecordModal: React.FC<ShareRecordModalProps> = ({ onClose, con
       setPreviewUrls([]);
       return;
     }
+    
+    // Cleanup any leaked wrappers from previous failed runs
+    hiddenDiaryRef.current.querySelectorAll('.diary-export-wrapper').forEach(n => n.remove());
+
     setIsGenerating(true);
     try {
       await new Promise(r => setTimeout(r, 200)); 
@@ -337,34 +397,33 @@ export const ShareRecordModal: React.FC<ShareRecordModalProps> = ({ onClose, con
   };
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (exportMode === 'statistics') {
-        generatePreview();
-      } else {
-        generateDiaryImagePreview();
-      }
-    }, 500);
-    return () => clearTimeout(timer);
+    setPreviewUrls([]);
   }, [config, exportMode, diaryStartDate, diaryEndDate, diaryConfig]);
 
   const handleDownload = () => {
     if (previewUrls.length === 0) return;
     
     previewUrls.forEach((url, i) => {
-      const link = document.createElement('a');
-      link.href = url;
+      let fileName = '';
       if (exportMode === 'diary') {
         if (previewUrls.length > 1) {
-          link.download = `diary-${diaryStartDate}-to-${diaryEndDate}-page${i+1}.png`;
+          fileName = `diary-${diaryStartDate}-to-${diaryEndDate}-page${i+1}`;
         } else {
-          link.download = `diary-${diaryStartDate}-to-${diaryEndDate}.png`;
+          fileName = `diary-${diaryStartDate}-to-${diaryEndDate}`;
         }
       } else {
-        link.download = `scholar-dungeon-record-${new Date().toISOString().slice(0,10)}.png`;
+        fileName = `scholar-dungeon-record-${new Date().toISOString().slice(0,10)}`;
       }
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${fileName}.png`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      
+      // Save to IDB History
+      ImageDB.saveImage(Date.now().toString() + i, url, { name: fileName, mode: exportMode });
     });
   };
 
@@ -427,6 +486,20 @@ export const ShareRecordModal: React.FC<ShareRecordModalProps> = ({ onClose, con
                 />
               ))}
             </div>
+          ) : exportMode !== 'history' ? (
+            <div className="flex flex-col items-center justify-center m-auto gap-4 text-slate-500">
+              <ImageIcon size={48} className="opacity-20" />
+              <p className="font-bold text-lg">Preview not generated</p>
+              <p className="text-sm text-center mb-2">Adjust your settings, then click the button below to render the preview.</p>
+              <button
+                onClick={() => exportMode === 'statistics' ? generatePreview() : generateDiaryImagePreview()}
+                disabled={isGenerating}
+                className="flex items-center justify-center gap-2 py-3 px-8 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold transition-colors"
+              >
+                <ImageIcon size={18} />
+                Generate Preview
+              </button>
+            </div>
           ) : null}
         </div>
 
@@ -461,10 +534,61 @@ export const ShareRecordModal: React.FC<ShareRecordModalProps> = ({ onClose, con
             >
               Diaries
             </button>
+            <button
+              onClick={() => setExportMode('history')}
+              className={cn(
+                "flex-1 py-1.5 text-xs font-bold uppercase tracking-wider rounded-md transition-colors",
+                exportMode === 'history' ? "bg-slate-800 text-white" : "text-slate-500 hover:text-slate-300"
+              )}
+            >
+              History
+            </button>
           </div>
 
           <div className="space-y-4">
-            {exportMode === 'statistics' ? (
+            {exportMode === 'history' ? (
+              <div className="space-y-4">
+                {exportHistory.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-10 gap-3 text-slate-500">
+                    <Clock size={32} className="opacity-20" />
+                    <p className="font-bold">No Export History</p>
+                    <p className="text-xs text-center">Your exported images will appear here, stored safely offline.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {exportHistory.map((item) => (
+                      <div 
+                        key={item.id} 
+                        onClick={() => setPreviewUrls([item.url])}
+                        className="relative group bg-slate-950 border border-slate-800 rounded-xl overflow-hidden shadow-sm cursor-pointer hover:border-indigo-500/50 transition-colors"
+                      >
+                        <img src={item.url} alt={item.name} className="w-full h-auto object-cover opacity-90 group-hover:opacity-100 transition-opacity" />
+                        <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/90 to-transparent">
+                           <div className="flex justify-between items-end">
+                              <div>
+                                <p className="text-white text-xs font-bold truncate max-w-[180px]">{item.name}</p>
+                                <p className="text-slate-400 text-[10px]">{new Date(item.timestamp).toLocaleString()}</p>
+                              </div>
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  ImageDB.deleteImage(item.id).then(() => {
+                                    setExportHistory(prev => prev.filter(x => x.id !== item.id));
+                                    if (previewUrls.includes(item.url)) setPreviewUrls([]);
+                                  });
+                                }}
+                                className="p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                           </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : exportMode === 'statistics' ? (
               <>
                 <div className="space-y-3">
                   <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
@@ -737,7 +861,7 @@ export const ShareRecordModal: React.FC<ShareRecordModalProps> = ({ onClose, con
               </div>
               
               <div className="diary-native-watermark mt-8 pt-8 px-10 flex items-center justify-between text-slate-500 text-sm relative">
-                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-slate-700 to-transparent opacity-50"></div>
+                <div className="absolute top-0 left-0 w-full h-[1px] bg-slate-700 opacity-20"></div>
                 <div className="flex items-center gap-2">
                   <div className="w-6 h-6 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-400">
                     <AppIcon size={14} />
@@ -797,7 +921,7 @@ export const ShareRecordModal: React.FC<ShareRecordModalProps> = ({ onClose, con
                   </div>
 
                   <div className="diary-native-watermark mt-8 pt-8 px-10 flex items-center justify-between text-slate-500 text-sm relative">
-                    <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-slate-700 to-transparent opacity-50"></div>
+                    <div className="absolute top-0 left-0 w-full h-[1px] bg-slate-700 opacity-20"></div>
                     <div className="flex items-center gap-2">
                       <div className="w-6 h-6 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-400">
                         <AppIcon size={14} />

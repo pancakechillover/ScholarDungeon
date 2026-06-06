@@ -278,7 +278,6 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
             <button
               onClick={() => {
                 setShowStartOfDayModal(true);
-                playSound('success', state.soundVolume, state.soundEnabled);
               }}
               className="flex-1 py-4 bg-slate-800 hover:bg-slate-700 text-amber-400 rounded-2xl font-black uppercase tracking-widest text-[10px] sm:text-xs transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
             >
