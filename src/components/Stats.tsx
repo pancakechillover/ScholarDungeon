@@ -1149,8 +1149,8 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
        const sessionDate = parseISO(session.timestamp || '');
        if (sessionDate >= startObj && sessionDate < endObj) {
           activeDates.add(format(sessionDate, 'yyyy-MM-dd'));
-          gold += (session.coins || 0);
-          xp += (session.xp || 0);
+          gold += (session.coinsEarned || 0);
+          xp += (session.xpEarned || 0);
           timeOrTasks += (state.timeBasedMode ? (session.duration || 0) : 1);
        }
     });
@@ -1161,7 +1161,9 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
       activeDays: activeDaysCount,
       totalTimeOrTasks: timeOrTasks,
       avgTimeOrTasks: activeDaysCount > 0 ? Math.round(timeOrTasks / activeDaysCount) : 0,
+      totalGold: gold,
       avgGold: activeDaysCount > 0 ? Math.round(gold / activeDaysCount) : 0,
+      totalExp: xp,
       avgExp: activeDaysCount > 0 ? Math.round(xp / activeDaysCount) : 0,
     };
   }, [heatmapDays, heatmapMode, history, state.timeBasedMode]);

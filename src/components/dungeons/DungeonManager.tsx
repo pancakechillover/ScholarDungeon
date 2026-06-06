@@ -7,6 +7,8 @@ import { cn } from '../../lib/utils';
 import { SpinnerInput } from '../SpinnerInput';
 import { ConfirmModal } from '../ConfirmModal';
 import { PresetControl, getAutoLoadedPreset } from '../PresetControl';
+import { DatePicker } from '../DatePicker';
+import { format } from 'date-fns';
 
 const DraggableItem = ({ item, isEditMode, children, className, handleClassName, onMove, onDragStart }: any) => {
   const controls = useDragControls();
@@ -64,7 +66,7 @@ interface DungeonManagerProps {
   isAddingMajor: boolean;
   setIsAddingMajor: (val: boolean) => void;
   onSelect: (id: string) => void;
-  onCreateMajor: (name: string, description: string, rewards?: DungeonReward[], isRoutine?: boolean, routineType?: 'daily' | 'weekly' | 'monthly') => void;
+  onCreateMajor: (name: string, description: string, rewards?: DungeonReward[], isRoutine?: boolean, routineType?: 'daily' | 'weekly' | 'monthly', deadline?: string) => void;
   onCreateSub: (dungeon: Omit<Dungeon, 'id' | 'completedSessions' | 'status'>) => void;
   onUpdateMajor: (id: string, updates: Partial<MajorDungeon>) => void;
   onUpdateSub: (id: string, updates: Partial<Dungeon>) => void;
@@ -139,7 +141,8 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
     description: '', 
     rewards: [{ type: 'coins', amount: 100 }] as DungeonReward[],
     isRoutine: false,
-    routineType: 'daily' as 'daily' | 'weekly' | 'monthly'
+    routineType: 'daily' as 'daily' | 'weekly' | 'monthly',
+    deadline: undefined as string | undefined
   });
   const [newSub, setNewSub] = useState({
     name: '',
@@ -152,7 +155,8 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
     rewards: [{ type: 'coins', amount: 100 }] as DungeonReward[],
     isLongTerm: false,
     isRoutine: false,
-    routineType: 'daily' as 'daily' | 'weekly' | 'monthly'
+    routineType: 'daily' as 'daily' | 'weekly' | 'monthly',
+    deadline: undefined as string | undefined
   });
 
   React.useEffect(() => {
@@ -201,7 +205,8 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
         description: '', 
         rewards: [{ type: 'coins', amount: 100 }],
         isRoutine: false,
-        routineType: 'daily'
+        routineType: 'daily',
+        deadline: undefined
       });
     }
   }, [isAddingMajor, editingMajor]);
@@ -215,7 +220,8 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
           description: preset.description || '',
           rewards: preset.rewards || [{ type: 'coins', amount: 100 }],
           isRoutine: preset.isRoutine || false,
-          routineType: preset.routineType || 'daily'
+          routineType: preset.routineType || 'daily',
+          deadline: undefined
         });
         return;
       }
@@ -225,7 +231,8 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
         description: '',
         rewards: [{ type: 'coins', amount: 100 }],
         isRoutine: false,
-        routineType: 'daily'
+        routineType: 'daily',
+        deadline: undefined
       });
     }
   }, [isAddingMajor]);
@@ -245,7 +252,8 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
           rewards: preset.rewards || [{ type: 'coins', amount: 100 }],
           isLongTerm: preset.isLongTerm || false,
           isRoutine: preset.isRoutine || false,
-          routineType: preset.routineType || 'daily'
+          routineType: preset.routineType || 'daily',
+          deadline: undefined
         });
         return;
       }
@@ -261,7 +269,8 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
         rewards: [{ type: 'coins', amount: 100 }],
         isLongTerm: false,
         isRoutine: false,
-        routineType: 'daily'
+        routineType: 'daily',
+        deadline: undefined
       });
     }
   }, [isAddingSub]);
@@ -467,6 +476,14 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                     )}>
                       {sub.name}
                     </span>
+                    {sub.deadline && sub.status !== 'completed' && (
+                      <div className={cn("flex items-center gap-1 shrink-0 px-1.5 py-0.5 rounded border text-[10px] font-black uppercase shadow-sm",
+                        sub.deadline < format(new Date(), 'yyyy-MM-dd') ? "border-rose-500/30 bg-rose-500/10 text-rose-400" : "border-amber-500/30 bg-amber-500/10 text-amber-400"
+                      )}>
+                        <Calendar size={10} />
+                        <span>{sub.deadline}</span>
+                      </div>
+                    )}
                     {sub.description && (
                       <span className="text-[11px] text-slate-400 italic truncate font-medium pr-1">{sub.description}</span>
                     )}
@@ -762,6 +779,35 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                           else if (editingSub) setEditingSub({ ...editingSub, totalSessions: typeof val === 'number' ? Math.max(1, val) : '' as any });
                         }}
                         className="w-full text-sm focus:border-indigo-500"
+                      />
+                    </div>
+                  )}
+                  {(editingMajor || isAddingMajor || editingSub || isAddingSub) && (
+                    <div className="space-y-1 sm:col-span-2">
+                      <label className="text-xs font-bold text-slate-500 uppercase tracking-widest flex justify-between items-center">
+                        <span>Deadline (Optional)</span>
+                        {Boolean(isAddingMajor ? newMajor.deadline : isAddingSub ? newSub.deadline : editingMajor ? editingMajor.deadline : editingSub?.deadline) && (
+                          <button 
+                            onClick={(e) => {
+                              e.preventDefault();
+                              if (isAddingMajor) setNewMajor({ ...newMajor, deadline: undefined });
+                              else if (isAddingSub) setNewSub({ ...newSub, deadline: undefined });
+                              else if (editingMajor) setEditingMajor({ ...editingMajor, deadline: undefined });
+                              else if (editingSub) setEditingSub({ ...editingSub, deadline: undefined });
+                            }}
+                            className="text-[10px] underline text-slate-500 hover:text-slate-300"
+                          >Clear</button>
+                        )}
+                      </label>
+                      <DatePicker
+                        value={isAddingMajor ? newMajor.deadline || '' : isAddingSub ? newSub.deadline || '' : editingMajor ? editingMajor.deadline || '' : editingSub?.deadline || ''}
+                        onChange={(val) => {
+                          if (isAddingMajor) setNewMajor({ ...newMajor, deadline: val });
+                          else if (isAddingSub) setNewSub({ ...newSub, deadline: val });
+                          else if (editingMajor) setEditingMajor({ ...editingMajor, deadline: val });
+                          else if (editingSub) setEditingSub({ ...editingSub, deadline: val });
+                        }}
+                        className="bg-slate-800 border-slate-700"
                       />
                     </div>
                   )}
@@ -1064,7 +1110,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                     }
 
                     if (isAddingMajor) {
-                      onCreateMajor(newMajor.name, newMajor.description, newMajor.rewards, newMajor.isRoutine, newMajor.routineType);
+                      onCreateMajor(newMajor.name, newMajor.description, newMajor.rewards, newMajor.isRoutine, newMajor.routineType, newMajor.deadline);
                       setIsAddingMajor(false);
                     } else if (isAddingSub) {
                       onCreateSub({ ...newSub, parentId: isAddingSub.parentId });
@@ -1075,7 +1121,8 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                         description: editingMajor.description, 
                         rewards: editingMajor.rewards,
                         isRoutine: editingMajor.isRoutine,
-                        routineType: editingMajor.routineType 
+                        routineType: editingMajor.routineType,
+                        deadline: editingMajor.deadline
                       });
                       setEditingMajor(null);
                     } else if (editingSub) {
@@ -1086,7 +1133,8 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                         isOpenEnded: editingSub.isOpenEnded,
                         rewards: editingSub.rewards,
                         isRoutine: editingSub.isRoutine,
-                        routineType: editingSub.routineType
+                        routineType: editingSub.routineType,
+                        deadline: editingSub.deadline
                       });
                       setEditingSub(null);
                     }
@@ -1174,6 +1222,14 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                         "text-sm font-bold truncate max-w-full",
                         major.status === 'completed' ? "text-slate-500 line-through opacity-50" : "text-white"
                       )}>{major.name}</h3>
+                      {major.deadline && major.status !== 'completed' && (
+                        <div className={cn("flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px] font-black uppercase shadow-sm shrink-0", 
+                          major.deadline < format(new Date(), 'yyyy-MM-dd') ? "border-rose-500/30 bg-rose-500/10 text-rose-400" : "border-indigo-500/30 bg-indigo-500/10 text-indigo-400"
+                        )}>
+                          <Calendar size={10} />
+                          <span>{major.deadline}</span>
+                        </div>
+                      )}
                       {major.description && (
                          <p className="text-xs text-slate-400 font-medium italic mt-0.5 line-clamp-1 w-full pr-1">{major.description}</p>
                       )}

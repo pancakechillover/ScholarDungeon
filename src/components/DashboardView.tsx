@@ -5,6 +5,7 @@ import { TeamModule } from './TeamModule';
 import { 
   Sword, 
   ChevronRight, 
+  ChevronDown,
   Calendar,
   BookOpen, 
   HelpCircle,
@@ -33,6 +34,7 @@ import {
   Settings as SettingsIcon,
   Sun
 } from 'lucide-react';
+import { format, startOfMonth, startOfWeek, endOfMonth, endOfWeek, eachDayOfInterval, isSameMonth, isToday, isSameDay, subDays, addDays } from 'date-fns';
 import ReactMarkdown from 'react-markdown';
 import { AppState, Dungeon } from '../types';
 import { playSound } from '../lib/sound';
@@ -40,6 +42,8 @@ import { getSageAdvice } from '../services/sageService';
 import { cn } from '../lib/utils';
 import { ExpeditionPlanPreview } from './ExpeditionPlanPreview';
 import { ConfirmModal } from './ConfirmModal';
+import { PopoverPortal } from './PopoverPortal';
+import { DatePicker } from './DatePicker';
 
 interface DashboardViewProps {
   state: AppState;
@@ -52,6 +56,7 @@ interface DashboardViewProps {
   saveDailyLog: (date: string, rating: number, reflection: string, mood?: string) => void;
   applyExpeditionPlan?: (plan: any) => void;
   navigateToSettings?: (section: any, settingId?: string) => void;
+  dungeons: Dungeon[];
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
@@ -64,10 +69,72 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   openGuideBook,
   saveDailyLog,
   applyExpeditionPlan,
-  navigateToSettings
+  navigateToSettings,
+  dungeons
 }) => {
   const isDarkTheme = ['night', 'forest', 'ocean'].includes(state.theme || '');
   const [showSageConsult, setShowSageConsult] = React.useState(false);
+  const [selectedDateAnchor, setSelectedDateAnchor] = React.useState<{ day: Date, ddls: Dungeon[], element: HTMLElement } | null>(null);
+  const [horizonMode, setHorizonMode] = React.useState<'recent' | 'week'>('recent');
+  const [horizonDate, setHorizonDate] = React.useState<Date>(new Date());
+
+  React.useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (selectedDateAnchor && selectedDateAnchor.element) {
+        // Find if the click was inside the portal or the original trigger
+        const isClickInsideTrigger = selectedDateAnchor.element.contains(e.target as Node);
+        const popoverEl = document.getElementById('horizon-popover');
+        const isClickInsidePopover = popoverEl && popoverEl.contains(e.target as Node);
+        
+        if (!isClickInsideTrigger && !isClickInsidePopover) {
+          setSelectedDateAnchor(null);
+        }
+      }
+    };
+    
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [selectedDateAnchor]);
+
+  const calendarDays = useMemo(() => {
+    if (horizonMode === 'week') {
+      const startDate = startOfWeek(horizonDate, { weekStartsOn: 1 });
+      const endDate = endOfWeek(horizonDate, { weekStartsOn: 1 });
+      return eachDayOfInterval({ start: startDate, end: endDate });
+    }
+    return eachDayOfInterval({ start: subDays(horizonDate, 3), end: addDays(horizonDate, 3) });
+  }, [horizonMode, horizonDate]);
+
+  const ddlMap = useMemo(() => {
+    const map = new Map<string, Dungeon[]>();
+    dungeons.forEach(d => {
+      if (d.status === 'active' && d.deadline) {
+        if (!map.has(d.deadline)) map.set(d.deadline, []);
+        map.get(d.deadline)!.push(d);
+      }
+    });
+    return map;
+  }, [dungeons]);
+
+  const datePickerIndicators = useMemo(() => {
+    const indicators: Record<string, { highlight?: boolean; star?: boolean }> = {};
+    for (const [dateStr, ddls] of ddlMap.entries()) {
+      if (ddls.length > 0) {
+        indicators[dateStr] = { star: true };
+      }
+    }
+    return indicators;
+  }, [ddlMap]);
+
+  const ddlsCountInView = useMemo(() => {
+    let count = 0;
+    calendarDays.forEach(day => {
+      const ddls = ddlMap.get(format(day, 'yyyy-MM-dd'));
+      if (ddls) count += ddls.length;
+    });
+    return count;
+  }, [calendarDays, ddlMap]);
+
   const settlementPeriod = useMemo(() => {
     const ts = state.timeSettings || {
       morning: { start: 8, end: 12 },
@@ -155,45 +222,193 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               : "Your journey through the Scholar's Dungeon continues. Ready for the next session?"}
           </p>
           
-          {currentDungeon ? (
-            <div className="bg-slate-950/50 p-4 sm:p-6 rounded-2xl border border-indigo-500/20">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 mb-3 sm:mb-4">
-                <span className="text-[10px] sm:text-xs font-bold text-indigo-400 uppercase tracking-widest">Current Quest</span>
-                {state.timeBasedMode ? (
-                  <span className="text-[9px] sm:text-xs font-bold text-slate-400 tabular-nums">
-                    {Math.floor(currentDungeon.completedSessions * (state.standardSessionMinutes || 25))}<span className="text-[8px] sm:text-[10px] opacity-70 ml-[1px]">m</span> <span className="opacity-50 text-[8px] sm:text-[10px] mx-[1px]">/</span> {currentDungeon.totalSessions * (state.standardSessionMinutes || 25)}<span className="text-[8px] sm:text-[10px] opacity-70 ml-[1px]">m</span>
+          <div className={cn(
+            "p-4 sm:p-6 rounded-2xl border mt-4 overflow-visible relative z-10 transition-colors",
+            isDarkTheme ? "bg-slate-950/50 border-slate-800/60 shadow-lg" : "bg-slate-950 border-slate-800 shadow-sm"
+          )}>
+            <div className="flex items-center justify-between mb-4">
+              <span className={cn(
+                "text-[10px] sm:text-xs font-bold uppercase tracking-widest flex items-center gap-2",
+                isDarkTheme ? "text-slate-400" : "text-slate-500"
+              )}>
+                 <Calendar className={cn("w-3.5 h-3.5", isDarkTheme ? "text-indigo-400" : "text-indigo-600")} />
+                 Expedition Horizon
+              </span>
+              <div className="flex items-center gap-2">
+                <select
+                  value={horizonMode}
+                  onChange={(e) => {
+                    setHorizonMode(e.target.value as 'recent' | 'week');
+                    setHorizonDate(new Date());
+                  }}
+                  className={cn(
+                    "text-[10px] font-bold uppercase tracking-wider outline-none cursor-pointer rounded-md px-1 py-0.5 border text-center appearance-none transition-colors",
+                    isDarkTheme ? "bg-slate-900 border-slate-700 text-slate-300 hover:border-indigo-500" : "bg-slate-950 border-slate-800 text-slate-400 hover:border-indigo-400"
+                  )}
+                >
+                  <option value="recent">Recent 7 Days</option>
+                  <option value="week">Current Week</option>
+                </select>
+                <DatePicker
+                  value={format(horizonDate, 'yyyy-MM-dd')}
+                  indicators={datePickerIndicators}
+                  onChange={(val) => {
+                    if (val) {
+                       setHorizonDate(new Date(val + 'T12:00:00'));
+                    }
+                  }}
+                  className={cn(
+                    "w-auto min-w-0 bg-transparent border-transparent text-xs font-bold uppercase tracking-wider hover:border-transparent px-1 py-0.5 text-right cursor-pointer flex items-center transition-opacity hover:opacity-70 group",
+                    isDarkTheme ? "text-slate-300" : "text-slate-700"
+                  )}
+                >
+                  <div className="flex items-center gap-1">
+                     {ddlsCountInView > 0 && <span className={cn("text-[9px] font-black rounded px-1 hidden sm:inline-block", isDarkTheme ? "bg-indigo-500/20 text-indigo-400" : "bg-indigo-100 text-indigo-700")}>{ddlsCountInView} DDL</span>}
+                     <span className="hidden sm:inline group-hover:text-indigo-500 transition-colors">{format(horizonDate, 'MMM yyyy')}</span>
+                     <span className="sm:hidden group-hover:text-indigo-500 transition-colors">{format(horizonDate, 'MMM')}</span>
+                     <ChevronDown size={14} className={cn("ml-0.5 transition-colors", isDarkTheme ? "text-slate-500 group-hover:text-indigo-400" : "text-slate-400 group-hover:text-indigo-600")} />
+                  </div>
+                </DatePicker>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-7 gap-1 sm:gap-2">
+              {calendarDays.map((day, idx) => {
+                const dayStr = format(day, 'yyyy-MM-dd');
+                const isTo = isToday(day);
+                const ddls = ddlMap.get(dayStr) || [];
+                const hasDDL = ddls.length > 0;
+                const isPast = day < new Date() && !isTo;
+                
+                return (
+                  <div 
+                    key={idx}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedDateAnchor({ day, ddls, element: e.currentTarget });
+                    }}
+                    className={cn(
+                      "flex flex-col items-center p-2 rounded-xl border transition-all cursor-pointer group relative",
+                      isTo 
+                        ? (isDarkTheme 
+                            ? "ring-2 ring-indigo-500 ring-offset-2 ring-offset-slate-900 bg-indigo-900/20 border-indigo-500/30 shadow-md shadow-indigo-500/20" 
+                            : "bg-indigo-50 border-indigo-400 shadow-md shadow-indigo-500/10 ring-4 ring-indigo-500/20")
+                        : (isDarkTheme 
+                            ? "bg-slate-900/40 border-slate-800/50 hover:bg-slate-800"
+                            : "bg-slate-900 border-slate-800 hover:bg-slate-800/70 shadow-sm"),
+                      hasDDL && !isTo 
+                        ? (isDarkTheme 
+                            ? "border-indigo-500/50 bg-indigo-950/30" 
+                            : "border-indigo-300 bg-indigo-500/10") 
+                        : "",
+                      isPast && !isTo ? (isDarkTheme ? "opacity-60" : "bg-slate-800 opacity-70") : ""
+                    )}
+                  >
+                    <span className={cn(
+                      "text-[10px] font-bold uppercase tracking-widest mb-1 transition-colors",
+                      isTo ? (isDarkTheme ? "text-indigo-400" : "text-indigo-700") : (isPast ? (isDarkTheme ? "text-slate-600 group-hover:text-slate-500" : "text-slate-400 group-hover:text-slate-500") : (isDarkTheme ? "text-slate-500 group-hover:text-slate-400" : "text-slate-400 group-hover:text-slate-500"))
+                    )}>
+                      {format(day, 'EEE')}
+                    </span>
+                    <span className={cn(
+                      "text-lg font-black transition-colors",
+                      isTo 
+                        ? (isDarkTheme ? "text-indigo-400" : "text-indigo-700")
+                        : (isPast ? (isDarkTheme ? "text-slate-600" : "text-slate-400") : (isDarkTheme ? "text-white" : "text-slate-700"))
+                    )}>
+                      {format(day, 'd')}
+                    </span>
+                    
+                    <div className="mt-2 min-h-[16px] flex w-full justify-center">
+                      {hasDDL && (
+                        <div className="flex items-center justify-center relative w-full">
+                          {ddls.length === 1 ? (
+                            <Sword className={cn("w-4 h-4", isPast ? "text-rose-500" : (isDarkTheme ? "text-indigo-400" : "text-indigo-600"))} />
+                          ) : (
+                            <div className="flex items-center gap-1">
+                              <Sword className={cn("w-3 h-3", isPast ? "text-rose-500" : (isDarkTheme ? "text-indigo-400" : "text-indigo-600"))} />
+                              <span className={cn("text-[10px] font-bold", isPast ? "text-rose-500" : (isDarkTheme ? "text-indigo-400" : "text-indigo-700"))}>x{ddls.length}</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          
+          <PopoverPortal anchorElement={selectedDateAnchor?.element || null} offsetY={12}>
+            {selectedDateAnchor && (
+              <div 
+                id="horizon-popover"
+                className={cn(
+                "border rounded-xl p-3 w-64 max-h-64 overflow-y-auto z-50 transition-colors shadow-2xl flex flex-col gap-3",
+                isDarkTheme ? "bg-slate-900 border-slate-700/80 shadow-[0_10px_40px_-5px_rgba(0,0,0,0.5)]" : "bg-slate-950 border-slate-800 shadow-[0_10px_40px_-5px_rgba(0,0,0,0.1)]"
+              )}>
+                <div className={cn("flex items-center justify-between border-b pb-2", isDarkTheme ? "border-slate-800" : "border-slate-100")}>
+                  <span className={cn("text-xs font-bold tracking-widest uppercase", isDarkTheme ? "text-slate-400" : "text-slate-500")}>
+                    {format(selectedDateAnchor.day, 'MMM d, yyyy')}
                   </span>
+                  <button onClick={() => setSelectedDateAnchor(null)} className={cn("p-1 transition-colors rounded", isDarkTheme ? "text-slate-500 hover:text-white hover:bg-slate-800" : "text-slate-400 hover:text-slate-700 hover:bg-slate-100")}>
+                    <X size={14} />
+                  </button>
+                </div>
+                
+                {selectedDateAnchor.ddls.length > 0 ? (
+                  <div className="space-y-2">
+                    {selectedDateAnchor.ddls.map((d, i) => {
+                      const isPast = selectedDateAnchor.day < new Date() && !isToday(selectedDateAnchor.day);
+                      return (
+                        <div key={i} className={cn(
+                          "border p-2 rounded-lg cursor-pointer transition-colors",
+                          isDarkTheme 
+                            ? "bg-slate-950/50 border-slate-800 hover:border-indigo-500/50" 
+                            : "bg-slate-900 border-slate-800 hover:border-indigo-400"
+                        )} onClick={() => {
+                            setSelectedDateAnchor(null);
+                            setActiveTab('dungeons');
+                          }}>
+                          <div className="flex items-center gap-2 mb-1">
+                            <Sword size={12} className={isPast ? "text-rose-500" : (isDarkTheme ? "text-indigo-400" : "text-indigo-600")} />
+                            <h4 className={cn("text-xs font-bold truncate pr-2", isDarkTheme ? "text-white" : "text-slate-800")}>{d.name}</h4>
+                          </div>
+                          <div className="flex justify-between items-center text-[10px] font-bold">
+                            <span className={isDarkTheme ? "text-slate-500" : "text-slate-400"}>{d.completedSessions} / {d.totalSessions} Sessions</span>
+                            <span className={isPast ? "text-rose-500" : (isDarkTheme ? "text-indigo-400" : "text-indigo-600")}>
+                               {isPast ? "OVERDUE" : "EXPEDITION TIER"}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 ) : (
-                  <span className="text-[9px] sm:text-xs font-bold text-slate-400 tabular-nums">{currentDungeon.completedSessions}/{currentDungeon.totalSessions} Sessions</span>
+                  <div className="flex flex-col items-center justify-center p-4 py-6 text-center">
+                    <Calendar className={cn("w-8 h-8 mb-2 opacity-50", isDarkTheme ? "text-slate-500" : "text-slate-400")} />
+                    <span className={cn("text-xs font-bold mb-1", isDarkTheme ? "text-slate-400" : "text-slate-500")}>No Deadlines Today</span>
+                    <span className={cn("text-[10px]", isDarkTheme ? "text-slate-500" : "text-slate-400")}>Enjoy your peaceful day.</span>
+                  </div>
                 )}
+                
+                <button
+                  onClick={() => {
+                    setSelectedDateAnchor(null);
+                    setActiveTab('dungeons');
+                  }}
+                  className={cn(
+                    "w-full py-2 rounded-lg text-xs font-bold tracking-wide transition-colors flex items-center justify-center border",
+                    isDarkTheme 
+                      ? "bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 border-indigo-500/30" 
+                      : "bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-indigo-200"
+                  )}
+                >
+                  Manage Expeditions
+                </button>
               </div>
-              <h3 className="font-bold text-slate-50 mb-4 truncate pr-2" style={{ fontSize: 'clamp(1rem, 4vw, 1.25rem)' }}>{currentDungeon.name}</h3>
-              <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden mb-6">
-                <motion.div 
-                  initial={{ width: 0 }}
-                  animate={{ width: `${(currentDungeon.completedSessions / currentDungeon.totalSessions) * 100}%` }}
-                  className="h-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]"
-                />
-              </div>
-              <button 
-                onClick={() => setActiveTab('explore')}
-                className="flex items-center space-x-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-slate-50 rounded-xl font-bold transition-all"
-              >
-                <span>Enter Dungeon</span>
-                <ChevronRight size={18} />
-              </button>
-            </div>
-          ) : (
-            <div className="p-8 text-center border-2 border-dashed border-slate-800 rounded-3xl">
-              <p className="text-slate-500 mb-4">No active dungeon exploration.</p>
-              <button 
-                onClick={() => setActiveTab('dungeons')}
-                className="px-6 py-2 bg-slate-800 hover:bg-slate-700 text-slate-50 rounded-xl font-bold transition-colors"
-              >
-                {state.history.length === 0 ? "Start Your First Dungeon" : "Delve into Goal"}
-              </button>
-            </div>
-          )}
+            )}
+          </PopoverPortal>
         </div>
 
         <div className="bg-slate-900 rounded-3xl border border-slate-800 p-8 relative overflow-hidden group flex-1 flex flex-col justify-center min-h-[140px]">

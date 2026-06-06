@@ -781,7 +781,7 @@ function App() {
     }
   }, [setMajorDungeons, state.currentDungeonId, dungeons, setState]);
 
-  const handleCreateMajor = (name: string, description: string, rewards?: DungeonReward[], isRoutine?: boolean, routineType?: 'daily' | 'weekly' | 'monthly') => {
+  const handleCreateMajor = (name: string, description: string, rewards?: DungeonReward[], isRoutine?: boolean, routineType?: 'daily' | 'weekly' | 'monthly', deadline?: string) => {
     const newMajor: MajorDungeon = {
       id: Math.random().toString(36).substr(2, 9),
       name,
@@ -790,6 +790,7 @@ function App() {
       rewards,
       isRoutine,
       routineType,
+      deadline,
       lastRoutineReset: new Date().toISOString()
     };
     setMajorDungeons([...majorDungeons, newMajor]);
@@ -1393,6 +1394,7 @@ function App() {
               <DashboardView 
                 state={state}
                 setState={setState}
+                dungeons={dungeons}
                 currentDungeon={currentDungeon || null}
                 setActiveTab={setActiveTab}
                 setShowDailySummary={setShowDailySummary}
@@ -1436,7 +1438,8 @@ function App() {
                       rewardText: '',
                       rewards: subRewards,
                       isLongTerm: false,
-                      status: 'active'
+                      status: 'active',
+                      deadline: tier.deadline
                     };
                   });
 

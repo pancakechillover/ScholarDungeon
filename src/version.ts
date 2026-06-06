@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v8.6.21';
+export const APP_VERSION = 'v8.6.29';
 export const LAST_UPDATE_DATE = '2026-06-06';
-export const LAST_UPDATE_TIME = '13:35:00';
+export const LAST_UPDATE_TIME = '15:45:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,87 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v8.6.29',
+    date: '2026-06-06',
+    time: '15:45:00',
+    title: 'Horizon Light Theme Adaptability Fix',
+    items: [
+      { category: 'Bug Fix', description: "Repaired visual inversion glitch causing Expedition Horizon backgrounds to render completely dark under Light Themes. Used standardized bg-slate-900 maps consistently." },
+      { category: 'UI/UX', description: "Ensured inner widgets and the calendar grid cleanly transition into bright interfaces for Daylight, Warm Sun, and Candy themes automatically." }
+    ]
+  },
+  {
+    version: 'v8.6.28',
+    date: '2026-06-06',
+    time: '15:25:00',
+    title: 'Universal Calendar Interactions',
+    items: [
+      { category: 'Feature', description: "Detached the Expedition Horizon popover constraints, allowing users to universally trigger information capsules for any selected date across the calendar whether active or not." },
+      { category: 'UI/UX', description: "Integrated dynamic 'No Deadlines Today' placeholder states inside empty date tooltips, featuring direct redirection routing cleanly into the main Dungeon management menus." }
+    ]
+  },
+  {
+    version: 'v8.6.27',
+    date: '2026-06-06',
+    time: '15:15:00',
+    title: 'Horizon Theme CSS Polish',
+    items: [
+      { category: 'Feature', description: "Added dynamic DDL counter badge directly onto the Horizon DatePicker trigger and replaced generic star dots with theme-colored dot indicators internally." },
+      { category: 'UI/UX', description: "Remapped Expedition Horizon Sword icons and drop-shadows to inherit primary theme mappings (Indigo overrides), perfectly adapting to Daylight, Focus, Ocean, Candy, and Night constraints." }
+    ]
+  },
+  {
+    version: 'v8.6.26',
+    date: '2026-06-06',
+    time: '15:00:00',
+    title: 'Dynamic Horizon Date Selection',
+    items: [
+      { category: 'Feature', description: "Integrated an interactive Date Picker directly into the Expedition Horizon header, allowing seamless arbitrary start-date shifts." },
+      { category: 'UI/UX', description: "Hardened calendar cell container scaling by explicitly differentiating light/dark themes utilizing native drop-shadows vs crisp indigo borders contextually." }
+    ]
+  },
+  {
+    version: 'v8.6.25',
+    date: '2026-06-06',
+    time: '14:55:00',
+    title: 'Dashboard Calendar Horizon Refinements',
+    items: [
+      { category: 'Feature', description: "Added a toggle to the Expedition Horizon allowing users to seamlessly switch between a 'Recent 7 Days' rolling perspective and a fixed 'Current Week' schedule." },
+      { category: 'UI/UX', description: "Engineered comprehensive CSS updates prioritizing light and dark theme adaptivity across the Calendar matrix, increasing overall refinement." }
+    ]
+  },
+  {
+    version: 'v8.6.24',
+    date: '2026-06-06',
+    time: '14:48:00',
+    title: 'Dashboard Calendar & Expedition Tagging Polish',
+    items: [
+      { category: 'Feature', description: "Added dynamic deadline tags directly onto Expedition entries in the Dungeon Manager, prioritizing visual mapping of active versus overdue states." },
+      { category: 'UI/UX', description: "Re-engineered the Sanctum's Expedition Schedule from a monthly grid into a focused, highly visible horizontal 7-day rolling horizon." },
+      { category: 'UI/UX', description: "Deployed PopoverPortal integration onto the horizon calendar. Clicking target cells summons a detached, layered interface prioritizing impending task data." }
+    ]
+  },
+  {
+    version: 'v8.6.23',
+    date: '2026-06-06',
+    time: '14:38:00',
+    title: 'Expedition Deadline Editor Integration',
+    items: [
+      { category: 'Feature', description: "Bound the underlying deadline data structures directly to the primary Dungeon Editor modal interfaces." },
+      { category: 'UI/UX', description: "Upgraded the Create/Edit Expedition and Add/Edit Tier forms with a native DatePicker, enabling seamless deadline configuration during tier creation." }
+    ]
+  },
+  {
+    version: 'v8.6.22',
+    date: '2026-06-06',
+    time: '14:02:00',
+    title: 'Sanctum Calendar & Expedition Deadlines',
+    items: [
+      { category: 'Feature', description: "Added deadline parameters to Expedition structures allowing properly scheduled timed journeys." },
+      { category: 'UI/UX', description: "Replaced the central 'Current Quest' welcome module inside the Sanctum header card with a dynamic, highly responsive monthly calendar schedule that automatically maps deadline nodes to upcoming dates." }
+    ]
+  },
   {
     version: 'v8.6.21',
     date: '2026-06-06',

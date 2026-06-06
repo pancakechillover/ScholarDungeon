@@ -56,6 +56,7 @@ export interface Dungeon {
   isRoutine?: boolean;
   routineType?: 'daily' | 'weekly' | 'monthly';
   lastRoutineReset?: string;
+  deadline?: string; // YYYY-MM-DD
 }
 
 export interface MajorDungeon {
@@ -69,6 +70,7 @@ export interface MajorDungeon {
   isRoutine?: boolean;
   routineType?: 'daily' | 'weekly' | 'monthly';
   lastRoutineReset?: string;
+  deadline?: string;
 }
 
 export interface RewardHistoryItem {

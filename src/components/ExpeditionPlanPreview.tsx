@@ -20,6 +20,7 @@ export interface ExpeditionPlan {
       shards: number;
     };
     sessions?: number;
+    deadline?: string;
   }[];
 }
 

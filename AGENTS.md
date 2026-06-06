@@ -23,9 +23,9 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v8.6.21
+- **Current Version:** v8.6.29
 - **Last Update Date:** 2026-06-06
-- **Last Update Time:** 13:35:00
+- **Last Update Time:** 15:45:00
 
 ## Dark Themes Definition
 The following themes are considered "Dark Themes" and form the baseline for vibrant visual effects and high-contrast glowing elements:
@@ -50,6 +50,42 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v8.6.29 (2026-06-06):** Horizon CSS Context & Light Theme Alignment.
+  - *Bug Fix:* Repaired a visual inversion glitch causing Expedition Horizon backgrounds and calendar grids to render completely dark under Light Themes (Daylight, Candy, Warm Sun). Correctly mapped `bg-slate-900` natively triggering light wrappers accurately based on the CSS variable inversion paradigm.
+  - *UI/UX:* Ensured empty deadlines feature theme-aware gasified components, preventing contrast crushing under high-value themes.
+
+- **v8.6.28 (2026-06-06):** Universal Calendar Interactions & Theme Synchronization.
+  - *Feature:* Detached the Expedition Horizon popover constraints, allowing users to universally trigger information capsules for any selected date across the calendar whether active or not.
+  - *UI/UX:* Integrated dynamic "No Deadlines Today" placeholder states inside empty date tooltips, featuring direct redirection routing cleanly into the main Dungeon management menus.
+  - *Bug Fix:* Repaired underlying viewport collision policies closing the overarching horizon popovers automatically when clicking empty space.
+  - *UI/UX:* Upgraded light-mode base aesthetics within the Expedition Horizon matrix, injecting dedicated `bg-white` variations cleanly distinct from deep dark configurations.
+
+- **v8.6.27 (2026-06-06):** Horizon Theme CSS Polish & Date Picker DDL Counters.
+  - *Feature:* Added a responsive red-flag counter dynamically presenting precisely how many raw task deadlines are trapped inside the viewing window directly onto the DatePicker trigger.
+  - *UI/UX:* Remapped hardcoded `amber` highlight Sword UI icons and calendar shadows gracefully into `indigo`-derived theme variables, assuring crisp, 100% aesthetic compatibility across Night, Daylight, Ocean, Candy, Warm Sun, and Forest modes.
+
+- **v8.6.26 (2026-06-06):** Dynamic Horizon Date Selection & Comprehensive Theme Scaling.
+  - *Feature:* Integrated an interactive Date Picker directly into the Expedition Horizon header, allowing seamless arbitrary start-date shifts.
+  - *UI/UX:* Hardened calendar cell container scaling by explicitly differentiating light/dark themes utilizing native drop-shadows vs crisp indigo borders contextually.
+
+- **v8.6.25 (2026-06-06):** Dashboard Calendar Horizon & Theme Refinements.
+  - *Feature:* Added visual settings to the Expedition Horizon, allowing users to toggle between a "Recent 7 Days" rolling window and a fixed "Current Week" schedule directly from the widget header.
+  - *UI/UX:* Overhauled the Expedition Horizon matrix CSS to gracefully adapt to both Light and Dark themes. Enhanced contrasts and simplified grid aesthetics for a cleaner, unified viewing experience.
+
+- **v8.6.24 (2026-06-06):** Dashboard Calendar & Expedition Tagging Polish.
+  - *Feature:* Added dynamic `deadline` tags directly onto Expedition entries in the Dungeon Manager, mapped via high-contrast status colors representing active or overdue states.
+  - *UI/UX:* Re-engineered the Sanctum's Expedition Schedule from a static monthly grid into a focused, highly visible horizontal 7-day rolling horizon (spanning past 3 days and next 3 days).
+  - *UI/UX:* Deployed the `PopoverPortal` engine onto the horizon calendar cells. Clicking days containing target tasks now summons a detached, layered miniature list specifically prioritizing impending deadlines.
+
+- **v8.6.23 (2026-06-06):** Expedition Deadline Editor Integration.
+  - *Feature:* Bound the underlying `deadline` data structures to the primary Dungeon Editor modal interfaces.
+  - *UI/UX:* Upgraded the "Create/Edit Expedition" and "Add/Edit Tier" forms with a native `DatePicker`, enabling direct insertion and clearing of target deadlines dynamically during goal creation.
+
+- **v8.6.22 (2026-06-06):** Sanctum Calendar & Expedition Deadlines.
+  - *Feature:* Added `deadline` support to Expedition Plan structures and Dungeon nodes allowing strictly timed journeys.
+  - *UI/UX:* Replaced the default 'Current Quest' UI block in the Sanctum Welcome card with an elegant, responsive monthly interactive Calendar schedule.
+  - *UI/UX:* Active expeditions automatically populate dot indicators directly beneath their corresponding deadline dates in the calendar, with comprehensive layout and typography adjustments.
 
 - **v8.6.21 (2026-06-06):** Year Heatmap Dynamic Sizing.
   - *UI/UX:* Re-engineered Year Heatmap sizing calculations utilizing CSS custom properties and media queries to cleanly enlarge and adapt cell dimensions according to viewing screen sizes (tablets/desktops).

@@ -209,7 +209,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, classNa
                 >
                   {day}
                   {star && (
-                    <Star size={6} className={cn("absolute bottom-0.5 right-0.5", isSelected ? "text-amber-200" : "text-amber-400")} fill="currentColor" />
+                    <div className={cn("absolute bottom-1 right-1 w-1 h-1 rounded-full", isSelected ? "bg-white" : "bg-indigo-400")} />
                   )}
                 </button>
               )
