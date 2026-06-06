@@ -259,7 +259,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   }}
                   className={cn(
                     "w-auto min-w-0 bg-transparent border-transparent text-xs font-bold uppercase tracking-wider hover:border-transparent px-1 py-0.5 text-right cursor-pointer flex items-center transition-opacity hover:opacity-70 group",
-                    isDarkTheme ? "text-slate-300" : "text-slate-700"
+                    isDarkTheme ? "text-slate-300" : "text-slate-100"
                   )}
                 >
                   <div className="flex items-center gap-1">
@@ -306,7 +306,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   >
                     <span className={cn(
                       "text-[10px] font-bold uppercase tracking-widest mb-1 transition-colors",
-                      isTo ? (isDarkTheme ? "text-indigo-400" : "text-indigo-700") : (isPast ? (isDarkTheme ? "text-slate-600 group-hover:text-slate-500" : "text-slate-400 group-hover:text-slate-500") : (isDarkTheme ? "text-slate-500 group-hover:text-slate-400" : "text-slate-400 group-hover:text-slate-500"))
+                      isTo ? (isDarkTheme ? "text-indigo-400" : "text-indigo-700") : (isPast ? (isDarkTheme ? "text-slate-600 group-hover:text-slate-500" : "text-slate-400 group-hover:text-slate-200") : (isDarkTheme ? "text-slate-500 group-hover:text-slate-400" : "text-slate-300 group-hover:text-slate-100"))
                     )}>
                       {format(day, 'EEE')}
                     </span>
@@ -314,7 +314,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       "text-lg font-black transition-colors",
                       isTo 
                         ? (isDarkTheme ? "text-indigo-400" : "text-indigo-700")
-                        : (isPast ? (isDarkTheme ? "text-slate-600" : "text-slate-400") : (isDarkTheme ? "text-white" : "text-slate-700"))
+                        : (isPast ? (isDarkTheme ? "text-slate-600" : "text-slate-400") : (isDarkTheme ? "text-white" : "text-slate-100"))
                     )}>
                       {format(day, 'd')}
                     </span>
@@ -347,11 +347,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 "border rounded-xl p-3 w-64 max-h-64 overflow-y-auto z-50 transition-colors shadow-2xl flex flex-col gap-3",
                 isDarkTheme ? "bg-slate-900 border-slate-700/80 shadow-[0_10px_40px_-5px_rgba(0,0,0,0.5)]" : "bg-slate-950 border-slate-800 shadow-[0_10px_40px_-5px_rgba(0,0,0,0.1)]"
               )}>
-                <div className={cn("flex items-center justify-between border-b pb-2", isDarkTheme ? "border-slate-800" : "border-slate-100")}>
-                  <span className={cn("text-xs font-bold tracking-widest uppercase", isDarkTheme ? "text-slate-400" : "text-slate-500")}>
+                <div className={cn("flex items-center justify-between border-b pb-2", isDarkTheme ? "border-slate-800" : "border-slate-800")}>
+                  <span className={cn("text-xs font-bold tracking-widest uppercase", isDarkTheme ? "text-slate-400" : "text-slate-300")}>
                     {format(selectedDateAnchor.day, 'MMM d, yyyy')}
                   </span>
-                  <button onClick={() => setSelectedDateAnchor(null)} className={cn("p-1 transition-colors rounded", isDarkTheme ? "text-slate-500 hover:text-white hover:bg-slate-800" : "text-slate-400 hover:text-slate-700 hover:bg-slate-100")}>
+                  <button onClick={() => setSelectedDateAnchor(null)} className={cn("p-1 transition-colors rounded", isDarkTheme ? "text-slate-500 hover:text-white hover:bg-slate-800" : "text-slate-400 hover:text-slate-100 hover:bg-slate-800")}>
                     <X size={14} />
                   </button>
                 </div>
@@ -372,7 +372,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                           }}>
                           <div className="flex items-center gap-2 mb-1">
                             <Sword size={12} className={isPast ? "text-rose-500" : (isDarkTheme ? "text-indigo-400" : "text-indigo-600")} />
-                            <h4 className={cn("text-xs font-bold truncate pr-2", isDarkTheme ? "text-white" : "text-slate-800")}>{d.name}</h4>
+                            <h4 className={cn("text-xs font-bold truncate pr-2", isDarkTheme ? "text-white" : "text-slate-50")}>{d.name}</h4>
                           </div>
                           <div className="flex justify-between items-center text-[10px] font-bold">
                             <span className={isDarkTheme ? "text-slate-500" : "text-slate-400"}>{d.completedSessions} / {d.totalSessions} Sessions</span>
@@ -386,8 +386,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center p-4 py-6 text-center">
-                    <Calendar className={cn("w-8 h-8 mb-2 opacity-50", isDarkTheme ? "text-slate-500" : "text-slate-400")} />
-                    <span className={cn("text-xs font-bold mb-1", isDarkTheme ? "text-slate-400" : "text-slate-500")}>No Deadlines Today</span>
+                    <Calendar className={cn("w-8 h-8 mb-2 opacity-50", isDarkTheme ? "text-slate-500" : "text-slate-300")} />
+                    <span className={cn("text-xs font-bold mb-1", isDarkTheme ? "text-slate-400" : "text-slate-200")}>No Deadlines Today</span>
                     <span className={cn("text-[10px]", isDarkTheme ? "text-slate-500" : "text-slate-400")}>Enjoy your peaceful day.</span>
                   </div>
                 )}

@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v8.6.29';
+export const APP_VERSION = 'v8.6.30';
 export const LAST_UPDATE_DATE = '2026-06-06';
-export const LAST_UPDATE_TIME = '15:45:00';
+export const LAST_UPDATE_TIME = '16:05:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,16 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v8.6.30',
+    date: '2026-06-06',
+    time: '16:05:00',
+    title: 'Horizon Typography Contrast Optimization',
+    items: [
+      { category: 'Bug Fix', description: "Repaired CSS text color mapping issues inside the Expedition popup explicitly targeting Daylight light themes utilizing automated inversion properties perfectly." },
+      { category: 'UI/UX', description: "Adapted all primary font headers directly to high-contrast variables internally, resulting in sharp, dark text universally for daylight, candy, and warm themes." }
+    ]
+  },
   {
     version: 'v8.6.29',
     date: '2026-06-06',
