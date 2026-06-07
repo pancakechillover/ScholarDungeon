@@ -23,9 +23,9 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v8.7.9
+- **Current Version:** v8.7.11
 - **Last Update Date:** 2026-06-07
-- **Last Update Time:** 14:30:00
+- **Last Update Time:** 15:15:00
 
 ## Dark Themes Definition
 The following themes are considered "Dark Themes" and form the baseline for vibrant visual effects and high-contrast glowing elements:
@@ -51,7 +51,15 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 ## Task History
 
+- **v8.7.11 (2026-06-07):** Cloud Synchronization Logic & Integrity Repairs.
+  - *Bug Fix:* Repaired a forceful overwrite condition inside standard task completions and manual sync triggers modifying `syncToCloud` parameters, guaranteeing device-id comparisons properly open the Conflict Screen before blindly uploading.
+
+- **v8.7.10 (2026-06-07):** Fellowship Modals & UUID Continuity Fixes.
+  - *Bug Fix:* Repaired broken UUID generation strategies inside Fellowship tools utilizing resilient cross-origin Math.random fallbacks, restoring functionality for joining, updating, and saving team data on insecure or restricted iframes natively.
+  - *UI/UX:* Restored and anchored the missing global Confirm Dialog portals directly into the overarching Fellowship components, ensuring critical confirmations and alerts systematically render across all interactions cleanly.
+
 - **v8.7.9 (2026-06-07):** Expedition Horizon Mobile Refinements & Layout Fixes.
+
   - *UI/UX:* Reverted Expedition Horizon layout from horizontal scrollback into an adaptive two-row grid on mobile screens specifically, optimizing layout space.
   - *Bug Fix:* Removed parent hidden constraints allowing zoomed date cards on desktop arrays to smoothly escape bounding boxes naturally instead of shearing edges unpleasantly.
 

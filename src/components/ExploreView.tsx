@@ -317,7 +317,7 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
           const result = completeSession(state.currentDungeonId || null, duration, fDur, rDur);
           playSound('success', state.soundVolume, state.soundEnabled);
           if (result && state.secretCode) {
-            syncToCloud(true, undefined, 'Manual');
+            syncToCloud(false, undefined, 'Manual');
           }
           
           if (result) {
@@ -339,7 +339,7 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
           selectReward(reward, sessionId);
           playSound('reward', state.soundVolume, state.soundEnabled);
           if (state.secretCode) {
-            syncToCloud(true, undefined, 'Manual');
+            syncToCloud(false, undefined, 'Manual');
           }
           setState(prev => ({
             ...prev,

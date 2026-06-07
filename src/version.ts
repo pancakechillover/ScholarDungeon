@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v8.7.9';
+export const APP_VERSION = 'v8.7.11';
 export const LAST_UPDATE_DATE = '2026-06-07';
-export const LAST_UPDATE_TIME = '14:30:00';
+export const LAST_UPDATE_TIME = '15:15:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,26 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v8.7.11',
+    date: '2026-06-07',
+    time: '15:15:00',
+    title: 'Cloud Synchronization Logic & Integrity Repairs',
+    items: [
+      { category: 'Bug Fix', description: "Repaired a harsh overwrite condition during session completions where `syncToCloud` invoked a forced override by default. It now properly honors device mismatches, pulling up the Conflict Resolution modal seamlessly when foreign device activity is detected." },
+      { category: 'Bug Fix', description: "Aligned the 'Manual Sync' button on the Cloud Data UI to strictly run safe identity checks before executing structural overwrites against disjointed remote saves." }
+    ]
+  },
+  {
+    version: 'v8.7.10',
+    date: '2026-06-07',
+    time: '14:40:00',
+    title: 'Fellowship Modals & UUID Continuity Fixes',
+    items: [
+      { category: 'Bug Fix', description: "Repaired broken UUID generation strategies inside Fellowship tools utilizing resilient cross-origin Math.random fallbacks, restoring functionality for joining, updating, and saving team data on insecure or restricted iframes natively." },
+      { category: 'UI/UX', description: "Restored and anchored the missing global Confirm Dialog portals directly into the overarching Fellowship components, ensuring critical confirmations and alerts systematically render across all interactions cleanly." }
+    ]
+  },
   {
     version: 'v8.7.9',
     date: '2026-06-07',

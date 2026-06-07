@@ -1746,7 +1746,7 @@ function App() {
                 setSyncCheckResult(null);
                 logSyncEvent('cancel_login', code);
               }}
-              onManualSync={() => syncToCloud(true, undefined, 'Manual')}
+              onManualSync={() => syncToCloud(false, undefined, 'Manual')}
               onUnbind={unbindFromCloud}
               onDeleteCloudData={deleteCloudData}
               onVerify={() => checkCloudSync(true)}

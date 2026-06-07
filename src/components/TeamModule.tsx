@@ -170,7 +170,12 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
 
   const getOrGenerateIdentity = () => {
     if (state.secretCode) return state.secretCode;
-    const newCode = crypto.randomUUID();
+    let newCode;
+    try {
+      newCode = crypto.randomUUID();
+    } catch (e) {
+      newCode = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    }
     setState(s => ({ ...s, secretCode: newCode }));
     return newCode;
   };
@@ -874,6 +879,44 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
       
       {showDetailedGoal && team && (
          <DetailedGoalModal team={team} onClose={() => setShowDetailedGoal(false)} />
+      )}
+
+      {confirmDialog.isOpen && createPortal(
+         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+           <div className="bg-slate-900 border border-slate-800 shadow-xl rounded-3xl p-6 sm:p-8 max-w-sm w-full relative">
+             <h3 className={cn("text-xl font-black italic tracking-widest mb-2 uppercase", 
+               confirmDialog.type === 'danger' ? "text-red-500" : 
+               confirmDialog.type === 'info' ? "text-indigo-400" : "text-amber-500")}>
+               {confirmDialog.title}
+             </h3>
+             <p className="text-slate-300 text-sm mb-8">{confirmDialog.message}</p>
+             <div className="flex gap-4">
+               {!confirmDialog.isAlert && (
+                 <button 
+                   onClick={() => setConfirmDialog(prev => ({ ...prev, isOpen: false }))}
+                   className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition-colors tracking-widest text-xs"
+                 >
+                   CANCEL
+                 </button>
+               )}
+               <button 
+                 onClick={() => {
+                   setConfirmDialog(prev => ({ ...prev, isOpen: false }));
+                   if (confirmDialog.onConfirm) confirmDialog.onConfirm();
+                 }}
+                 className={cn(
+                   "flex-1 py-3 font-bold rounded-xl transition-colors tracking-widest text-xs uppercase",
+                   confirmDialog.type === 'danger' ? "bg-red-600 hover:bg-red-500 text-white" :
+                   confirmDialog.type === 'info' ? "bg-indigo-600 hover:bg-indigo-500 text-white" :
+                   "bg-amber-600 hover:bg-amber-500 text-white"
+                 )}
+               >
+                 {confirmDialog.isAlert ? "OK" : (confirmDialog.confirmText || 'CONFIRM')}
+               </button>
+             </div>
+           </div>
+         </div>,
+         document.body
       )}
     </div>
   );
