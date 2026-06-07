@@ -23,9 +23,9 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v8.6.32
+- **Current Version:** v8.7.6
 - **Last Update Date:** 2026-06-07
-- **Last Update Time:** 05:00:00
+- **Last Update Time:** 14:30:00
 
 ## Dark Themes Definition
 The following themes are considered "Dark Themes" and form the baseline for vibrant visual effects and high-contrast glowing elements:
@@ -50,6 +50,58 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v8.7.6 (2026-06-07):** Long-Press Seamless Automation & Fractional Statistics
+  - *Bug Fix:* Unconditionally mapped manual long-press skip operations to strictly obey the user's 'Skip Victory Screen' (`timerSkipVictoryMode`) preferences natively, enabling seamless automatic transitions directly into the respective Rest loop or next interval exactly like a standard timer completion.
+  - *Architecture:* Enforced strict integer rounding behavior on elapsed durations during skip operations, ensuring partial skip times uniquely snap to explicit minutes (or minimum 1 minute thresholds). This securely logs exact rounded values directly into Sanctum progress, team logs, records, heatmaps, and quest goals.
+
+- **v8.7.5 (2026-06-07):** Restored Long-Press Skip Continuity
+  - *Bug Fix:* Reverted fractional skip logging and restored full-duration credit on manual skip, ensuring skipped sessions once again accurately drive Sanctum, Quests, Expedition, and Fellowship progress identically to previous versions.
+  - *Bug Fix:* Permitted manual long-press skips to once again correctly obey user 'Skip Victory Screen' (`timerSkipVictoryMode`) automation settings, seamlessly entering the Rest loop automatically without popup interruptions.
+
+- **v8.7.4 (2026-06-07):** Accurate Integer Skip Logic & Rest Continuity
+  - *Bug Fix:* Repaired the long-press skip action so that the skipped absolute focus duration is correctly logged as a cleanly rounded integer. This resolves fractional timing issues, ensuring that the exact elapsed time correctly factors into Sanctum progress, team charts, Expedition logs, and quests smoothly.
+  - *Bug Fix:* Mapped manual long-press skip triggers to unconditionally bypass any automatic `timerSkipVictoryMode` 'Skip Victory Screen' logic. Consequently, users correctly receive the standard reward selection UI popup during manual skipping operations.
+  - *UI/UX:* Verified that gracefully skipping loops immediately launches and correctly cascades into the active Rest phase, ensuring the chronological progression of intervals remains unharmed on a manual jump.
+
+- **v8.7.3 (2026-06-07):** Long Press Skip Interaction & Fractional Reward Sync
+  - *Feature:* Transformed the Timer 'Skip' button into a secure 3-second 'Long-Press to Skip' interaction, complete with an animated SVG radial progress ring to prevent accidental skips.
+  - *Architecture:* Upgraded actual duration and focus propagation, injecting partial time accurately into `completeSession` so that skipped blocks are logged linearly matching EXACT milliseconds elapsed across Sanctum, Fellowship channels, records, Heatmaps, and Quests flawlessly.
+  - *Bug Fix:* Repaired the Reward chest logic forcing `Math.max(1, drawCount)` ensuring short fractional skipped sessions consistently guarantee a minimum 1x baseline reward draw.
+  - *Bug Fix:* Repaired a typescript mapping error inside `DailySessionsModal` resulting from mismatched `includeRestTimeInTasks` properties.
+
+- **v8.7.2 (2026-06-07):** Time-Based Calculation Expansion
+  - *Feature:* Promoted "Include Rest Time in Tasks" to be enabled by default and relocated its configuration block to the primary Timer Settings dashboard.
+  - *Architecture:* Synchronized `sessionDurationVal`, `getAddedProgress`, and global statistics engines to uniformly incorporate rest durations into calculations uniformly when the setting is active.
+  - *System:* Mapped the extended Rest + Focus unified progression into quests tracking, Sanctum daily progress, Expeditions, records, stats heatmaps, and Fellowship Team aggregate broadcasts seamlessly.
+  - *Bug Fix:* Repaired inaccurate Quest type mappings in constants directly converting generic task string checks into true session-scaled increments.
+
+- **v8.7.1 (2026-06-07):** Manual Talent Triggers
+  - *Feature:* Reconstructed A2, B2, A3, and B3 to be manually claimed exclusively via the Active Talents tooltip instead of automated quest progression.
+  - *Architecture:* Shifted daily time thresholds directly to exact explicit durations (8 hours for A2/B2, 4 hours for A3/B3).
+  - *UI/UX:* Added detailed visual progress bars into the tooltip representing total minutes logged today out of required limits.
+  - *Bug Fix:* Expanded active talent descriptions outlining hard limit streak caps precisely up to 10 days.
+  - *System:* Removed redundant q_special fallback automated quests directly from generation memory cleanly.
+
+- **v8.7.0 (2026-06-07):** Complete Migration to Time-Based Progression.
+  - *Feature:* Removed "Compute Tasks by Time" toggle, enforcing a pure time-based tracking architecture application-wide.
+  - *Architecture:* Converted core `getAddedProgress` hooks to rely solely on actual session focus duration relative to the configured `standardSessionMinutes`.
+  - *System:* Linearly scaled base XP and base Coin generation organically using accurate progress multipliers matching true focus effort.
+  - *UI/UX:* Reworked Dashboard, ExploreView, CompactTimer, and Stats components to universally display explicit minute bounds instead of opaque session counts, enhancing immediate progression clarity.
+  - *Bug Fix:* Preserved and integrated cross-threshold triggers (Talent A2/B2 "16th Task") perfectly into the unified fractional progress scales.
+
+
+- **v8.7.0 (2026-06-07):** Complete Migration to Time-Based Progression.
+  - *Feature:* Removed "Compute Tasks by Time" toggle, enforcing a pure time-based tracking architecture application-wide.
+  - *Architecture:* Converted core `getAddedProgress` hooks to rely solely on actual session focus duration relative to the configured `standardSessionMinutes`.
+  - *System:* Linearly scaled base XP and base Coin generation organically using accurate progress multipliers matching true focus effort.
+  - *UI/UX:* Reworked Dashboard, ExploreView, CompactTimer, and Stats components to universally display explicit minute bounds instead of opaque session counts, enhancing immediate progression clarity.
+  - *Bug Fix:* Preserved and integrated cross-threshold triggers (Talent A2/B2 "16th Task") perfectly into the unified fractional progress scales.
+
+
+- **v8.7.0 (2026-06-07):** Streak Record & Missing Day Interactions.
+  - *Bug Fix:* Repaired a synchronization mismatch causing the available "Death Defying Gold Medals" counter inside the primary Activity Record dashboards to drift directly away from the core inventory bounds, accurately linking them to native state.
+  - *Feature:* Enforced click actions directly onto "missed day grids" inside the "Start of the Day" prompt; failing days now gracefully ask to patch using items or gracefully launch a standardized 'missing item' informational modal cleanly.
 
 - **v8.6.32 (2026-06-07):** Notification and Event Triggers Synchronization.
   - *Bug Fix:* Resolved a race condition via a React ref lock in the active timer hook that occasionally dispatched duplicate "session completed" events when resolving the identical sub-second completion frames, preventing duplicated historic inputs.

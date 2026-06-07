@@ -59,7 +59,6 @@ interface DungeonManagerProps {
   dungeons: Dungeon[];
   majorDungeons: MajorDungeon[];
   currentDungeonId: string | null;
-  timeBasedMode?: boolean;
   standardSessionMinutes?: number;
   standardRestMinutes?: number;
   includeRestTimeInTasks?: boolean;
@@ -91,7 +90,6 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
   dungeons,
   majorDungeons,
   currentDungeonId,
-  timeBasedMode,
   standardSessionMinutes = 25,
   standardRestMinutes = 5,
   includeRestTimeInTasks = false,
@@ -530,7 +528,6 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                             style={{ width: `${Math.min(100, (sub.completedSessions/sub.totalSessions)*100)}%` }}
                           />
                         </div>
-                        {timeBasedMode ? (
                           <span className="text-[10px] font-bold text-slate-400 tabular-nums flex items-center justify-end w-20">
                             {(() => {
                               const timePerRoom = standardSessionMinutes + (includeRestTimeInTasks ? standardRestMinutes : 0);
@@ -553,9 +550,6 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                               );
                             })()}
                           </span>
-                        ) : (
-                          <span className="text-[10px] font-bold text-slate-400 tabular-nums inline-block w-14 text-right">{Math.floor(sub.completedSessions)}/{sub.totalSessions}</span>
-                        )}
                       </>
                     )}
                   </div>
@@ -756,7 +750,6 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                     <div className="space-y-1 sm:col-span-1">
                       <div className="flex justify-between items-end">
                         <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Total Rooms</label>
-                        {timeBasedMode && (
                           <div className="text-[10px] text-indigo-400 font-bold tabular-nums">
                             {(() => {
                               const rooms = isAddingSub ? (newSub.totalSessions || 0) : (editingSub?.totalSessions || 0);
@@ -769,7 +762,6 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                               return m > 0 ? `${h} h ${m} min` : `${h} h`;
                             })()}
                           </div>
-                        )}
                       </div>
                       <SpinnerInput
                         min={1}

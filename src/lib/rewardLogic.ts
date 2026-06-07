@@ -4,7 +4,6 @@ interface GenerationContext {
   rewardPool: RewardCard[];
   activeTalents: string[];
   pendingRewardChest?: { session: StudySession; choices: RewardCard[] }[];
-  timeBasedMode?: boolean;
   standardSessionMinutes?: number;
 }
 
@@ -13,11 +12,8 @@ export function generateRewardChoicesForSession(
   ctx: GenerationContext,
   existingChoicesList: { session: StudySession; choices: RewardCard[] }[] = []
 ): { session: StudySession; choices: RewardCard[] }[] {
-  let drawCount = 1;
-  if (ctx.timeBasedMode) {
-    const actualDur = session.focusDuration || session.duration;
-    drawCount = Math.floor(Math.max(1, actualDur) / (ctx.standardSessionMinutes || 25));
-  }
+  const actualDur = session.focusDuration || session.duration;
+  let drawCount = Math.max(1, Math.floor(actualDur / (ctx.standardSessionMinutes || 25)));
 
   const now = Date.now();
   const choicesList = [...existingChoicesList];

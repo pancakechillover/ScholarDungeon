@@ -9,14 +9,12 @@ import { generateRewardChoicesForSession } from '../lib/rewardLogic';
 const STORAGE_KEY = 'scholars_dungeon_state';
 
 const getAddedProgress = (
-  timeBasedMode: boolean | undefined, 
   includeRestTimeInTasks: boolean | undefined,
   focusDurationOrDuration: number, 
   restDuration: number | undefined,
   standardSessionMinutes: number | undefined, 
   standardRestMinutes: number | undefined
 ) => {
-  if (!timeBasedMode) return 1;
   let val = focusDurationOrDuration;
   let denom = standardSessionMinutes || 25;
   if (includeRestTimeInTasks) {
@@ -58,6 +56,7 @@ export function useGameState() {
       dailySessions: 0,
       lastDailyReset: null,
       dailyRerollUsed: false,
+      claimedDailyTalents: [],
       inventory: [],
       userName: 'Scholar',
       userUniqueId: generateUniqueId(),
@@ -95,8 +94,8 @@ export function useGameState() {
       ichibanAnimation: 'scratch',
       gachaAllowOverlap: false,
       defaultMarkdownEnabled: true,
-      timeBasedMode: false,
       standardSessionMinutes: 25,
+      includeRestTimeInTasks: true,
       requireFocusConfirmation: false,
       timerBannerCompactMode: false,
       timerSkipVictoryMode: 'none',
@@ -308,7 +307,6 @@ export function useGameState() {
         }
 
         if (parsed.requireFocusConfirmation === undefined) parsed.requireFocusConfirmation = false;
-        if (parsed.timeBasedMode === undefined) parsed.timeBasedMode = false;
         if (parsed.standardSessionMinutes === undefined) parsed.standardSessionMinutes = 25;
         if (parsed.timerBannerCompactMode === undefined) parsed.timerBannerCompactMode = false;
         if (parsed.timerSkipVictoryMode === undefined) parsed.timerSkipVictoryMode = 'none';
@@ -477,6 +475,22 @@ export function useGameState() {
     }
   }, [state.deviceCode]);
 
+  // Generic Data Migrations
+  useEffect(() => {
+    setState(prev => {
+      let needsMigration = false;
+      const updates = { ...prev };
+      
+      // Clean up legacy special quests that were replaced with static hover UI
+      if (prev.quests && prev.quests.some(Math => Math.id && Math.id.startsWith('q_special_'))) {
+        updates.quests = prev.quests.filter(q => !q.id || !q.id.startsWith('q_special_'));
+        needsMigration = true;
+      }
+      
+      return needsMigration ? updates : prev;
+    });
+  }, []);
+
   // Auto Theme Logic (Time-based with Timezone)
   useEffect(() => {
     if (!state.autoTheme) return;
@@ -537,6 +551,7 @@ export function useGameState() {
       needsUpdate = true;
       updates.dailySessions = 0;
       updates.dailyRerollUsed = false;
+      updates.claimedDailyTalents = [];
       updates.lastDailyReset = todayStr;
       updates.streak = state.lastStudyDate ? (differenceInDays(parseISO(todayStr), parseISO(state.lastStudyDate)) <= 1 ? state.streak : 0) : 0;
       
@@ -887,60 +902,28 @@ export function useGameState() {
     if (state.doubleXpActive) baseXP *= 2;
     if (state.doubleGoldActive) baseCoins *= 2;
 
-    const sessionDurationVal = focusDuration || duration;
-    const addedProgress = getAddedProgress(state.timeBasedMode, state.includeRestTimeInTasks, focusDuration || duration, restDuration, state.standardSessionMinutes, state.standardRestMinutes);
-
-    // Daily 16 session bonuses
-    const is16th = Math.floor(state.dailySessions) < 16 && Math.floor(state.dailySessions + addedProgress) >= 16;
-    const triggeredTalents: StudySession['triggeredTalents'] = {};
-
-    if (is16th) {
-      const a2Active = state.activeTalents.includes('a2');
-      const b2Active = state.activeTalents.includes('b2');
-      if (a2Active || b2Active) {
-        triggeredTalents.flowExperience = { xp: 0, coins: 0 };
-        if (a2Active) {
-          baseXP += 200;
-          triggeredTalents.flowExperience.xp = 200;
-        }
-        if (b2Active) {
-          baseCoins += 50;
-          triggeredTalents.flowExperience.coins = 50;
-        }
-      }
-    }
-
-    // Streak bonuses (Perfect Theory / Bounty Decree)
-    // These are complex (20*n and 10*n). We'll apply them if streak >= 2
-    if (state.streak >= 2 && state.streak <= 10 && Math.floor(state.dailySessions) < 8 && Math.floor(state.dailySessions + addedProgress) >= 8) { // 8th session of the day
-      const a3Active = state.activeTalents.includes('a3');
-      const b3Active = state.activeTalents.includes('b3');
-      if (a3Active || b3Active) {
-        triggeredTalents.perfectTheory = { xp: 0, coins: 0 };
-        if (a3Active) {
-          const xpBonus = 20 * state.streak + (state.streak === 10 ? 1000 : 0);
-          baseXP += xpBonus;
-          triggeredTalents.perfectTheory.xp = xpBonus;
-        }
-        if (b3Active) {
-          const coinBonus = 10 * state.streak + (state.streak === 10 ? 100 : 0);
-          baseCoins += coinBonus;
-          triggeredTalents.perfectTheory.coins = coinBonus;
-        }
-      }
-    }
+    const baseFocusOrDuration = focusDuration || duration;
+    const sessionDurationVal = state.includeRestTimeInTasks 
+      ? baseFocusOrDuration + (restDuration || 0) 
+      : baseFocusOrDuration;
+      
+    const addedProgress = getAddedProgress(state.includeRestTimeInTasks, baseFocusOrDuration, restDuration, state.standardSessionMinutes, state.standardRestMinutes);
+    
+    // Scale base rewards by the time blocks completed
+    const progressMultiplier = Math.max(1, Math.floor(addedProgress));
+    baseXP *= progressMultiplier;
+    baseCoins *= progressMultiplier;
 
     const session: StudySession = {
       id: Math.random().toString(36).substr(2, 9),
       dungeonId: dungeonId || 'free_study',
-      duration: state.includeRestTimeInTasks ? sessionDurationVal + (restDuration || 0) : duration,
+      duration,
       focusDuration,
       restDuration,
       timestamp: now.toISOString(),
       coinsEarned: Math.floor(baseCoins),
       xpEarned: Math.floor(baseXP),
-      isCrit,
-      triggeredTalents: Object.keys(triggeredTalents).length > 0 ? triggeredTalents : undefined
+      isCrit
     };
 
     setState(prev => {
@@ -996,7 +979,7 @@ export function useGameState() {
 
           let newProgress = currentQuest.progress;
           if (currentQuest.type === 'daily_sessions' || currentQuest.type === 'weekly_sessions' || currentQuest.type === 'monthly_sessions' || currentQuest.type === 'total_sessions') {
-            newProgress += 1;
+            newProgress += addedProgress;
           } else if (currentQuest.type === 'consecutive_days') {
             newProgress = newStreak;
           }
@@ -1113,8 +1096,7 @@ export function useGameState() {
       setDungeons(prevDungeons => {
         const updatedDungeons = prevDungeons.map(d => {
           if (d.id === dungeonId) {
-            const actualDuration = focusDuration || duration;
-            const addedProgress = getAddedProgress(state.timeBasedMode, state.includeRestTimeInTasks, actualDuration, restDuration, state.standardSessionMinutes, state.standardRestMinutes);
+            const actualDuration = sessionDurationVal;
             const newCompleted = d.completedSessions + addedProgress;
             const newTotalFocusTime = (d.totalFocusTime || 0) + actualDuration;
 
@@ -1634,8 +1616,7 @@ export function useGameState() {
       if (updates.dungeonId && updates.dungeonId !== session.dungeonId) {
          setDungeons(prevDungeons => {
             const getProgress = (sess: StudySession) => {
-              if (!prev.timeBasedMode) return 1;
-              return Math.max(1, sess.focusDuration || sess.duration) / (prev.standardSessionMinutes || 25);
+              return getAddedProgress(prev.includeRestTimeInTasks, sess.focusDuration || sess.duration, sess.restDuration, prev.standardSessionMinutes, prev.standardRestMinutes);
             };
             const oldProgress = getProgress(session);
             const newProgress = getProgress({ ...session, ...updates });
@@ -1666,7 +1647,7 @@ export function useGameState() {
 
       if (session.dungeonId !== 'free_study') {
          setDungeons(prevDungeons => {
-            const addedProgress = getAddedProgress(prev.timeBasedMode, prev.includeRestTimeInTasks, session.focusDuration || session.duration, session.restDuration, prev.standardSessionMinutes, prev.standardRestMinutes);
+            const addedProgress = getAddedProgress(prev.includeRestTimeInTasks, session.focusDuration || session.duration, session.restDuration, prev.standardSessionMinutes, prev.standardRestMinutes);
             return prevDungeons.map(d => {
                if (d.id === session.dungeonId) {
                   return { ...d, completedSessions: Math.max(0, d.completedSessions - addedProgress), status: 'active' };
@@ -1705,13 +1686,56 @@ export function useGameState() {
       const sessionDay = getSettlementDay(new Date(session.timestamp), prev.timeSettings);
 
       if (sessionDay === todayStr) {
-        const addedProgress = getAddedProgress(prev.timeBasedMode, prev.includeRestTimeInTasks, session.focusDuration || session.duration, session.restDuration, prev.standardSessionMinutes, prev.standardRestMinutes);
+        const addedProgress = getAddedProgress(prev.includeRestTimeInTasks, session.focusDuration || session.duration, session.restDuration, prev.standardSessionMinutes, prev.standardRestMinutes);
         newState.dailySessions = Math.max(0, newState.dailySessions - addedProgress);
       }
 
       return newState;
     });
   }, [setDungeons, getNow]);
+
+  const claimDailyTalentReward = useCallback((talentId: string) => {
+    setState(prev => {
+      // Check if already claimed
+      if (prev.claimedDailyTalents?.includes(talentId)) return prev;
+
+      // Check if requirement met
+      const minutes = prev.dailySessions * (prev.standardSessionMinutes || 25);
+      
+      let rewardXP = 0;
+      let rewardCoins = 0;
+
+      if (talentId === 'a2' && minutes >= 480) {
+        rewardXP = 200;
+      } else if (talentId === 'b2' && minutes >= 480) {
+        rewardCoins = 50;
+      } else if (talentId === 'a3' && minutes >= 240) {
+        rewardXP = 20 * (prev.streak > 10 ? 10 : Math.max(prev.streak, 0));
+        if (prev.streak >= 10) rewardXP += 1000;
+      } else if (talentId === 'b3' && minutes >= 240) {
+        rewardCoins = 10 * (prev.streak > 10 ? 10 : Math.max(prev.streak, 0));
+        if (prev.streak >= 10) rewardCoins += 100;
+      } else {
+        return prev; // Conditions not met
+      }
+
+      let newState = processTransaction(
+        { ...prev, claimedDailyTalents: [...(prev.claimedDailyTalents || []), talentId] },
+        'xp',
+        rewardXP,
+        `Claimed Talent ${talentId.toUpperCase()}`
+      );
+
+      newState = processTransaction(
+        newState,
+        'coins',
+        rewardCoins,
+        `Claimed Talent ${talentId.toUpperCase()}`
+      );
+
+      return newState;
+    });
+  }, []);
 
   const claimQuestReward = useCallback((questId: string) => {
     setState(prev => {
@@ -2143,7 +2167,6 @@ export function useGameState() {
           rewardPool: prev.rewardPool,
           activeTalents: prev.activeTalents || [],
           pendingRewardChest: newPendingChests,
-          timeBasedMode: prev.timeBasedMode,
           standardSessionMinutes: prev.standardSessionMinutes
         });
         
@@ -2211,6 +2234,7 @@ export function useGameState() {
     updateQuests,
     updateSession,
     deleteSession,
+    claimDailyTalentReward,
     claimQuestReward,
     claimAllQuestRewards,
     saveDailyLog,

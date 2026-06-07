@@ -506,7 +506,7 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
                 <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Daily Progress</h3>
               </div>
               <span className="text-xs font-bold text-slate-400">
-                {state.timeBasedMode ? `${Math.floor(dailyStats.sessions * (state.standardSessionMinutes || 25))}m` : Math.floor(dailyStats.sessions)} <span className="text-slate-600">/</span> {state.timeBasedMode ? `${dailyStats.dailyGoal * (state.standardSessionMinutes || 25)}m` : dailyStats.dailyGoal}
+                {Math.floor(dailyStats.sessions * (state.standardSessionMinutes || 25))}m <span className="text-slate-600">/</span> {dailyStats.dailyGoal * (state.standardSessionMinutes || 25)}m
               </span>
             </div>
             <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
@@ -536,7 +536,7 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
                   className="overflow-hidden"
                 >
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                    <StatCard icon={Sword} label={state.timeBasedMode ? "Time" : "Sessions"} value={state.timeBasedMode ? `${Math.floor(dailyStats.sessions * (state.standardSessionMinutes || 25))}m` : Math.floor(dailyStats.sessions)} color="text-indigo-400" />
+                    <StatCard icon={Sword} label={"Time"} value={`${Math.floor(dailyStats.sessions * (state.standardSessionMinutes || 25))}m`} color="text-indigo-400" />
                     <StatCard icon={Coins} label="Gold" value={dailyStats.gold} color="text-amber-400" />
                     <StatCard icon={Zap} label="XP" value={dailyStats.xp} color="text-emerald-400" />
                     {dailyStats.levels > 0 && <StatCard icon={Trophy} label="Levels" value={`+${dailyStats.levels}`} color="text-rose-400" />}

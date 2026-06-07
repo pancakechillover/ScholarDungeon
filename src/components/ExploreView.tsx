@@ -85,6 +85,7 @@ interface ExploreViewProps {
   syncToCloud: (forceOverwrite?: boolean, specificState?: AppState, syncMethod?: 'Manual' | 'Immediate' | 'Interval polling' | 'Visibility API Active') => void;
   updateSession: (id: string, updates: any) => void;
   deleteSession: (id: string) => void;
+  claimDailyTalentReward: (talentId: string) => void;
   bulkCreateSessions: (data: { count: number, objectiveId: string, startTime: string, endTime: string, focusDuration?: number, restDuration?: number }) => void;
   bulkDeleteSessions: (data: { startTime: string, endTime: string }) => void;
   setPipVictorySummary: (val: { xp: number, coins: number, ts: number } | null) => void;
@@ -148,6 +149,7 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
   syncToCloud,
   updateSession,
   deleteSession,
+  claimDailyTalentReward,
   bulkCreateSessions,
   bulkDeleteSessions,
   setPipVictorySummary,
@@ -307,7 +309,6 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
         timerSkipVictoryMode={state.timerSkipVictoryMode}
         dailyRerollUsed={state.dailyRerollUsed}
         history={state.history}
-        timeBasedMode={state.timeBasedMode}
         standardSessionMinutes={state.standardSessionMinutes}
         pendingRewardChest={state.pendingRewardChest}
         critChance={state.devModeEnabled ? (state.devCritChance ?? 0.05) : 0.05}
@@ -576,12 +577,10 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
                           <span className="text-[10px] font-bold text-slate-400 tabular-nums">
                             {currentDungeon.totalFocusTime || 0}<span className="text-[9px] opacity-70 ml-[1px]">m</span> Focused
                           </span>
-                        ) : state.timeBasedMode ? (
+                        ) : (
                           <span className="text-[10px] font-bold text-slate-400 tabular-nums">
                              {Math.floor(currentDungeon.completedSessions * (state.standardSessionMinutes || 25))}<span className="text-[9px] opacity-70 ml-[1px]">m</span> <span className="opacity-50 text-[9px] mx-[1px]">/</span> {currentDungeon.totalSessions * (state.standardSessionMinutes || 25)}<span className="text-[9px] opacity-70 ml-[1px]">m</span>
                           </span>
-                        ) : (
-                          <span className="text-[10px] font-bold text-slate-400">{Math.floor(currentDungeon.completedSessions)}/{currentDungeon.totalSessions} Sessions</span>
                         )}
                       </div>
                       {!currentDungeon.isOpenEnded && (
@@ -690,67 +689,69 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
                                   {talent.description}
                                 </p>
                                 
-                                {['a2', 'a3', 'b2', 'b3'].includes(talent.id) && (
-                                  <div className="mt-3 bg-slate-950 rounded-xl p-3 border border-slate-800 space-y-1.5">
-                                    {talent.id === 'a2' && (
-                                      <>
-                                        <div className="text-[10px] font-bold text-slate-500 uppercase">Trigger Progress</div>
-                                        <div className="flex justify-between items-center bg-slate-800 rounded-lg p-1.5 mt-0.5 relative overflow-hidden">
-                                          <div 
-                                            className="absolute inset-y-0 left-0 bg-indigo-500/20" 
-                                            style={{ width: `${Math.min(100, (Math.floor(state.dailySessions) / 16) * 100)}%` }}
-                                          />
-                                          <span className="text-xs font-bold text-indigo-400 z-10 pl-1">{Math.floor(state.dailySessions)} / 16 Sessions</span>
-                                          <span className="text-xs font-bold text-emerald-400 z-10 pr-1">{Math.floor(state.dailySessions) >= 16 ? 'Claimed' : '+200 XP'}</span>
-                                        </div>
-                                      </>
-                                    )}
-                                    {talent.id === 'b2' && (
-                                      <>
-                                        <div className="text-[10px] font-bold text-slate-500 uppercase">Trigger Progress</div>
-                                        <div className="flex justify-between items-center bg-slate-800 rounded-lg p-1.5 mt-0.5 relative overflow-hidden">
-                                          <div 
-                                            className="absolute inset-y-0 left-0 bg-amber-500/20" 
-                                            style={{ width: `${Math.min(100, (Math.floor(state.dailySessions) / 16) * 100)}%` }}
-                                          />
-                                          <span className="text-xs font-bold text-amber-400 z-10 pl-1">{Math.floor(state.dailySessions)} / 16 Sessions</span>
-                                          <span className="text-xs font-bold text-amber-400 z-10 pr-1">{Math.floor(state.dailySessions) >= 16 ? 'Claimed' : '+50 Coins'}</span>
-                                        </div>
-                                      </>
-                                    )}
-                                    {(talent.id === 'a3' || talent.id === 'b3') && (
-                                      <>
-                                        <div className="text-[10px] font-bold text-slate-500 uppercase">Session Progress</div>
-                                        <div className="flex justify-between items-center bg-slate-800 rounded-lg p-1.5 mt-0.5 relative overflow-hidden">
-                                          <div 
-                                            className="absolute inset-y-0 left-0 bg-sky-500/20" 
-                                            style={{ width: `${Math.min(100, (Math.floor(state.dailySessions) / 8) * 100)}%` }}
-                                          />
-                                          <span className="text-xs font-bold text-sky-400 z-10 pl-1">{Math.floor(state.dailySessions)} / 8 Sessions</span>
-                                          <span className="text-xs font-bold text-emerald-400 z-10 pr-1">{Math.floor(state.dailySessions) >= 8 ? 'Claimed' : 'Pending'}</span>
-                                        </div>
-                                        
-                                        <div className="text-[10px] font-bold text-slate-500 uppercase mt-2">Active Streak Evaluation</div>
-                                        <div className="flex flex-col bg-slate-800 rounded-lg p-2 mt-0.5 text-xs text-slate-300">
+                                {['a2', 'a3', 'b2', 'b3'].includes(talent.id) && (() => {
+                                  let requiredMinutes = 480;
+                                  if (talent.id === 'a3' || talent.id === 'b3') requiredMinutes = 240;
+                                  const currentMinutes = state.dailySessions * (state.standardSessionMinutes || 25);
+                                  const canClaim = currentMinutes >= requiredMinutes;
+                                  const hasClaimed = state.claimedDailyTalents?.includes(talent.id);
+
+                                  return (
+                                    <div className="mt-3 bg-slate-950 rounded-xl p-3 border border-slate-800 flex flex-col items-center gap-2">
+                                      <div className="w-full flex justify-between items-center text-[10px] font-bold uppercase text-slate-400">
+                                        <span>Daily Time Required</span>
+                                        <span>{Math.floor(currentMinutes)} / {requiredMinutes}m</span>
+                                      </div>
+                                      <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                                        <div 
+                                          className={cn("h-full transition-all duration-300", 
+                                            canClaim && !hasClaimed ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]" : "bg-indigo-500/50"
+                                          )}
+                                          style={{ width: `${Math.min(100, (currentMinutes / requiredMinutes) * 100)}%` }}
+                                        />
+                                      </div>
+                                      
+                                      <button 
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          if (canClaim && !hasClaimed) {
+                                            claimDailyTalentReward(talent.id);
+                                          }
+                                        }}
+                                        disabled={!canClaim || hasClaimed}
+                                        className={cn(
+                                          "w-full mt-2 py-1.5 rounded-lg text-xs font-bold uppercase transition-all",
+                                          hasClaimed 
+                                            ? "bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed"
+                                            : canClaim 
+                                              ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-500 hover:text-emerald-950 cursor-pointer shadow-[0_0_10px_rgba(52,211,153,0.2)] hover:shadow-[0_0_15px_rgba(52,211,153,0.4)]"
+                                              : "bg-slate-800/50 text-slate-500 border border-slate-700/50 cursor-not-allowed"
+                                        )}
+                                      >
+                                        {hasClaimed ? 'Claimed Today' : canClaim ? 'Claim Reward' : 'Not Reached'}
+                                      </button>
+
+                                      {(talent.id === 'a3' || talent.id === 'b3') && (
+                                        <div className="w-full mt-1 pt-2 border-t border-slate-800 flex flex-col gap-1 text-[10px] text-slate-400">
                                           <div className="flex justify-between">
                                             <span>Current Streak:</span>
-                                            <span className="font-bold text-orange-400">{state.streak >= 2 && state.streak <= 10 ? `${state.streak} Days` : (state.streak > 10 ? 'Max (≥10)' : 'Inactive (< 2)')}</span>
+                                            <span className="font-bold text-orange-400">{state.streak > 10 ? 'Max (≥10)' : `${Math.max(0, state.streak)} Days`}</span>
                                           </div>
-                                          <div className="flex justify-between mt-1">
-                                            <span>Variable Yield:</span>
-                                            <span className="font-bold">{talent.id === 'a3' ? `${20 * (state.streak > 10 ? 10 : Math.max(state.streak, 0))} XP` : `${10 * (state.streak > 10 ? 10 : Math.max(state.streak, 0))} Coins`}</span>
+                                          <div className="flex justify-between">
+                                            <span>Yield:</span>
+                                            <span className="font-bold">{talent.id === 'a3' ? `${20 * Math.min(10, Math.max(state.streak, 0))} XP` : `${10 * Math.min(10, Math.max(state.streak, 0))} Coins`}</span>
                                           </div>
                                           {state.streak >= 10 && (
-                                            <div className="flex justify-between mt-1 pt-1 border-t border-slate-700/50 text-rose-400">
+                                            <div className="flex justify-between text-rose-400 font-bold">
                                               <span>Day 10 Bonus:</span>
-                                              <span className="font-bold">+{talent.id === 'a3' ? '1000 XP' : '100 Coins'}</span>
+                                              <span>+{talent.id === 'a3' ? '1000 XP' : '100 Coins'}</span>
                                             </div>
                                           )}
                                         </div>
-                                      </>
-                                    )}
-                                  </div>
-                                )}
+                                      )}
+                                    </div>
+                                  );
+                                })()}
 
                                 <div className="mt-3 pt-3 border-t border-slate-800 flex items-center gap-2">
                                   <div className={cn("w-1.5 h-1.5 rounded-full", branchColors[talent.branch].split(' ')[1])} />
@@ -805,7 +806,7 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
                   <div className="flex justify-between items-center">
                     <span className="text-xs text-slate-400">Daily Sessions</span>
                     <span className="text-sm font-bold text-white">
-                      {state.timeBasedMode ? `${Math.floor(state.dailySessions * (state.standardSessionMinutes || 25))}m` : state.dailySessions}
+                      {Math.floor(state.dailySessions * (state.standardSessionMinutes || 25))}m
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
@@ -912,7 +913,6 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
                 rewardPool: state.rewardPool || [],
                 activeTalents: state.activeTalents,
                 pendingRewardChest: newChest,
-                timeBasedMode: state.timeBasedMode,
                 standardSessionMinutes: state.standardSessionMinutes
               });
               if (generated.length > 0) {
@@ -939,10 +939,10 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
             }));
             
             // if empty, close it ONLY IF NOT AUTOPICK
-            setState(prev => {
-              if (prev.pendingRewardChest?.length === 0 && !isAutoPick) setShowChestModal(false);
-              return prev;
-            });
+            const wasEmptyAfterSelect = state.pendingRewardChest?.filter(item => item.session.id !== sessionId).length === 0;
+            if (wasEmptyAfterSelect && !isAutoPick) {
+              setShowChestModal(false);
+            }
           }}
           onClose={() => setShowChestModal(false)}
           onNavigateToVault={() => {

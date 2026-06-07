@@ -323,6 +323,7 @@ function App() {
     updateQuests,
     updateSession,
     deleteSession,
+    claimDailyTalentReward,
     claimQuestReward,
     saveDailyLog,
     purchaseShopItem,
@@ -697,46 +698,6 @@ function App() {
       breakdown.push({ source: 'Talent: Critical Intuition', coinEffect: `${critChance * 100}% chance for x${critMult}` });
     }
     
-    // Daily 16
-    const predictedAddedProgress = state.timeBasedMode ? 1 : 1; 
-    // In nextSession prediction we usually assume 1 standard session is being played roughly. So 1 fractional progress matches the actual amount?
-    // Let's just assume +1 progress for prediction purposes, which represents 1 standard session equivalent.
-    if (Math.floor(state.dailySessions) < 16 && Math.floor(state.dailySessions + predictedAddedProgress) >= 16) {
-      if (state.activeTalents.includes('a2')) {
-        xp += 200;
-        breakdown.push({ source: 'Talent: Deep Focus (16th Session)', xpEffect: '+200' });
-      }
-      if (state.activeTalents.includes('b2')) {
-        minCoins += 50;
-        maxCoins += 50;
-        breakdown.push({ source: 'Talent: Treasure Hunter (16th Session)', coinEffect: '+50' });
-      }
-    }
-
-    // Streak
-    if (state.streak >= 2 && state.streak <= 10 && Math.floor(state.dailySessions) < 8 && Math.floor(state.dailySessions + predictedAddedProgress) >= 8) {
-      if (state.activeTalents.includes('a3')) {
-        xp += 20 * state.streak;
-        breakdown.push({ source: `Talent: Consistency (Streak ${state.streak})`, xpEffect: `+${20 * state.streak}` });
-      }
-      if (state.activeTalents.includes('b3')) {
-        minCoins += 10 * state.streak;
-        maxCoins += 10 * state.streak;
-        breakdown.push({ source: `Talent: Momentum (Streak ${state.streak})`, coinEffect: `+${10 * state.streak}` });
-      }
-      if (state.streak === 10) {
-        if (state.activeTalents.includes('a3')) {
-          xp += 1000;
-          breakdown.push({ source: 'Talent: Consistency (10 Day Bonus)', xpEffect: '+1000' });
-        }
-        if (state.activeTalents.includes('b3')) {
-          minCoins += 100;
-          maxCoins += 100;
-          breakdown.push({ source: 'Talent: Momentum (10 Day Bonus)', coinEffect: '+100' });
-        }
-      }
-    }
-
     // Inventory
     (state.inventory || []).forEach(cardId => {
       const card = (state.rewardPool || []).find(c => c.id === cardId);
@@ -1049,7 +1010,6 @@ function App() {
           requireFocusConfirmation={state.requireFocusConfirmation}
           lastCompletionRewards={state.lastCompletionRewards}
           pipVictorySummary={pipVictorySummary}
-          timeBasedMode={state.timeBasedMode}
           standardSessionMinutes={state.standardSessionMinutes}
         />,
         pipWindow.document.body
@@ -1161,11 +1121,7 @@ function App() {
                     {currentDungeon.name}
                   </span>
                   <span className="text-[9px] font-black text-slate-600 tabular-nums shrink-0">
-                    {state.timeBasedMode ? (
-                      <>{Math.floor(currentDungeon.completedSessions * (state.standardSessionMinutes || 25))}m/{currentDungeon.totalSessions * (state.standardSessionMinutes || 25)}m</>
-                    ) : (
-                      <>{currentDungeon.completedSessions}/{currentDungeon.totalSessions}</>
-                    )}
+                    {Math.floor(currentDungeon.completedSessions * (state.standardSessionMinutes || 25))}m / {currentDungeon.totalSessions * (state.standardSessionMinutes || 25)}m
                   </span>
                 </div>
                 <div className="w-16 sm:w-24 h-0.5 sm:h-1 bg-slate-800 rounded-full overflow-hidden mt-0.5">
@@ -1513,6 +1469,7 @@ function App() {
                  syncToCloud={syncToCloud}
                  updateSession={updateSession}
                  deleteSession={deleteSession}
+                 claimDailyTalentReward={claimDailyTalentReward}
                  bulkCreateSessions={bulkCreateSessions}
                  bulkDeleteSessions={bulkDeleteSessions}
                  setPipVictorySummary={setPipVictorySummary}

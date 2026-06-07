@@ -212,6 +212,7 @@ export interface AppState {
   lastMonthlyReset?: string | null;
   patchedDays?: string[];
   dailyRerollUsed: boolean; // Track if Shuffler reroll was used today
+  claimedDailyTalents?: string[]; // Track which daily talents have been claimed today
   inventory: string[]; // IDs of functional cards active for next session
   userName?: string;
   userUniqueId?: string; // Random short permanent user identifier
@@ -255,7 +256,6 @@ export interface AppState {
   heatmapScaleMax?: number; // 0-8 or 0-16 for heatmap max range
   timerBannerShortcuts?: string[];
   requireFocusConfirmation?: boolean;
-  timeBasedMode?: boolean;
   defaultOpenEndedDungeon?: boolean;
   standardSessionMinutes?: number;
   standardRestMinutes?: number;

@@ -15,6 +15,7 @@ interface StreakRecordModalProps {
 
 export const StreakRecordModal: React.FC<StreakRecordModalProps> = ({ state, onClose, repairStreak, openGuideBook }) => {
   const [confirmRepairDate, setConfirmRepairDate] = React.useState<string | null>(null);
+  const [showNoMedalAlert, setShowNoMedalAlert] = React.useState(false);
 
   const streakData = (() => {
     const dates = new Set<string>();
@@ -56,9 +57,7 @@ export const StreakRecordModal: React.FC<StreakRecordModalProps> = ({ state, onC
     return result;
   })();
 
-  const medalCount = (state.rewardPool || []).find(r => r.id === 'death_defying_medal')?.claimHistory?.length || 0;
-  const usedMedals = (state.patchedDays || []).length;
-  const availableMedals = Math.max(0, medalCount - usedMedals);
+  const availableMedals = state.deathDefyingMedals || 0;
 
   const hasStudiedToday = streakData.find(d => d.isToday)?.isCompleted;
 
@@ -118,11 +117,17 @@ export const StreakRecordModal: React.FC<StreakRecordModalProps> = ({ state, onC
                     ) : (
                       <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-800 flex items-center justify-center border border-slate-700 overflow-visible relative">
                         <span className="text-slate-600 font-bold text-xs">X</span>
-                        {!day.isCompleted && !day.isToday && !day.isFuture && availableMedals > 0 && (
+                        {!day.isCompleted && !day.isToday && !day.isFuture && (
                           <div 
                             className="absolute inset-0 bg-indigo-500 flex items-center justify-center rounded-full opacity-0 hover:opacity-100 cursor-pointer shadow-[0_0_15px_rgba(99,102,241,0.5)] scale-110 transition-all z-10"
-                            onClick={() => setConfirmRepairDate(day.dateStr)}
-                            title="Use Death Defying Medal to patch"
+                            onClick={() => {
+                              if (availableMedals > 0) {
+                                setConfirmRepairDate(day.dateStr);
+                              } else {
+                                setShowNoMedalAlert(true);
+                              }
+                            }}
+                            title="Patch missing streak"
                           >
                             <Flame size={12} className="text-white" />
                           </div>
@@ -173,6 +178,16 @@ export const StreakRecordModal: React.FC<StreakRecordModalProps> = ({ state, onC
           }
         }}
         onClose={() => setConfirmRepairDate(null)}
+      />
+
+      <ConfirmModal
+        isOpen={showNoMedalAlert}
+        onClose={() => setShowNoMedalAlert(false)}
+        onConfirm={() => setShowNoMedalAlert(false)}
+        title="Module Missing"
+        message="You do not have any Death Defying Gold Medals to patch this missing day. You can acquire them from the Gacha or the standard Item Shop."
+        confirmText="Understood"
+        type="warning"
       />
     </>
   );

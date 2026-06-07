@@ -18,27 +18,21 @@ export const DEFAULT_ENABLED_MOODS = ['great', 'good', 'neutral', 'bad', 'awful'
 
 export const DEFAULT_QUESTS: Quest[] = [
   // Daily Quests
-  { id: 'q_daily_1', title: 'Daily Warmup', description: 'Complete 1 session today', type: 'daily_sessions', target: 1, progress: 0, reward: { type: 'xp', amount: 50 }, completed: false, order: 1, isAchievement: false },
-  { id: 'q_daily_2', title: 'Daily Grind', description: 'Complete 3 sessions today', type: 'daily_sessions', target: 3, progress: 0, reward: { type: 'coins', amount: 10 }, completed: false, order: 2, isAchievement: false },
-  { id: 'q_daily_3', title: 'Daily Master', description: 'Complete 5 sessions today', type: 'daily_sessions', target: 5, progress: 0, reward: { type: 'item', amount: 1, itemName: 'Small Wallet' }, completed: false, order: 3, isAchievement: false },
+  { id: 'q_daily_1', title: 'Daily Warmup', description: 'Complete 1 task today', type: 'daily_sessions', target: 1, progress: 0, reward: { type: 'xp', amount: 50 }, completed: false, order: 1, isAchievement: false },
+  { id: 'q_daily_2', title: 'Daily Grind', description: 'Complete 3 tasks today', type: 'daily_sessions', target: 3, progress: 0, reward: { type: 'coins', amount: 10 }, completed: false, order: 2, isAchievement: false },
+  { id: 'q_daily_3', title: 'Daily Master', description: 'Complete 5 tasks today', type: 'daily_sessions', target: 5, progress: 0, reward: { type: 'item', amount: 1, itemName: 'Small Wallet' }, completed: false, order: 3, isAchievement: false },
   
   // Weekly Quests
-  { id: 'q_weekly_1', title: 'Weekly Scholar', description: 'Complete 10 sessions this week', type: 'weekly_sessions', target: 10, progress: 0, reward: { type: 'xp', amount: 300 }, completed: false, order: 4, isAchievement: false },
-  { id: 'q_weekly_2', title: 'Weekly Dedication', description: 'Complete 25 sessions this week', type: 'weekly_sessions', target: 25, progress: 0, reward: { type: 'coins', amount: 50 }, completed: false, order: 5, isAchievement: false },
+  { id: 'q_weekly_1', title: 'Weekly Scholar', description: 'Complete 10 tasks this week', type: 'weekly_sessions', target: 10, progress: 0, reward: { type: 'xp', amount: 300 }, completed: false, order: 4, isAchievement: false },
+  { id: 'q_weekly_2', title: 'Weekly Dedication', description: 'Complete 25 tasks this week', type: 'weekly_sessions', target: 25, progress: 0, reward: { type: 'coins', amount: 50 }, completed: false, order: 5, isAchievement: false },
   
   // Monthly Quests
-  { id: 'q_monthly_1', title: 'Monthly Marathon', description: 'Complete 50 sessions this month', type: 'monthly_sessions', target: 50, progress: 0, reward: { type: 'talentPoint', amount: 1 }, completed: false, order: 6, isAchievement: false },
+  { id: 'q_monthly_1', title: 'Monthly Marathon', description: 'Complete 50 tasks this month', type: 'monthly_sessions', target: 50, progress: 0, reward: { type: 'talentPoint', amount: 1 }, completed: false, order: 6, isAchievement: false },
   
-  // Special Quests (Talent based)
-  { id: 'q_special_a2', title: 'Flow Experience α', description: 'Complete 16 sessions in one day', type: 'daily_sessions', target: 16, progress: 0, reward: { type: 'xp', amount: 200 }, completed: false, order: 7, isAchievement: false, isSpecial: true, talentRequired: 'a2' },
-  { id: 'q_special_b2', title: 'Flow Experience β', description: 'Complete 16 sessions in one day', type: 'daily_sessions', target: 16, progress: 0, reward: { type: 'coins', amount: 50 }, completed: false, order: 8, isAchievement: false, isSpecial: true, talentRequired: 'b2' },
-  { id: 'q_special_a3', title: 'Perfect Theory', description: 'Maintain a 10-day streak', type: 'consecutive_days', target: 10, progress: 0, reward: { type: 'xp', amount: 1000 }, completed: false, order: 9, isAchievement: true, isSpecial: true, talentRequired: 'a3' },
-  { id: 'q_special_b3', title: 'Bounty Decree', description: 'Maintain a 10-day streak', type: 'consecutive_days', target: 10, progress: 0, reward: { type: 'coins', amount: 100 }, completed: false, order: 10, isAchievement: true, isSpecial: true, talentRequired: 'b3' },
-
   // Achievements
-  { id: 'a_total_10', title: 'First Steps', description: 'Complete 10 sessions in total', type: 'total_sessions', target: 10, progress: 0, reward: { type: 'coins', amount: 20 }, completed: false, order: 11, isAchievement: true },
-  { id: 'a_total_50', title: 'Getting Serious', description: 'Complete 50 sessions in total', type: 'total_sessions', target: 50, progress: 0, reward: { type: 'xp', amount: 500 }, completed: false, order: 12, isAchievement: true },
-  { id: 'a_total_100', title: 'Centurion', description: 'Complete 100 sessions in total', type: 'total_sessions', target: 100, progress: 0, reward: { type: 'talentPoint', amount: 1 }, completed: false, order: 13, isAchievement: true },
+  { id: 'a_total_10', title: 'First Steps', description: 'Complete 10 tasks in total', type: 'total_sessions', target: 10, progress: 0, reward: { type: 'coins', amount: 20 }, completed: false, order: 11, isAchievement: true },
+  { id: 'a_total_50', title: 'Getting Serious', description: 'Complete 50 tasks in total', type: 'total_sessions', target: 50, progress: 0, reward: { type: 'xp', amount: 500 }, completed: false, order: 12, isAchievement: true },
+  { id: 'a_total_100', title: 'Centurion', description: 'Complete 100 tasks in total', type: 'total_sessions', target: 100, progress: 0, reward: { type: 'talentPoint', amount: 1 }, completed: false, order: 13, isAchievement: true },
   { id: 'a_streak_3', title: 'Warming Up', description: 'Maintain a 3-day streak', type: 'consecutive_days', target: 3, progress: 0, reward: { type: 'coins', amount: 15 }, completed: false, order: 14, isAchievement: true },
   { id: 'a_streak_7', title: 'Unstoppable', description: 'Maintain a 7-day streak', type: 'consecutive_days', target: 7, progress: 0, reward: { type: 'item', amount: 1, itemName: 'Death Defying Gold Medal' }, completed: false, order: 15, isAchievement: true },
 ];
@@ -94,12 +88,12 @@ export const INITIAL_REWARD_POOL: RewardCard[] = [
   },
 
   // RARE
-  { id: 'double_xp', name: 'Double Experience', description: 'Double XP next session', rarity: 'rare', type: 'item', itemType: 'double_xp', amount: 100, weight: 25 },
-  { id: 'focus_pot', name: 'Focus Potion', description: 'Double Coins next session', rarity: 'rare', type: 'item', itemType: 'double_coin', amount: 100, weight: 25 },
+  { id: 'double_xp', name: 'Double Experience', description: 'Double XP next task', rarity: 'rare', type: 'item', itemType: 'double_xp', amount: 100, weight: 25 },
+  { id: 'focus_pot', name: 'Focus Potion', description: 'Double Coins next task', rarity: 'rare', type: 'item', itemType: 'double_coin', amount: 100, weight: 25 },
   { 
     id: 'music_pass', 
     name: 'Music Pass', 
-    description: 'Listen to music next session', 
+    description: 'Listen to music next task', 
     rarity: 'rare', 
     type: 'text', 
     weight: 30, 
@@ -137,14 +131,14 @@ export const INITIAL_REWARD_POOL: RewardCard[] = [
 
 export const TALENTS: Talent[] = [
   // Branch A: Truth Crown
-  { id: 'a1', name: 'Mind Lubrication', description: 'Base XP +10% per session', branch: 'A', tier: 1, cost: 1, effect: 'xp_10', icon: 'BicepsFlexed', unlocked: false, active: false },
-  { id: 'a2', name: 'Flow Experience α', description: 'The 16th session of the day gains +200 XP', branch: 'A', tier: 2, cost: 2, effect: 'daily_16_xp', icon: 'BrainCircuit', unlocked: false, active: false },
-  { id: 'a3', name: 'Perfect Theory', description: '8th session of the day gains bonus XP (20 * Streak). Extra +1000 XP at Day 10.', branch: 'A', tier: 3, cost: 3, effect: 'streak_xp', icon: 'Rocket', unlocked: false, active: false },
+  { id: 'a1', name: 'Mind Lubrication', description: 'Base XP +10% per task', branch: 'A', tier: 1, cost: 1, effect: 'xp_10', icon: 'BicepsFlexed', unlocked: false, active: false },
+  { id: 'a2', name: 'Flow Experience α', description: 'Accumulate 8 hours of focus time in one day to claim 200 XP.', branch: 'A', tier: 2, cost: 2, effect: 'daily_16_xp', icon: 'BrainCircuit', unlocked: false, active: false },
+  { id: 'a3', name: 'Perfect Theory', description: 'Accumulate 4 hours of focus time. Yields (20 * Streak) XP. Streak caps at 10 days.', branch: 'A', tier: 3, cost: 3, effect: 'streak_xp', icon: 'Rocket', unlocked: false, active: false },
   
   // Branch B: Golden Law
-  { id: 'b1', name: 'Alchemy', description: 'Base coins +2 per session', branch: 'B', tier: 1, cost: 1, effect: 'coin_2', icon: 'Pickaxe', unlocked: false, active: false },
-  { id: 'b2', name: 'Flow Experience β', description: 'The 16th session of the day gains +50 Coins', branch: 'B', tier: 2, cost: 2, effect: 'daily_16_coin', icon: 'BrainCog', unlocked: false, active: false },
-  { id: 'b3', name: 'Bounty Decree', description: '8th session of the day gains bonus Coins (10 * Streak). Extra +100 Coins at Day 10.', branch: 'B', tier: 3, cost: 3, effect: 'streak_coin', icon: 'Goal', unlocked: false, active: false },
+  { id: 'b1', name: 'Alchemy', description: 'Base coins +2 per task', branch: 'B', tier: 1, cost: 1, effect: 'coin_2', icon: 'Pickaxe', unlocked: false, active: false },
+  { id: 'b2', name: 'Flow Experience β', description: 'Accumulate 8 hours of focus time in one day to claim 50 Coins.', branch: 'B', tier: 2, cost: 2, effect: 'daily_16_coin', icon: 'BrainCog', unlocked: false, active: false },
+  { id: 'b3', name: 'Bounty Decree', description: 'Accumulate 4 hours of focus time. Yields (10 * Streak) Coins. Streak caps at 10 days.', branch: 'B', tier: 3, cost: 3, effect: 'streak_coin', icon: 'Goal', unlocked: false, active: false },
 
   // Branch C: Fate Dice
   { id: 'c1', name: 'Extra Chance', description: 'Loot choice becomes 4-of-1', branch: 'C', tier: 1, cost: 1, effect: 'loot_4', icon: 'HeartPlus', unlocked: false, active: false },
@@ -186,7 +180,7 @@ export const INITIAL_GACHA: GachaPool[] = [
 
 export const DEFAULT_SAGE_PROMPTS = [
   { id: 'prompt_welcome', title: 'App Intro', prompt: 'Sage, please introduce me to the "Scholar\'s Dungeon" application. What are its core mechanics, reward systems, and how should I start my journey of growth here?' },
-  { id: 'prompt_tasks', title: 'Create Tasks', prompt: 'Help me plan an expedition. Please create a structured learning task or expedition for me, including its tiers, required sessions, and rewards.' },
+  { id: 'prompt_tasks', title: 'Create Tasks', prompt: 'Help me plan an expedition. Please create a structured learning task or expedition for me, including its tiers, required tasks, and rewards.' },
   { id: 'prompt_balance', title: 'Balance Guide', prompt: 'Based on my current level, gold earning rate, and shop prices, could you recommend how I should set my game balance? For example, how should XP and Gold rewards for each Focus Session be distributed to be fair and motivating?' },
   { id: 'prompt_week', title: 'Weekly Analysis', prompt: 'Please retrieve my study records from the past 7 days and analyze my peak focus hours, as well as the correlation between my emotional state and productivity. Please summarize my overall performance this week using intuitive data observations.' },
   { id: 'prompt_month', title: 'Monthly Review', prompt: 'I would like to do a deep reflection on the past month. Please analyze my monthly progress curve. Have I stagnated in any area? Based on my growth rate, please set three specific "step-by-step goals" for next month.' },

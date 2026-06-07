@@ -18,7 +18,6 @@ interface TimerProps {
   timerSkipVictoryMode?: 'none' | 'auto_pick_highest' | 'skip_rewards' | 'defer_to_chest';
   dailyRerollUsed: boolean;
   history: StudySession[];
-  timeBasedMode?: boolean;
   standardSessionMinutes?: number;
   pendingRewardChest?: { session: StudySession; choices: RewardCard[]; }[];
   onComplete: (duration: number, focusDuration?: number, restDuration?: number) => StudySession | null;
@@ -73,7 +72,6 @@ export const Timer = React.memo<TimerProps>(({
   timerSkipVictoryMode,
   dailyRerollUsed,
   history,
-  timeBasedMode,
   standardSessionMinutes,
   pendingRewardChest,
   onComplete, 
@@ -115,6 +113,18 @@ export const Timer = React.memo<TimerProps>(({
   const [showTalentPopup, setShowTalentPopup] = useState<StudySession['triggeredTalents'] | null>(null);
   const [showFocusPrompt, setShowFocusPrompt] = useState(false);
   const [hasRerolled, setHasRerolled] = useState(false);
+
+  // Long press to skip
+  const [skipProgress, setSkipProgress] = useState(0);
+  const skipTimerRef = useRef<number | null>(null);
+  const skipStartTimeRef = useRef<number>(0);
+  const durationRef = useRef(duration);
+  const timeLeftRef = useRef(timeLeft);
+  const isLoopingRef = useRef(isLooping);
+
+  useEffect(() => { durationRef.current = duration; }, [duration]);
+  useEffect(() => { timeLeftRef.current = timeLeft; }, [timeLeft]);
+  useEffect(() => { isLoopingRef.current = isLooping; }, [isLooping]);
 
   useBackgroundKeepAlive(isActive, isResting, duration, timeLeft);
 
@@ -192,7 +202,15 @@ export const Timer = React.memo<TimerProps>(({
 
   const completingRef = useRef(false);
 
-  const handleComplete = useCallback((silent: boolean = false) => {
+  const cancelSkipCharge = useCallback(() => {
+    if (skipTimerRef.current) {
+      cancelAnimationFrame(skipTimerRef.current);
+      skipTimerRef.current = null;
+    }
+    setSkipProgress(0);
+  }, []);
+
+  const handleComplete = useCallback((silent: boolean = false, overrideDuration?: number) => {
     if (completingRef.current) return;
     completingRef.current = true;
     setTimeout(() => { completingRef.current = false; }, 1000);
@@ -216,6 +234,8 @@ export const Timer = React.memo<TimerProps>(({
       }).catch(err => console.error('Local notification failed:', err));
     }
     
+    cancelSkipCharge(); // Ensure skip is cleared on complete
+
     if (isResting) {
       // Finished rest
       setIsResting(false);
@@ -251,13 +271,14 @@ export const Timer = React.memo<TimerProps>(({
       }
     } else {
       // Finished focus
-      const session = onComplete(duration, focusDuration, restDuration);
+      const actualFocusDuration = overrideDuration !== undefined ? overrideDuration : focusDuration;
+      const actualDuration = overrideDuration !== undefined ? overrideDuration : duration;
+      const session = onComplete(actualDuration, actualFocusDuration, restDuration);
       if (session) {
         const generated = generateRewardChoicesForSession(session, {
           rewardPool,
           activeTalents,
           pendingRewardChest,
-          timeBasedMode,
           standardSessionMinutes
         });
         const choicesList = generated;
@@ -344,6 +365,59 @@ export const Timer = React.memo<TimerProps>(({
       }
     }
   }, [duration, isResting, focusDuration, restDuration, enableRest, isLooping, loopCount, loopTarget, onComplete, onRestComplete, rewardPool, activeTalents, setShowCoinRain, setIsActive, setEndTime, setIsResting, setDuration, setTimeLeft, pushEnabled, timerSkipVictoryMode, handleRewardSelection, onDeferReward, requireFocusConfirmation, setLoopCount, setShowFocusPrompt]);
+
+  const startSkipCharge = useCallback((e: React.PointerEvent) => {
+    // Only capture primary click/touch
+    if (e.button !== 0 && e.pointerType === 'mouse') return;
+    if (e.isDefaultPrevented()) return;
+    
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    skipStartTimeRef.current = Date.now();
+    cancelSkipCharge(); // clear any existing
+
+    const updateProgress = () => {
+      const elapsed = Date.now() - skipStartTimeRef.current;
+      const progress = Math.min(100, (elapsed / 3000) * 100);
+      setSkipProgress(progress);
+
+      if (progress >= 100) {
+        cancelSkipCharge();
+        if (!isActive && !isResting && isLoopingRef.current && loopTarget > 0 && loopCount >= loopTarget) {
+           setLoopCount(0);
+        }
+        
+        let overrideDuration;
+        if (isResting) {
+            overrideDuration = undefined; 
+        } else {
+            const elapsedMins = Math.max(0, durationRef.current - (timeLeftRef.current / 60));
+            overrideDuration = Math.max(1, Math.round(elapsedMins));
+        }
+        
+        handleComplete(false, overrideDuration);
+      } else {
+        skipTimerRef.current = requestAnimationFrame(updateProgress);
+      }
+    };
+    
+    skipTimerRef.current = requestAnimationFrame(updateProgress);
+  }, [cancelSkipCharge, handleComplete, setLoopCount, isActive, isResting, loopTarget, loopCount]);
+
+  const handlePointerMove = useCallback((e: React.PointerEvent) => {
+    if (skipTimerRef.current) {
+      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+      // Add a small 10px buffer margin just in case
+      const isInside = (
+        e.clientX >= rect.left - 10 &&
+        e.clientX <= rect.right + 10 &&
+        e.clientY >= rect.top - 10 &&
+        e.clientY <= rect.bottom + 10
+      );
+      if (!isInside) {
+        cancelSkipCharge();
+      }
+    }
+  }, [cancelSkipCharge]);
 
   useEffect(() => {
     let worker: Worker | null = null;
@@ -530,16 +604,33 @@ export const Timer = React.memo<TimerProps>(({
           {isActive ? <Pause size={40} fill="currentColor" /> : <Play size={40} fill="currentColor" className="ml-2" />}
         </button>
         <button
-          onClick={() => {
-            if (!isActive && !isResting && isLooping && loopTarget > 0 && loopCount >= loopTarget) {
-              setLoopCount(0);
-            }
-            handleComplete(true);
-          }}
-          className="p-4 bg-slate-900 text-slate-400 hover:text-white rounded-full border border-slate-800 transition-all"
-          title="Skip Session"
+          onContextMenu={(e) => e.preventDefault()}
+          onPointerDown={startSkipCharge}
+          onPointerUp={cancelSkipCharge}
+          onPointerLeave={cancelSkipCharge}
+          onPointerCancel={cancelSkipCharge}
+          onPointerMove={handlePointerMove}
+          className="p-4 bg-slate-900 text-slate-400 hover:text-white rounded-full border border-slate-800 transition-all select-none relative overflow-hidden group"
+          title="Hold 3s to Skip Session"
+          style={{ touchAction: 'none' }}
         >
-          <SkipForward size={24} />
+          {skipProgress > 0 && (
+            <div className="absolute inset-0 z-0 pointer-events-none">
+              <svg viewBox="0 0 56 56" className="w-full h-full -rotate-90">
+                <circle cx="28" cy="28" r="26" fill="none" strokeWidth="4" className="text-indigo-500/20 stroke-current" />
+                <circle 
+                  cx="28" cy="28" r="26" 
+                  fill="none" 
+                  strokeWidth="4" 
+                  className="text-indigo-500 stroke-current drop-shadow-md" 
+                  strokeDasharray="163.3" 
+                  strokeDashoffset={163.3 - (163.3 * skipProgress) / 100} 
+                  strokeLinecap="round" 
+                />
+              </svg>
+            </div>
+          )}
+          <SkipForward size={24} className={cn("relative z-10 transition-transform", skipProgress > 0 && "scale-110 text-indigo-400")} />
         </button>
       </div>
 
@@ -696,7 +787,6 @@ export const Timer = React.memo<TimerProps>(({
                               rewardPool,
                               activeTalents,
                               pendingRewardChest,
-                              timeBasedMode,
                               standardSessionMinutes
                             });
                             if (newChoices && newChoices.length > 0) {

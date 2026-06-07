@@ -284,7 +284,6 @@ export const DungeonsView: React.FC<DungeonsViewProps> = ({
           dungeons={dungeons}
           majorDungeons={majorDungeons}
           currentDungeonId={state.currentDungeonId}
-          timeBasedMode={state.timeBasedMode}
           standardSessionMinutes={state.standardSessionMinutes}
           standardRestMinutes={state.standardRestMinutes}
           includeRestTimeInTasks={state.includeRestTimeInTasks}

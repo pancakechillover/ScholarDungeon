@@ -48,6 +48,66 @@ export const TimerSettingsSection = ({
 
   return (
     <div className="space-y-10">
+      <div className="space-y-6">
+        <div className="flex items-center gap-2.5 text-indigo-400 mb-6 pb-2">
+          <LucideIcons.Clock size={20} />
+          <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Time-Based Calculation</h4>
+        </div>
+
+        <div className="space-y-4">
+             <div className="p-4 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 space-y-4">
+               <div>
+                 <label className="text-xs font-bold text-indigo-400 uppercase tracking-widest">Standard Focus Duration (Minutes)</label>
+                 <p className="text-[11px] text-slate-400 italic mb-2 mt-1">Used as a unit converter between Session counts and Time. e.g. 3 Sessions = 75 minutes.</p>
+                 <input
+                   type="number"
+                   min="1"
+                   max="1440"
+                   value={state.standardSessionMinutes || 25}
+                   onChange={(e) => setState(prev => ({ ...prev, standardSessionMinutes: Math.max(1, parseInt(e.target.value) || 25) }))}
+                   className="w-full bg-slate-900 border border-slate-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 text-sm"
+                 />
+               </div>
+
+               <div className="pt-2 border-t border-indigo-500/10 flex items-center justify-between">
+                 <div>
+                   <div className="text-sm font-bold text-slate-200">Include Rest Time in Tasks</div>
+                   <div className="text-[11px] text-slate-500 mt-1">If enabled, rest periods will also count towards your task progress and total recorded time.</div>
+                 </div>
+                 <button
+                   onClick={() => setState(prev => ({ ...prev, includeRestTimeInTasks: !prev.includeRestTimeInTasks }))}
+                   className={cn(
+                     "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors",
+                     state.includeRestTimeInTasks ? "bg-indigo-500" : "bg-slate-700"
+                   )}
+                 >
+                   <span
+                     className={cn(
+                       "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+                       state.includeRestTimeInTasks ? "translate-x-6" : "translate-x-1"
+                     )}
+                   />
+                 </button>
+               </div>
+
+               {state.includeRestTimeInTasks && (
+                 <div className="pt-2">
+                   <label className="text-xs font-bold text-indigo-400 uppercase tracking-widest">Standard Rest Duration (Minutes)</label>
+                   <p className="text-[11px] text-slate-400 italic mb-2 mt-1">Default rest duration to add per session.</p>
+                   <input
+                     type="number"
+                     min="1"
+                     max="1440"
+                     value={state.standardRestMinutes || 5}
+                     onChange={(e) => setState(prev => ({ ...prev, standardRestMinutes: Math.max(1, parseInt(e.target.value) || 5) }))}
+                     className="w-full bg-slate-900 border border-slate-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 text-sm"
+                   />
+                 </div>
+               )}
+             </div>
+        </div>
+      </div>
+
       {/* Target Timer Settings */}
       <div className="space-y-6 border-slate-800">
         <div className="flex items-center gap-2.5 text-indigo-400 mb-6 pb-2">

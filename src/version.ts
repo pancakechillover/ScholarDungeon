@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v8.6.32';
+export const APP_VERSION = 'v8.7.6';
 export const LAST_UPDATE_DATE = '2026-06-07';
-export const LAST_UPDATE_TIME = '05:00:00';
+export const LAST_UPDATE_TIME = '14:30:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,83 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v8.7.6',
+    date: '2026-06-07',
+    time: '14:30:00',
+    title: 'Long-Press Seamless Automation & Fractional Statistics',
+    items: [
+      { category: 'Bug Fix', description: "Unconditionally mapped manual long-press skip operations to strictly obey the user's 'Skip Victory Screen' (timerSkipVictoryMode) preferences natively, enabling seamless automatic transitions directly into the respective Rest loop or next interval exactly like a standard timer completion." },
+      { category: 'Architecture', description: "Enforced strict integer rounding behavior on elapsed durations during skip operations, ensuring partial skip times uniquely snap to explicit minutes (or minimum 1 minute thresholds). This securely logs exact rounded values directly into Sanctum progress, team logs, records, heatmaps, and quest goals." }
+    ]
+  },
+  {
+    version: 'v8.7.5',
+    date: '2026-06-07',
+    time: '14:00:00',
+    title: 'Restored Long-Press Skip Continuity',
+    items: [
+      { category: 'Bug Fix', description: "Reverted fractional skip logging and restored full-duration credit on manual skip, ensuring skipped sessions once again accurately drive Sanctum, Quests, Expedition, and Fellowship progress identically to previous versions." },
+      { category: 'Bug Fix', description: "Permitted manual long-press skips to once again correctly obey user 'Skip Victory Screen' (timerSkipVictoryMode) automation settings, seamlessly entering the Rest loop automatically without popup interruptions." }
+    ]
+  },
+  {
+    version: 'v8.7.4',
+    date: '2026-06-07',
+    time: '13:00:00',
+    title: 'Accurate Integer Skip Logic & Rest Continuity',
+    items: [
+      { category: 'Bug Fix', description: "Repaired the long-press skip action so that the skipped absolute focus duration is correctly logged as a cleanly rounded integer. This resolves fractional timing issues, ensuring that the exact elapsed time correctly factors into Sanctum progress, team charts, Expedition logs, and quests smoothly." },
+      { category: 'Bug Fix', description: "Mapped manual long-press skip triggers to unconditionally bypass any automatic timerSkipVictoryMode 'Skip Victory Screen' logic, ensuring the standard reward selection UI popup appears correctly during manual skip." }
+    ]
+  },
+  {
+    version: 'v8.7.3',
+    date: '2026-06-07',
+    time: '12:30:00',
+    title: 'Long Press Skip Interaction & Fractional Reward Sync',
+    items: [
+      { category: 'Feature', description: "Transformed the Timer 'Skip' button into a secure 3-second 'Long-Press to Skip' interaction, complete with an animated SVG radial progress ring to prevent accidental skips." },
+      { category: 'Architecture', description: "Upgraded actual duration and focus propagation, injecting partial time accurately into completeSession so that skipped blocks are logged linearly matching EXACT milliseconds elapsed across Sanctum, Fellowship channels, records, Heatmaps, and Quests flawlessly." },
+      { category: 'Bug Fix', description: "Repaired the Reward chest logic forcing Math.max(1, drawCount) ensuring short fractional skipped sessions consistently guarantee a minimum 1x baseline reward draw." },
+      { category: 'Bug Fix', description: "Repaired a typescript mapping error inside DailySessionsModal resulting from mismatched includeRestTimeInTasks properties." }
+    ]
+  },
+  {
+    version: 'v8.7.2',
+    date: '2026-06-07',
+    time: '11:30:00',
+    title: 'Time-Based Calculation Expansion',
+    items: [
+      { category: 'Feature', description: "Promoted 'Include Rest Time in Tasks' to be enabled by default and relocated its configuration block to the primary Timer Settings dashboard." },
+      { category: 'Architecture', description: "Synchronized sessionDurationVal, getAddedProgress, and global statistics engines to uniformly incorporate rest durations into calculations uniformly when the setting is active." },
+      { category: 'System', description: "Mapped the extended Rest + Focus unified progression into quests tracking, Sanctum daily progress, Expeditions, records, stats heatmaps, and Fellowship Team aggregate broadcasts seamlessly." },
+      { category: 'Bug Fix', description: "Repaired inaccurate Quest type mappings in constants directly converting generic task string checks into true session-scaled increments." }
+    ]
+  },
+  {
+    version: 'v8.7.1',
+    date: '2026-06-07',
+    time: '10:55:00',
+    title: 'Manual Talent Triggers',
+    items: [
+      { category: 'Feature', description: "Reconstructed A2, B2, A3, and B3 to be manually claimed exclusively via the Active Talents tooltip instead of automated quest progression." },
+      { category: 'Architecture', description: "Shifted daily time thresholds directly to exact explicit durations (8 hours for A2/B2, 4 hours for A3/B3)." },
+      { category: 'UI/UX', description: "Added detailed visual progress bars into the tooltip representing total minutes logged today out of required limits." },
+      { category: 'Bug Fix', description: "Expanded active talent descriptions outlining hard limit streak caps precisely up to 10 days." },
+      { category: 'System', description: "Removed redundant q_special fallback automated quests directly from generation memory cleanly." }
+    ]
+  },
+  {
+    version: 'v8.7.0',
+    date: '2026-06-07',
+    time: '05:40:00',
+    title: 'Streak Record & Missing Day Interactions',
+    items: [
+      { category: 'Bug Fix', description: "Repaired a synchronization mismatch causing the available Death Defying Gold Medals counter inside the primary Activity Record dashboards to drift away from the core inventory bounds, accurately linking them directly to state." },
+      { category: 'Feature', description: "Enforced click actions directly onto missed day grids inside the Start of the Day prompt; failing days now gracefully ask to patch using items or launch a missing item info modal cleanly." }
+    ]
+  },
   {
     version: 'v8.6.32',
     date: '2026-06-07',

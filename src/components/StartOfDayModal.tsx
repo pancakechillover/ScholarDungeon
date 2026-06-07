@@ -131,6 +131,7 @@ export const StartOfDayModal: React.FC<StartOfDayModalProps> = ({ state, onClose
   const [isImmersiveMode, setIsImmersiveMode] = useState(false);
   const [templateMode, setTemplateMode] = useState<'empty' | 'example'>('empty');
   const [templateToDelete, setTemplateToDelete] = useState<string | null>(null);
+  const [showNoMedalAlert, setShowNoMedalAlert] = useState(false);
 
   const { sleepDurationMin, isTimeValid } = useMemo(() => {
     if (!sleepTime || !wakeTime) return { sleepDurationMin: 0, isTimeValid: false };
@@ -199,9 +200,7 @@ export const StartOfDayModal: React.FC<StartOfDayModalProps> = ({ state, onClose
     return result;
   }, [state.history, state.patchedDays, state.timezone, state.timeSettings]);
 
-  const medalCount = (state.rewardPool || []).find(r => r.id === 'death_defying_medal')?.claimHistory?.length || 0;
-  const usedMedals = (state.patchedDays || []).length;
-  const availableMedals = Math.max(0, medalCount - usedMedals);
+  const availableMedals = state.deathDefyingMedals || 0;
 
   const renderTemplateControls = () => (
     <div className="relative flex items-center gap-0 h-[26px]">
@@ -504,18 +503,24 @@ export const StartOfDayModal: React.FC<StartOfDayModalProps> = ({ state, onClose
                           <div 
                             className={cn(
                               "w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center border overflow-visible relative transition-all group/patch",
-                              !day.isCompleted && !day.isToday && !day.isFuture && availableMedals > 0 && repairStreak
-                                ? "bg-indigo-500/20 border-indigo-500/50 cursor-pointer hover:scale-110 shadow-[0_0_10px_rgba(99,102,241,0.3)] hover:bg-indigo-500"
+                              !day.isCompleted && !day.isToday && !day.isFuture && repairStreak
+                                ? (availableMedals > 0 
+                                  ? "bg-indigo-500/20 border-indigo-500/50 cursor-pointer hover:scale-110 shadow-[0_0_10px_rgba(99,102,241,0.3)] hover:bg-indigo-500"
+                                  : "bg-slate-800 border-slate-700 cursor-pointer hover:bg-slate-700")
                                 : "bg-slate-800 border-slate-700"
                             )}
                             onClick={() => {
-                              if (!day.isCompleted && !day.isToday && !day.isFuture && availableMedals > 0 && repairStreak) {
-                                setConfirmRepairDate(day.dateStr);
+                              if (!day.isCompleted && !day.isToday && !day.isFuture && repairStreak) {
+                                if (availableMedals > 0) {
+                                  setConfirmRepairDate(day.dateStr);
+                                } else {
+                                  setShowNoMedalAlert(true);
+                                }
                               }
                             }}
-                            title={!day.isCompleted && !day.isToday && !day.isFuture && availableMedals > 0 ? "Use Death Defying Medal to patch" : undefined}
+                            title={!day.isCompleted && !day.isToday && !day.isFuture && repairStreak ? "Patch missing streak" : undefined}
                           >
-                            {!day.isCompleted && !day.isToday && !day.isFuture && availableMedals > 0 && repairStreak ? (
+                            {!day.isCompleted && !day.isToday && !day.isFuture && repairStreak && availableMedals > 0 ? (
                               <Flame size={12} className="text-indigo-400 group-hover/patch:text-white transition-colors" />
                             ) : (
                               <span className="text-slate-600 font-bold text-xs">X</span>
@@ -658,6 +663,16 @@ export const StartOfDayModal: React.FC<StartOfDayModalProps> = ({ state, onClose
           confirmText="Patch Streak"
           cancelText="Cancel"
           type="info"
+        />
+
+        <ConfirmModal
+          isOpen={showNoMedalAlert}
+          onClose={() => setShowNoMedalAlert(false)}
+          onConfirm={() => setShowNoMedalAlert(false)}
+          title="Module Missing"
+          message="You do not have any Death Defying Gold Medals to patch this missing day. You can acquire them from the Gacha or the standard Item Shop."
+          confirmText="Understood"
+          type="warning"
         />
       </div>
     </AnimatePresence>

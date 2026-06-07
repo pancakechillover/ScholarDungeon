@@ -447,9 +447,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
             <div className="flex items-center justify-between mb-2">
               <span className="text-2xl font-bold text-slate-50">
-                {state.timeBasedMode 
-                  ? `${Math.floor(state.dailySessions * (state.standardSessionMinutes || 25))}m` 
-                  : state.dailySessions}
+                {Math.floor(state.dailySessions * (state.standardSessionMinutes || 25))}m
               </span>
               {(() => {
                 const timezone = state.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -470,12 +468,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   ? (state.dailyProgressGoal ?? 8) 
                   : (state.dailyProgressGoalConfig?.[day] ?? 8);
 
-                return state.timeBasedMode ? (
+                return (
                   <span className="text-slate-500 text-xs text-right">
                     <span className="opacity-50 mx-1">/</span> {dailyGoal * (state.standardSessionMinutes || 25)}m
                   </span>
-                ) : (
-                  <span className="text-slate-500 text-xs">/ {dailyGoal} Sessions</span>
                 );
               })()}
             </div>

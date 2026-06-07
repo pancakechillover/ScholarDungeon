@@ -60,12 +60,13 @@ export const CalcSettingsSection: React.FC<CalcSettingsProps> = ({ state, setSta
     let dailyCoins = avgCoins * sessionsPerDay;
 
     // Apply strict daily occurrences (streak/16th)
-    if (sessionsPerDay >= 8) {
+    const simulatedMinutes = sessionsPerDay * (state.standardSessionMinutes || 25);
+    if (simulatedMinutes >= 240) {
       // Assuming a moderate streak for simulation (e.g., streak = 2)
       if (state.activeTalents.includes('a3')) dailyXP += (20 * 2); 
       if (state.activeTalents.includes('b3')) dailyCoins += (10 * 2);
     }
-    if (sessionsPerDay >= 16) {
+    if (simulatedMinutes >= 480) {
       if (state.activeTalents.includes('a2')) dailyXP += 200;
       if (state.activeTalents.includes('b2')) dailyCoins += 50;
     }

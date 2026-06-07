@@ -35,6 +35,7 @@ interface DailySessionsModalProps {
   rewardPool: RewardCard[];
   timeSettings: AppState['timeSettings'];
   period?: string;
+  includeRestTimeInTasks?: boolean;
 }
 
 export const DailySessionsModal: React.FC<DailySessionsModalProps> = ({
@@ -48,7 +49,8 @@ export const DailySessionsModal: React.FC<DailySessionsModalProps> = ({
   deleteSession,
   rewardPool,
   timeSettings,
-  period
+  period,
+  includeRestTimeInTasks
 }) => {
   const [editingSession, setEditingSession] = useState<StudySession | null>(null);
   const [viewingRewardName, setViewingRewardName] = useState<string | null>(null);
@@ -308,7 +310,7 @@ export const DailySessionsModal: React.FC<DailySessionsModalProps> = ({
 
         {/* Footer info */}
         <div className="p-4 bg-slate-900 border-t border-slate-800 text-[10px] text-slate-600 text-center font-bold uppercase tracking-widest">
-          {dailyHistory.length} Sessions Recorded • Total Focus: {dailyHistory.reduce((acc, s) => acc + (s.focusDuration || 0), 0)}m
+          {dailyHistory.length} Sessions Recorded • Total Focus: {dailyHistory.reduce((acc, s) => acc + (s.focusDuration || s.duration) + (includeRestTimeInTasks ? (s.restDuration || 0) : 0), 0)}m
         </div>
       </motion.div>
 
