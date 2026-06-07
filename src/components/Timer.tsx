@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sword, Play, Pause, RotateCcw, SkipForward, Trophy, Coins, Zap, Scroll, Flame, Settings2, RefreshCw, Coffee, Maximize, Sparkles, Clock } from 'lucide-react';
@@ -190,7 +190,13 @@ export const Timer = React.memo<TimerProps>(({
     setShowRewards(null);
   }, [onRewardSelect, onInventoryAdd, setShowTalentPopup]);
 
+  const completingRef = useRef(false);
+
   const handleComplete = useCallback((silent: boolean = false) => {
+    if (completingRef.current) return;
+    completingRef.current = true;
+    setTimeout(() => { completingRef.current = false; }, 1000);
+    
     setIsActive(false);
     setEndTime(null);
 

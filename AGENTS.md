@@ -23,9 +23,9 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v8.6.30
-- **Last Update Date:** 2026-06-06
-- **Last Update Time:** 16:05:00
+- **Current Version:** v8.6.32
+- **Last Update Date:** 2026-06-07
+- **Last Update Time:** 05:00:00
 
 ## Dark Themes Definition
 The following themes are considered "Dark Themes" and form the baseline for vibrant visual effects and high-contrast glowing elements:
@@ -50,6 +50,14 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v8.6.32 (2026-06-07):** Notification and Event Triggers Synchronization.
+  - *Bug Fix:* Resolved a race condition via a React ref lock in the active timer hook that occasionally dispatched duplicate "session completed" events when resolving the identical sub-second completion frames, preventing duplicated historic inputs.
+  - *Bug Fix:* Implemented pre-clearance task checks in the backend Redis Web Push scheduler `api/push/schedule`, explicitly removing previously queued delayed tasks from the index BEFORE executing a new `.zAdd`, terminating duplicate end-of-timer redundant ping bugs entirely.
+  - *UI/UX:* Intercepted and cleared the underlying `ExploreView` full-screen container status inside App-level `onNavigate` controllers, ensuring any deep-action buttons embedded within achievement or milestone popups fundamentally terminate browser full-screen views cleanly before transitioning to destination panels.
+
+- **v8.6.31 (2026-06-06):** Top Bar Streak Cross-Day Synchronization Fix.
+  - *Bug Fix:* Unified the top bar streak active calculation logic with the global `getSettlementDay` engine, ensuring the red/orange streak indicator correctly respects the user's custom "Activity Time Peaks" thresholds for cross-day study sessions.
 
 - **v8.6.30 (2026-06-06):** Horizon Typography & Contrast Alignment.
   - *UI/UX:* Addressed the CSS variable mapping matrix causing calendar numerics, dropdown toggles, and popover labels to fade into near-invisible light colors on Daylight and Candy themes by utilizing inverted mapped slate colors correctly.

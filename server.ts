@@ -246,7 +246,12 @@ app.post("/api/push/schedule", async (req, res) => {
     const task = { secretCode, title, body, type, targetTime };
     const taskStr = JSON.stringify(task);
     
-    // Store quick ref for cancellation (sync with api/push.ts)
+    // Store quick ref for cancellation and clean up previous
+    const oldTaskStr = await client.get(`scholar_push_task_ref_${secretCode}`);
+    if (oldTaskStr) {
+      await client.zRem('scholar_push_tasks', oldTaskStr);
+    }
+    
     await client.set(`scholar_push_task_ref_${secretCode}`, taskStr, { EX: 3600 });
     await client.zAdd('scholar_push_tasks', { score: targetTime, value: taskStr });
     

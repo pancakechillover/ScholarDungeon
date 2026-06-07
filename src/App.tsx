@@ -1334,10 +1334,10 @@ function App() {
               title="View 7-Day Activity Record"
             >
               <div className="relative flex items-center justify-center">
-                <Flame className={cn("shrink-0", state.lastStudyDate === `${getNow().getFullYear()}-${String(getNow().getMonth() + 1).padStart(2, '0')}-${String(getNow().getDate()).padStart(2, '0')}` ? "text-orange-500" : "text-rose-500")} size={14} />
+                <Flame className={cn("shrink-0", state.lastStudyDate === getSettlementDay(getNow(), state.timeSettings) ? "text-orange-500" : "text-rose-500")} size={14} />
               </div>
-              <span className={cn("font-bold text-xs sm:text-sm", state.lastStudyDate === `${getNow().getFullYear()}-${String(getNow().getMonth() + 1).padStart(2, '0')}-${String(getNow().getDate()).padStart(2, '0')}` ? "text-white" : "text-rose-500")}>
-                {state.streak} <span className={cn("hidden lg:inline text-[10px]", state.lastStudyDate === `${getNow().getFullYear()}-${String(getNow().getMonth() + 1).padStart(2, '0')}-${String(getNow().getDate()).padStart(2, '0')}` ? "text-slate-500" : "text-rose-500/70")}>{state.streak === 1 ? 'Day' : 'Days'}</span>
+              <span className={cn("font-bold text-xs sm:text-sm", state.lastStudyDate === getSettlementDay(getNow(), state.timeSettings) ? "text-white" : "text-rose-500")}>
+                {state.streak} <span className={cn("hidden lg:inline text-[10px]", state.lastStudyDate === getSettlementDay(getNow(), state.timeSettings) ? "text-slate-500" : "text-rose-500/70")}>{state.streak === 1 ? 'Day' : 'Days'}</span>
               </span>
             </div>
             
@@ -1737,6 +1737,10 @@ function App() {
         rewardData={state.lastCompletionRewards}
         onClose={() => setState(s => ({ ...s, lastCompletionRewards: null }))}
         onNavigate={(tab, subTab) => {
+          if (document.fullscreenElement) {
+            document.exitFullscreen().catch(() => {});
+          }
+          setIsFullscreenExplore(false);
           setActiveTab(tab as any);
           if (subTab) setDungeonSubTab(subTab as any);
           setState(s => ({ ...s, lastCompletionRewards: null }));

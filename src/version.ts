@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v8.6.30';
-export const LAST_UPDATE_DATE = '2026-06-06';
-export const LAST_UPDATE_TIME = '16:05:00';
+export const APP_VERSION = 'v8.6.32';
+export const LAST_UPDATE_DATE = '2026-06-07';
+export const LAST_UPDATE_TIME = '05:00:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,26 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v8.6.32',
+    date: '2026-06-07',
+    time: '05:00:00',
+    title: 'Events Synchronization & Notification Throttling',
+    items: [
+      { category: 'Bug Fix', description: "Identified and resolved an asynchronous race condition within the localized timing execution logic triggering rare duplicate record logs inside the recent memory interface concurrently during high latency interactions." },
+      { category: 'Bug Fix', description: "Deduplicated active Web Push scheduler queue streams securely in the background container, terminating overlapping reminder notifications globally natively." },
+      { category: 'UI/UX', description: "Instructed embedded popup modal sub-navigation sequences (originating from milestone achievements) to explicitly shatter enclosing native browser full-screen contexts automatically prior to cross-routing." }
+    ]
+  },
+  {
+    version: 'v8.6.31',
+    date: '2026-06-06',
+    time: '16:20:00',
+    title: 'Top Bar Streak Cross-Day Synchronization',
+    items: [
+      { category: 'Bug Fix', description: "Unified the top bar streak active calculation logic with the global getSettlementDay engine, ensuring the red/orange streak indicator correctly respects the user's custom Activity Time Peaks thresholds for cross-day study sessions." }
+    ]
+  },
   {
     version: 'v8.6.30',
     date: '2026-06-06',
