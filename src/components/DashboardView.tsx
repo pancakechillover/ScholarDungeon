@@ -75,8 +75,20 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const isDarkTheme = ['night', 'forest', 'ocean'].includes(state.theme || '');
   const [showSageConsult, setShowSageConsult] = React.useState(false);
   const [selectedDateAnchor, setSelectedDateAnchor] = React.useState<{ day: Date, ddls: Dungeon[], element: HTMLElement } | null>(null);
-  const [horizonMode, setHorizonMode] = React.useState<'recent' | 'week'>('recent');
+  const [horizonMode, setHorizonMode] = React.useState<'recent' | 'week'>(() => {
+    try {
+      const saved = localStorage.getItem('expeditionHorizonMode');
+      if (saved === 'week' || saved === 'recent') return saved;
+    } catch(e) {}
+    return 'recent';
+  });
   const [horizonDate, setHorizonDate] = React.useState<Date>(new Date());
+
+  React.useEffect(() => {
+    try {
+      localStorage.setItem('expeditionHorizonMode', horizonMode);
+    } catch(e) {}
+  }, [horizonMode]);
 
   React.useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -272,7 +284,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </div>
             </div>
             
-            <div className="grid grid-cols-7 gap-1 sm:gap-2">
+            <div className="grid grid-cols-4 sm:grid-cols-7 gap-1.5 sm:gap-2 mt-2 sm:mt-0">
               {calendarDays.map((day, idx) => {
                 const dayStr = format(day, 'yyyy-MM-dd');
                 const isTo = isToday(day);

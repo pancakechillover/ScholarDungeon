@@ -34,6 +34,7 @@ export interface ShareConfig {
   showRoutine: boolean;
   showHeatmap: boolean;
   showReflection: boolean;
+  showSleep: boolean;
   aspectRatio: 'auto' | '1:1' | '4:3' | '16:9';
 }
 
@@ -210,6 +211,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
       showRoutine: true,
       showHeatmap: true,
       showReflection: true,
+      showSleep: true,
       aspectRatio: 'auto'
     };
   });
@@ -1052,7 +1054,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
     if (heatmapDays.length === 0) return [];
     const labels: { month: string, colIndex: number }[] = [];
     let currentMonth = -1;
-    let currentDayOfWeek = heatmapDays[0].getDay();
+    let currentDayOfWeek = (heatmapDays[0].getDay() + 6) % 7;
     let currentCol = 0;
     
     for (let i = 0; i < heatmapDays.length; i++) {
@@ -1770,8 +1772,8 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
                   cursor={{ fill: 'rgba(100, 116, 139, 0.2)' }}
                 />
                 <Bar yAxisId="right" dataKey="duration" fill="#818cf8" radius={[4, 4, 0, 0]} opacity={0.5} barSize={20} />
-                <Line yAxisId="left" type="stepAfter" dataKey="sleepTime" stroke="#6366f1" strokeWidth={2} dot={{ r: 4, strokeWidth: 2, fill: '#1e293b' }} />
-                <Line yAxisId="left" type="stepAfter" dataKey="wakeTime" stroke="#fbbf24" strokeWidth={2} dot={{ r: 4, strokeWidth: 2, fill: '#fbbf24' }} />
+                <Line yAxisId="left" type="linear" dataKey="sleepTime" stroke="#6366f1" strokeWidth={2} dot={{ r: 4, strokeWidth: 2, fill: '#1e293b' }} />
+                <Line yAxisId="left" type="linear" dataKey="wakeTime" stroke="#fbbf24" strokeWidth={2} dot={{ r: 4, strokeWidth: 2, fill: '#fbbf24' }} />
               </ComposedChart>
             </ResponsiveContainer>
           </div>
@@ -1858,7 +1860,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
             </div>
           </div>
           
-          <div className={cn("flex flex-col xl:flex-row gap-6 w-full mt-4", heatmapMode === 'year' ? "justify-center" : "justify-center xl:items-stretch")}>
+          <div className={cn("flex flex-col lg:flex-row gap-6 w-full mt-4", heatmapMode === 'year' ? "justify-center lg:items-center" : "justify-center lg:items-stretch")}>
             <style>{`
               .heatmap-responsive {
                  --cell-size: 24px;
@@ -1927,12 +1929,12 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
                    className="grid grid-rows-7 text-slate-500 font-medium pr-1 text-right mt-6"
                    style={{ rowGap: 'var(--cell-gap)', fontSize: 'var(--label-size)' }}
                 >
-                   <div style={{ height: 'var(--cell-size)' }} className="invisible" />
                    <div style={{ height: 'var(--cell-size)' }} className="flex items-center justify-end leading-none">Mon</div>
                    <div style={{ height: 'var(--cell-size)' }} className="invisible" />
                    <div style={{ height: 'var(--cell-size)' }} className="flex items-center justify-end leading-none">Wed</div>
                    <div style={{ height: 'var(--cell-size)' }} className="invisible" />
                    <div style={{ height: 'var(--cell-size)' }} className="flex items-center justify-end leading-none">Fri</div>
+                   <div style={{ height: 'var(--cell-size)' }} className="invisible" />
                    <div style={{ height: 'var(--cell-size)' }} className="invisible" />
                 </div>
                 
@@ -1953,7 +1955,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
                      ))}
                    </div> 
                    <div className="grid grid-rows-7 grid-flow-col justify-start auto-cols-max" style={{ gap: 'var(--cell-gap)' }}>
-                     {Array.from({ length: heatmapDays[0].getDay() }).map((_, i) => (
+                     {Array.from({ length: (heatmapDays[0].getDay() + 6) % 7 }).map((_, i) => (
                        <div key={`empty-${i}`} className="border border-transparent" style={{ width: 'var(--cell-size)', height: 'var(--cell-size)' }} />
                      ))}
                      {heatmapDays.map((date, i) => {
@@ -2005,11 +2007,11 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
               </div>
             </div>
 
-            {(heatmapMode === '30days' || heatmapMode === 'month') && heatmapSummary && (
-               <div className="w-full xl:w-64 shrink-0 flex flex-col justify-center bg-slate-950/40 p-5 rounded-2xl border border-slate-800/60 mb-4 xl:mb-0">
+            {(heatmapMode === '30days' || heatmapMode === 'month' || heatmapMode === 'year') && heatmapSummary && (
+               <div className="w-full lg:w-64 shrink-0 flex flex-col justify-center bg-slate-950/40 p-5 rounded-2xl border border-slate-800/60 mb-4 lg:mb-0">
                  <div className="text-center pb-3 border-b border-slate-800/50">
                     <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest leading-none">
-                       {heatmapMode === '30days' ? '30 Days Summary' : 'Month Summary'}
+                       {heatmapMode === '30days' ? '30 Days Summary' : heatmapMode === 'month' ? 'Month Summary' : 'Year Summary'}
                     </span>
                  </div>
                  <div className="flex flex-col gap-3">
@@ -2116,6 +2118,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
               showRoutine: true,
               showHeatmap: true,
               showReflection: true,
+              showSleep: true,
               aspectRatio: 'auto'
             });
           }} 

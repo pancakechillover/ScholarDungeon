@@ -125,7 +125,7 @@ export const ShareRecordModal: React.FC<ShareRecordModalProps> = ({ onClose, con
       const origMaxWidth = el.style.maxWidth;
       el.style.maxWidth = 'none';
 
-      const sectionIds = ['charts-grid', 'routine-tracker-section', 'heatmap-section', 'daily-activity-section', 'weekly-activity-section'];
+      const sectionIds = ['charts-grid', 'routine-tracker-section', 'heatmap-section', 'daily-activity-section', 'weekly-activity-section', 'sleep-tracker-section'];
       const origSectionStyles: Record<string, string> = {};
       
       const filterIdMap = {
@@ -133,6 +133,7 @@ export const ShareRecordModal: React.FC<ShareRecordModalProps> = ({ onClose, con
         'weekly-activity-section': config.showWeekly,
         'routine-tracker-section': config.showRoutine,
         'heatmap-section': config.showHeatmap,
+        'sleep-tracker-section': config.showSleep,
       };
       
       const origDisplays: Record<string, string> = {};
@@ -610,6 +611,10 @@ export const ShareRecordModal: React.FC<ShareRecordModalProps> = ({ onClose, con
                     <label className="flex items-center gap-3 p-3 bg-slate-900 border border-slate-800 rounded-xl cursor-pointer hover:border-indigo-500/50 transition-colors">
                       <input type="checkbox" checked={config.showHeatmap} onChange={(e) => setConfig(prev => ({ ...prev, showHeatmap: e.target.checked }))} className="accent-indigo-500 w-4 h-4 rounded" />
                       <span className="text-sm font-bold text-slate-200">Study Heatmap</span>
+                    </label>
+                    <label className="flex items-center gap-3 p-3 bg-slate-900 border border-slate-800 rounded-xl cursor-pointer hover:border-indigo-500/50 transition-colors">
+                      <input type="checkbox" checked={config.showSleep} onChange={(e) => setConfig(prev => ({ ...prev, showSleep: e.target.checked }))} className="accent-indigo-500 w-4 h-4 rounded" />
+                      <span className="text-sm font-bold text-slate-200">Sleep Tracker</span>
                     </label>
                     <label className="flex items-center gap-3 p-3 bg-slate-900 border border-slate-800 rounded-xl cursor-pointer hover:border-indigo-500/50 transition-colors">
                       <input type="checkbox" checked={config.showReflection} onChange={(e) => setConfig(prev => ({ ...prev, showReflection: e.target.checked }))} className="accent-indigo-500 w-4 h-4 rounded" />

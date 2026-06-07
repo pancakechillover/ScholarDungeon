@@ -1,4 +1,4 @@
-export const APP_VERSION = 'v8.7.6';
+export const APP_VERSION = 'v8.7.9';
 export const LAST_UPDATE_DATE = '2026-06-07';
 export const LAST_UPDATE_TIME = '14:30:00';
 
@@ -11,6 +11,38 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v8.7.9',
+    date: '2026-06-07',
+    time: '14:30:00',
+    title: 'Expedition Horizon Mobile Refinements & Layout Fixes',
+    items: [
+      { category: 'UI/UX', description: "Reverted Expedition Horizon layout from horizontal scrollback into an adaptive two-row grid on mobile screens specifically, optimizing layout space." },
+      { category: 'Bug Fix', description: "Removed parent hidden constraints allowing zoomed date cards on desktop arrays to smoothly escape bounding boxes naturally instead of shearing edges unpleasantly." }
+    ]
+  },
+  {
+    version: 'v8.7.8',
+    date: '2026-06-07',
+    time: '14:50:00',
+    title: 'Sleep Record Exports & Tablet Layout Expansion',
+    items: [
+      { category: 'Feature', description: "Added independent toggle controls to optionally show or hide the Sleep Tracker specifically when generating shared Image Exports." },
+      { category: 'UI/UX', description: "Upgraded the Sleep Tracker chart visualization utilizing a direct point-to-point (linear) slope projection, dramatically improving data path readability." },
+      { category: 'UI/UX', description: "Expanded the 30-Days heatmap dashboard to responsively pair alongside the statistics summary widget directly on Tablet screen dimensions (1024px) utilizing fluid flex properties." },
+      { category: 'UI/UX', description: "Refactored the Year Heatmap view to properly expose aggregated statistics and unified the entire heatmap Y-axis to dynamically start on Monday globally." }
+    ]
+  },
+  {
+    version: 'v8.7.7',
+    date: '2026-06-07',
+    time: '14:40:00',
+    title: 'Expedition Horizon State Persistence & Mobile Expansion',
+    items: [
+      { category: 'Feature', description: "Persisted the 'Recent 7 Days' and 'Current Week' Expedition Horizon view preferences across sessions by securely wrapping the selector variable inside durable local storage." },
+      { category: 'UI/UX', description: "Re-engineered the Expedition Horizon grid into a smooth scrollable horizontal layout specifically for mobile screens, radically expanding the tap target boxes of individual calendar days to resolve narrow compression." }
+    ]
+  },
   {
     version: 'v8.7.6',
     date: '2026-06-07',

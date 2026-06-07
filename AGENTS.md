@@ -23,7 +23,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v8.7.6
+- **Current Version:** v8.7.9
 - **Last Update Date:** 2026-06-07
 - **Last Update Time:** 14:30:00
 
@@ -50,6 +50,20 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v8.7.9 (2026-06-07):** Expedition Horizon Mobile Refinements & Layout Fixes.
+  - *UI/UX:* Reverted Expedition Horizon layout from horizontal scrollback into an adaptive two-row grid on mobile screens specifically, optimizing layout space.
+  - *Bug Fix:* Removed parent hidden constraints allowing zoomed date cards on desktop arrays to smoothly escape bounding boxes naturally instead of shearing edges unpleasantly.
+
+- **v8.7.8 (2026-06-07):** Sleep Record Exports & Tablet Layout Expansion.
+  - *Feature:* Added independent toggle controls in `ShareRecordModal` to selectively include or hide the Sleep Tracker during image code generation loops.
+  - *UI/UX:* Switched Recharts `<Line>` structures for Sleep tracking over to a smooth `linear` mode replacing strictly staggered horizontal stops, rendering intuitive point-to-point progression slopes.
+  - *UI/UX:* Unlocked horizontal flex allocations within Heatmap containers targeting Tablet widths (via `lg:flex-row`), allowing matrix blocks and the summary modules to render perfectly parallel.
+  - *UI/UX:* Recalculated the core Y-Axis column alignment for `Heatmap` generation to strictly anchor Monday (`Mon`) natively atop row 1 index 0, and synchronized generic `Days Summary` aggregation hooks targeting explicitly active year views correctly.
+
+- **v8.7.7 (2026-06-07):** Expedition Horizon State Persistence & Mobile Expansion.
+  - *Feature:* Persisted the 'Recent 7 Days' and 'Current Week' Expedition Horizon view preferences across sessions by securely wrapping the selector variable inside durable `localStorage`.
+  - *UI/UX:* Re-engineered the Expedition Horizon grid into a smooth, horizontal scrollable layout specifically for mobile screens (`overflow-x-auto snap-x`), radically expanding the tap target boxes of individual calendar days to resolve narrow compression.
 
 - **v8.7.6 (2026-06-07):** Long-Press Seamless Automation & Fractional Statistics
   - *Bug Fix:* Unconditionally mapped manual long-press skip operations to strictly obey the user's 'Skip Victory Screen' (`timerSkipVictoryMode`) preferences natively, enabling seamless automatic transitions directly into the respective Rest loop or next interval exactly like a standard timer completion.
