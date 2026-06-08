@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v8.7.11';
-export const LAST_UPDATE_DATE = '2026-06-07';
-export const LAST_UPDATE_TIME = '15:15:00';
+export const APP_VERSION = 'v8.7.12';
+export const LAST_UPDATE_DATE = '2026-06-08';
+export const LAST_UPDATE_TIME = '07:30:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,16 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v8.7.12',
+    date: '2026-06-08',
+    time: '07:30:00',
+    title: 'Sidebar Global Pulse & Background Notification',
+    items: [
+      { category: 'Feature', description: "Integrated an active polling watcher on Fellowship parameters. The main Sanctum navigation icon will now pulse with a red notification dot immediately upon detecting new Guild messages or pending applicants." },
+      { category: 'Feature', description: "Bound the active timer state into the overarching navigation layout, automatically activating a persistent red indicator on the Explore tab whenever an active focus session is running." }
+    ]
+  },
   {
     version: 'v8.7.11',
     date: '2026-06-07',

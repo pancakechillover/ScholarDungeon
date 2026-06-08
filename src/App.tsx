@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { createRoot } from 'react-dom/client';
 import { motion, AnimatePresence } from 'motion/react';
@@ -359,6 +359,50 @@ function App() {
     setIsSyncing,
     setIsVerifying
   } = useCloudSync(state, setState, setDungeons, setMajorDungeons);
+
+  const [hasUnreadFellowship, setHasUnreadFellowship] = useState(false);
+  
+  const lastTeamDataRef = useRef(state.lastTeamData);
+  useEffect(() => {
+    lastTeamDataRef.current = state.lastTeamData;
+  }, [state.lastTeamData]);
+
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval>;
+    if (state.teamId && activeTab !== 'dashboard') {
+      const checkTeam = async () => {
+        try {
+          const res = await fetch(`/api/teams?id=${state.teamId}`, {
+            headers: {
+              'x-secret-code': state.secretCode || '',
+              'x-user-name': encodeURIComponent(state.userName || 'Scholar')
+            }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.team) {
+              const lastData = lastTeamDataRef.current;
+              const prevApplicants = lastData?.team?.applicants?.length || 0;
+              const newApplicants = data.team.applicants?.length || 0;
+              const prevMessages = lastData?.messages?.length || 0;
+              const newMessages = data.messages?.length || 0;
+              
+              if (newApplicants > prevApplicants || newMessages > prevMessages) {
+                setHasUnreadFellowship(true);
+              }
+            }
+          }
+        } catch (e) {}
+      };
+      checkTeam();
+      interval = setInterval(checkTeam, 60000);
+    } else if (activeTab === 'dashboard') {
+      setHasUnreadFellowship(false);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [state.teamId, activeTab, state.secretCode, state.userName]);
 
   // Auto show start of day modal
   useEffect(() => {
@@ -1061,7 +1105,11 @@ function App() {
               icon={<item.icon size={22} />} 
               label={item.label} 
               collapsed={isSidebarCollapsed}
-              showDot={item.id === 'dungeons' && state.unclaimedQuests > 0 && state.questNotificationStyle === 'red_dot'}
+              showDot={
+                (item.id === 'dungeons' && state.unclaimedQuests > 0 && state.questNotificationStyle === 'red_dot') ||
+                (item.id === 'explore' && isTimerActive) ||
+                (item.id === 'dashboard' && hasUnreadFellowship)
+              }
             />
           ))}
         </div>
@@ -1715,7 +1763,11 @@ function App() {
                 onClick={() => setActiveTab(item.id as any)} 
                 icon={<item.icon size={22} />} 
                 label={item.label}
-                showDot={item.id === 'dungeons' && state.unclaimedQuests > 0 && state.questNotificationStyle === 'red_dot'}
+                showDot={
+                  (item.id === 'dungeons' && state.unclaimedQuests > 0 && state.questNotificationStyle === 'red_dot') ||
+                  (item.id === 'explore' && isTimerActive) ||
+                  (item.id === 'dashboard' && hasUnreadFellowship)
+                }
               />
             ))}
           </div>
