@@ -23,9 +23,9 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v8.7.12
-- **Last Update Date:** 2026-06-08
-- **Last Update Time:** 07:30:00
+- **Current Version:** v8.7.15
+- **Last Update Date:** 2026-06-09
+- **Last Update Time:** 12:45:00
 
 ## Dark Themes Definition
 The following themes are considered "Dark Themes" and form the baseline for vibrant visual effects and high-contrast glowing elements:
@@ -50,6 +50,19 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v8.7.15 (2026-06-09):** Timer Zero-State Override Bug Fix.
+  - *Bug Fix:* Repaired a severe state race-condition where manually skipping the timer via long-press would strand the display at `0:00` instead of naturally progressing into Rest cycles, next loop phases, or resetting the clock cleanly. By detaching skip operations from simulated end times and routing directly into finalization scopes, execution now consistently transitions phases instantly and identically to organic countdowns.
+
+- **v8.7.14 (2026-06-09):** Loot Pool Real-Time Probability & Frequency Bug Fixes.
+  - *Feature:* Added Real-Time Loot Pool Probability tracker directly inside the reward settings. Users can now view precisely computed drop weights adjusted for their current daily frequency limits.
+  - *Bug Fix:* Repaired array length caching logic inside the internal reward card generator causing "Extra Chance" (C1/C2) draws to terminate loop limits early resulting in fewer selectable cards.
+  - *Architecture:* Synchronized the "Pending Occurrences" filter logic accurately releasing limits from specific active chests currently queued for a reroll block.
+
+- **v8.7.13 (2026-06-09):** Timer Skip Behaviors & Cloud Sync Overwrite Race Condition Fix.
+  - *Feature:* Enabled single-click skips on the Timer allowing an instant completed-session jump strictly granting full rewards and durations natively.
+  - *UI/UX:* Hardened long-press logic correctly triggering phase transitions natively using strictly modified endTimes matching worker logic securely without batching conflicts.
+  - *Bug Fix:* Repaired a severe cloud race condition inside `server.ts`. The main node server now aggressively detects `savedByDeviceCode` discrepancies, explicitly blocking forceful direct local uploads and triggering 409 Merge Conflict pipelines gracefully even if local timestamp dates are technically newer than the cloud version.
 
 - **v8.7.12 (2026-06-08):** Sidebar Global Pulse & Background Notification.
   - *Feature:* Integrated an active polling watcher on Fellowship parameters. The main Sanctum navigation icon will now pulse with a red notification dot immediately upon detecting new Guild messages or pending applicants.

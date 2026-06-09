@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v8.7.12';
-export const LAST_UPDATE_DATE = '2026-06-08';
-export const LAST_UPDATE_TIME = '07:30:00';
+export const APP_VERSION = 'v8.7.15';
+export const LAST_UPDATE_DATE = '2026-06-09';
+export const LAST_UPDATE_TIME = '12:45:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,37 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v8.7.15',
+    date: '2026-06-09',
+    time: '12:45:00',
+    title: 'Timer Zero-State Override Bug Fix',
+    items: [
+      { category: 'Bug Fix', description: "Repaired a severe state race-condition where manually skipping the timer via long-press would strand the display at 0:00 instead of naturally progressing into Rest cycles, next loop phases, or resetting the clock cleanly due to event loop batching issues." }
+    ]
+  },
+  {
+    version: 'v8.7.14',
+    date: '2026-06-09',
+    time: '12:30:00',
+    title: 'Loot Pool Real-Time Probability & Frequency Bug Fixes',
+    items: [
+      { category: 'Feature', description: "Added Real-Time Loot Pool Probability tracker directly inside the reward settings. Users can now view precisely computed drop weights adjusted for their current daily frequency limits." },
+      { category: 'Bug Fix', description: "Repaired array length caching logic inside the internal reward card generator causing 'Extra Chance' draws (C1/C2) to occasionally prematurely terminate yielding only 2 or 3 choices instead of a full spread." },
+      { category: 'Architecture', description: "Repaired the 'Pending Occurrences' filter logic correctly ignoring the specific chest being actively re-rolled to accurately assess constraints during dynamic shuffles." }
+    ]
+  },
+  {
+    version: 'v8.7.13',
+    date: '2026-06-09',
+    time: '11:30:00',
+    title: 'Timer Skip Behaviors & Sync Conflict Prevention',
+    items: [
+      { category: 'Feature', description: "Enabled single-click skips on the Timer allowing an instant completed-session jump strictly granting full rewards and durations natively." },
+      { category: 'Bug Fix', description: "Hardened long-press logic correctly triggering phase transitions natively using strictly modified endTimes matching worker logic securely without batching conflicts." },
+      { category: 'Bug Fix', description: "Repaired a severe cloud race condition inside the api server aggressively detecting deviceCode discrepancies, explicitly blocking forceful direct local uploads and triggering 409 Merge Conflict pipelines gracefully even if local timestamps are newer." }
+    ]
+  },
   {
     version: 'v8.7.12',
     date: '2026-06-08',

@@ -361,10 +361,47 @@ export const Timer = React.memo<TimerProps>(({
         } else {
           setIsActive(false);
           setEndTime(null);
+          setDuration(focusDuration);
+          setTimeLeft(focusDuration * 60);
         }
       }
     }
   }, [duration, isResting, focusDuration, restDuration, enableRest, isLooping, loopCount, loopTarget, onComplete, onRestComplete, rewardPool, activeTalents, setShowCoinRain, setIsActive, setEndTime, setIsResting, setDuration, setTimeLeft, pushEnabled, timerSkipVictoryMode, handleRewardSelection, onDeferReward, requireFocusConfirmation, setLoopCount, setShowFocusPrompt]);
+
+  useEffect(() => {
+    let worker: Worker | null = null;
+    
+    const checkTime = () => {
+      if (!isActive || !endTime) return;
+      const now = Date.now();
+      const remaining = Math.max(0, Math.ceil((endTime - now) / 1000));
+      
+      setTimeLeft(remaining);
+      
+      if (remaining === 0) {
+        setIsActive(false);
+        setEndTime(null);
+        
+        handleComplete(false, undefined);
+      }
+    };
+
+    if (isActive && endTime) {
+      checkTime(); // Check immediately
+      worker = createWorkerTimer();
+      worker.onmessage = checkTime;
+      worker.postMessage({ command: 'start', interval: 1000 });
+    }
+    
+    return () => {
+      if (worker) {
+        worker.postMessage({ command: 'stop' });
+        worker.terminate();
+      }
+    };
+  }, [isActive, endTime, handleComplete, setIsActive, setEndTime, setTimeLeft]);
+
+  const skipDidTriggerRef = useRef(false);
 
   const startSkipCharge = useCallback((e: React.PointerEvent) => {
     // Only capture primary click/touch
@@ -373,6 +410,7 @@ export const Timer = React.memo<TimerProps>(({
     
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
     skipStartTimeRef.current = Date.now();
+    skipDidTriggerRef.current = false;
     cancelSkipCharge(); // clear any existing
 
     const updateProgress = () => {
@@ -381,6 +419,7 @@ export const Timer = React.memo<TimerProps>(({
       setSkipProgress(progress);
 
       if (progress >= 100) {
+        skipDidTriggerRef.current = true;
         cancelSkipCharge();
         if (!isActive && !isResting && isLoopingRef.current && loopTarget > 0 && loopCount >= loopTarget) {
            setLoopCount(0);
@@ -401,7 +440,25 @@ export const Timer = React.memo<TimerProps>(({
     };
     
     skipTimerRef.current = requestAnimationFrame(updateProgress);
-  }, [cancelSkipCharge, handleComplete, setLoopCount, isActive, isResting, loopTarget, loopCount]);
+  }, [cancelSkipCharge, setLoopCount, isActive, isResting, loopTarget, loopCount, handleComplete]);
+
+  const handlePointerUp = useCallback((e: React.PointerEvent) => {
+    e.preventDefault();
+    const elapsed = Date.now() - skipStartTimeRef.current;
+    
+    // Process short click before cancelling entirely
+    if (!skipDidTriggerRef.current && skipStartTimeRef.current !== 0 && elapsed > 0 && elapsed < 500) {
+      if (!isActive && !isResting && isLoopingRef.current && loopTarget > 0 && loopCount >= loopTarget) {
+         setLoopCount(0);
+      }
+      
+      handleComplete(false, undefined);
+    }
+    
+    skipDidTriggerRef.current = false;
+    skipStartTimeRef.current = 0;
+    cancelSkipCharge();
+  }, [cancelSkipCharge, setLoopCount, isActive, isResting, loopTarget, loopCount, handleComplete]);
 
   const handlePointerMove = useCallback((e: React.PointerEvent) => {
     if (skipTimerRef.current) {
@@ -415,41 +472,10 @@ export const Timer = React.memo<TimerProps>(({
       );
       if (!isInside) {
         cancelSkipCharge();
+        skipStartTimeRef.current = 0;
       }
     }
   }, [cancelSkipCharge]);
-
-  useEffect(() => {
-    let worker: Worker | null = null;
-    
-    const checkTime = () => {
-      if (!isActive || !endTime) return;
-      const now = Date.now();
-      const remaining = Math.max(0, Math.ceil((endTime - now) / 1000));
-      
-      setTimeLeft(remaining);
-      
-      if (remaining === 0) {
-        setIsActive(false);
-        setEndTime(null);
-        handleComplete();
-      }
-    };
-
-    if (isActive && endTime) {
-      checkTime(); // Check immediately
-      worker = createWorkerTimer();
-      worker.onmessage = checkTime;
-      worker.postMessage({ command: 'start', interval: 1000 });
-    }
-    
-    return () => {
-      if (worker) {
-        worker.postMessage({ command: 'stop' });
-        worker.terminate();
-      }
-    };
-  }, [isActive, endTime, handleComplete, setIsActive, setEndTime, setTimeLeft]);
 
   const canPip = 'documentPictureInPicture' in window && window.self === window.top;
   const isPWA = window.matchMedia('(display-mode: standalone)').matches;
@@ -606,12 +632,12 @@ export const Timer = React.memo<TimerProps>(({
         <button
           onContextMenu={(e) => e.preventDefault()}
           onPointerDown={startSkipCharge}
-          onPointerUp={cancelSkipCharge}
-          onPointerLeave={cancelSkipCharge}
-          onPointerCancel={cancelSkipCharge}
+          onPointerUp={handlePointerUp}
+          onPointerLeave={handlePointerUp}
+          onPointerCancel={handlePointerUp}
           onPointerMove={handlePointerMove}
-          className="p-4 bg-slate-900 text-slate-400 hover:text-white rounded-full border border-slate-800 transition-all select-none relative overflow-hidden group"
-          title="Hold 3s to Skip Session"
+          className="p-4 bg-slate-900 text-slate-400 hover:text-white rounded-full border border-slate-800 transition-all select-none relative overflow-hidden group skip-btn-area"
+          title="Click to Skip, Hold 3s for Partial Skip"
           style={{ touchAction: 'none' }}
         >
           {skipProgress > 0 && (

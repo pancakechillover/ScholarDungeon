@@ -32,7 +32,10 @@ export function generateRewardChoicesForSession(
         let pendingOccurrences = 0;
         if (ctx.pendingRewardChest) {
           for (const chest of ctx.pendingRewardChest) {
-            if (chest.choices.some(c => c.name === card.name)) pendingOccurrences++;
+            // Do not count the choices from the chest we are currently generating/rerolling for
+            if (chest.session.id !== pseudoSession.id) {
+              if (chest.choices.some(c => c.name === card.name)) pendingOccurrences++;
+            }
           }
         }
         
@@ -46,7 +49,9 @@ export function generateRewardChoicesForSession(
       return true;
     });
 
-    for (let i = 0; i < Math.min(count, selectedPool.length); i++) {
+    const poolSize = selectedPool.length;
+    const itemsToDraw = Math.min(count, poolSize);
+    for (let i = 0; i < itemsToDraw; i++) {
       const totalWeight = selectedPool.reduce((acc, r) => acc + r.weight, 0);
       let rand = Math.random() * totalWeight;
       for (let j = 0; j < selectedPool.length; j++) {

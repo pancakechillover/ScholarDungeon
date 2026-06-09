@@ -148,7 +148,13 @@ const syncHandler = async (req: express.Request, res: express.Response) => {
     if (cloudData && cloudData.lastUpdated) {
       const cloudTime = new Date(cloudData.lastUpdated).getTime();
       const localTime = new Date(localData.lastUpdated || 0).getTime();
-      if (cloudTime > localTime && !req.body.forceOverwrite) {
+      
+      const cloudDevice = cloudData.savedByDeviceCode;
+      const localDevice = localData.savedByDeviceCode;
+      const deviceMismatch = cloudDevice && localDevice && cloudDevice !== localDevice;
+
+      // Ensure that if device codes don't match, it is treated as a conflict regardless of timestamp!
+      if ((deviceMismatch || cloudTime > localTime) && !req.body.forceOverwrite) {
         return res.status(409).json({ conflict: true, cloudData });
       }
     }

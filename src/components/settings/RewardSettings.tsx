@@ -28,11 +28,14 @@ function urlBase64ToUint8Array(base64String: string) {
 }
 
 
+import { HelpCircle } from 'lucide-react';
+import { RealtimeProbabilityModal } from './RealtimeProbabilityModal';
 import { RewardStatsModal } from './RewardStatsModal';
 
 export const RewardSettings = ({ pool, onUpdate, onReset, appState }: { pool: RewardCard[], onUpdate: (p: RewardCard[]) => void, onReset?: () => void, appState?: any }) => {
   const [editing, setEditing] = useState<RewardCard | null>(null);
   const [showExpectedStats, setShowExpectedStats] = useState(false);
+  const [showRealtimeProb, setShowRealtimeProb] = useState(false);
   const [modalConfig, setModalConfig] = useState<{ 
     isOpen: boolean; 
     title: string; 
@@ -75,13 +78,22 @@ export const RewardSettings = ({ pool, onUpdate, onReset, appState }: { pool: Re
           <Package size={20} />
           <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Reward Pool Management</h4>
           {appState && (
-            <button 
-              onClick={() => setShowExpectedStats(true)} 
-              className="p-1.5 text-slate-500 hover:text-indigo-400 bg-slate-800/50 hover:bg-slate-800 rounded-full transition-colors ml-1"
-              title="Economy Mathematics"
-            >
-              <Info size={14} />
-            </button>
+            <>
+              <button 
+                onClick={() => setShowRealtimeProb(true)} 
+                className="p-1.5 text-slate-500 hover:text-indigo-400 bg-slate-800/50 hover:bg-slate-800 rounded-full transition-colors ml-1"
+                title="Real-Time Probability"
+              >
+                <HelpCircle size={14} />
+              </button>
+              <button 
+                onClick={() => setShowExpectedStats(true)} 
+                className="p-1.5 text-slate-500 hover:text-indigo-400 bg-slate-800/50 hover:bg-slate-800 rounded-full transition-colors ml-1"
+                title="Economy Mathematics"
+              >
+                <Info size={14} />
+              </button>
+            </>
           )}
         </div>
         <div className="flex gap-2">
@@ -223,6 +235,14 @@ export const RewardSettings = ({ pool, onUpdate, onReset, appState }: { pool: Re
                 pool={pool} 
                 appState={appState} 
                 onClose={() => setShowExpectedStats(false)} 
+             />
+          )}
+          {showRealtimeProb && (
+             <RealtimeProbabilityModal 
+                key="realtime-prob"
+                pool={pool} 
+                appState={appState} 
+                onClose={() => setShowRealtimeProb(false)} 
              />
           )}
         </AnimatePresence>,
