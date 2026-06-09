@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v8.7.15';
+export const APP_VERSION = 'v8.7.16';
 export const LAST_UPDATE_DATE = '2026-06-09';
-export const LAST_UPDATE_TIME = '12:45:00';
+export const LAST_UPDATE_TIME = '15:20:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,15 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v8.7.16',
+    date: '2026-06-09',
+    time: '15:20:00',
+    title: 'Explore View Height Constraint Lock',
+    items: [
+      { category: 'UI/UX', description: 'Enforced strict absolute height bounds inside the Explore View matrix across desktop and tablet screen sizes subtracting exactly the PageHeader and top navigation menu pixel dimensions explicitly. The countdown timer and control interface now correctly respect container bounds, shrinking dynamically and sealing into the available viewport height cleanly without generating a page scroll.' }
+    ]
+  },
   {
     version: 'v8.7.15',
     date: '2026-06-09',

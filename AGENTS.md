@@ -23,9 +23,9 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v8.7.15
+- **Current Version:** v8.7.16
 - **Last Update Date:** 2026-06-09
-- **Last Update Time:** 12:45:00
+- **Last Update Time:** 15:20:00
 
 ## Dark Themes Definition
 The following themes are considered "Dark Themes" and form the baseline for vibrant visual effects and high-contrast glowing elements:
@@ -50,6 +50,9 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v8.7.16 (2026-06-09):** Explore View Height Constraint Lock.
+  - *UI/UX:* Enforced strict absolute height bounds inside the Explore View matrix across desktop and tablet screen sizes subtracting exactly the PageHeader and top navigation menu pixel dimensions explicitly. The countdown timer and control interface now correctly respect container bounds, shrinking dynamically and sealing into the available viewport height cleanly without generating a page scroll.
 
 - **v8.7.15 (2026-06-09):** Timer Zero-State Override Bug Fix.
   - *Bug Fix:* Repaired a severe state race-condition where manually skipping the timer via long-press would strand the display at `0:00` instead of naturally progressing into Rest cycles, next loop phases, or resetting the clock cleanly. By detaching skip operations from simulated end times and routing directly into finalization scopes, execution now consistently transitions phases instantly and identically to organic countdowns.

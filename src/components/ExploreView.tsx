@@ -429,13 +429,13 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
         isFullscreenExplore ? "flex items-center justify-center w-full h-full pt-[env(safe-area-inset-top)]" : "px-4 sm:px-6 lg:px-8"
       )}>
         <div className={cn(
-          "w-full h-full",
-          !isFullscreenExplore ? "grid grid-cols-1 lg:grid-cols-[1fr_360px] xl:grid-cols-[1fr_440px] 2xl:grid-cols-[1fr_500px] gap-6 xl:gap-8 2xl:gap-12" : "flex flex-col items-center justify-center h-full w-full"
+          "w-full",
+          !isFullscreenExplore ? "grid grid-cols-1 lg:grid-cols-[1fr_360px] xl:grid-cols-[1fr_440px] 2xl:grid-cols-[1fr_500px] gap-6 xl:gap-8 2xl:gap-12 lg:h-[calc(100dvh-12.5rem)] lg:max-h-[960px] lg:min-h-[700px]" : "flex flex-col items-center justify-center h-full w-full"
         )}>
           {/* Left Column: Timer & Timer Settings area */}
           <div className={cn(
-            "w-full h-full flex flex-col min-h-0",
-            !isFullscreenExplore ? "gap-6" : ""
+            "w-full flex flex-col min-h-0",
+            !isFullscreenExplore ? "gap-6 lg:h-full" : "h-full"
           )}>
             {!isFullscreenExplore && (
               <div className="flex flex-col flex-1 min-h-0 bg-slate-900/20 rounded-[2.5rem] border border-slate-800/50 overflow-hidden">
@@ -605,7 +605,7 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
 
           {/* Right Column: Active Talents & Current Build */}
           {!isFullscreenExplore && (
-            <div className="w-full h-full flex flex-col gap-6 min-h-0 overflow-y-auto lg:overflow-visible custom-scrollbar">
+            <div className="w-full h-full flex flex-col gap-6 min-h-0 overflow-y-auto custom-scrollbar pr-1">
               {/* Timer Settings (Moved Here for Wide Screens) */}
               <TimerSettings 
                 focusDuration={focusDuration}
