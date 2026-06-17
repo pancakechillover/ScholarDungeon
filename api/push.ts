@@ -3,38 +3,25 @@ import webpush from 'web-push';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 // Configure Web Push
-// RESTORED FALLBACKS to prevent UI hang. 
 // SECURITY NOTE: Please set VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY in your Secrets for production.
 const cleanKey = (key?: string) => key ? key.replace(/[^a-zA-Z0-9_-]/g, '').trim() : '';
 
-const envPublic = cleanKey(process.env.VAPID_PUBLIC_KEY);
-const envPrivate = cleanKey(process.env.VAPID_PRIVATE_KEY);
-
-// Valid fallback keys (Generated via web-push, guaranteed to be 65 bytes public / 32 bytes private when decoded)
-const fallbackPublic = "BJ8Pb6twxvV5B43gsnSi5uDbehVnQX2s4c5qJP4yBywPitfec3XtUuxig5d8iWFnSueH284uhMl2FpU1wSFKSGM";
-const fallbackPrivate = "9002rSo2Hgz3P9MTR95Gh6BNST8QCqhCAAGXi5M3lz0";
-
-// Only use environment keys if they look like real VAPID keys (87-88 chars for public, 43-44 for private)
-// This prevents placeholders like "your_public_key_here" from causing startup crashes
-const vapidPublicKey = (envPublic && envPublic.length >= 87 && envPublic.length <= 88) ? envPublic : fallbackPublic;
-const vapidPrivateKey = (envPrivate && envPrivate.length >= 43 && envPrivate.length <= 44) ? envPrivate : fallbackPrivate;
+const vapidPublicKey = cleanKey(process.env.VAPID_PUBLIC_KEY);
+const vapidPrivateKey = cleanKey(process.env.VAPID_PRIVATE_KEY);
 const vapidEmailInput = process.env.VAPID_EMAIL || "iz.karakarakarakan@gmail.com";
 const vapidSubject = vapidEmailInput.startsWith('http') || vapidEmailInput.startsWith('mailto:') 
   ? vapidEmailInput 
   : `mailto:${cleanKey(vapidEmailInput)}`;
 
-try {
-  webpush.setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey);
-  if (!envPrivate) {
-    console.warn("Using FALLBACK VAPID keys. This is NOT secure for production.");
-  }
-} catch (err: any) {
-  console.error("Failed to set VAPID details with primary keys:", err.message);
+const isVapidConfigured = Boolean(vapidPublicKey && vapidPrivateKey);
+
+if (!isVapidConfigured) {
+  console.error("CRITICAL ERROR: VAPID_PUBLIC_KEY and/or VAPID_PRIVATE_KEY are missing. Web Push will not work. Please set them in your environment variables.");
+} else {
   try {
-    webpush.setVapidDetails(vapidSubject, fallbackPublic, fallbackPrivate);
-    console.warn("Using FALLBACK VAPID keys because environment keys were invalid.");
-  } catch (fallbackErr) {
-    console.error("Even fallback VAPID keys failed! Push will not work.");
+    webpush.setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey);
+  } catch (err: any) {
+    console.error("Failed to set VAPID details with primary keys:", err.message);
   }
 }
 
@@ -58,6 +45,13 @@ const getRedisClient = async () => {
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const path = req.url?.split('?')[0];
+
+  const guardedEndpoints = ['/vapid-public-key', '/subscribe', '/schedule', '/check'];
+  if (path && guardedEndpoints.some(ep => path.endsWith(ep))) {
+    if (!isVapidConfigured) {
+      return res.status(503).json({ error: "Web Push is not configured on this server." });
+    }
+  }
 
   if (path?.endsWith('/vapid-public-key')) {
     return res.json({ publicKey: vapidPublicKey });
@@ -155,7 +149,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   if (path?.endsWith('/check')) {
-    console.log(`[Push Check] Using VAPID Public Key: ${vapidPublicKey ? vapidPublicKey.substring(0, 10) : 'MISSING'}...`);
+    if (process.env.NODE_ENV !== "production") console.log(`[Push Check] Using VAPID Public Key: ${vapidPublicKey ? vapidPublicKey.substring(0, 10) : 'MISSING'}...`);
     try {
       const now = Date.now();
       // Get all tasks that are due
@@ -187,8 +181,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 }), { urgency: 'high', TTL: subTTL });
                 results.push({ secretCode: task.secretCode, status: 'sent', endpoint: subscription.endpoint.substring(0, 20) });
               } catch (err: any) {
-                console.error(`Push failed for sub:`, err.message, err.body ? err.body : '');
-                if (err.statusCode === 410 || err.statusCode === 404 || err.statusCode === 400 || err.statusCode === 401 || err.statusCode === 403) {
+                const bodyMsg = err.body ? (typeof err.body === 'string' ? err.body : JSON.stringify(err.body)) : '';
+                console.error(`Push failed for sub:`, err.message);
+                if (err.statusCode === 410 || err.statusCode === 404 || err.statusCode === 400 || err.statusCode === 401 || err.statusCode === 403 || bodyMsg.includes('VapidPkHashMismatch')) {
                   await client.sRem(`scholar_push_subs_${task.secretCode}`, subStr);
                 }
                 results.push({ secretCode: task.secretCode, status: 'failed_sub', error: err.message });
@@ -208,8 +203,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 }), { urgency: 'high', TTL: subTTL });
                 results.push({ secretCode: task.secretCode, status: 'sent_legacy' });
               } catch (err: any) {
-                console.error(`Legacy push failed for sub:`, err.message, err.body ? err.body : '');
-                if (err.statusCode === 410 || err.statusCode === 404 || err.statusCode === 400 || err.statusCode === 401 || err.statusCode === 403) {
+                const bodyMsg = err.body ? (typeof err.body === 'string' ? err.body : JSON.stringify(err.body)) : '';
+                console.error(`Legacy push failed for sub:`, err.message);
+                if (err.statusCode === 410 || err.statusCode === 404 || err.statusCode === 400 || err.statusCode === 401 || err.statusCode === 403 || bodyMsg.includes('VapidPkHashMismatch')) {
                   await client.del(`scholar_push_sub_${task.secretCode}`);
                 }
               }
@@ -230,7 +226,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (nextTaskTime && (nextTaskTime - now > 0) && (nextTaskTime - now <= 55000)) {
         const delayMs = nextTaskTime - Date.now();
         if (delayMs > 0) {
-           console.log(`[Wake-Lock] Task due in ${Math.round(delayMs/1000)}s. Suspending ping to deliver precisely on time.`);
+           if (process.env.NODE_ENV !== "production") console.log(`[Wake-Lock] Task due in ${Math.round(delayMs/1000)}s. Suspending ping to deliver precisely on time.`);
            await new Promise(resolve => setTimeout(resolve, delayMs));
            const delayedNow = Date.now();
            const delayedTasks = await client.zRangeByScore('scholar_push_tasks', 0, delayedNow);

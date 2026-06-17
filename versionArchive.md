@@ -874,7 +874,7 @@
   - *UI:* Unlocked the WebDAV options panel in Cloud Sync settings allowing custom server URL (e.g. Nextcloud, Jianguoyun), Usernames, and Application Passwords.
   - *Architecture:* Standardized synchronization checks, redirecting App startup to use a new `checkCloudSync` routing which intelligently directs to Google Drive, WebDAV, or Redis logic interchangeably. 
 - **v5.2.2 (2026-05-10):** Google Drive Developer Access Lock.
-  - *Feature:* Added a password lock specifically requiring the string 'GoogleTest' to access Google OAuth, protecting standard users from seeing the "App is not verified" generic error.
+  - *Feature:* Added a password lock specifically requiring a front-end testing password (now removed) to access Google OAuth, protecting standard users from seeing the "App is not verified" generic error.
   - *UX:* Adapted the existing Modal from Redis Archives to support dynamic text depending on which cloud service needs to be unlocked.
 - **v5.2.1 (2026-05-10):** Quest Board UI Style Sync.
   - *UI:* Synchronized all theme-specific CSS variables (`--qb-*`) with the finalized values from the CSS Debugger.

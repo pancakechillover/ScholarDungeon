@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { AppState } from '../types';
 import { GoogleDriveAPI } from '../lib/googleDriveApi';
+import { getSyncFingerprint } from '../utils/syncFingerprint';
 
 import { getDeviceCode } from '../lib/utils';
 
@@ -21,6 +22,7 @@ export function useCloudSync(
     code: string;
   } | null>(null);
 
+  const [isInitialSyncCheckDone, setIsInitialSyncCheckDone] = useState(false);
   const activeSyncRequestRef = useRef<number>(0);
 
   const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
@@ -89,6 +91,13 @@ export function useCloudSync(
     syncMethod: 'Manual' | 'Immediate' | 'Interval polling' | 'Visibility API Active' = 'Manual'
   ) => {
     const currentState = specificState || state;
+    
+    // Safety lock: DO NOT AUTO-SYNC IF INITIAL CHECK IS PENDING! Let manual overwrites pass to break loops.
+    if (!forceOverwrite && (currentState.secretCode || currentState.syncProvider) && !isInitialSyncCheckDone) {
+      if (import.meta.env.DEV) console.log(`[Cloud Sync] Blocked background auto-sync before initial sync integrity verified.`);
+      return;
+    }
+
     const isGoogleDrive = currentState.syncProvider === 'Google Drive';
     const isWebDav = currentState.syncProvider === 'WebDAV';
     if (!isGoogleDrive && !isWebDav && (!currentState.secretCode || !currentState.isRedisUnlocked)) return;
@@ -139,6 +148,12 @@ export function useCloudSync(
         lastUpdated: new Date().toISOString()
       };
 
+      const localDataToCompare = stripVolatile({
+        state: currentState,
+        dungeons: JSON.parse(localStorage.getItem('scholars_dungeon_state_dungeons') || '[]'),
+        majorDungeons: JSON.parse(localStorage.getItem('scholars_dungeon_state_major_dungeons') || '[]')
+      });
+
       // Ensure volatile fields are stripped before sync
       localData = stripVolatile(localData);
       
@@ -180,11 +195,24 @@ export function useCloudSync(
             body: JSON.stringify({ url, username, password, method: 'GET' })
           });
           
+          if (!getResponse.ok) {
+            throw new Error(await getResponse.text() || 'Failed to read from WebDAV during pre-check');
+          }
+          
           if (getResponse.ok) {
             const result = await getResponse.json();
             if (result.data) {
               const cloudDeviceCode = result.data.savedByDeviceCode;
               const identitiesMatch = cloudDeviceCode ? cloudDeviceCode === getDeviceCode() : (!result.data.savedBy || result.data.savedBy === localIdentity);
+
+              const cloudDataToCompare = stripVolatile({
+                state: result.data.state || result.data,
+                dungeons: result.data.dungeons || [],
+                majorDungeons: result.data.majorDungeons || []
+              });
+
+              const cloudFingerprint = getSyncFingerprint(cloudDataToCompare);
+              const localFingerprint = getSyncFingerprint(localDataToCompare);
 
               // IF identities mismatch: 
               // 1. If visibility trigger -> abort (can't show modal)
@@ -204,20 +232,27 @@ export function useCloudSync(
                 return;
               }
 
-              // Normal timestamp check for silent sync
-              if (result.data.lastUpdated) {
-                const cloudTime = new Date(result.data.lastUpdated).getTime();
-                const localTime = new Date(localData.lastUpdated).getTime();
-                if (cloudTime > localTime) {
-                  setSyncCheckResult({
-                    status: 'cloud_newer',
-                    cloudData: result.data,
-                    code: 'WebDAV'
-                  });
+              if (localFingerprint === cloudFingerprint) {
+                  // Data is identical, just update local timestamp silently and abort upload
+                  if (requestId !== activeSyncRequestRef.current) return;
+                  if (result.data.lastUpdated) {
+                      setState(prev => ({ ...prev, lastUpdated: result.data.lastUpdated }));
+                  }
                   setIsSyncing(false);
                   return;
-                }
               }
+
+              // Normal timestamp check for silent sync (fingerprints mismatched!)
+              const cloudTime = new Date(result.data.lastUpdated || (result.data.state && result.data.state.lastUpdated) || 0).getTime();
+              const localTime = new Date(currentState.lastUpdated || 0).getTime();
+              
+              setSyncCheckResult({
+                status: cloudTime > localTime ? 'cloud_newer' : 'local_newer',
+                cloudData: result.data,
+                code: 'WebDAV'
+              });
+              setIsSyncing(false);
+              return;
             }
           }
         }
@@ -260,6 +295,15 @@ export function useCloudSync(
             const cloudDeviceCode = cloudData.savedByDeviceCode;
             const identitiesMatch = cloudDeviceCode ? cloudDeviceCode === getDeviceCode() : (!cloudData.savedBy || cloudData.savedBy === localIdentity);
 
+            const cloudDataToCompare = stripVolatile({
+              state: cloudData.state || cloudData,
+              dungeons: cloudData.dungeons || [],
+              majorDungeons: cloudData.majorDungeons || []
+            });
+
+            const cloudFingerprint = getSyncFingerprint(cloudDataToCompare);
+            const localFingerprint = getSyncFingerprint(localDataToCompare);
+
             if (!identitiesMatch) {
               if (syncMethod === 'Visibility API Active') {
                 console.warn("Cloud sync aborted: Device identity mismatch during visibility change.");
@@ -275,19 +319,25 @@ export function useCloudSync(
               return;
             }
 
-            if (cloudData.lastUpdated) {
-              const cloudTime = new Date(cloudData.lastUpdated).getTime();
-              const localTime = new Date(localData.lastUpdated).getTime();
-              if (cloudTime > localTime) {
-                setSyncCheckResult({
-                  status: 'cloud_newer',
-                  cloudData,
-                  code: 'Google Drive Auth'
-                });
+            if (localFingerprint === cloudFingerprint) {
+                if (requestId !== activeSyncRequestRef.current) return;
+                if (cloudData.lastUpdated) {
+                    setState(prev => ({ ...prev, lastUpdated: cloudData.lastUpdated }));
+                }
                 setIsSyncing(false);
                 return;
-              }
             }
+
+            const cloudTime = new Date(cloudData.lastUpdated || (cloudData.state && cloudData.state.lastUpdated) || 0).getTime();
+            const localTime = new Date(currentState.lastUpdated || 0).getTime();
+            
+            setSyncCheckResult({
+              status: cloudTime > localTime ? 'cloud_newer' : 'local_newer',
+              cloudData,
+              code: 'Google Drive Auth'
+            });
+            setIsSyncing(false);
+            return;
           }
         }
 
@@ -323,11 +373,24 @@ export function useCloudSync(
             throw new Error("Transmissions overtaxed (429). The Astral Archives are cooling down. Please wait 60 seconds.");
           }
 
+          if (!getResponse.ok) {
+            throw new Error(await getResponse.text() || 'Failed to read from Redis during pre-check');
+          }
+
           if (getResponse.ok) {
             const data = await getResponse.json();
             if (data.cloudData) {
               const cloudDeviceCode = data.cloudData.savedByDeviceCode;
               const identitiesMatch = cloudDeviceCode ? cloudDeviceCode === getDeviceCode() : (!data.cloudData.savedBy || data.cloudData.savedBy === localIdentity);
+
+              const cloudDataToCompare = stripVolatile({
+                state: data.cloudData.state || data.cloudData,
+                dungeons: data.cloudData.dungeons || [],
+                majorDungeons: data.cloudData.majorDungeons || []
+              });
+
+              const cloudFingerprint = getSyncFingerprint(cloudDataToCompare);
+              const localFingerprint = getSyncFingerprint(localDataToCompare);
 
               if (!identitiesMatch) {
                 if (syncMethod === 'Visibility API Active') {
@@ -343,6 +406,26 @@ export function useCloudSync(
                 setIsSyncing(false);
                 return;
               }
+
+              if (localFingerprint === cloudFingerprint) {
+                  if (requestId !== activeSyncRequestRef.current) return;
+                  if (data.cloudData.lastUpdated) {
+                      setState(prev => ({ ...prev, lastUpdated: data.cloudData.lastUpdated }));
+                  }
+                  setIsSyncing(false);
+                  return;
+              }
+
+              const cloudTime = new Date(data.cloudData.lastUpdated || (data.cloudData.state && data.cloudData.state.lastUpdated) || 0).getTime();
+              const localTime = new Date(currentState.lastUpdated || 0).getTime();
+              
+              setSyncCheckResult({
+                status: cloudTime > localTime ? 'cloud_newer' : 'local_newer',
+                cloudData: data.cloudData,
+                code: currentState.secretCode!
+              });
+              setIsSyncing(false);
+              return;
             }
           }
         }
@@ -403,7 +486,7 @@ export function useCloudSync(
         setIsSyncing(false);
       }
     }
-  }, [state, setState, logSyncEvent, isVerifying, stripVolatile]);
+  }, [state, setState, logSyncEvent, isVerifying, stripVolatile, isInitialSyncCheckDone, isCooledDown, isSyncing]);
 
   const resolveConflict = useCallback(async (useCloud: boolean) => {
     if (!syncCheckResult) return;
@@ -491,6 +574,7 @@ export function useCloudSync(
         await syncToCloud(true, { ...state, secretCode: newSecretCode, syncProvider: newSyncProvider }, 'Manual');
       }
       setSyncCheckResult(null);
+      setIsInitialSyncCheckDone(true);
     } finally {
       setIsSyncing(false);
     }
@@ -603,7 +687,10 @@ export function useCloudSync(
         const cloudDeviceCode = cloudDataToProcess.savedByDeviceCode;
         const identitiesMatch = cloudDeviceCode ? cloudDeviceCode === getDeviceCode() : (!cloudDataToProcess.savedBy || cloudDataToProcess.savedBy === localIdentity);
 
-        if (JSON.stringify(localDataToCompare) === JSON.stringify(cloudDataToCompare) && identitiesMatch) {
+        const localFingerprint = getSyncFingerprint(localDataToCompare);
+        const cloudFingerprint = getSyncFingerprint(cloudDataToCompare);
+
+        if (localFingerprint === cloudFingerprint && identitiesMatch) {
           const isProviderCode = code === 'WebDAV' || code === 'GoogleDrive' || code === 'GoogleDriveAuth';
           setState(prev => ({ 
             ...prev, 
@@ -636,9 +723,9 @@ export function useCloudSync(
         setIsVerifying(false);
       }
     }
-  }, [state, logSyncEvent, stripVolatile, setState]);
+  }, [state, logSyncEvent, stripVolatile, setState, isCooledDown, isInitialSyncCheckDone, isSyncing, isVerifying]);
 
-  const checkCloudSync = useCallback(async (forceModal = false) => {
+  const checkCloudSync = useCallback(async (forceModal = false, isStartup = false) => {
     const isGoogleDrive = state.syncProvider === 'Google Drive';
     const isWebDav = state.syncProvider === 'WebDAV';
 
@@ -675,6 +762,7 @@ export function useCloudSync(
     const checkNewer = async (data: any, code: string) => {
         if (!data) {
             setSyncCheckResult({ status: 'no_save', code });
+            if (isStartup) setIsInitialSyncCheckDone(true);
             return;
         }
         
@@ -697,8 +785,11 @@ export function useCloudSync(
         const cloudDeviceCode = data.savedByDeviceCode;
         const identitiesMatch = cloudDeviceCode ? cloudDeviceCode === getDeviceCode() : (!data.savedBy || data.savedBy === localIdentity);
 
+        const localFingerprint = getSyncFingerprint(localDataToCompare);
+        const cloudFingerprint = getSyncFingerprint(cloudDataToCompare);
+
         // Check for exact data match first
-        if (JSON.stringify(localDataToCompare) === JSON.stringify(cloudDataToCompare) && !forceModal && identitiesMatch) {
+        if (localFingerprint === cloudFingerprint && !forceModal && identitiesMatch) {
           const isProviderCode = code === 'WebDAV' || code === 'GoogleDrive' || code === 'GoogleDriveAuth';
           setState(prev => ({ 
             ...prev, 
@@ -709,15 +800,7 @@ export function useCloudSync(
           setSyncCheckResult(null);
           setIsVerifying(false);
           setIsSyncing(false);
-          return;
-        }
-
-        // SILENT SYNC: If local is newer or equal and identity matches, just upload silently
-        if (identitiesMatch && localTime >= cloudTime && !forceModal) {
-          console.log("[Cloud Sync] Silent integrity check passed: Local is newer or equal on same device. Overwriting cloud archive...");
-          await syncToCloud(true, undefined, 'Immediate');
-          setIsVerifying(false);
-          setIsSyncing(false);
+          if (isStartup) setIsInitialSyncCheckDone(true);
           return;
         }
 
@@ -746,6 +829,7 @@ export function useCloudSync(
             const result = await response.json();
             if (result.is404 || !result.data) {
                 setSyncCheckResult({ status: 'no_save', code: 'WebDAV' });
+                if (isStartup) setIsInitialSyncCheckDone(true);
             } else {
                 await checkNewer(result.data, 'WebDAV');
             }
@@ -760,6 +844,7 @@ export function useCloudSync(
             await checkNewer(result, 'GoogleDrive');
         } else {
             setSyncCheckResult({ status: 'no_save', code: 'GoogleDrive' });
+            if (isStartup) setIsInitialSyncCheckDone(true);
         }
       } else if (state.secretCode) {
         // Redis
@@ -787,6 +872,7 @@ export function useCloudSync(
             await checkNewer(data.cloudData, state.secretCode);
         } else {
             setSyncCheckResult({ status: 'no_save', code: state.secretCode });
+            if (isStartup) setIsInitialSyncCheckDone(true);
         }
       }
     } catch (err: any) {
@@ -800,7 +886,7 @@ export function useCloudSync(
         setIsVerifying(false);
       }
     }
-  }, [state, logSyncEvent, setState, stripVolatile, isSyncing, isVerifying]);
+  }, [state, logSyncEvent, setState, stripVolatile, isSyncing, isVerifying, isCooledDown, isInitialSyncCheckDone]);
 
   const unbindFromCloud = useCallback(() => {
     activeSyncRequestRef.current++; // Invalidate any pending requests
@@ -813,6 +899,7 @@ export function useCloudSync(
     setSyncError(null);
     setIsSyncing(false);
     setIsVerifying(false);
+    setIsInitialSyncCheckDone(true);
     
     if (state.secretCode && state.pushEnabled) {
       fetch('/api/push/subscribe', {
@@ -884,7 +971,8 @@ export function useCloudSync(
     logSyncEvent,
     checkCloudSync,
     setIsSyncing,
-    setIsVerifying
+    setIsVerifying,
+    isInitialSyncCheckDone
   };
 }
 

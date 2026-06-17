@@ -16,7 +16,7 @@ export interface SageAdviceResponse {
 
 export async function getSageAdvice({ state, prompt, history = [], signal }: SageAdviceRequest): Promise<SageAdviceResponse> {
   let provider: string = state.sageApiProvider || 'google';
-  let apiKey = state.sageApiKey || process.env.GEMINI_API_KEY;
+  let apiKey = state.sageApiKey || "";
   let baseUrl = state.sageApiUrl;
   let model = state.sageModelName || (provider === 'google' ? 'gemini-3-flash-preview' : 'gpt-4o-mini');
 
@@ -24,7 +24,7 @@ export async function getSageAdvice({ state, prompt, history = [], signal }: Sag
     const activeModel = state.sageModels.find(m => m.id === state.activeSageModelId);
     if (activeModel) {
       provider = activeModel.provider;
-      apiKey = activeModel.apiKey || process.env.GEMINI_API_KEY;
+      apiKey = activeModel.apiKey || "";
       baseUrl = activeModel.apiUrl;
       model = activeModel.modelName;
     }
@@ -139,8 +139,6 @@ Keep your tone consistent with the chosen personality. Use Bold text for emphasi
 
   try {
     if (provider === 'google') {
-      const ai = new GoogleGenAI({ apiKey: apiKey! });
-      
       // Convert history to Gemini format
       const contents = [
         { role: 'user', parts: [{ text: systemPrompt }] },
@@ -154,15 +152,30 @@ Keep your tone consistent with the chosen personality. Use Bold text for emphasi
       // Add current prompt
       contents.push({ role: 'user', parts: [{ text: prompt || "Sage, I seek your guidance. What path should I take tomorrow?" }] });
 
-      const response = await ai.models.generateContent({
-        model,
-        contents,
-        config: signal ? {
-          // Note: @google/genai SDK might not support AbortSignal directly in generateContent config
-          // but we will implement it for standard OpenAI. For GenAI, we'll wrap it.
-        } : undefined
-      });
-      return { content: response.text || "The Sage remains silent..." };
+      if (apiKey) {
+        const ai = new GoogleGenAI({ apiKey: apiKey });
+        const response = await ai.models.generateContent({
+          model,
+          contents,
+          config: signal ? {
+            // SDK wrap for AbortSignal would be here
+          } : undefined
+        });
+        return { content: response.text || "The Sage remains silent..." };
+      } else {
+        const response = await fetch('/api/sage', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ model, contents }),
+          signal
+        });
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.error || `Server responded with ${response.status}`);
+        }
+        const data = await response.json();
+        return { content: data.text || "The Sage remains silent..." };
+      }
     } else {
       const openai = new OpenAI({
         apiKey: apiKey!,

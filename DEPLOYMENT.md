@@ -40,7 +40,7 @@ npm install gh-pages --save-dev
 示例：
 ```json
 {
-  "name": "react-example",
+  "name": "scholars-dungeon",
   "homepage": "https://yourusername.github.io/scholars-dungeon/",
   "scripts": {
     "dev": "vite",
@@ -106,22 +106,22 @@ export default defineConfig({
 
 ## 🔑 关于 API 调用 (如 Gemini API)
 
-如果你在项目中使用了 Gemini API 或其他第三方 API，在 GitHub Pages 这种**静态网页**中，有几点需要注意：
+本项目是一个全栈应用，使用了自己的 Node.js / Express 后端服务提供部分核心功能保护。
 
-### 1. 安全风险 (重要！)
-*   **不要**直接在代码里硬编码（Hardcode）你的 API Key。因为任何人都可以通过浏览器的“检查元素”看到你的密钥。
-*   **推荐做法**：在网页的“设置”页面提供一个输入框，让用户输入他们自己的 API Key，并保存在浏览器的 `localStorage` 中。
+### 1. 站点服务端的 Gemini API Key
+为了保证安全，我们的应用通过后端代理接口 `/api/sage` 来调用站点配置的默认 Gemini 模型。
+请在服务端的环境变量中配置您的服务端密钥：
+```env
+GEMINI_API_KEY=你的真实服务端API密钥
+```
+**绝对不要**使用 `VITE_GEMINI_API_KEY`！任何以 `VITE_` 开头的前缀都会被构建工具无条件地打包进前端公开的 JavaScript 发行代码中，造成您的主 Key 泄露。
 
-### 2. 环境变量 (仅限构建时)
-如果你一定要在构建时注入 Key，可以使用 Vite 的环境变量：
-1.  创建 `.env` 文件，写入 `VITE_GEMINI_API_KEY=你的密钥`。
-2.  在代码中通过 `import.meta.env.VITE_GEMINI_API_KEY` 调用。
-3.  **注意**：这依然是不安全的，因为密钥会被打包进 JS 文件中。
+### 2. 用户自填的 AI API Key
+用户可以在应用的“设置 - 外部系统集成”页面自由填写他们自己的个人 API Key。这部分 Key 是**用户个人的配置**，并且仅保留在用户前端的本地域（`localStorage`）中，在使用时直接从用户的浏览器本地发起请求，跟上面的系统级 `GEMINI_API_KEY` 是完全独立互不影响的两套系统。
 
-### 3. 如果需要后端逻辑
-GitHub Pages 不支持运行 Node.js 后端。如果你需要隐藏 API Key，建议：
-*   使用 **Vercel** 或 **Netlify** 部署（它们支持 Serverless Functions，可以写简单的后端接口）。
-*   或者使用 **Cloudflare Workers** 作为中转代理。
+### 3. 部署环境要求
+由于本项目包含了不可或缺的 Node.js 后端接口（如 `server.ts` 和 `/api/*`），如果你需要完整的 AI 支持、云端存档数据同步功能以及推送提醒，推荐使用支持全栈环境的云原生托管平台（如 Google Cloud Run, Vercel, Railway 等），纯静态网页托管方案（如原生的 GitHub Pages）将无法运转这些后端安全校验接口和定时后台任务。
+
 
 ---
 

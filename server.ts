@@ -3,37 +3,30 @@ import path from "path";
 import { createClient } from "redis";
 import dotenv from "dotenv";
 import webpush from "web-push";
+import crypto from "crypto";
+import { isValidOrigin } from "./api/oauthUtils";
 
 dotenv.config();
 
 // Configure Web Push
 const cleanKey = (key?: string) => key ? key.replace(/[^a-zA-Z0-9_-]/g, '').trim() : '';
 
-const envPublic = cleanKey(process.env.VAPID_PUBLIC_KEY);
-const envPrivate = cleanKey(process.env.VAPID_PRIVATE_KEY);
-
-// Valid fallback keys (Generated via web-push, guaranteed to be 65 bytes public / 32 bytes private when decoded)
-const fallbackPublic = "BJ8Pb6twxvV5B43gsnSi5uDbehVnQX2s4c5qJP4yBywPitfec3XtUuxig5d8iWFnSueH284uhMl2FpU1wSFKSGM";
-const fallbackPrivate = "9002rSo2Hgz3P9MTR95Gh6BNST8QCqhCAAGXi5M3lz0";
-
-// Only use environment keys if they look like real VAPID keys (87-88 chars for public, 43-44 for private)
-// This prevents placeholders like "your_public_key_here" from causing startup crashes
-const vapidPublicKey = (envPublic && envPublic.length >= 87 && envPublic.length <= 88) ? envPublic : fallbackPublic;
-const vapidPrivateKey = (envPrivate && envPrivate.length >= 43 && envPrivate.length <= 44) ? envPrivate : fallbackPrivate;
+const vapidPublicKey = cleanKey(process.env.VAPID_PUBLIC_KEY);
+const vapidPrivateKey = cleanKey(process.env.VAPID_PRIVATE_KEY);
 const vapidEmailInput = process.env.VAPID_EMAIL || "iz.karakarakarakan@gmail.com";
 const vapidSubject = vapidEmailInput.startsWith('http') || vapidEmailInput.startsWith('mailto:')
   ? vapidEmailInput
   : `mailto:${cleanKey(vapidEmailInput)}`;
 
-try {
-  webpush.setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey);
-} catch (err: any) {
-  console.error("Failed to set VAPID details with primary keys:", err.message);
+const isVapidConfigured = Boolean(vapidPublicKey && vapidPrivateKey);
+
+if (!isVapidConfigured) {
+  console.error("CRITICAL ERROR: VAPID_PUBLIC_KEY and/or VAPID_PRIVATE_KEY are missing. Web Push will not work. Please set them in your environment variables.");
+} else {
   try {
-    webpush.setVapidDetails(vapidSubject, fallbackPublic, fallbackPrivate);
-    console.warn("Using FALLBACK VAPID keys because environment keys were invalid.");
-  } catch (fallbackErr) {
-    console.error("Even fallback VAPID keys failed! Push will not work.");
+    webpush.setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey);
+  } catch (err: any) {
+    console.error("Failed to set VAPID details with primary keys:", err.message);
   }
 }
 
@@ -63,7 +56,7 @@ app.use(express.json({ limit: '10mb' }));
 
 // Request logging
 app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+  if (process.env.NODE_ENV !== "production") console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
   next();
 });
 
@@ -84,7 +77,7 @@ app.get("/api/stats", async (req, res) => {
         await client.del(`scholar_push_sub_${user}`); // legacy
       }
       await client.zRemRangeByScore('scholar_active_users', 0, fifteenDaysAgoMs);
-      console.log(`Cleaned up ${expiredUsers.length} inactive users.`);
+      if (process.env.NODE_ENV !== "production") console.log(`Cleaned up ${expiredUsers.length} inactive users.`);
     }
 
     // Prune Expired Teams
@@ -99,7 +92,7 @@ app.get("/api/stats", async (req, res) => {
         await client.del(`scholar_team:${team}:applicants`);
       }
       await client.zRemRangeByScore('scholar_active_teams', 0, fifteenDaysAgoMs);
-      console.log(`Cleaned up ${expiredTeams.length} inactive guilds.`);
+      if (process.env.NODE_ENV !== "production") console.log(`Cleaned up ${expiredTeams.length} inactive guilds.`);
     }
 
     const userCount = await client.zCard('scholar_active_users') || 0;
@@ -191,6 +184,17 @@ app.delete("/api/sync", deleteHandler);
 app.delete("/api/sync/", deleteHandler);
 
 // Push Notification Routes
+app.use("/api/push", (req, res, next) => {
+  const path = req.path;
+  const guardedEndpoints = ['/vapid-public-key', '/subscribe', '/schedule', '/check'];
+  if (guardedEndpoints.some(ep => path.endsWith(ep))) {
+    if (!isVapidConfigured) {
+      return res.status(503).json({ error: "Web Push is not configured on this server." });
+    }
+  }
+  next();
+});
+
 app.get("/api/push/vapid-public-key", (req, res) => {
   res.json({ publicKey: vapidPublicKey });
 });
@@ -298,6 +302,8 @@ app.post("/api/push/cancel", async (req, res) => {
 
 // Common logic for processing push queue
 const processPushQueue = async (client: any) => {
+  if (!isVapidConfigured) return 0;
+  
   const now = Date.now();
   const tasks = await client.zRangeByScore('scholar_push_tasks', 0, now);
   let processed = 0;
@@ -320,10 +326,10 @@ const processPushQueue = async (client: any) => {
           }), { urgency: 'high', TTL: subTTL });
         } catch (err: any) {
           const bodyMsg = err.body ? (typeof err.body === 'string' ? err.body : JSON.stringify(err.body)) : '';
-          console.error(`Push failed for ${task.secretCode}:`, err.message, bodyMsg);
+          console.error(`Push failed for user:`, err.message);
           
           if (err.statusCode === 410 || err.statusCode === 404 || err.statusCode === 400 || err.statusCode === 401 || err.statusCode === 403 || bodyMsg.includes('VapidPkHashMismatch')) {
-            console.warn(`Removing invalid subscription for ${task.secretCode} due to error: ${err.message}`);
+            console.warn(`Removing invalid subscription for user due to error: ${err.message}`);
             await client.sRem(`scholar_push_subs_${task.secretCode}`, subStr);
           }
         }
@@ -342,10 +348,10 @@ const processPushQueue = async (client: any) => {
           }), { urgency: 'high', TTL: subTTL });
         } catch (err: any) {
           const bodyMsg = err.body ? (typeof err.body === 'string' ? err.body : JSON.stringify(err.body)) : '';
-          console.error(`Legacy push failed for ${task.secretCode}:`, err.message, bodyMsg);
+          console.error(`Legacy push failed for user:`, err.message);
           
           if (err.statusCode === 410 || err.statusCode === 404 || err.statusCode === 400 || err.statusCode === 401 || err.statusCode === 403 || bodyMsg.includes('VapidPkHashMismatch')) {
-            console.warn(`Removing invalid legacy subscription for ${task.secretCode} due to error: ${err.message}`);
+            console.warn(`Removing invalid legacy subscription for user due to error: ${err.message}`);
             await client.del(`scholar_push_sub_${task.secretCode}`);
           }
         }
@@ -388,7 +394,7 @@ app.get("/api/push/check", async (req, res) => {
       
       const holdTimeMs = maxTargetTime - Date.now();
       if (holdTimeMs > 0) {
-        console.log(`[Push Check] Found future tasks. Holding CPU awake for ${holdTimeMs}ms...`);
+        if (process.env.NODE_ENV !== "production") console.log(`[Push Check] Found future tasks. Holding CPU awake for ${holdTimeMs}ms...`);
         // Hold the HTTP response open so the Serverless CPU stays active for the timers
         await new Promise(resolve => setTimeout(resolve, holdTimeMs + 500)); 
       }
@@ -420,15 +426,23 @@ app.get("/api/health", (req, res) => res.json({ status: "ok" }));
 
 // Google OAuth Routes
 app.get('/api/auth/google/url', (req, res) => {
-  let origin = req.query.origin as string;
-  if (!origin) {
-    const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'http';
-    const host = req.headers['x-forwarded-host'] || req.headers.host;
-    origin = `${protocol}://${host}`;
+  if (!process.env.OAUTH_CLIENT_ID || !process.env.OAUTH_CLIENT_SECRET) {
+    return res.status(500).json({ error: 'Google OAuth configuration is missing on the server.' });
   }
 
+  let origin = req.query.origin as string;
+  const reqHost = typeof req.headers['x-forwarded-host'] === 'string' ? req.headers['x-forwarded-host'] : req.headers.host || '';
+
+  const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'http';
+  if (!origin) {
+    origin = `${protocol}://${reqHost}`;
+  } else if (!isValidOrigin(origin, reqHost)) {
+    return res.status(400).json({ error: 'Invalid origin parameter provided' });
+  }
+
+  const nonce = crypto.randomBytes(16).toString('hex');
   const redirectUri = `${origin}/api/auth/google/callback`;
-  const state = Buffer.from(JSON.stringify({ origin })).toString('base64');
+  const state = Buffer.from(JSON.stringify({ origin, nonce })).toString('base64');
 
   const params = new URLSearchParams({
     client_id: process.env.OAUTH_CLIENT_ID || '',
@@ -440,91 +454,74 @@ app.get('/api/auth/google/url', (req, res) => {
     state: state
   });
   
+  res.setHeader('Set-Cookie', `oauth_nonce=${nonce}; HttpOnly; Path=/; Max-Age=600; SameSite=Lax${req.headers['x-forwarded-proto'] === 'https' ? '; Secure' : ''}`);
   res.json({ url: `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}` });
 });
 
 // WebDAV Proxy for local development
 import teamsHandler from './api/teams';
+import sageHandler from './api/sage';
 
 app.all('/api/teams', async (req, res) => {
   // Mock Vercel Request for Express
   await teamsHandler(req as any, res as any);
 });
 
+app.all('/api/sage', async (req, res) => {
+  // Mock Vercel Request for Express
+  await sageHandler(req as any, res as any);
+});
+
+import webdavHandler from './api/webdav/proxy';
+
 app.post('/api/webdav/proxy', async (req, res) => {
-  const { url, username, password, method, body } = req.body;
-
-  if (!url || !username || !password || !method) {
-    return res.status(400).json({ error: 'Missing required parameters' });
-  }
-
-  try {
-    const authHeader = `Basic ${Buffer.from(`${username}:${password}`).toString('base64')}`;
-    
-    // Check if the URL is valid
-    new URL(url);
-
-    const fetchOptions: RequestInit = {
-      method,
-      headers: {
-        'Authorization': authHeader,
-      },
-    };
-
-    if (body && ['POST', 'PUT'].includes(method)) {
-      fetchOptions.body = typeof body === 'string' ? body : JSON.stringify(body);
-      fetchOptions.headers = {
-        ...fetchOptions.headers,
-        'Content-Type': 'application/json',
-      };
-    }
-
-    const response = await fetch(url, fetchOptions);
-    
-    if (!response.ok) {
-      if (response.status === 404 && method === 'GET') {
-          return res.status(200).json({ data: null, is404: true });
-      }
-      const errorText = await response.text();
-      return res.status(response.status).json({ error: errorText || `WebDAV server returned ${response.status}` });
-    }
-
-    if (method === 'GET') {
-      const data = await response.json();
-      return res.status(200).json({ data });
-    }
-
-    return res.status(200).json({ success: true });
-    
-  } catch (error: any) {
-    console.error("WebDAV Proxy Error:", error);
-    return res.status(500).json({ error: error.message || 'Unknown proxy error' });
-  }
+  // Mock Vercel Request for Express
+  await webdavHandler(req as any, res as any);
 });
 
 app.get(['/api/auth/google/callback', '/api/auth/google/callback/'], async (req, res) => {
+  if (!process.env.OAUTH_CLIENT_ID || !process.env.OAUTH_CLIENT_SECRET) {
+    return res.status(500).send('<html><body><p>Server configuration error.</p></body></html>');
+  }
+
   const { code, state: stateParam } = req.query;
   
+  res.setHeader('Set-Cookie', `oauth_nonce=; HttpOnly; Path=/; Max-Age=0; SameSite=Lax${req.headers['x-forwarded-proto'] === 'https' ? '; Secure' : ''}`);
+
   let origin = '';
+  let nonce = '';
   try {
     if (stateParam && typeof stateParam === 'string') {
       const decoded = JSON.parse(Buffer.from(stateParam, 'base64').toString('utf-8'));
       origin = decoded.origin;
+      nonce = decoded.nonce;
     }
   } catch (e) {
     console.error("Failed to decode state:", e);
   }
 
+  // Validate nonce
+  const cookies = req.headers.cookie || '';
+  const match = cookies.match(/oauth_nonce=([^;]+)/);
+  const cookieNonce = match ? match[1] : null;
+
+  if (!nonce || !cookieNonce || nonce !== cookieNonce) {
+    return res.status(400).send('<html><body><p>Authentication failed: Invalid or expired session.</p></body></html>');
+  }
+
+  const reqHost = typeof req.headers['x-forwarded-host'] === 'string' ? req.headers['x-forwarded-host'] : req.headers.host || '';
+
   if (!origin) {
     const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'http';
-    const host = req.headers['x-forwarded-host'] || req.headers.host;
-    origin = `${protocol}://${host}`;
+    origin = `${protocol}://${reqHost}`;
+  } else if (!isValidOrigin(origin, reqHost)) {
+    return res.status(400).send('<html><body><p>Authentication failed: Invalid origin.</p></body></html>');
   }
 
   const redirectUri = `${origin}/api/auth/google/callback`;
 
   if (!code) {
-    return res.send('<html><body><p>Authentication failed: No code provided.</p></body></html>');
+    return res.status(400).send('<html><body><p>Authentication failed: No user authorization code provided.</p></body></html>');
   }
 
   try {
@@ -542,7 +539,7 @@ app.get(['/api/auth/google/callback', '/api/auth/google/callback/'], async (req,
 
     const tokens = await tokenResponse.json();
     if (!tokenResponse.ok) {
-      throw new Error(tokens.error_description || tokens.error || 'Failed to exchange token');
+      throw new Error('Failed to exchange token with Google');
     }
 
     res.send(`
@@ -550,7 +547,7 @@ app.get(['/api/auth/google/callback', '/api/auth/google/callback/'], async (req,
         <body>
           <script>
             if (window.opener) {
-              window.opener.postMessage({ type: 'GOOGLE_OAUTH_SUCCESS', tokens: JSON.parse('${JSON.stringify(tokens)}') }, '*');
+              window.opener.postMessage({ type: 'GOOGLE_OAUTH_SUCCESS', tokens: JSON.parse('${JSON.stringify(tokens)}') }, '${origin}');
               window.close();
             } else {
               window.location.href = '/';
@@ -562,7 +559,7 @@ app.get(['/api/auth/google/callback', '/api/auth/google/callback/'], async (req,
     `);
   } catch (error: any) {
     console.error("OAuth error:", error);
-    res.send(`<html><body><p>Authentication failed: ${error.message}</p></body></html>`);
+    res.status(500).send(`<html><body><p>Authentication failed due to an internal server error.</p></body></html>`);
   }
 });
 

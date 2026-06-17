@@ -767,9 +767,9 @@ export function useGameState() {
       // Special handling for immediate value rewards
       if (reward.type === 'coins') {
         newState.coins += reward.amount || 0;
-        newState = processTransaction(newState, 'coins', reward.amount || 0, 'Toggle Reward Redeemed');
+        newState = processTransaction(newState, 'coins', reward.amount || 0, reward.note || 'Toggle Reward Redeemed');
       } else if (reward.type === 'xp') {
-        newState = processXP(newState, reward.amount || 0);
+        newState = processXP(newState, reward.amount || 0, reward.note || 'Added XP');
       } else if (reward.type === 'item') {
         if (reward.itemType === 'talent_shard') {
           newState = processShards(newState, reward.amount || 1);
@@ -805,9 +805,7 @@ export function useGameState() {
         // Trigger rewards
         if (major.rewards) {
           major.rewards.forEach(reward => {
-            if (reward.type === 'coins') addCoins(reward.amount);
-            else if (reward.type === 'talentPoint') setState(s => ({ ...s, talentPoints: s.talentPoints + reward.amount }));
-            else if (reward.type === 'xp') addXP(reward.amount);
+            if (reward.type === 'talentPoint') setState(s => ({ ...s, talentPoints: s.talentPoints + reward.amount }));
             
             addRewardToHistory({
               name: reward.type === 'text' ? (reward.rewardText || 'Dungeon Goal Reward') : 
@@ -817,6 +815,7 @@ export function useGameState() {
                     (reward.itemName || 'Item'),
               rarity: 'rare',
               source: 'Explore',
+              note: 'Dungeon Goal Reward',
               type: reward.type === 'text' ? 'text' : (reward.type === 'coins' ? 'coins' : (reward.type === 'xp' ? 'xp' : 'item')),
               amount: reward.amount,
               itemType: reward.itemType
@@ -1003,12 +1002,15 @@ export function useGameState() {
             // Handle instant popup
             if (newState.questNotificationStyle === 'popup') {
               const completedQuests = updatedQuests.filter(q => q.completed && !q.claimed && prev.quests.find(oldQ => oldQ.id === q.id && !oldQ.completed));
-              const questRewards: DungeonReward[] = completedQuests.map(q => ({
-                type: q.reward.type as any,
-                amount: q.reward.amount,
-                itemName: q.reward.itemName,
-                rewardText: q.reward.rewardText
-              }));
+              const questRewards: DungeonReward[] = completedQuests.flatMap(q => {
+                const multiRewards = q.rewards || [q.reward];
+                return multiRewards.map(r => ({
+                  type: r.type as any,
+                  amount: r.amount,
+                  itemName: r.itemName,
+                  rewardText: r.rewardText
+                }));
+              });
 
               if (questRewards.length > 0) {
                 newState.lastCompletionRewards = {
@@ -1019,7 +1021,7 @@ export function useGameState() {
                 
                 // Auto-claim and apply rewards
                 completedQuests.forEach(q => {
-                  const r = q.reward;
+                  const multiRewards = q.rewards || [q.reward];
                   
                   // Record in Quest History
                   newState.questHistory = [{
@@ -1028,52 +1030,54 @@ export function useGameState() {
                     title: q.title,
                     type: q.type,
                     timestamp: getNow().toISOString(),
-                    rewards: q.rewards || [q.reward],
+                    rewards: multiRewards,
                     isAchievement: q.isAchievement,
                     talentRequired: q.talentRequired
                   }, ...newState.questHistory];
 
-                  if (r.type === 'coins') {
-                    newState.coins += r.amount;
-                    newState = processTransaction(newState, 'coins', r.amount, `Quest Reward: ${q.title}`);
-                  } else if (r.type === 'xp') {
-                    newState = processXP(newState, r.amount);
-                  } else if (r.type === 'talentPoint') {
-                    newState.talentPoints += r.amount;
-                  }
-
-                  let itemRedeemed = false;
-                  if (r.type === 'item') {
-                    if (r.itemName === 'Talent Shard') {
-                      newState = processShards(newState, r.amount);
-                      itemRedeemed = true;
-                    } else if (r.itemName === 'Death Defying Gold Medal') {
-                      newState.deathDefyingMedals += r.amount;
-                      itemRedeemed = true;
-                    } else if (r.itemType === 'double_xp') {
-                      newState.doubleXpCards = (newState.doubleXpCards || 0) + r.amount;
-                      itemRedeemed = true;
-                    } else if (r.itemType === 'double_coin') {
-                      newState.doubleGoldCards = (newState.doubleGoldCards || 0) + r.amount;
-                      itemRedeemed = true;
+                  multiRewards.forEach(r => {
+                    if (r.type === 'coins') {
+                      newState.coins += r.amount;
+                      newState = processTransaction(newState, 'coins', r.amount, `Quest Reward: ${q.title}`);
+                    } else if (r.type === 'xp') {
+                      newState = processXP(newState, r.amount);
+                    } else if (r.type === 'talentPoint') {
+                      newState.talentPoints += r.amount;
                     }
-                  }
-                  
-                  // Add to history
-                  newState.rewardHistory = [{
-                    id: Math.random().toString(36).substr(2, 9),
-                    name: r.type === 'text' ? (r.rewardText || 'Quest Reward') : 
-                          r.type === 'talentPoint' ? `+${r.amount} Talent Scrolls` :
-                          r.type === 'coins' ? `+${r.amount} Gold Coins` :
-                          r.type === 'xp' ? `+${r.amount} Experience` :
-                          (r.itemName || 'Item'),
-                    rarity: q.isAchievement ? 'epic' : 'rare',
-                    source: 'Explore',
-                    timestamp: getNow().toISOString(),
-                    type: r.type === 'text' ? 'text' : (r.type === 'coins' ? 'coins' : (r.type === 'xp' ? 'xp' : 'item')),
-                    amount: r.amount,
-                    redeemed: itemRedeemed ? true : (r.type !== 'item' && r.type !== 'text')
-                  }, ...newState.rewardHistory];
+
+                    let itemRedeemed = false;
+                    if (r.type === 'item') {
+                      if (r.itemName === 'Talent Shard') {
+                        newState = processShards(newState, r.amount);
+                        itemRedeemed = true;
+                      } else if (r.itemName === 'Death Defying Gold Medal') {
+                        newState.deathDefyingMedals += r.amount;
+                        itemRedeemed = true;
+                      } else if (r.itemType === 'double_xp') {
+                        newState.doubleXpCards = (newState.doubleXpCards || 0) + r.amount;
+                        itemRedeemed = true;
+                      } else if (r.itemType === 'double_coin') {
+                        newState.doubleGoldCards = (newState.doubleGoldCards || 0) + r.amount;
+                        itemRedeemed = true;
+                      }
+                    }
+                    
+                    // Add to history
+                    newState.rewardHistory = [{
+                      id: Math.random().toString(36).substr(2, 9),
+                      name: r.type === 'text' ? (r.rewardText || 'Quest Reward') : 
+                            r.type === 'talentPoint' ? `+${r.amount} Talent Scrolls` :
+                            r.type === 'coins' ? `+${r.amount} Gold Coins` :
+                            r.type === 'xp' ? `+${r.amount} Experience` :
+                            (r.itemName || 'Item'),
+                      rarity: q.isAchievement ? 'epic' : 'rare',
+                      source: 'Explore',
+                      timestamp: getNow().toISOString(),
+                      type: r.type === 'text' ? 'text' : (r.type === 'coins' ? 'coins' : (r.type === 'xp' ? 'xp' : 'item')),
+                      amount: r.amount,
+                      redeemed: itemRedeemed ? true : (r.type !== 'item' && r.type !== 'text')
+                    }, ...newState.rewardHistory];
+                  });
                 });
 
                 newState.quests = newState.quests.map(q => {
@@ -1094,100 +1098,113 @@ export function useGameState() {
 
     if (dungeonId) {
       setDungeons(prevDungeons => {
-        const updatedDungeons = prevDungeons.map(d => {
+        let justCompletedDungeon: any = null;
+        
+        const nextDungeons = prevDungeons.map(d => {
           if (d.id === dungeonId) {
             const actualDuration = sessionDurationVal;
             const newCompleted = d.completedSessions + addedProgress;
             const newTotalFocusTime = (d.totalFocusTime || 0) + actualDuration;
 
             if (!d.isOpenEnded && newCompleted >= d.totalSessions && d.status !== 'completed') {
-              // Dungeon completed rewards
-              const allRewards: DungeonReward[] = [];
-              if (d.rewardXP > 0) allRewards.push({ type: 'xp', amount: d.rewardXP });
-              if (d.rewardCoins > 0) allRewards.push({ type: 'coins', amount: d.rewardCoins });
-              if (d.rewards) allRewards.push(...d.rewards);
-
-              // Process rewards
-              allRewards.forEach(reward => {
-                if (reward.type === 'coins') addCoins(reward.amount);
-                else if (reward.type === 'talentPoint') setState(s => ({ ...s, talentPoints: s.talentPoints + reward.amount }));
-                else if (reward.type === 'xp') addXP(reward.amount);
-                
-                addRewardToHistory({
-                  name: reward.type === 'text' ? (reward.rewardText || 'Dungeon Reward') : 
-                        reward.type === 'talentPoint' ? `+${reward.amount} Talent Scrolls` :
-                        reward.type === 'coins' ? `+${reward.amount} Gold Coins` :
-                        reward.type === 'xp' ? `+${reward.amount} Experience` :
-                        (reward.itemName || 'Item'),
-                  rarity: 'common',
-                  source: 'Explore',
-                  type: reward.type === 'text' ? 'text' : (reward.type === 'coins' ? 'coins' : (reward.type === 'xp' ? 'xp' : 'item')),
-                  amount: reward.amount,
-                  itemType: reward.itemType
-                });
-              });
-
-              // Set completion rewards for popup
-              setState(s => ({
-                ...s,
-                lastCompletionRewards: {
-                  dungeonName: d.name,
-                  type: 'dungeon',
-                  rewards: allRewards
-                }
-              }));
-
-              // Check for Major Dungeon completion
-              if (d.parentId) {
-                setMajorDungeons(prevMajors => {
-                  const major = prevMajors.find(m => m.id === d.parentId);
-                  const otherSubs = updatedDungeons.filter(sd => sd.parentId === d.parentId && sd.id !== d.id);
-                  const allOtherCompleted = otherSubs.every(sd => sd.status === 'completed');
-                  
-                  if (allOtherCompleted && major?.isFinalized && major.status !== 'completed') {
-                    // Major Dungeon Rewards
-                    if (major.rewards) {
-                      major.rewards.forEach(reward => {
-                        if (reward.type === 'coins') addCoins(reward.amount, 'Dungeon Reward');
-                        else if (reward.type === 'talentPoint') setState(s => ({ ...s, talentPoints: s.talentPoints + reward.amount }));
-                        else if (reward.type === 'xp') addXP(reward.amount);
-                        
-                        addRewardToHistory({
-                          name: reward.type === 'text' ? (reward.rewardText || 'Dungeon Goal Reward') : 
-                                reward.type === 'talentPoint' ? `+${reward.amount} Talent Scrolls` :
-                                reward.type === 'coins' ? `+${reward.amount} Gold Coins` :
-                                reward.type === 'xp' ? `+${reward.amount} Experience` :
-                                (reward.itemName || 'Item'),
-                          rarity: 'rare',
-                          source: 'Explore',
-                          type: reward.type === 'text' ? 'text' : (reward.type === 'coins' ? 'coins' : (reward.type === 'xp' ? 'xp' : 'item')),
-                          amount: reward.amount,
-                          itemType: reward.itemType
-                        });
-                      });
-
-                      setState(s => ({
-                        ...s,
-                        lastCompletionRewards: {
-                          dungeonName: major.name,
-                          type: 'dungeon',
-                          rewards: major.rewards || []
-                        }
-                      }));
-                    }
-                    return prevMajors.map(m => m.id === d.parentId ? { ...m, status: 'completed', completedAt: getNow().toISOString() } : m);
-                  }
-                  return prevMajors;
-                });
-              }
-
-              return { ...d, completedSessions: newCompleted, totalFocusTime: newTotalFocusTime, status: 'completed' as const, completedAt: getNow().toISOString() };
+              const updatedDungeon = { 
+                ...d, 
+                completedSessions: newCompleted, 
+                totalFocusTime: newTotalFocusTime, 
+                status: 'completed' as const, 
+                completedAt: getNow().toISOString() 
+              };
+              justCompletedDungeon = updatedDungeon;
+              return updatedDungeon;
             }
             return { ...d, completedSessions: newCompleted, totalFocusTime: newTotalFocusTime };
           }
           return d;
         });
-        return updatedDungeons;
+
+        if (justCompletedDungeon) {
+          const d = justCompletedDungeon;
+          
+          // Dungeon completed rewards
+          const allRewards: DungeonReward[] = [];
+          if (d.rewardXP > 0) allRewards.push({ type: 'xp', amount: d.rewardXP });
+          if (d.rewardCoins > 0) allRewards.push({ type: 'coins', amount: d.rewardCoins });
+          if (d.rewards) allRewards.push(...d.rewards);
+
+          // Process rewards
+          allRewards.forEach((reward: DungeonReward) => {
+            if (reward.type === 'talentPoint') setState(s => ({ ...s, talentPoints: s.talentPoints + reward.amount }));
+            
+            addRewardToHistory({
+              name: reward.type === 'text' ? (reward.rewardText || 'Dungeon Reward') : 
+                    reward.type === 'talentPoint' ? `+${reward.amount} Talent Scrolls` :
+                    reward.type === 'coins' ? `+${reward.amount} Gold Coins` :
+                    reward.type === 'xp' ? `+${reward.amount} Experience` :
+                    (reward.itemName || 'Item'),
+              rarity: 'common',
+              source: 'Explore',
+              note: 'Dungeon Reward',
+              type: reward.type === 'text' ? 'text' : (reward.type === 'coins' ? 'coins' : (reward.type === 'xp' ? 'xp' : 'item')),
+              amount: reward.amount,
+              itemType: reward.itemType
+            });
+          });
+
+          // Set completion rewards for popup
+          setState(s => ({
+            ...s,
+            lastCompletionRewards: {
+              dungeonName: d.name,
+              type: 'dungeon',
+              rewards: allRewards
+            }
+          }));
+
+          // Check for Major Dungeon completion
+          if (d.parentId) {
+            setMajorDungeons(prevMajors => {
+              const major = prevMajors.find(m => m.id === d.parentId);
+              const otherSubs = nextDungeons.filter(sd => sd.parentId === d.parentId && sd.id !== d.id);
+              const allOtherCompleted = otherSubs.every(sd => sd.status === 'completed');
+              
+              if (allOtherCompleted && major?.isFinalized && major.status !== 'completed') {
+                // Major Dungeon Rewards
+                if (major.rewards) {
+                  major.rewards.forEach((reward: DungeonReward) => {
+                    if (reward.type === 'talentPoint') setState(s => ({ ...s, talentPoints: s.talentPoints + reward.amount }));
+                    
+                    addRewardToHistory({
+                      name: reward.type === 'text' ? (reward.rewardText || 'Dungeon Goal Reward') : 
+                            reward.type === 'talentPoint' ? `+${reward.amount} Talent Scrolls` :
+                            reward.type === 'coins' ? `+${reward.amount} Gold Coins` :
+                            reward.type === 'xp' ? `+${reward.amount} Experience` :
+                            (reward.itemName || 'Item'),
+                      rarity: 'rare',
+                      source: 'Explore',
+                      note: 'Dungeon Goal Reward',
+                      type: reward.type === 'text' ? 'text' : (reward.type === 'coins' ? 'coins' : (reward.type === 'xp' ? 'xp' : 'item')),
+                      amount: reward.amount,
+                      itemType: reward.itemType
+                    });
+                  });
+
+                  setState(s => ({
+                    ...s,
+                    lastCompletionRewards: {
+                      dungeonName: major.name,
+                      type: 'dungeon',
+                      rewards: major.rewards || []
+                    }
+                  }));
+                }
+                return prevMajors.map(m => m.id === d.parentId ? { ...m, status: 'completed', completedAt: getNow().toISOString() } : m);
+              }
+              return prevMajors;
+            });
+          }
+        }
+
+        return nextDungeons;
       });
     }
 
@@ -1232,9 +1249,7 @@ export function useGameState() {
       if (d.rewards) allRewards.push(...d.rewards);
 
       allRewards.forEach(reward => {
-        if (reward.type === 'coins') addCoins(reward.amount);
-        else if (reward.type === 'talentPoint') setState(s => ({ ...s, talentPoints: s.talentPoints + reward.amount }));
-        else if (reward.type === 'xp') addXP(reward.amount);
+        if (reward.type === 'talentPoint') setState(s => ({ ...s, talentPoints: s.talentPoints + reward.amount }));
         
         addRewardToHistory({
           name: reward.type === 'text' ? (reward.rewardText || 'Dungeon Reward') : 
@@ -1244,6 +1259,7 @@ export function useGameState() {
                 (reward.itemName || 'Item'),
           rarity: 'common',
           source: 'Explore',
+          note: 'Dungeon Reward',
           type: reward.type === 'text' ? 'text' : (reward.type === 'coins' ? 'coins' : (reward.type === 'xp' ? 'xp' : 'item')),
           amount: reward.amount,
           itemType: reward.itemType
@@ -1268,9 +1284,7 @@ export function useGameState() {
           if (allOtherCompleted && major?.isFinalized && major.status !== 'completed') {
             if (major.rewards) {
               major.rewards.forEach(reward => {
-                if (reward.type === 'coins') addCoins(reward.amount);
-                else if (reward.type === 'talentPoint') setState(s => ({ ...s, talentPoints: s.talentPoints + reward.amount }));
-                else if (reward.type === 'xp') addXP(reward.amount);
+                if (reward.type === 'talentPoint') setState(s => ({ ...s, talentPoints: s.talentPoints + reward.amount }));
                 
                 addRewardToHistory({
                   name: reward.type === 'text' ? (reward.rewardText || 'Major Reward') : 
@@ -1280,6 +1294,7 @@ export function useGameState() {
                         (reward.itemName || 'Item'),
                   rarity: 'rare',
                   source: 'Explore',
+                  note: 'Major Reward',
                   type: reward.type === 'text' ? 'text' : (reward.type === 'coins' ? 'coins' : (reward.type === 'xp' ? 'xp' : 'item')),
                   amount: reward.amount,
                   itemType: reward.itemType
@@ -1719,19 +1734,16 @@ export function useGameState() {
         return prev; // Conditions not met
       }
 
-      let newState = processTransaction(
-        { ...prev, claimedDailyTalents: [...(prev.claimedDailyTalents || []), talentId] },
-        'xp',
-        rewardXP,
-        `Claimed Talent ${talentId.toUpperCase()}`
-      );
+      let newState = { ...prev, claimedDailyTalents: [...(prev.claimedDailyTalents || []), talentId] };
 
-      newState = processTransaction(
-        newState,
-        'coins',
-        rewardCoins,
-        `Claimed Talent ${talentId.toUpperCase()}`
-      );
+      if (rewardXP > 0) {
+        newState = processXP(newState, rewardXP, `Claimed Talent ${talentId.toUpperCase()}`);
+      }
+
+      if (rewardCoins > 0) {
+        newState.coins = (newState.coins || 0) + rewardCoins;
+        newState = processTransaction(newState, 'coins', rewardCoins, `Claimed Talent ${talentId.toUpperCase()}`);
+      }
 
       return newState;
     });
@@ -1894,6 +1906,7 @@ export function useGameState() {
       dailyLogs: {
         ...(prev.dailyLogs || {}),
         [date]: { 
+          ...(prev.dailyLogs?.[date] || {}), // Preserve existing fields like sleep data
           rating, 
           reflection,
           ...(mood ? { mood } : {})

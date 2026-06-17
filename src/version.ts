@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v8.7.16';
-export const LAST_UPDATE_DATE = '2026-06-09';
-export const LAST_UPDATE_TIME = '15:20:00';
+export const APP_VERSION = 'v8.7.33';
+export const LAST_UPDATE_DATE = '2026-06-17';
+export const LAST_UPDATE_TIME = '03:15:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,164 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v8.7.33',
+    date: '2026-06-17',
+    time: '03:15:00',
+    title: 'Cloud Sync Hook Dependencies Update',
+    items: [
+      { category: 'Bug Fix', description: 'Unified and appended missing React dependencies (`isInitialSyncCheckDone`, `isCooledDown`, `isSyncing`, `isVerifying`, `stripVolatile`, etc.) directly into `syncToCloud`, `checkCloudSync`, and `fetchFromCloud` `useCallback` arrays to eliminate stale closure references.' }
+    ]
+  },
+  {
+    version: 'v8.7.32',
+    date: '2026-06-17',
+    time: '03:12:00',
+    title: 'Cloud Auto-Sync Config Triggers Integration',
+    items: [
+      { category: 'Bug Fix', description: 'Unified automated sync triggers (`debounce`, `interval`, `Visibility API Active`, `beforeunload`) extending support natively for `WebDAV` and `Google Drive` providers without explicitly demanding `state.secretCode` presence. Safeguarded these event triggers fully within `isInitialSyncCheckDone` integrity locks globally.' }
+    ]
+  },
+  {
+    version: 'v8.7.31',
+    date: '2026-06-17',
+    time: '02:55:00',
+    title: 'Cloud Sync State Race Fixes',
+    items: [
+      { category: 'Bug Fix', description: 'Repaired false positive cloud newer conditions. Modified `syncToCloud` internal timestamp comparisons securely falling back to `getSyncFingerprint` evaluation. Eliminates local creation timestamp override loops incorrectly wiping cloud archives passively.' },
+      { category: 'Bug Fix', description: 'Hardened hook dependency logic inside `syncToCloud`, accurately tying references back to `isInitialSyncCheckDone` preventing stale closure resets globally.' },
+      { category: 'Security', description: 'Barricaded `checkCloudSync` logic explicitly removing auto-sync unlock triggers inside error, catch, and offline paths. System accurately enforces absolute verification checks retaining lock bounds successfully during 404 or down service timeouts.' },
+    ]
+  },
+  {
+    version: 'v8.7.30',
+    date: '2026-06-17',
+    time: '02:40:00',
+    title: 'Cloud Sync Fingerprint Comparison & Initial Integrity Lock',
+    items: [
+      { category: 'Bug Fix', description: 'Replaced strict string comparisons with a robust, order-agnostic fingerprinting engine (`getSyncFingerprint`). This securely excludes local volatile data (e.g., `deviceNickname`, `syncHistory`, `lastUpdated`) eliminating false-positive cloud conflict prompts.' },
+      { category: 'Bug Fix', description: 'Added an `isInitialSyncCheckDone` safety mutex explicitly blocking automated background sync triggers (like tab-blur, before-unload, debounce, generic state-initialize logic) until the app successfully queries and compares with the target remote endpoint exactly once at startup, decisively arresting cross-device overwrite races immediately during bootstrap.' },
+      { category: 'UI/UX', description: 'Upgraded Conflict Resolution modal text providing definitive overwrite warnings.' }
+    ]
+  },
+  {
+    version: 'v8.7.29',
+    date: '2026-06-17',
+    time: '08:42:00',
+    title: 'Quest Auto-Claim Multiple Rewards Support',
+    items: [
+      { category: 'Bug Fix', description: 'Upgraded quest popup auto-claim logic to accurately process and deploy plural rewards natively for quests supplying multiple simultaneous grants, guaranteeing total payout symmetry with manual user claim pathways.' }
+    ]
+  },
+  {
+    version: 'v8.7.28',
+    date: '2026-06-17',
+    time: '08:38:00',
+    title: 'Daily Log Field Preservation Fix',
+    items: [
+      { category: 'Bug Fix', description: 'Modified saveDailyLog() engine structurally preserving existing sibling attributes like native sleep tracking metrics (sleepTime, wakeTime) by merging current object instances flawlessly prior to asserting incoming rating updates instead of blindly rewriting the targeted date slice and clipping historical sub-elements.' }
+    ]
+  },
+  {
+    version: 'v8.7.27',
+    date: '2026-06-17',
+    time: '07:30:00',
+    title: 'State Engine Accuracy Fixes & Progression Hooks',
+    items: [
+      { category: 'Bug Fix', description: 'Mapped XP and gold coins granted directly through claimDailyTalentReward() explicitly back into core scaling matrices natively.' },
+      { category: 'Bug Fix', description: 'Overhauled internal data map dependencies handling immediate major dungeon cascade completion triggers within completeSession(), preventing an uninitialized structural reference from inducing fatal app stalls.' }
+    ]
+  },
+  {
+    version: 'v8.7.26',
+    date: '2026-06-16',
+    time: '22:15:00',
+    title: 'Start of the Day Optional Toggle',
+    items: [
+      { category: 'Feature', description: 'Added a toggle switch within General Settings to enable the "Start of the Day" prompt. The automatic popup is now disabled by default, honoring the minimalist workflow while giving users the option to reactivate the daily check screen on first load.' }
+    ]
+  },
+  {
+    version: 'v8.7.25',
+    date: '2026-06-16',
+    time: '08:20:39',
+    title: 'Removed Hardcoded Passwords',
+    items: [
+      { category: 'Security / UI UX', description: 'Removed all bypassable frontend hardcoded passwords masking Developer Mode and Cloud integrators (like Google Drive). Migrated entry barriers into fully transparent Acknowledgement and experimental warnings dialogues, accurately establishing the testing limits rather than simulating secure walls.' }
+    ]
+  },
+  {
+    version: 'v8.7.24',
+    date: '2026-06-16',
+    time: '08:15:30',
+    title: 'WebDAV Proxy SSRF Hardening',
+    items: [
+      { category: 'Security', description: 'Hardened the WebDAV proxy endpoints against Server-Side Request Forgery. Enforced strict HTTP/HTTPS protocol validation, effectively blocked all interactions with localhost, zero-client network ranges, internal loopbacks, and metadata servers. Restricted payloads to 10MB bounds.' }
+    ]
+  },
+  {
+    version: 'v8.7.23',
+    date: '2026-06-16',
+    time: '03:31:00',
+    title: 'Google OAuth Origin Security',
+    items: [
+      { category: 'Security', description: 'Hardened Google OAuth postMessage flows across server endpoints. Implemented strict isValidOrigin checking to ensure all callback parameters only return tokens to approved application origins.' }
+    ]
+  },
+  {
+    version: 'v8.7.22',
+    date: '2026-06-16',
+    time: '03:22:00',
+    title: 'Sage Proxy Model Whitelist',
+    items: [
+      { category: 'Security', description: 'Hardened the /api/sage proxy endpoint by enforcing a strict model whitelist. Unapproved model names are sanitized and overridden to the baseline default, preventing potential prompt injection or exploitation of unsupported models.' }
+    ]
+  },
+  {
+    version: 'v8.7.21',
+    date: '2026-06-16',
+    time: '03:17:00',
+    title: 'VAPID Endpoints 503 Guard',
+    items: [
+      { category: 'Security', description: 'Explicitly hardened Web Push functionality by asserting isVapidConfigured flags across server.ts and api/push.ts. Active scheduler tick loops and operational endpoints now comprehensively short-circuit with 503 Service Unavailable if server keys are absent, neutralizing silent crashes.' }
+    ]
+  },
+  {
+    version: 'v8.7.20',
+    date: '2026-06-16',
+    time: '03:04:00',
+    title: 'Sage Proxy API Security Hardening',
+    items: [
+      { category: 'Security', description: 'Hardened the /api/sage proxy endpoint against abuse by enforcing strict payload sizes (32KB / 50 messages limit) and suppressing upstream stack traces from client exposure.' }
+    ]
+  },
+  {
+    version: 'v8.7.19',
+    date: '2026-06-16',
+    time: '02:58:00',
+    title: 'Safe Export Data Scrubbing',
+    items: [
+      { category: 'Security', description: 'Hardened the "Safe Export" utility by implementing a recursive credential scrubber, ensuring all sensitive fields (e.g. sageApiKey, access tokens) are completely stripped from the output.' }
+    ]
+  },
+  {
+    version: 'v8.7.18',
+    date: '2026-06-16',
+    time: '02:50:00',
+    title: 'Gemini API Key Security Hardening',
+    items: [
+      { category: 'Security', description: 'Removed GEMINI_API_KEY from vite.config.ts to prevent key injection into the client bundle. Site default Gemini processing now securely proxies through a backend Node.js (/api/sage) instance, whilst fully preserving user custom API key entry capabilities directly on the frontend.' }
+    ]
+  },
+  {
+    version: 'v8.7.17',
+    date: '2026-06-15',
+    time: '19:44:00',
+    title: 'VAPID Key Security Hardening',
+    items: [
+      { category: 'Security', description: 'Extracted hardcoded fallback VAPID private and public keys. Web push securely requires valid environment VAPID_KEY variables exclusively, rejecting unencrypted payloads and hard failures cleanly via console output.' }
+    ]
+  },
   {
     version: 'v8.7.16',
     date: '2026-06-09',

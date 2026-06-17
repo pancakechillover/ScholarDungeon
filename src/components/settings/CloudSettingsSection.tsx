@@ -30,8 +30,6 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
 
   const [showUnlockModal, setShowUnlockModal] = useState(false);
   const [unlockTarget, setUnlockTarget] = useState<'redis' | 'google' | 'webdav' | null>(null);
-  const [unlockPassword, setUnlockPassword] = useState('');
-  const [unlockError, setUnlockError] = useState(false);
   const [isOnline, setIsOnline] = useState(typeof window !== 'undefined' ? window.navigator.onLine : true);
   const [stats, setStats] = useState<{ users: number, maxUsers: number, teams: number, maxTeams: number } | null>(null);
   const [confirmDialog, setConfirmDialog] = useState<{
@@ -64,9 +62,9 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      // Validate origin is from standard development or deployment
+      // Validate origin strictly matches the current application location
       const origin = event.origin;
-      if (!origin.endsWith('.run.app') && !origin.includes('localhost')) {
+      if (origin !== window.location.origin) {
         return;
       }
       if (event.data?.type === 'GOOGLE_OAUTH_SUCCESS') {
@@ -143,25 +141,15 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
 
   const handleUnlock = async () => {
     if (unlockTarget === 'redis') {
-      if (btoa(unlockPassword) === 'NjkwNTE4MDU=') {
-        setState(s => ({ ...s, isRedisUnlocked: true }));
-        setShowUnlockModal(false);
-        setUnlockTarget(null);
-        setUnlockError(false);
-        onOpenAstralArchives();
-      } else {
-        setUnlockError(true);
-      }
+      setState(s => ({ ...s, isRedisUnlocked: true }));
+      setShowUnlockModal(false);
+      setUnlockTarget(null);
+      onOpenAstralArchives();
     } else if (unlockTarget === 'google') {
-      if (unlockPassword === 'GoogleTest') {
-        setState(s => ({ ...s, isGoogleDriveUnlocked: true }));
-        setShowUnlockModal(false);
-        setUnlockTarget(null);
-        setUnlockError(false);
-        await startGoogleAuth();
-      } else {
-        setUnlockError(true);
-      }
+      setState(s => ({ ...s, isGoogleDriveUnlocked: true }));
+      setShowUnlockModal(false);
+      setUnlockTarget(null);
+      await startGoogleAuth();
     }
   };
 
@@ -872,8 +860,6 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
               onClick={() => {
                 setShowUnlockModal(false);
                 setUnlockTarget(null);
-                setUnlockError(false);
-                setUnlockPassword('');
               }}
               className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white transition-colors"
             >
@@ -959,37 +945,20 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
                   <div className="w-12 h-12 rounded-full bg-amber-500/10 text-amber-400 flex items-center justify-center mb-4">
                     <Lock size={24} />
                   </div>
-                  <h3 className="text-lg font-black text-white uppercase tracking-widest mb-2">Developer Access</h3>
+                  <h3 className="text-lg font-black text-white uppercase tracking-widest mb-2">Notice</h3>
                   <p className="text-[10px] text-slate-400 leading-relaxed max-w-xs">
                     {unlockTarget === 'redis' 
-                      ? 'To stay within free tier quotas, maximum registered users is capped at 300 and guilds at 50. To prevent capacity overflow, inactive accounts and guilds (15 consecutive days of inactivity) will be automatically pruned from the cloud (local data is unaffected). Please enter the tester access code to proceed.'
-                      : 'Google Drive Auth is currently restricted to approved internal testers only due to pending Google Verification. Please enter the test password to proceed.'
+                      ? 'To stay within free tier quotas, maximum registered users is capped at 300 and guilds at 50. To prevent capacity overflow, inactive accounts and guilds (15 consecutive days of inactivity) will be automatically pruned from the cloud (local data is unaffected). Do you wish to proceed?'
+                      : 'Google Drive Auth is currently restricted to approved internal testers only due to pending Google Verification. This is a beta feature for testing. Do you wish to proceed?'
                     }
                   </p>
                 </div>
                 <div className="space-y-4">
-                  <div>
-                    <input
-                      type="password"
-                      placeholder="Enter access code..."
-                      value={unlockPassword}
-                      onChange={(e) => setUnlockPassword(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') handleUnlock();
-                      }}
-                      className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-center text-xl tracking-[0.3em] font-bold text-white placeholder:text-slate-700 placeholder:text-sm placeholder:tracking-normal focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-mono"
-                    />
-                    {unlockError && (
-                      <p className="text-red-400 text-[10px] text-center mt-2 font-bold uppercase tracking-widest">
-                        Invalid Credentials
-                      </p>
-                    )}
-                  </div>
                   <button
                     onClick={handleUnlock}
                     className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-indigo-500/20"
                   >
-                    Authenticate
+                    Acknowledge & Proceed
                   </button>
                 </div>
               </>

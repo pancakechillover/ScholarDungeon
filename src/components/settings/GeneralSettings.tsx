@@ -11,6 +11,7 @@ import { playSound } from '../../lib/sound';
 import { ConfirmModal } from '../ConfirmModal';
 import { SpinnerInput } from '../SpinnerInput';
 import { TimePicker } from '../TimePicker';
+import { scrubExportData } from '../../utils/exportScrubber';
 
 // Helper to convert VAPID key
 function urlBase64ToUint8Array(base64String: string) {
@@ -119,7 +120,7 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
       if (typeof Notification === 'undefined') {
         throw new Error('Notifications are not supported in this browser environment.');
       }
-      console.log('Requesting notification permission...');
+      if (import.meta.env.DEV) console.log('Requesting notification permission...');
       const permission = await Notification.requestPermission();
       if (permission !== 'granted') {
         console.warn('Notification permission denied:', permission);
@@ -134,10 +135,10 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
         return;
       }
 
-      console.log('Checking for service worker registration...');
+      if (import.meta.env.DEV) console.log('Checking for service worker registration...');
       let registration = await navigator.serviceWorker.getRegistration();
       if (!registration) {
-        console.log('No service worker found, registering...');
+        if (import.meta.env.DEV) console.log('No service worker found, registering...');
         const swUrl = import.meta.env.DEV ? '/dev-sw.js?dev-sw' : '/sw.js';
         const swType = import.meta.env.DEV ? 'module' : 'classic';
         registration = await navigator.serviceWorker.register(swUrl, { 
@@ -147,7 +148,7 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
         });
       }
       
-      console.log('Waiting for service worker to be ready...');
+      if (import.meta.env.DEV) console.log('Waiting for service worker to be ready...');
       // Add a timeout to prevent hanging on Android
       const readyPromise = navigator.serviceWorker.ready;
       const timeoutPromise = new Promise((_, reject) => 
@@ -155,9 +156,9 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
       );
       
       registration = await Promise.race([readyPromise, timeoutPromise]) as ServiceWorkerRegistration;
-      console.log('Service worker ready:', registration.active?.state);
+      if (import.meta.env.DEV) console.log('Service worker ready:', registration.active?.state);
       
-      console.log('Fetching VAPID public key...');
+      if (import.meta.env.DEV) console.log('Fetching VAPID public key...');
       let publicKey: string;
       try {
         const vapidResponse = await fetch('/api/push/vapid-public-key');
@@ -169,19 +170,19 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
         throw new Error('Could not retrieve VAPID key from server. Check your internet connection.');
       }
       
-      console.log('VAPID key received, converting...');
+      if (import.meta.env.DEV) console.log('VAPID key received, converting...');
       const convertedVapidKey = urlBase64ToUint8Array(publicKey);
 
-      console.log('Subscribing to push manager...');
+      if (import.meta.env.DEV) console.log('Subscribing to push manager...');
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: convertedVapidKey
       });
-      console.log('Push subscription successful:', subscription.endpoint);
+      if (import.meta.env.DEV) console.log('Push subscription successful');
 
       // Save to server if secretCode exists
       if (state.secretCode) {
-        console.log('Push sync: Syncing subscription for', state.secretCode);
+        if (import.meta.env.DEV) console.log('Push sync: Syncing subscription');
         const syncRes = await fetch('/api/push/subscribe', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -195,11 +196,11 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
           })
         });
         if (!syncRes.ok) throw new Error(`Server sync failed: ${syncRes.status}`);
-        console.log('Push sync: Success');
+        if (import.meta.env.DEV) console.log('Push sync: Success');
       }
 
       setState(prev => ({ ...prev, pushEnabled: true, pushSubscription: subscription }));
-      console.log('Successfully enabled notifications and synced to server');
+      if (import.meta.env.DEV) console.log('Successfully enabled notifications and synced to server');
     } catch (error: any) {
       console.error('Failed to subscribe:', error);
       const msg = error.message || 'Unknown error';
@@ -254,23 +255,23 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
     
     setIsSubscribing(true);
     try {
-      console.log('Force Sync: Checking service worker...');
+      if (import.meta.env.DEV) console.log('Force Sync: Checking service worker...');
       let registration = await navigator.serviceWorker.getRegistration();
       if (!registration) {
-        console.log('Force Sync: Registering new service worker...');
+        if (import.meta.env.DEV) console.log('Force Sync: Registering new service worker...');
         const swUrl = import.meta.env.DEV ? '/dev-sw.js?dev-sw' : '/sw.js';
         const swType = import.meta.env.DEV ? 'module' : 'classic';
         registration = await navigator.serviceWorker.register(swUrl, { scope: '/', type: swType });
       }
       
-      console.log('Force Sync: Waiting for ready...');
+      if (import.meta.env.DEV) console.log('Force Sync: Waiting for ready...');
       const readyPromise = navigator.serviceWorker.ready;
       const timeoutPromise = new Promise((_, reject) => 
         setTimeout(() => reject(new Error('Service Worker ready timeout (10s)')), 10000)
       );
       registration = await Promise.race([readyPromise, timeoutPromise]) as ServiceWorkerRegistration;
       
-      console.log('Force Sync: Checking subscription...');
+      if (import.meta.env.DEV) console.log('Force Sync: Checking subscription...');
       let subscription = await registration.pushManager.getSubscription();
       
       const vapidResponse = await fetch('/api/push/vapid-public-key');
@@ -289,15 +290,15 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
       }
       
       if (!subscription) {
-        console.log('Force Sync: No subscription (or mismatch), attempting to re-subscribe...');
+        if (import.meta.env.DEV) console.log('Force Sync: No subscription (or mismatch), attempting to re-subscribe...');
         subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: convertedVapidKey
         });
-        console.log('Force Sync: Re-subscribed successfully');
+        if (import.meta.env.DEV) console.log('Force Sync: Re-subscribed successfully');
       }
 
-      console.log('Force Sync: Sending to server...');
+      if (import.meta.env.DEV) console.log('Force Sync: Sending to server...');
       const res = await fetch('/api/push/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -366,92 +367,7 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
     };
 
     if (!includeSensitiveData) {
-      // Remove sync passwords, nicknames, and unlock statuses
-      const { 
-        secretCode, 
-        webdavSettings, 
-        googleDriveTokens, 
-        googleDriveFileId,
-        isRedisUnlocked,
-        isGoogleDriveUnlocked,
-        syncProvider,
-        deviceNickname, 
-        deviceCode,
-        syncHistory,
-        pushEnabled,
-        pushSubscription,
-        userName,
-        userAvatar,
-        userBio,
-        userTitle,
-        userUniqueId,
-        ...safeState 
-      } = dataToExport;
-
-      dataToExport = {
-        ...safeState,
-        deviceNickname: undefined,
-        deviceCode: undefined,
-        secretCode: undefined,
-        googleDriveTokens: undefined,
-        googleDriveFileId: undefined,
-        isRedisUnlocked: false,
-        isGoogleDriveUnlocked: false,
-        syncProvider: undefined,
-        webdavSettings: undefined,
-        pushEnabled: false,
-        pushSubscription: null,
-        syncHistory: [],
-        autoSyncMode: 'manual',
-        autoSyncDebounceSeconds: 10,
-        autoSyncIntervalMinutes: 1,
-        userName: undefined,
-        userAvatar: undefined,
-        userBio: undefined,
-        userTitle: undefined,
-        userUniqueId: undefined
-      };
-
-      // Also clean up fullLocalStorage if it's being used as the main source of truth
-      if (dataToExport.fullLocalStorage) {
-        const safeLocal: Record<string, string> = { ...dataToExport.fullLocalStorage };
-        const keysToRemove = [
-          'scholars_dungeon_sync_code',
-          'scholars_dungeon_device_nickname',
-          'scholars_dungeon_device_code',
-          'scholars_dungeon_webdav_password'
-        ];
-        keysToRemove.forEach(k => delete safeLocal[k]);
-        
-        // Also the main state string in localStorage needs to be updated if it exists there
-        if (safeLocal['scholars_dungeon_state']) {
-          try {
-            const parsed = JSON.parse(safeLocal['scholars_dungeon_state']);
-            delete parsed.secretCode;
-            delete parsed.deviceNickname;
-            delete parsed.deviceCode;
-            delete parsed.webdavSettings;
-            delete parsed.googleDriveTokens;
-            delete parsed.googleDriveFileId;
-            parsed.isRedisUnlocked = false;
-            parsed.isGoogleDriveUnlocked = false;
-            parsed.syncProvider = undefined;
-            parsed.pushEnabled = false;
-            parsed.pushSubscription = null;
-            parsed.syncHistory = [];
-            parsed.autoSyncMode = 'manual';
-            parsed.autoSyncDebounceSeconds = 10;
-            parsed.autoSyncIntervalMinutes = 1;
-            delete parsed.userName;
-            delete parsed.userAvatar;
-            delete parsed.userBio;
-            delete parsed.userTitle;
-            delete parsed.userUniqueId;
-            safeLocal['scholars_dungeon_state'] = JSON.stringify(parsed);
-          } catch (e) {}
-        }
-        dataToExport.fullLocalStorage = safeLocal;
-      }
+      dataToExport = scrubExportData(dataToExport);
     }
 
     const filename = includeSensitiveData ? "scholars_dungeon_full_save.json" : "scholars_dungeon_safe_save.json";
@@ -822,6 +738,33 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
                  className={cn(
                    "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
                    state.defaultOpenEndedDungeon ? "translate-x-6" : "translate-x-1"
+                 )}
+               />
+             </button>
+           </div>
+           <div id="setting-start-of-day" className="flex items-center justify-between p-4 bg-slate-900/50 rounded-2xl border border-slate-800 mt-4">
+             <div className="flex items-center gap-3">
+               <div className={cn("p-2 rounded-xl", state.enableStartOfDayPrompt ? "bg-indigo-500/10 text-indigo-400" : "bg-slate-800 text-slate-500")}>
+                 <Sunrise size={20} />
+               </div>
+               <div className="flex-1 pr-4">
+                 <div className="text-sm font-bold text-white mb-0.5">Show "Start of the Day" Prompt</div>
+                 <div className="text-[11px] text-slate-500 leading-relaxed">
+                   When enabled, the app will automatically show the daily summary and streak check screen when opened in a new day. Disabled by default.
+                 </div>
+               </div>
+             </div>
+             <button
+               onClick={() => setState(prev => ({ ...prev, enableStartOfDayPrompt: !prev.enableStartOfDayPrompt }))}
+               className={cn(
+                 "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors",
+                 state.enableStartOfDayPrompt ? "bg-indigo-500" : "bg-slate-700"
+               )}
+             >
+               <span
+                 className={cn(
+                   "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+                   state.enableStartOfDayPrompt ? "translate-x-6" : "translate-x-1"
                  )}
                />
              </button>

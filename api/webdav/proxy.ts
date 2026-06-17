@@ -1,4 +1,10 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
+import { 
+  validateWebDavUrl, 
+  validateWebDavMethod, 
+  validateWebDavBodySize, 
+  resolveAndValidateHostname 
+} from '../shared/webdavSecurity';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
@@ -11,38 +17,80 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: 'Missing required parameters' });
   }
 
+  const validatedMethod = validateWebDavMethod(method);
+  if (typeof validatedMethod === 'object' && validatedMethod.error) {
+    return res.status(405).json({ error: validatedMethod.error });
+  }
+
   try {
     const authHeader = `Basic ${Buffer.from(`${username}:${password}`).toString('base64')}`;
     
-    // Check if the URL is valid
-    new URL(url);
+    // Check if the URL is valid and secure
+    const validatedUrl = validateWebDavUrl(url);
+    if ('error' in validatedUrl) {
+      // Return 400 or 403 depending on the error message to keep similar behavior
+      const isForbidden = validatedUrl.error.includes('forbidden');
+      return res.status(isForbidden ? 403 : 400).json({ error: validatedUrl.error });
+    }
+    
+    const parsedUrl = validatedUrl as URL;
+
+    const resolveResult = await resolveAndValidateHostname(parsedUrl.hostname);
+    if (resolveResult?.error) {
+      const isForbidden = resolveResult.error.includes('forbidden');
+      return res.status(isForbidden ? 403 : 400).json({ error: resolveResult.error });
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
 
     const fetchOptions: RequestInit = {
-      method,
+      method: validatedMethod as string,
       headers: {
         'Authorization': authHeader,
       },
+      signal: controller.signal,
     };
 
-    if (body && ['POST', 'PUT'].includes(method)) {
-      fetchOptions.body = typeof body === 'string' ? body : JSON.stringify(body);
+    if (body && ['PUT'].includes(validatedMethod as string)) {
+      const bodyString = typeof body === 'string' ? body : JSON.stringify(body);
+      const sizeValidation = validateWebDavBodySize(validatedMethod as string, bodyString);
+      if (sizeValidation?.error) {
+        clearTimeout(timeoutId);
+        return res.status(413).json({ error: sizeValidation.error });
+      }
+      fetchOptions.body = bodyString;
       fetchOptions.headers = {
         ...fetchOptions.headers,
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/octet-stream',
       };
+    } else if (body && ['PROPFIND'].includes(validatedMethod as string)) {
+       const bodyString = typeof body === 'string' ? body : JSON.stringify(body);
+       const sizeValidation = validateWebDavBodySize(validatedMethod as string, bodyString);
+       if (sizeValidation?.error) {
+         clearTimeout(timeoutId);
+         return res.status(413).json({ error: sizeValidation.error });
+       }
+       fetchOptions.body = bodyString;
+       fetchOptions.headers = {
+         ...fetchOptions.headers,
+         'Content-Type': 'application/xml',
+       };
     }
 
-    const response = await fetch(url, fetchOptions);
+    const response = await fetch(parsedUrl.toString(), fetchOptions);
+    clearTimeout(timeoutId);
     
     if (!response.ok) {
-      if (response.status === 404 && method === 'GET') {
+      if (response.status === 404 && method.toUpperCase() === 'GET') {
           return res.status(200).json({ data: null, is404: true });
       }
-      const errorText = await response.text();
-      return res.status(response.status).json({ error: errorText || `WebDAV server returned ${response.status}` });
+      // Do not forward upstream error text directly for security
+      return res.status(response.status < 500 ? response.status : 502).json({ error: `WebDAV server returned status ${response.status}` });
     }
 
-    if (method === 'GET') {
+    if (method.toUpperCase() === 'GET') {
+      // Content could be JSON from the WebDAV proxy pattern currently used
       const data = await response.json();
       return res.status(200).json({ data });
     }
@@ -50,7 +98,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json({ success: true });
     
   } catch (error: any) {
-    console.error("WebDAV Proxy Error:", error);
-    return res.status(500).json({ error: error.message || 'Unknown proxy error' });
+    console.error("WebDAV Proxy Error");
+    if (error.name === 'AbortError') {
+      return res.status(504).json({ error: 'WebDAV proxy request timed out' });
+    }
+    return res.status(500).json({ error: 'An error occurred while connecting to the WebDAV server' });
   }
 }
+

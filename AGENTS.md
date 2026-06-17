@@ -23,9 +23,9 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v8.7.16
-- **Last Update Date:** 2026-06-09
-- **Last Update Time:** 15:20:00
+- **Current Version:** v8.7.33
+- **Last Update Date:** 2026-06-17
+- **Last Update Time:** 03:15:00
 
 ## Dark Themes Definition
 The following themes are considered "Dark Themes" and form the baseline for vibrant visual effects and high-contrast glowing elements:
@@ -50,6 +50,59 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v8.7.33 (2026-06-17):** Cloud Sync Hook Dependencies Update.
+  - *Bug Fix:* Unified and appended missing React dependencies (`isInitialSyncCheckDone`, `isCooledDown`, `isSyncing`, `isVerifying`, `stripVolatile`, etc.) directly into `syncToCloud`, `checkCloudSync`, and `fetchFromCloud` `useCallback` arrays to eliminate stale closure references.
+
+- **v8.7.32 (2026-06-17):** Cloud Auto-Sync Config Triggers Integration.
+  - *Bug Fix:* Unified automated sync triggers (`debounce`, `interval`, `Visibility API Active`, `beforeunload`) extending support natively for 'WebDAV' and 'Google Drive' providers without explicitly demanding `state.secretCode` presence. Safeguarded these event triggers fully within `isInitialSyncCheckDone` integrity locks globally.
+
+- **v8.7.31 (2026-06-17):** Cloud Sync State Race Fixes.
+  - *Bug Fix:* Repaired false positive cloud newer conditions. Modified `syncToCloud` internal timestamp comparisons securely falling back to `getSyncFingerprint` evaluation. Eliminates local creation timestamp override loops incorrectly wiping cloud archives passively.
+  - *Bug Fix:* Hardened hook dependency logic inside `syncToCloud`, accurately tying references back to `isInitialSyncCheckDone` preventing stale closure resets globally.
+  - *Security:* Barricaded `checkCloudSync` logic explicitly removing auto-sync unlock triggers inside error, catch, and offline paths. System accurately enforces absolute verification checks retaining lock bounds successfully during 404 or down service timeouts.
+
+- **v8.7.30 (2026-06-17):** Cloud Sync Fingerprint Comparison & Initial Integrity Lock.
+  - *Bug Fix:* Replaced strict string comparisons with a robust, order-agnostic fingerprinting engine (`getSyncFingerprint`). This securely excludes local volatile data (e.g., `deviceNickname`, `syncHistory`, `lastUpdated`) eliminating false-positive cloud conflict prompts.
+  - *Bug Fix:* Added an `isInitialSyncCheckDone` safety mutex explicitly blocking automated background sync triggers (like tab-blur, before-unload, debounce, generic state-initialize logic) until the app successfully queries and compares with the target remote endpoint exactly once at startup, decisively arresting cross-device overwrite races immediately during bootstrap.
+  - *UI/UX:* Upgraded Conflict Resolution modal text providing definitive overwrite warnings.
+
+- **v8.7.29 (2026-06-17):** Quest Auto-Claim Multiple Rewards Support.
+  - *Bug Fix:* Upgraded quest popup auto-claim logic to accurately process and deploy plural rewards natively for quests supplying multiple simultaneous grants, guaranteeing total payout symmetry with manual user claim pathways.
+
+- **v8.7.28 (2026-06-17):** Daily Log Field Preservation Fix.
+  - *Bug Fix:* Modified `saveDailyLog()` engine structurally preserving existing sibling attributes like native sleep tracking metrics (`sleepTime`, `wakeTime`) by merging current object instances flawlessly prior to asserting incoming rating updates instead of blindly rewriting the targeted date slice and clipping historical sub-elements.
+
+- **v8.7.27 (2026-06-17):** State Engine Accuracy Fixes & Progression Hooks.
+  - *Bug Fix:* Mapped XP and gold coins granted directly through `claimDailyTalentReward()` explicitly back into core scaling matrices natively (previously recorded strictly into audit logs but failed to inject directly into absolute stats).
+  - *Bug Fix:* Overhauled internal data map dependencies handling immediate major dungeon cascade completion triggers within `completeSession()`, preventing an uninitialized structural reference from inducing fatal app stalls upon native subtree completion.
+
+- **v8.7.26 (2026-06-16):** Start of the Day Optional Toggle.
+  - *Feature:* Added a toggle switch within General Settings to enable the "Start of the Day" prompt. The automatic popup is now disabled by default, honoring the minimalist workflow while giving users the option to reactivate the daily check screen on first load.
+
+- **v8.7.25 (2026-06-16):** Removed Client-Side Hardcoded Passwords.
+  - *Security / UI UX:* Removed all easily bypassed client-side hardcoded static passwords (old front-end testing passwords have been removed). Upgraded the Developer Mode and Cloud Integrations access overlays from pseudo-security barriers into explicit, clear-text behavioral warning dialogues acknowledging local restrictions and experimental limits prior to allowing proceed triggers instead.
+
+- **v8.7.24 (2026-06-16):** WebDAV Proxy SSRF Hardening.
+  - *Security:* Hardened the backend `/api/webdav/proxy` endpoint against SSRF (Server-Side Request Forgery) attacks. Enforced a strict protocol whitelist (only HTTPS allowed, or HTTP in local development), blocked internal/metadata IP ranges, implemented a 10-second timeout using AbortController, limited acceptable methods, restricted payload size to 10MB, and scrubbed upstream stack traces and errors to prevent fingerprinting. Consolidated the duplicate proxy implementation directly within `server.ts` into a unified handler.
+
+- **v8.7.23 (2026-06-16):** Google OAuth Origin Security.
+  - *Security:* Hardened Google OAuth window messaging routines across `server.ts` and `api/google/url.ts`. Added a strict `isValidOrigin` barrier to sanitize user-provided cross-origin redirects preventing arbitrary token dispatch. The `window.opener.postMessage` functions now explicitly demand validated target `origin` bounds instead of standard `*` wildcards, successfully fortifying the endpoint from message hijacking vectors while retaining fluid frontend interactions.
+
+- **v8.7.22 (2026-06-16):** Sage Proxy Model Whitelist.
+  - *Security:* Hardened the backend `/api/sage` AI proxy endpoint by enforcing a strict model whitelist (`gemini-2.5-flash`, `gemini-2.5-flash-lite`, `gemini-3-flash-preview`). Requests containing unapproved arbitrary model names are strictly sanitized and securely overridden to the default base model, preventing any payload manipulation exploits.
+
+- **v8.7.21 (2026-06-16):** VAPID Endpoints 503 Guard.
+  - *Security:* Explicitly hardened Web Push functionality by asserting `isVapidConfigured` flags across `server.ts` and `api/push.ts`. Active scheduler tick loops (`processPushQueue`) and operational endpoints (`/vapid-public-key`, `/subscribe`, `/schedule`, `/check`) now comprehensively short-circuit with `503 Service Unavailable` if server keys are absent, neutralizing silent crashes and fully decoupling from any fallback references.
+
+- **v8.7.20 (2026-06-16):** Sage Proxy API Security Hardening.
+  - *Security:* Hardened the backend `/api/sage` AI proxy endpoint against potential abuse. Explicitly enforced strict POST-only methods, added 32KB payload character limits, restricted the conversation context array size, and scrubbed upstream stack traces and detailed error messages from client-facing responses to prevent fingerprinting or internal service leakage.
+
+- **v8.7.19 (2026-06-16):** Safe Export Data Scrubbing.
+  - *Security:* Hardened the "Safe Export" process by implementing a recursive object scrubber. It automatically identifies and eliminates all variations of API keys, authentication tokens, and secrets (e.g. `sageApiKey`, `accessToken`, `password`) from the local state JSON tree before generation, ensuring zero credentials leak through file sharing.
+
+- **v8.7.18 (2026-06-16):** Gemini API Key Security Hardening.
+  - *Security:* Prevented `GEMINI_API_KEY` from being injected into the client-side frontend bundle through `vite.config.ts`. Extracted default AI proxy logic into a secure backend endpoint (`/api/sage`) preventing key exposure, while safely preserving user-provided API token functionality directly.
 
 - **v8.7.16 (2026-06-09):** Explore View Height Constraint Lock.
   - *UI/UX:* Enforced strict absolute height bounds inside the Explore View matrix across desktop and tablet screen sizes subtracting exactly the PageHeader and top navigation menu pixel dimensions explicitly. The countdown timer and control interface now correctly respect container bounds, shrinking dynamically and sealing into the available viewport height cleanly without generating a page scroll.
@@ -272,7 +325,7 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 - **v8.6.5 (2026-06-05):** Cloud Backend Global Restrictions / Invite Locks.
   - *Architecture:* Redefined the `isRedisUnlocked` permission mechanism as an absolute, global gatekeeper against all Cloud Backend operations to strictly preserve the backend free-tier integrity.
-  - *Feature:* Added synchronous locked state walls that actively block automatic Redis polling (`checkCloudSync`), manual Push Notification syncing, scheduling tests in Developer Mode, and WebDAV proxy triggers directly on the client side unless the global Invite Code (derived `NjkwNTE4MDU=`) has been verified. 
+  - *Feature:* Added synchronous locked state walls that actively block automatic Redis polling (`checkCloudSync`), manual Push Notification syncing, scheduling tests in Developer Mode, and WebDAV proxy triggers directly on the client side unless the global Invite Code (old front-end testing password) has been verified. 
   - *UI/UX:* Replaced the primary Sanctum Plaza (Fellowship Network) with an aesthetic "Sanctum Plaza Locked" screen requiring a developer access invite code prior to granting any entry. Updated all related settings modules with transparent warnings ensuring users comprehend these limitations.
 
 - **v8.6.4 (2026-06-05):** Cloud Backend Quota Protection & Storage Optimization.

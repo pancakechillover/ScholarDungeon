@@ -6,22 +6,17 @@ declare let self: ServiceWorkerGlobalScope;
 precacheAndRoute(self.__WB_MANIFEST);
 
 self.addEventListener('install', (event) => {
-  console.log('[Service Worker] Installing version: 1.7.0');
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
-  console.log('[Service Worker] Activating...');
   event.waitUntil(self.clients.claim());
 });
 
 self.addEventListener('push', (event) => {
-  console.log('[Service Worker v1.7.0] Push Received.');
-  
   if (event.data) {
     try {
       const data = event.data.json();
-      console.log('[Service Worker] Push Data:', data);
       
       const options = {
         body: data.body || "New update from Scholar's Dungeon",
@@ -38,7 +33,6 @@ self.addEventListener('push', (event) => {
 
       event.waitUntil(
         self.registration.showNotification(data.title || 'Dungeon Alert', options)
-          .then(() => console.log('[Service Worker] Notification shown.'))
           .catch(err => console.error('[Service Worker] Failed to show notification:', err))
       );
     } catch (e) {
@@ -55,7 +49,6 @@ self.addEventListener('push', (event) => {
 });
 
 self.addEventListener('notificationclick', (event) => {
-  console.log('[Service Worker] Notification Clicked:', event.action);
   event.notification.close();
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
@@ -68,7 +61,6 @@ self.addEventListener('notificationclick', (event) => {
 });
 
 self.addEventListener('message', (event) => {
-  console.log('[Service Worker] Message Received:', event.data);
   if (event.data && event.data.type === 'TEST_NOTIFICATION_SW') {
     self.registration.showNotification('Scholar\'s Dungeon', {
       body: 'Service Worker thread notification test successful!',

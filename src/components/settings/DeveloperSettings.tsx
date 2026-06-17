@@ -19,7 +19,6 @@ export const DeveloperSettings: React.FC<DeveloperSettingsProps> = ({
   addXP,
   getNow
 }) => {
-  const [devPassword, setDevPassword] = useState('');
   const [isDevUnlocked, setIsDevUnlocked] = useState(state.devModeEnabled || false);
   const [testNotificationTitle, setTestNotificationTitle] = useState('Dungeon Alert!');
   const [testNotificationBody, setTestNotificationBody] = useState('Your focus session has ended.');
@@ -63,7 +62,7 @@ export const DeveloperSettings: React.FC<DeveloperSettingsProps> = ({
     
     setIsTestingNotification(true);
     try {
-      console.log('Testing: Scheduling notification (expired)...');
+      if (import.meta.env.DEV) console.log('Testing: Scheduling notification (expired)...');
       const scheduleRes = await fetch('/api/push/schedule', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -80,16 +79,16 @@ export const DeveloperSettings: React.FC<DeveloperSettingsProps> = ({
       
       await new Promise(resolve => setTimeout(resolve, 800));
       
-      console.log('Testing: Triggering check...');
+      if (import.meta.env.DEV) console.log('Testing: Triggering check...');
       const checkRes = await fetch('/api/push/check');
       const checkData = await checkRes.json();
-      console.log('Push Check Results (Detailed):', checkData);
+      if (import.meta.env.DEV) console.log('Push Check Results (Detailed):', checkData);
       
       if (checkData.success) {
         const myResult = checkData.results?.find((r: any) => r.secretCode === state.secretCode);
         const debug = checkData.debug || {};
         
-        console.log(`[Debug Info] Queue Count: ${debug.totalPendingInQueue}, Server Time: ${debug.serverTime}`);
+        if (import.meta.env.DEV) console.log(`[Debug Info] Queue Count: ${debug.totalPendingInQueue}, Server Time: ${debug.serverTime}`);
         
         if (myResult) {
           if (myResult.status === 'sent') {
@@ -177,40 +176,22 @@ export const DeveloperSettings: React.FC<DeveloperSettingsProps> = ({
   };
 
   const handleUnlockDev = () => {
-    if (devPassword === '8424') {
-      setIsDevUnlocked(true);
-      setState(prev => ({ ...prev, devModeEnabled: true }));
-    } else {
-      setModalConfig({
-        isOpen: true,
-        title: "Access Denied",
-        message: "Incorrect password for Developer Mode.",
-        confirmText: "Try Again",
-        type: "danger",
-        isAlert: true
-      });
-    }
+    setIsDevUnlocked(true);
+    setState(prev => ({ ...prev, devModeEnabled: true }));
   };
 
   return (
     <div className="space-y-8">
       {!isDevUnlocked ? (
         <div className="max-w-md mx-auto space-y-4 text-center py-12">
-          <h3 className="text-xl font-bold text-white">Developer Mode Locked</h3>
-          <p className="text-slate-400 text-sm">Enter the secret password to access advanced tools.</p>
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-            <input 
-              type="password" 
-              value={devPassword} 
-              onChange={e => setDevPassword(e.target.value)}
-              placeholder="Enter Password"
-              className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-center tracking-widest"
-            />
+          <h3 className="text-xl font-bold text-white">Developer Mode Warning</h3>
+          <p className="text-slate-400 text-sm">Developer tools allow modifying game state and resources directly. Earned features may not work as intended. Are you sure you want to enable Developer Mode?</p>
+          <div className="flex justify-center mt-6">
             <button 
               onClick={handleUnlockDev}
-              className="px-6 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-500 transition-colors"
+              className="px-6 py-3 bg-amber-600 text-white rounded-xl font-bold hover:bg-amber-500 transition-colors w-full uppercase tracking-widest text-sm"
             >
-              Unlock
+              Enable Developer Mode
             </button>
           </div>
         </div>
@@ -337,7 +318,7 @@ export const DeveloperSettings: React.FC<DeveloperSettingsProps> = ({
                   try {
                     const res = await fetch('/api/push/check');
                     const data = await res.json();
-                    console.log('Manual Push Check Results:', data);
+                    if (import.meta.env.DEV) console.log('Manual Push Check Results:', data);
                     setModalConfig({
                       isOpen: true,
                       title: "Manual Check",
@@ -480,7 +461,7 @@ export const DeveloperSettings: React.FC<DeveloperSettingsProps> = ({
                       message: `Current Public Key:\n${data.publicKey}\n\nCheck console for full string.`,
                       confirmText: "Copy to Console",
                       type: "info",
-                      onConfirm: () => console.log('VAPID Public Key:', data.publicKey)
+                      onConfirm: () => { if (import.meta.env.DEV) console.log('VAPID Public Key:', data.publicKey); }
                     });
                   } catch (e) {
                     setModalConfig({

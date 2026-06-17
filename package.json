@@ -1,12 +1,13 @@
 {
-  "name": "react-example",
+  "name": "scholars-dungeon",
+  "description": "A Roguelike-themed study system with Pomodoro timers, talent trees, and meta-progression rewards.",
   "private": true,
-  "version": "0.0.0",
+  "version": "8.7.26",
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
     "build": "tsx scripts/generate-version.ts && vite build",
-    "start": "node server.ts",
+    "start": "tsx server.ts",
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit"

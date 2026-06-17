@@ -827,20 +827,22 @@ export function CloudSyncModal({
                       </div>
                       
                       {syncCheckResult.status === 'cloud_newer' ? (
-                        <p className="text-sm text-slate-300 text-center font-medium leading-relaxed">
-                          The <span className="text-indigo-400 font-bold italic">Astral Cloud</span> contains a more advanced journey. Inherit its memory?
-                        </p>
+                        <div className="text-sm text-slate-300 text-center font-medium leading-relaxed bg-indigo-500/10 p-3 rounded-xl border border-indigo-500/20">
+                          The <span className="text-indigo-400 font-bold">Cloud Save is newer</span>.<br/>
+                          <span className="text-[12px] text-slate-400">Using the cloud save will overwrite your local device.<br/>If you upload your local save, it will permanently overwrite the cloud data.</span>
+                        </div>
                       ) : (
-                        <p className="text-sm text-slate-300 text-center font-medium leading-relaxed">
-                          Your <span className="text-emerald-400 font-bold italic">Local Legend</span> is further ahead. Inscribe it to the stars?
-                        </p>
+                        <div className="text-sm text-slate-300 text-center font-medium leading-relaxed bg-emerald-500/10 p-3 rounded-xl border border-emerald-500/20">
+                          Your <span className="text-emerald-400 font-bold">Local Save is newer</span>.<br/>
+                          <span className="text-[12px] text-slate-400">Uploading your local save will overwrite the cloud data.<br/>If you download the cloud save, it will permanently overwrite your local device.</span>
+                        </div>
                       )}
                     </div>
                     
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <button 
                         onClick={() => setConfirmDialog({
-                          title: 'Force Upload to Cloud?',
+                          title: 'Upload Local Save?',
                           message: 'Your current local progress will overwrite the cloud save. This is permanent.',
                           action: () => onResolveConflict(false),
                           isDestructive: false,
@@ -848,12 +850,12 @@ export function CloudSyncModal({
                         })}
                         className="p-4 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-2xl text-center transition-all group active:scale-95 shadow-lg"
                       >
-                        <span className="font-black text-slate-200 text-xs sm:text-sm block mb-1 uppercase tracking-widest">Force Upload</span>
-                        <span className="text-[10px] text-slate-500 font-medium">Keep Local Progress</span>
+                        <span className="font-black text-slate-200 text-xs sm:text-sm block mb-1 uppercase tracking-widest">Upload Local Save</span>
+                        <span className="text-[10px] text-slate-500 font-medium tracking-tight">Overwrite Cloud with Local</span>
                       </button>
                       <button 
                         onClick={() => setConfirmDialog({
-                          title: 'Force Download from Cloud?',
+                          title: 'Use Cloud Save?',
                           message: 'The cloud save will completely overwrite your current progress. This action is irreversible.',
                           action: () => onResolveConflict(true),
                           isDestructive: true,
@@ -862,8 +864,8 @@ export function CloudSyncModal({
                         })}
                         className="p-4 bg-indigo-600/10 hover:bg-indigo-600/20 border border-indigo-500/30 rounded-2xl text-center transition-all group active:scale-95 shadow-lg shadow-indigo-500/5"
                       >
-                        <span className="font-black text-indigo-400 text-xs sm:text-sm block mb-1 uppercase tracking-widest">Force Download</span>
-                        <span className="text-[10px] text-indigo-400/60 font-medium uppercase tracking-tighter">Use Cloud Save</span>
+                        <span className="font-black text-indigo-400 text-xs sm:text-sm block mb-1 uppercase tracking-widest">Use Cloud Save</span>
+                        <span className="text-[10px] text-indigo-400/60 font-medium tracking-tight">Overwrite Local with Cloud</span>
                       </button>
                     </div>
                   </>

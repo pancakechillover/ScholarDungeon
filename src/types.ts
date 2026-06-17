@@ -208,6 +208,7 @@ export interface AppState {
   dailySessions: number;
   lastDailyReset: string | null;
   lastStartOfDayPrompt?: string | null;
+  enableStartOfDayPrompt?: boolean;
   lastWeeklyReset?: string | null;
   lastMonthlyReset?: string | null;
   patchedDays?: string[];

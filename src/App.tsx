@@ -357,7 +357,8 @@ function App() {
     logSyncEvent,
     checkCloudSync,
     setIsSyncing,
-    setIsVerifying
+    setIsVerifying,
+    isInitialSyncCheckDone
   } = useCloudSync(state, setState, setDungeons, setMajorDungeons);
 
   const [hasUnreadFellowship, setHasUnreadFellowship] = useState(false);
@@ -407,6 +408,7 @@ function App() {
   // Auto show start of day modal
   useEffect(() => {
     if (!appReady) return;
+    if (!state.enableStartOfDayPrompt) return;
     
     if (!state.lastStartOfDayPrompt) {
       setShowStartOfDayModal(true);
@@ -423,7 +425,7 @@ function App() {
     if (state.lastStartOfDayPrompt !== todayStr) {
       setShowStartOfDayModal(true);
     }
-  }, [state.lastStartOfDayPrompt, state.timezone, state.timeSettings, appReady]);
+  }, [state.lastStartOfDayPrompt, state.enableStartOfDayPrompt, state.timezone, state.timeSettings, appReady]);
 
   const [hasUnsyncedChanges, setHasUnsyncedChanges] = useState(() => {
     return localStorage.getItem('scholars_dungeon_unsynced') === 'true';
@@ -458,6 +460,13 @@ function App() {
 
     if (prevSyncDataRef.current !== currentData) {
       prevSyncDataRef.current = currentData;
+      
+      const isConfiguredForSync = !!(state.syncProvider === 'Google Drive' || state.syncProvider === 'WebDAV' || state.secretCode);
+      if (isConfiguredForSync && !isInitialSyncCheckDone) {
+        if (import.meta.env.DEV) console.log(`[Cloud Sync] Skipped flagging unsynced changes to prevent overwrite prior to initial sync check completion.`);
+        return;
+      }
+
       setHasUnsyncedChanges(true);
 
       if (syncTimeoutRef.current) {
@@ -465,7 +474,9 @@ function App() {
         syncTimeoutRef.current = null;
       }
 
-      if (state.secretCode && state.autoSyncMode && state.autoSyncMode !== 'manual') {
+      const isCloudSyncConfigured = !!state.secretCode || state.syncProvider === 'WebDAV' || state.syncProvider === 'Google Drive';
+
+      if (isCloudSyncConfigured && state.autoSyncMode && state.autoSyncMode !== 'manual') {
         if (state.autoSyncMode === 'debounce') {
           const delay = (state.autoSyncDebounceSeconds || 10) * 1000;
           syncTimeoutRef.current = setTimeout(() => {
@@ -484,7 +495,7 @@ function App() {
         }
       }
     }
-  }, [state, dungeons, majorDungeons, syncToCloud]);
+  }, [state, dungeons, majorDungeons, syncToCloud, isInitialSyncCheckDone]);
 
   const isInitialMountSync = React.useRef(true);
   React.useEffect(() => {
@@ -496,20 +507,30 @@ function App() {
   }, [state.lastUpdated]);
 
   React.useEffect(() => {
+    const isCloudSyncConfigured = !!state.secretCode || state.syncProvider === 'WebDAV' || state.syncProvider === 'Google Drive';
+
     const handleVisibilityChange = () => {
-      if (document.hidden && hasUnsyncedChanges && state.secretCode) {
-        syncToCloud(false, undefined, 'Visibility API Active');
+      if (document.hidden && hasUnsyncedChanges && isCloudSyncConfigured) {
+        if (isInitialSyncCheckDone) {
+          syncToCloud(false, undefined, 'Visibility API Active');
+        }
       } else if (!document.hidden) {
         // Silent check on return to the page
-        if (state.syncProvider === 'Google Drive' || state.syncProvider === 'WebDAV' || state.secretCode) {
-          checkCloudSync();
+        if (isCloudSyncConfigured) {
+          if (isInitialSyncCheckDone) {
+            checkCloudSync();
+          } else {
+            checkCloudSync(false, true);
+          }
         }
       }
     };
 
     const handleBeforeUnload = () => {
-      if (hasUnsyncedChanges && state.secretCode) {
-        syncToCloud(false, undefined, 'Visibility API Active');
+      if (hasUnsyncedChanges && isCloudSyncConfigured) {
+        if (isInitialSyncCheckDone) {
+          syncToCloud(false, undefined, 'Visibility API Active');
+        }
       }
     };
 
@@ -520,7 +541,7 @@ function App() {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [hasUnsyncedChanges, state.secretCode, syncToCloud]);
+  }, [hasUnsyncedChanges, state.secretCode, state.syncProvider, syncToCloud, isInitialSyncCheckDone, checkCloudSync]);
 
   React.useEffect(() => {
     if (state.theme) {
@@ -600,7 +621,7 @@ function App() {
           if (registration) {
             const subscription = await registration.pushManager.getSubscription();
             if (subscription) {
-              console.log('Push sync: Syncing subscription for', state.secretCode);
+              if (import.meta.env.DEV) console.log('Push sync: Syncing subscription');
               const res = await fetch('/api/push/subscribe', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -610,7 +631,7 @@ function App() {
                 })
               });
               if (res.ok) {
-                console.log('Push sync: Success');
+                if (import.meta.env.DEV) console.log('Push sync: Success');
               } else {
                 console.error('Push sync: Failed with status', res.status);
               }
@@ -633,7 +654,7 @@ function App() {
   }, [state.pushEnabled, state.secretCode, appReady]);
 
   const handlePurchase = useCallback((itemId: string) => {
-    console.log('Purchasing item:', itemId);
+    if (import.meta.env.DEV) console.log('Purchasing item:', itemId);
     purchaseShopItem(itemId);
     triggerSimpleConfetti();
     playSound('reward', state.soundVolume, state.soundEnabled);
@@ -892,7 +913,7 @@ function App() {
   useEffect(() => {
     if (appReady) {
       if (state.syncProvider === 'Google Drive' || state.syncProvider === 'WebDAV' || state.secretCode) {
-        checkCloudSync();
+        checkCloudSync(false, true);
       }
     }
   }, [appReady, state.syncProvider, !!state.secretCode]);
@@ -1798,7 +1819,7 @@ function App() {
                 setSyncCheckResult(null);
                 logSyncEvent('cancel_login', code);
               }}
-              onManualSync={() => syncToCloud(false, undefined, 'Manual')}
+              onManualSync={() => checkCloudSync(true)}
               onUnbind={unbindFromCloud}
               onDeleteCloudData={deleteCloudData}
               onVerify={() => checkCloudSync(true)}
