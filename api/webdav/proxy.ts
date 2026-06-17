@@ -114,11 +114,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json({ success: true });
     
   } catch (error: any) {
-    console.error("WebDAV Proxy Error");
+    console.error("WebDAV Proxy Error:", error);
     if (error.name === 'AbortError') {
       return res.status(504).json({ error: 'WebDAV proxy request timed out' });
     }
-    return res.status(500).json({ error: 'An error occurred while connecting to the WebDAV server' });
+    return res.status(500).json({ error: `An error occurred while connecting to the WebDAV server: ${error.message || error}` });
   }
 }
 

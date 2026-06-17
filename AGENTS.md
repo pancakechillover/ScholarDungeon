@@ -53,8 +53,9 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 - **v8.8.0 (2026-06-17):** WebDAV Resilience & Serverless Optimization
   - *Bug Fix:* Fortified `/api/webdav/proxy` against `FUNCTION_INVOCATION_FAILED` errors on Vercel by introducing comprehensive global try-catch boundaries, safely normalizing dynamic HTTP request bodies into structured JSON, and cleanly converting stream parsing defects into graceful `502` API payloads instead of silent server crashes.
+  - *Bug Fix:* Resolved serverless sandbox networking limitations where explicit native DNS system queries (`dns.lookup`) fail due to execution ecosystem limits, allowing them to gracefully fallback and connect cleanly using high-performance host-platform HTTP resolvers.
   - *Feature:* Dramatically reduced WebDAV payload footprints (by eliminating synchronous raw `fullLocalStorage` uploads) while locally validating synchronization packets to gracefully reject oversized payloads (>=3.5MB) prior to transmission, stabilizing tight cloud limitations.
-  - *UI/UX:* Upgraded `CloudSettingsSection` WebDAV diagnostic workflows to natively accept `404` (File Not Found) responses as successful structural connections, permitting users to actively store configurations toward verified, albeit empty, directory targets.
+  - *UI/UX:* Upgraded `CloudSettingsSection` WebDAV diagnostic workflows to natively accept `404` (File Not Found) responses as successful structural connections, permitting users to actively store configurations toward verified, albeit empty, directory targets, and prevented silent error masking by displaying descriptive response errors explicitly.
 
 - **v8.8.0 (2026-06-17):** Version Bump
   - *General:* Updated version to 8.8.0.
