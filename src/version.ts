@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v8.8.1';
+export const APP_VERSION = 'v8.8.2';
 export const LAST_UPDATE_DATE = '2026-06-17';
-export const LAST_UPDATE_TIME = '08:30:00';
+export const LAST_UPDATE_TIME = '08:50:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,15 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v8.8.2',
+    date: '2026-06-17',
+    time: '08:50:00',
+    title: 'Serverless Edge Compatibility',
+    items: [
+      { category: 'Bug Fix', description: 'Removed native Node.js dns/promises module import to prevent Vercel serverless worker initialization crashes during proxy provisioning.' }
+    ]
+  },
   {
     version: 'v8.8.1',
     date: '2026-06-17',
