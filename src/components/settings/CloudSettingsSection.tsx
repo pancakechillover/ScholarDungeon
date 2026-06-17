@@ -232,6 +232,13 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
              const json = JSON.parse(responseText);
              if (json.error) errMsg = json.error;
            } catch { }
+           
+           if (response.status === 401 || response.status === 403) {
+             errMsg = 'Username, password, or permissions are incorrect. Please check your credentials.';
+           } else if (response.status >= 500) {
+             errMsg = 'WebDAV server or service is encountering an error. Please try again later.';
+           }
+           
            throw new Error(errMsg);
         }
         

@@ -128,14 +128,6 @@ export function useCloudSync(
     }
 
     try {
-      const fullLocalStorage: Record<string, string> = {};
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key) {
-          fullLocalStorage[key] = localStorage.getItem(key) || '';
-        }
-      }
-
       const localIdentity = currentState.deviceNickname || currentState.deviceType;
 
       let localData: any = {
@@ -144,7 +136,6 @@ export function useCloudSync(
         savedByDeviceCode: getDeviceCode(), // Unique device identifier
         dungeons: JSON.parse(localStorage.getItem('scholars_dungeon_state_dungeons') || '[]'),
         majorDungeons: JSON.parse(localStorage.getItem('scholars_dungeon_state_major_dungeons') || '[]'),
-        fullLocalStorage,
         lastUpdated: new Date().toISOString()
       };
 
@@ -156,17 +147,6 @@ export function useCloudSync(
 
       // Ensure volatile fields are stripped before sync
       localData = stripVolatile(localData);
-      
-      // Also ensure the state inside fullLocalStorage is stripped
-      if (localData.fullLocalStorage && localData.fullLocalStorage['scholars_dungeon_state']) {
-        try {
-          const stateToStrip = JSON.parse(localData.fullLocalStorage['scholars_dungeon_state']);
-          const stripped = stripVolatile({ state: stateToStrip });
-          localData.fullLocalStorage['scholars_dungeon_state'] = JSON.stringify(stripped.state);
-        } catch (e) {
-          console.warn("Failed to strip volatile from fullLocalStorage state:", e);
-        }
-      }
 
       if (isWebDav && currentState.webdavSettings) {
         const { url, username, password } = currentState.webdavSettings;
@@ -258,10 +238,17 @@ export function useCloudSync(
         }
         
         // Write to WebDAV
+        const payloadText = JSON.stringify({ url, username, password, method: 'PUT', body: localData });
+        const payloadSize = new Blob([payloadText]).size;
+        
+        if (payloadSize > 3.5 * 1024 * 1024) {
+          throw new Error("WebDAV sync payload is too large. Please export a backup manually or clear old local cache.");
+        }
+
         const putResponse = await fetch('/api/webdav/proxy', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ url, username, password, method: 'PUT', body: localData })
+            body: payloadText
         });
         
         if (putResponse.status === 429) {

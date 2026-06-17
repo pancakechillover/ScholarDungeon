@@ -15,9 +15,11 @@ export const RELEASE_HISTORY: ReleaseLog[] = [
     version: 'v8.8.0',
     date: '2026-06-17',
     time: '05:38:00',
-    title: 'Version Bump',
+    title: 'WebDAV Resilience & Serverless Optimization',
     items: [
-      { category: 'General', description: 'Updated version to 8.8.0.' }
+      { category: 'Bug Fix', description: 'Fortified the WebDAV proxy against Vercel FUNCTION_INVOCATION_FAILED crashes by safely parsing dynamic HTTP request bodies inside global try-catch blocks and converting stream reading defects into standard 502 responses.' },
+      { category: 'Feature', description: 'Reduced WebDAV update payloads by omitting fullLocalStorage synchronizations, alongside proactive 3.5MB client-side threshold validations stabilizing tight Vercel Serverless payload restrictions.' },
+      { category: 'UI/UX', description: 'Upgraded Cloud Settings WebDAV diagnostics natively bypassing missing file 404 responses as successful connection setups, securely permitting initial saves against verified endpoint directories.' }
     ]
   },
   {

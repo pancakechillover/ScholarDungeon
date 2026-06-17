@@ -7,22 +7,34 @@ import {
 } from '../shared/webdavSecurity';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
-  const { url, username, password, method, body } = req.body;
-
-  if (!url || !username || !password || !method) {
-    return res.status(400).json({ error: 'Missing required parameters' });
-  }
-
-  const validatedMethod = validateWebDavMethod(method);
-  if (typeof validatedMethod === 'object' && validatedMethod.error) {
-    return res.status(405).json({ error: validatedMethod.error });
-  }
-
   try {
+    if (req.method !== 'POST') {
+      return res.status(405).json({ error: 'Method not allowed' });
+    }
+
+    const rawBody = req.body;
+    let payload;
+    try {
+      payload = typeof rawBody === 'string' ? JSON.parse(rawBody || '{}') : (rawBody || {});
+    } catch {
+      return res.status(400).json({ error: 'Invalid JSON body' });
+    }
+
+    const { url, username, password, method, body } = payload;
+
+    if (!url || !username || !password || !method) {
+      return res.status(400).json({ error: 'Missing required parameters' });
+    }
+
+    if (typeof method !== 'string') {
+      return res.status(400).json({ error: 'Method must be a string' });
+    }
+
+    const validatedMethod = validateWebDavMethod(method);
+    if (typeof validatedMethod === 'object' && validatedMethod.error) {
+      return res.status(405).json({ error: validatedMethod.error });
+    }
+
     const authHeader = `Basic ${Buffer.from(`${username}:${password}`).toString('base64')}`;
     
     // Check if the URL is valid and secure
@@ -90,9 +102,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (method.toUpperCase() === 'GET') {
-      // Content could be JSON from the WebDAV proxy pattern currently used
-      const data = await response.json();
-      return res.status(200).json({ data });
+      const text = await response.text();
+      if (!text.trim()) return res.status(200).json({ data: null });
+      try {
+        return res.status(200).json({ data: JSON.parse(text) });
+      } catch {
+        return res.status(502).json({ error: 'WebDAV save file is not valid JSON' });
+      }
     }
 
     return res.status(200).json({ success: true });
