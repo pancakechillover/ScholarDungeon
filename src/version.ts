@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v8.8.0';
+export const APP_VERSION = 'v8.8.1';
 export const LAST_UPDATE_DATE = '2026-06-17';
-export const LAST_UPDATE_TIME = '05:38:00';
+export const LAST_UPDATE_TIME = '08:30:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,16 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v8.8.1',
+    date: '2026-06-17',
+    time: '08:30:00',
+    title: 'WebDAV Handshake Polish',
+    items: [
+      { category: 'Bug Fix', description: 'Restored missing User-Agent and Accept payload headers to proxy connections allowing strict WebDAV clouds like Jianguoyun/Nextcloud to accept diagnostic network probes securely.' },
+      { category: 'UI', description: 'Forced latest frontend error-display patches to propagate past edge caching buffers.' }
+    ]
+  },
   {
     version: 'v8.8.0',
     date: '2026-06-17',

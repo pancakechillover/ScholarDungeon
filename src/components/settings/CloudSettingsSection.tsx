@@ -227,6 +227,23 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
         const responseText = await response.text();
         
         if (!response.ok) {
+           if (response.status === 404) {
+             // 404 means the endpoint exists and auth works, but the file is not there yet.
+             // This is normal for the first sync.
+             setState(s => ({
+                 ...s,
+                 webdavSettings: {
+                     url: targetUrl,
+                     username: webdavUser,
+                     password: webdavPass
+                 },
+                 syncProvider: 'WebDAV'
+             }));
+             setShowUnlockModal(false);
+             setUnlockTarget(null);
+             return;
+           }
+
            let errMsg = responseText;
            try {
              const json = JSON.parse(responseText);

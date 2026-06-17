@@ -23,9 +23,9 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v8.8.0
+- **Current Version:** v8.8.1
 - **Last Update Date:** 2026-06-17
-- **Last Update Time:** 05:38:00
+- **Last Update Time:** 08:30:00
 
 ## Dark Themes Definition
 The following themes are considered "Dark Themes" and form the baseline for vibrant visual effects and high-contrast glowing elements:
@@ -50,6 +50,10 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v8.8.1 (2026-06-17):** WebDAV Handshake & Cache Reset.
+  - *Bug Fix:* Re-introduced standard `User-Agent` and `Accept` headers into WebDAV HTTP requests allowing cloud backends (like Jianguoyun and Nextcloud) to successfully handshake without immediately throwing network protocol rejections.
+  - *UI/UX:* Bumped version strictly to force a browser cache invalidation ensuring recent error-trace reporting logic propagates fully onto the client context preventing misleading generic timeout errors.
 
 - **v8.8.0 (2026-06-17):** WebDAV Resilience & Serverless Optimization
   - *Bug Fix:* Fortified `/api/webdav/proxy` against `FUNCTION_INVOCATION_FAILED` errors on Vercel by introducing comprehensive global try-catch boundaries, safely normalizing dynamic HTTP request bodies into structured JSON, and cleanly converting stream parsing defects into graceful `502` API payloads instead of silent server crashes.

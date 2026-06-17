@@ -60,6 +60,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       method: validatedMethod as string,
       headers: {
         'Authorization': authHeader,
+        'User-Agent': 'Scholar-Dungeon/WebDAV-Proxy',
+        'Accept': '*/*, application/json, text/plain',
       },
       signal: controller.signal,
     };
