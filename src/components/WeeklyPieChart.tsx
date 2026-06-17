@@ -1,16 +1,19 @@
 import React, { useMemo } from 'react';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
-import { StudySession, Dungeon, MajorDungeon } from '../types';
+import { StudySession, Dungeon, MajorDungeon, TimeSettings } from '../types';
 import { format, parseISO, isSameDay, getDay } from 'date-fns';
+import { getSessionEffectiveMinutes } from '../lib/utils';
 
 const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#3b82f6'];
 
 interface Props {
   weekSessions: StudySession[];
   mode: 'time_of_day' | 'day_of_week';
+  includeRestTimeInTasks?: boolean;
+  timeSettings?: TimeSettings;
 }
 
-export const WeeklyPieChart: React.FC<Props> = ({ weekSessions, mode }) => {
+export const WeeklyPieChart: React.FC<Props> = ({ weekSessions, mode, includeRestTimeInTasks = true, timeSettings }) => {
   const { chartData, legendPayload } = useMemo(() => {
     let rawSegments: { name: string; value: number; color: string }[] = [];
     
@@ -30,7 +33,7 @@ export const WeeklyPieChart: React.FC<Props> = ({ weekSessions, mode }) => {
       weekSessions.forEach(s => {
         const d = new Date(s.timestamp);
         const dayName = days[getDay(d)];
-        grouped[dayName] = (grouped[dayName] || 0) + (s.duration || 0);
+        grouped[dayName] = (grouped[dayName] || 0) + getSessionEffectiveMinutes(s, includeRestTimeInTasks);
       });
       
       rawSegments = days
@@ -55,17 +58,18 @@ export const WeeklyPieChart: React.FC<Props> = ({ weekSessions, mode }) => {
       };
       
       weekSessions.forEach(s => {
+        const duration = getSessionEffectiveMinutes(s, includeRestTimeInTasks);
         if (s.period) {
           const p = s.period.toLowerCase();
-          if (p.includes('morning')) grouped.Morning += (s.duration || 0);
-          else if (p.includes('afternoon')) grouped.Afternoon += (s.duration || 0);
-          else if (p.includes('night')) grouped.Night += (s.duration || 0);
-          else grouped.Morning += (s.duration || 0); 
+          if (p.includes('morning')) grouped.Morning += duration;
+          else if (p.includes('afternoon')) grouped.Afternoon += duration;
+          else if (p.includes('night')) grouped.Night += duration;
+          else grouped.Morning += duration; 
         } else {
           const h = new Date(s.timestamp).getHours();
-          if (h >= 5 && h < 12) grouped.Morning += (s.duration || 0);
-          else if (h >= 12 && h < 18) grouped.Afternoon += (s.duration || 0);
-          else grouped.Night += (s.duration || 0);
+          if (h >= 5 && h < 12) grouped.Morning += duration;
+          else if (h >= 12 && h < 18) grouped.Afternoon += duration;
+          else grouped.Night += duration;
         }
       });
       

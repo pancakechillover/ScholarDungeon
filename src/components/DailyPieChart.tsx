@@ -1,7 +1,8 @@
 import React, { useMemo } from 'react';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
-import { StudySession, Dungeon, MajorDungeon } from '../types';
+import { StudySession, Dungeon, MajorDungeon, TimeSettings } from '../types';
 import { format, differenceInMinutes, parseISO, startOfDay, endOfDay, isSameDay } from 'date-fns';
+import { getSessionEffectiveMinutes, getSettlementDay, getSessionSettlementDate } from '../lib/utils';
 
 const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#3b82f6', '#14b8a6', '#84cc16'];
 
@@ -11,11 +12,14 @@ interface Props {
   dungeons: Dungeon[];
   majorDungeons: MajorDungeon[];
   mode: '24h' | 'compact';
+  includeRestTimeInTasks?: boolean;
+  timeSettings?: TimeSettings;
 }
 
-export const DailyPieChart: React.FC<Props> = ({ date, history, dungeons, majorDungeons, mode }) => {
+export const DailyPieChart: React.FC<Props> = ({ date, history, dungeons, majorDungeons, mode, includeRestTimeInTasks = true, timeSettings }) => {
   const { chartData, legendPayload } = useMemo(() => {
-    const daySessions = history.filter(s => s.timestamp && isSameDay(parseISO(s.timestamp), date));
+    const targetDateStr = getSettlementDay(date, timeSettings);
+    const daySessions = history.filter(s => s.timestamp && getSessionSettlementDate(s, timeSettings) === targetDateStr);
     
     const getDungeonName = (id: string) => {
       if (id === 'free_study') return 'Free Study';
@@ -40,7 +44,7 @@ export const DailyPieChart: React.FC<Props> = ({ date, history, dungeons, majorD
       const grouped: Record<string, number> = {};
       daySessions.forEach(s => {
         const name = getDungeonName(s.dungeonId);
-        grouped[name] = (grouped[name] || 0) + (s.duration || 0);
+        grouped[name] = (grouped[name] || 0) + getSessionEffectiveMinutes(s, includeRestTimeInTasks);
       });
       segments = Object.entries(grouped)
         .filter(d => d[1] > 0)
@@ -58,7 +62,7 @@ export const DailyPieChart: React.FC<Props> = ({ date, history, dungeons, majorD
       
       sorted.forEach(s => {
         const stDate = new Date(s.timestamp);
-        const duration = (s.duration || 0);
+        const duration = getSessionEffectiveMinutes(s, includeRestTimeInTasks);
         const endMinute = differenceInMinutes(stDate, dayStart);
         const startMinute = Math.max(0, endMinute - duration);
 

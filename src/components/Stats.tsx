@@ -7,7 +7,7 @@ import {
   parseISO, isWithinInterval
 } from 'date-fns';
 import { StudySession, AppState, RewardHistoryItem, Dungeon, MajorDungeon } from '../types';
-import { cn } from '../lib/utils';
+import { cn, getSessionEffectiveMinutes } from '../lib/utils';
 import { 
   BarChart2, Zap, Coins, ChevronLeft, ChevronRight, ChevronDown, Calendar, CalendarDays, Flame, Star, StarHalf, Edit2, Save, X, Eye, EyeOff, LineChart as LineChartIcon, Trophy, Sword, Heart, Maximize2, Minimize2, LayoutTemplate, File, FileText, RotateCcw, Share2, Moon
 } from 'lucide-react';
@@ -464,7 +464,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
     const counts = { Morning: 0, Afternoon: 0, Night: 0, Other: 0 };
     daySessions.forEach(s => {
       const p = s.period || getPeriod(new Date(s.timestamp));
-      const amount = Math.max(1, (s.focusDuration || s.duration) + (state.includeRestTimeInTasks ? (s.restDuration || 0) : 0));
+      const amount = Math.max(1, getSessionEffectiveMinutes(s, !!state.includeRestTimeInTasks));
       if (p in counts) {
         counts[p as keyof typeof counts] += amount;
       } else {
@@ -843,7 +843,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
     );
     const uniqueQuests = new Set(questRewards.map(r => r.timestamp)).size;
     
-    const tasks = Math.floor(periodSessions.reduce((acc, s) => acc + (s.focusDuration || s.duration) + (state.includeRestTimeInTasks ? (s.restDuration || 0) : 0), 0));
+    const tasks = Math.floor(periodSessions.reduce((acc, s) => acc + getSessionEffectiveMinutes(s, !!state.includeRestTimeInTasks), 0));
 
     return { coins, xp, tasks };
   };
@@ -867,7 +867,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
     );
     const uniqueQuests = new Set(questRewards.map(r => r.timestamp)).size;
     
-    const tasks = Math.floor(sessions.reduce((acc, s) => acc + (s.focusDuration || s.duration) + (state.includeRestTimeInTasks ? (s.restDuration || 0) : 0), 0));
+    const tasks = Math.floor(sessions.reduce((acc, s) => acc + getSessionEffectiveMinutes(s, !!state.includeRestTimeInTasks), 0));
 
     return { coins, xp, tasks };
   }, [history, state.rewardHistory, dailyDate, ts]);
@@ -886,7 +886,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
     const dailyCounts = { Morning: 0, Afternoon: 0, Night: 0, Other: 0 };
     dailySessions.forEach(s => {
       const p = s.period || getPeriod(new Date(s.timestamp));
-      const amount = Math.max(1, (s.focusDuration || s.duration) + (state.includeRestTimeInTasks ? (s.restDuration || 0) : 0));
+      const amount = Math.max(1, getSessionEffectiveMinutes(s, !!state.includeRestTimeInTasks));
       if (p in dailyCounts) {
         dailyCounts[p as keyof typeof dailyCounts] += amount;
       } else {
@@ -1005,7 +1005,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
       const counts = { Morning: 0, Afternoon: 0, Night: 0, Other: 0 };
       daySessions.forEach(s => {
         const p = s.period || getPeriod(new Date(s.timestamp));
-        const amount = Math.max(1, (s.focusDuration || s.duration) + (state.includeRestTimeInTasks ? (s.restDuration || 0) : 0));
+        const amount = Math.max(1, getSessionEffectiveMinutes(s, !!state.includeRestTimeInTasks));
         if (p in counts) {
           counts[p as keyof typeof counts] += amount;
         } else {
@@ -1284,6 +1284,8 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
                 dungeons={dungeons} 
                 majorDungeons={majorDungeons} 
                 mode={viewOpts.dailyDonutMode || 'compact'} 
+                includeRestTimeInTasks={!!state.includeRestTimeInTasks}
+                timeSettings={state.timeSettings}
               />
             )}
           </div>
@@ -1620,6 +1622,8 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
                   });
                 })} 
                 mode={viewOpts.weeklyDonutMode || 'time_of_day'} 
+                includeRestTimeInTasks={!!state.includeRestTimeInTasks}
+                timeSettings={state.timeSettings}
               />
             )}
           </div>

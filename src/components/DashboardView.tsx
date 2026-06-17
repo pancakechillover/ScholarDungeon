@@ -39,7 +39,7 @@ import ReactMarkdown from 'react-markdown';
 import { AppState, Dungeon } from '../types';
 import { playSound } from '../lib/sound';
 import { getSageAdvice } from '../services/sageService';
-import { cn } from '../lib/utils';
+import { cn, getSessionEffectiveMinutes, getSettlementDay, getSessionSettlementDate } from '../lib/utils';
 import { ExpeditionPlanPreview } from './ExpeditionPlanPreview';
 import { ConfirmModal } from './ConfirmModal';
 import { PopoverPortal } from './PopoverPortal';
@@ -137,6 +137,22 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     }
     return indicators;
   }, [ddlMap]);
+
+  const todayEffectiveMinutes = useMemo(() => {
+    const now = new Date();
+    let localNow = now;
+    if (state.timezone) {
+      try {
+        const str = now.toLocaleString('en-US', { timeZone: state.timezone });
+        localNow = new Date(str);
+      } catch (e) {}
+    }
+    const todayStr = getSettlementDay(localNow, state.timeSettings);
+    
+    return state.history
+      .filter(s => s.timestamp && getSessionSettlementDate(s, state.timeSettings) === todayStr)
+      .reduce((acc, s) => acc + getSessionEffectiveMinutes(s, !!state.includeRestTimeInTasks), 0);
+  }, [state.history, state.timezone, state.timeSettings, state.includeRestTimeInTasks]);
 
   const ddlsCountInView = useMemo(() => {
     let count = 0;
@@ -459,7 +475,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
             <div className="flex items-center justify-between mb-2">
               <span className="text-2xl font-bold text-slate-50">
-                {Math.floor(state.dailySessions * (state.standardSessionMinutes || 25))}m
+                {Math.floor(todayEffectiveMinutes)}m
               </span>
               {(() => {
                 const timezone = state.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -506,10 +522,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 const dailyGoal = state.useSameDailyProgressGoalEveryDay ?? true 
                   ? (state.dailyProgressGoal ?? 8) 
                   : (state.dailyProgressGoalConfig?.[day] ?? 8);
+                const dailyGoalInMinutes = dailyGoal * (state.standardSessionMinutes || 25);
                 return (
                   <div 
                     className="h-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.3)] transition-all" 
-                    style={{ width: `${Math.min((state.dailySessions / dailyGoal) * 100, 100)}%` }}
+                    style={{ width: `${dailyGoalInMinutes ? Math.min((todayEffectiveMinutes / dailyGoalInMinutes) * 100, 100) : 0}%` }}
                   />
                 );
               })()}

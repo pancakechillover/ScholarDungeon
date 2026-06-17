@@ -23,9 +23,9 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v8.7.33
+- **Current Version:** v8.7.39
 - **Last Update Date:** 2026-06-17
-- **Last Update Time:** 03:15:00
+- **Last Update Time:** 11:45:00
 
 ## Dark Themes Definition
 The following themes are considered "Dark Themes" and form the baseline for vibrant visual effects and high-contrast glowing elements:
@@ -50,6 +50,27 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v8.7.39 (2026-06-17):** Local Storage State Parsing Crash Fix.
+  - *Bug Fix:* Added proper try-catch handlers when parsing `dungeons` and `majorDungeons` from `localStorage` on initialization. This securely prevents the entire application from failing to mount (white screen) if a specific key was corrupted or contained invalid JSON payloads.
+
+- **v8.7.38 (2026-06-17):** Unified Dashboard Duration Statistics.
+  - *Architecture:* Synchronized duration calculation formulas across all active stats visuals. Integrated `getSessionEffectiveMinutes` into 24-hour modes in `DailyPieChart` and day/period formats in `WeeklyPieChart`, passing necessary parameters Downstream.
+  - *Architecture:* Re-routed `ExploreView`'s active study time and Talent eligibility meters away from simplified session counters to rely directly on exact history-recalculated daily effective focus minutes.
+
+- **v8.7.37 (2026-06-17):** Quest Progress Recalculation Synchronization.
+  - *Bug Fix:* Implemented a local `recalculateQuestProgressFromHistory` helper within the `useGameState` state engine, executing automatically on any edit/deletion of study sessions.
+  - *Bug Fix:* Synchronizes quest progress and completion states for `daily_sessions`, `weekly_sessions`, `monthly_sessions`, and `total_sessions` metrics based strictly on current `state.history` while preserving reward integrity for already claimed quests without rolling back currency or logging history.
+
+- **v8.7.36 (2026-06-17):** Statistics Source Unification.
+  - *Architecture:* Centralized study session duration parsing application-wide by unifying `Stats`, `DailyPieChart`, and `DashboardView` around the newly synchronized `getSessionEffectiveMinutes` and `getSessionSettlementDate` core metrics engines.
+  - *Architecture:* Re-routed the `DailySummaryModal` total focus logic to bypass volatile state aggregators in favor of robust array mapping identical to the core heatmaps. Modified absolute timestamp resolution globally to strictly adhere to Custom Day Start properties and includeRestTimeInTasks definitions without regression.
+
+- **v8.7.35 (2026-06-17):** Synced Derived Data for Session Alterations.
+  - *Bug Fix:* Re-architected `updateSession` to precisely measure delta changes in internal progress structures (`focusDuration`, `duration`, `restDuration`). The logic now synchronously propagates differential updates directly to global `dailySessions`, associated `dungeon completedSessions`, baseline `coins`, and core `xp`. Incorporates complete local transaction rollback processing via `processTransaction` correctly preventing sub-zero state corruption while logging explicit historical modification contexts locally whenever a previous session is edited.
+
+- **v8.7.34 (2026-06-17):** Unified Quest Reward Application Logic.
+  - *Architecture:* Created a centralized internal helper `applyQuestReward` in `useGameState.ts` to process quest-related grants uniformly across all subsystems. Replaced hardcoded fragmented reward assignment logic previously scattered inside the automated popup handler, singular manual `claimQuestReward`, and bulk `claimAllQuestRewards` workflows. This guarantees that standard metrics like Experience, Gold, Talent Scrolls, Shards, Death Defying Gold Medals, Double XP, and Double Coin cards all obey exact symmetrical parsing operations with synchronized `rewardHistory` recording strictly without data loss or duplication risks.
 
 - **v8.7.33 (2026-06-17):** Cloud Sync Hook Dependencies Update.
   - *Bug Fix:* Unified and appended missing React dependencies (`isInitialSyncCheckDone`, `isCooledDown`, `isSyncing`, `isVerifying`, `stripVolatile`, etc.) directly into `syncToCloud`, `checkCloudSync`, and `fetchFromCloud` `useCallback` arrays to eliminate stale closure references.

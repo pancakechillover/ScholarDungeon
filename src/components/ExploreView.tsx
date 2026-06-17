@@ -33,7 +33,7 @@ import { TalentIcon } from './TalentIcon';
 import { RewardChestModal } from './RewardChestModal';
 import { TreasureChestIcon } from './icons/TreasureChestIcon';
 import { TALENTS } from '../constants';
-import { cn } from '../lib/utils';
+import { cn, getSessionEffectiveMinutes, getSessionSettlementDate, getSettlementDay } from '../lib/utils';
 import { playSound } from '../lib/sound';
 import { AppState, Dungeon, MajorDungeon, RewardCard } from '../types';
 
@@ -166,6 +166,19 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
 }) => {
   const [showChestModal, setShowChestModal] = React.useState(false);
   const [activeTooltipId, setActiveTooltipId] = React.useState<string | null>(null);
+
+  const todayEffectiveMinutes = React.useMemo(() => {
+    if (!state.history) return 0;
+    const now = new Date();
+    const todayStr = getSettlementDay(now, state.timeSettings);
+    let sum = 0;
+    state.history.forEach(s => {
+      if (s.timestamp && getSessionSettlementDate(s, state.timeSettings) === todayStr) {
+        sum += getSessionEffectiveMinutes(s, !!state.includeRestTimeInTasks);
+      }
+    });
+    return Math.floor(sum);
+  }, [state.history, state.timeSettings, state.includeRestTimeInTasks]);
 
   useScrollLock(showBuildDetails || showChestModal);
 
@@ -692,7 +705,7 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
                                 {['a2', 'a3', 'b2', 'b3'].includes(talent.id) && (() => {
                                   let requiredMinutes = 480;
                                   if (talent.id === 'a3' || talent.id === 'b3') requiredMinutes = 240;
-                                  const currentMinutes = state.dailySessions * (state.standardSessionMinutes || 25);
+                                  const currentMinutes = todayEffectiveMinutes;
                                   const canClaim = currentMinutes >= requiredMinutes;
                                   const hasClaimed = state.claimedDailyTalents?.includes(talent.id);
 
@@ -806,7 +819,7 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
                   <div className="flex justify-between items-center">
                     <span className="text-xs text-slate-400">Daily Sessions</span>
                     <span className="text-sm font-bold text-white">
-                      {Math.floor(state.dailySessions * (state.standardSessionMinutes || 25))}m
+                      {Math.floor(todayEffectiveMinutes)}m
                     </span>
                   </div>
                   <div className="flex justify-between items-center">

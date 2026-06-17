@@ -32,7 +32,7 @@ import {
   Moon
 } from 'lucide-react';
 import Markdown from 'react-markdown';
-import { cn } from '../lib/utils';
+import { cn, getSessionSettlementDate, getSettlementDay, getSessionEffectiveMinutes } from '../lib/utils';
 import { AppState, StudySession, RewardHistoryItem, Dungeon, MajorDungeon } from '../types';
 import { MOOD_OPTIONS, DEFAULT_ENABLED_MOODS } from '../constants';
 
@@ -378,6 +378,7 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
     
     const goldEarned = sessionsToday.reduce((sum, s) => sum + s.coinsEarned, 0);
     const xpEarned = sessionsToday.reduce((sum, s) => sum + s.xpEarned, 0);
+    const effectiveMinutes = sessionsToday.reduce((sum, s) => sum + getSessionEffectiveMinutes(s, !!state.includeRestTimeInTasks), 0);
     
     const levelsGained = rewardsToday.filter(r => r.source === 'LevelUp').length;
     
@@ -405,6 +406,7 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
 
     return {
       sessions: state.dailySessions,
+      effectiveMinutes,
       gold: goldEarned,
       xp: xpEarned,
       levels: levelsGained,
@@ -506,13 +508,13 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
                 <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Daily Progress</h3>
               </div>
               <span className="text-xs font-bold text-slate-400">
-                {Math.floor(dailyStats.sessions * (state.standardSessionMinutes || 25))}m <span className="text-slate-600">/</span> {dailyStats.dailyGoal * (state.standardSessionMinutes || 25)}m
+                {Math.floor(dailyStats.effectiveMinutes)}m <span className="text-slate-600">/</span> {dailyStats.dailyGoal * (state.standardSessionMinutes || 25)}m
               </span>
             </div>
             <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
               <div 
                 className="h-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.3)] transition-all" 
-                style={{ width: `${Math.min((dailyStats.sessions / dailyStats.dailyGoal) * 100, 100)}%` }}
+                style={{ width: `${(dailyStats.dailyGoal * (state.standardSessionMinutes || 25)) > 0 ? Math.min((dailyStats.effectiveMinutes / (dailyStats.dailyGoal * (state.standardSessionMinutes || 25))) * 100, 100) : 0}%` }}
               />
             </div>
           </div>
@@ -536,7 +538,7 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
                   className="overflow-hidden"
                 >
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                    <StatCard icon={Sword} label={"Time"} value={`${Math.floor(dailyStats.sessions * (state.standardSessionMinutes || 25))}m`} color="text-indigo-400" />
+                    <StatCard icon={Sword} label={"Time"} value={`${Math.floor(dailyStats.effectiveMinutes)}m`} color="text-indigo-400" />
                     <StatCard icon={Coins} label="Gold" value={dailyStats.gold} color="text-amber-400" />
                     <StatCard icon={Zap} label="XP" value={dailyStats.xp} color="text-emerald-400" />
                     {dailyStats.levels > 0 && <StatCard icon={Trophy} label="Levels" value={`+${dailyStats.levels}`} color="text-rose-400" />}

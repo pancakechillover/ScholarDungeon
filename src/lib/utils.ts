@@ -25,6 +25,22 @@ export function getSettlementDay(date: Date, timeSettings?: any): string {
   return format(baseDate, 'yyyy-MM-dd');
 }
 
+export function getSessionEffectiveMinutes(session: any, includeRestTimeInTasks: boolean): number {
+  const baseDuration = (session.focusDuration !== undefined && session.focusDuration !== null) 
+    ? session.focusDuration 
+    : session.duration;
+    
+  if (includeRestTimeInTasks && typeof session.restDuration === 'number') {
+    return baseDuration + session.restDuration;
+  }
+  
+  return baseDuration;
+}
+
+export function getSessionSettlementDate(session: any, timeSettings: any): string {
+  return getSettlementDay(new Date(session.timestamp), timeSettings);
+}
+
 export const getXPForLevel = (lvl: number) => 1000 + Math.floor((lvl - 1) / 10) * 100;
 
 export function getTitleForLevel(level: number): string {

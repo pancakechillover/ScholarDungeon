@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v8.7.33';
+export const APP_VERSION = 'v8.7.39';
 export const LAST_UPDATE_DATE = '2026-06-17';
-export const LAST_UPDATE_TIME = '03:15:00';
+export const LAST_UPDATE_TIME = '11:45:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,64 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v8.7.39',
+    date: '2026-06-17',
+    time: '11:45:00',
+    title: 'Local Storage State Parsing Crash Fix',
+    items: [
+      { category: 'Bug Fix', description: 'Added proper try-catch handlers when parsing dungeons and majorDungeons from localStorage on init, preventing fatal crashes (white screen) if JSON is corrupted.' }
+    ]
+  },
+  {
+    version: 'v8.7.38',
+    date: '2026-06-17',
+    time: '11:45:00',
+    title: 'Dashboard Duration Statistics Core Unification',
+    items: [
+      { category: 'Architecture', description: 'Unified statistical duration formulas across remaining pages including 24-hour modes in DailyPieChart and day/period divisions in WeeklyPieChart via getSessionEffectiveMinutes.' },
+      { category: 'Architecture', description: 'Re-routed ExploreView daily active study time and Talent eligibility meters to rely on precise, history-recalculated minutes rather than simple general multipliers.' }
+    ]
+  },
+  {
+    version: 'v8.7.37',
+    date: '2026-06-17',
+    time: '11:25:00',
+    title: 'Quest Progress Recalculation Synchronization',
+    items: [
+      { category: 'Bug Fix', description: 'Implemented local `recalculateQuestProgressFromHistory` helper within useGameState hook, automatically triggered on study session updates and deletions.' },
+      { category: 'Bug Fix', description: 'Synchronized quest progress and completion status for daily, weekly, monthly, and lifetime session metrics while completely preserving already claimed reward records and preventing invalid retroactive rollbacks.' }
+    ]
+  },
+  {
+    version: 'v8.7.36',
+    date: '2026-06-17',
+    time: '11:00:00',
+    title: 'Statistics Source Unification',
+    items: [
+      { category: 'Architecture', description: 'Centralized study session duration parsing application-wide by unifying `Stats`, `DailyPieChart`, and `DashboardView` around the newly synchronized `getSessionEffectiveMinutes` and `getSessionSettlementDate` core metrics engines.' },
+      { category: 'Architecture', description: 'Re-routed the `DailySummaryModal` total focus logic to bypass volatile state aggregators in favor of robust array mapping identical to the core heatmaps.' },
+      { category: 'Architecture', description: 'Modified absolute timestamp resolution globally to strictly adhere to Custom Day Start properties and includeRestTimeInTasks definitions without regression.' }
+    ]
+  },
+  {
+    version: 'v8.7.35',
+    date: '2026-06-17',
+    time: '04:00:00',
+    title: 'Synced Derived Data for Session Alterations',
+    items: [
+      { category: 'Bug Fix', description: 'Re-architected `updateSession` to precisely measure delta changes in internal progress structures (`focusDuration`, `duration`, `restDuration`). The logic now synchronously propagates differential updates directly to global `dailySessions`, associated `dungeon completedSessions`, baseline `coins`, and core `xp`. Incorporates complete local transaction rollback processing via `processTransaction` correctly preventing sub-zero state corruption while logging explicit historical modification contexts locally whenever a previous session is edited.' }
+    ]
+  },
+  {
+    version: 'v8.7.34',
+    date: '2026-06-17',
+    time: '03:32:00',
+    title: 'Unified Quest Reward Application Logic',
+    items: [
+      { category: 'Architecture', description: 'Created a centralized internal helper `applyQuestReward` in `useGameState.ts` to process quest-related grants uniformly across all subsystems. Replaced hardcoded fragmented reward assignment logic previously scattered inside the automated popup handler, singular manual `claimQuestReward`, and bulk `claimAllQuestRewards` workflows. This guarantees that standard metrics like Experience, Gold, Talent Scrolls, Shards, Death Defying Gold Medals, Double XP, and Double Coin cards all obey exact symmetrical parsing operations with synchronized `rewardHistory` recording strictly without data loss or duplication risks.' }
+    ]
+  },
   {
     version: 'v8.7.33',
     date: '2026-06-17',
