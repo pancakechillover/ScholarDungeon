@@ -2,6 +2,15 @@ import { createClient } from 'redis';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import crypto from 'crypto';
 
+function safeJsonParse<T>(value: any, fallback: T): T {
+  if (!value) return fallback;
+  try {
+    return JSON.parse(value);
+  } catch (e) {
+    return fallback;
+  }
+}
+
 let redisClient: any = null;
 const getRedisClient = async () => {
   if (redisClient && redisClient.isOpen) return redisClient;
@@ -56,7 +65,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const userAvatar = req.body?.userAvatar || req.headers['x-user-avatar'] || req.query?.userAvatar || '';
     const userBio = req.body?.userBio || decodeHeader(req.headers['x-user-bio']) || req.query?.userBio || '';
     const userTitle = req.body?.userTitle || decodeHeader(req.headers['x-user-title']) || req.query?.userTitle || '';
-    const userLevel = parseInt((req.body?.userLevel || req.headers['x-user-level'] || req.query?.userLevel || '1') as string, 10);
+    
+    // Parse userLevel ensuring it is a valid positive number
+    const userLevelRaw = req.body?.userLevel || req.headers['x-user-level'] || req.query?.userLevel;
+    const userLevelParsed = userLevelRaw ? parseInt(userLevelRaw as string, 10) : undefined;
+    const isValidLevel = userLevelParsed !== undefined && !isNaN(userLevelParsed) && isFinite(userLevelParsed) && userLevelParsed > 0;
 
     // Wait, let's just make sure client.zAdd gets called on every request that targets a teamId.
     if (req.query.id || req.body?.teamId) {
@@ -95,36 +108,44 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
        const membersData = await client.hGetAll(`scholar_team:${teamId}:members`);
        if (userId && membersData[userId]) {
           try {
-             const m = JSON.parse(membersData[userId]);
-             let updated = false;
-             if (userName && userName !== 'Scholar' && m.name !== userName) { m.name = userName; updated = true; }
-             if (userAvatar && m.avatar !== userAvatar) { m.avatar = userAvatar; updated = true; }
-             if (userBio && m.bio !== userBio) { m.bio = userBio; updated = true; }
-             if (userTitle && m.title !== userTitle) { m.title = userTitle; updated = true; }
-             if (userLevel && m.level !== userLevel) { m.level = userLevel; updated = true; }
-             if (userUniqueId && m.uniqueId !== userUniqueId) { m.uniqueId = userUniqueId; updated = true; }
-             m.lastActive = Date.now();
-             updated = true;
-             
-             if (updated) {
-                await client.hSet(`scholar_team:${teamId}:members`, userId, JSON.stringify(m));
-                membersData[userId] = JSON.stringify(m);
+             const m = safeJsonParse<any>(membersData[userId], null);
+             if (m) {
+                let updated = false;
+                if (userName && userName !== 'Scholar' && m.name !== userName) { m.name = userName; updated = true; }
+                if (userAvatar && m.avatar !== userAvatar) { m.avatar = userAvatar; updated = true; }
+                if (userBio && m.bio !== userBio) { m.bio = userBio; updated = true; }
+                if (userTitle && m.title !== userTitle) { m.title = userTitle; updated = true; }
+                if (isValidLevel && m.level !== userLevelParsed) { m.level = userLevelParsed; updated = true; }
+                if (userUniqueId && m.uniqueId !== userUniqueId) { m.uniqueId = userUniqueId; updated = true; }
+                m.lastActive = Date.now();
+                updated = true;
+                
+                if (updated) {
+                   await client.hSet(`scholar_team:${teamId}:members`, userId, JSON.stringify(m));
+                   membersData[userId] = JSON.stringify(m);
+                }
              }
           } catch (e) {
              console.error("Failed to sync member info", e);
           }
        }
-       const members = Object.values(membersData).map((m: any) => JSON.parse(m));
+       const members = Object.values(membersData)
+          .map((m: any) => safeJsonParse(m, null))
+          .filter(Boolean);
        
        const proposalData = await client.get(`scholar_team:${teamId}:proposal`);
-       const currentProposal = proposalData ? JSON.parse(proposalData) : undefined;
+       let currentProposal = proposalData ? safeJsonParse(proposalData, undefined) : undefined;
+       if (proposalData && !currentProposal) {
+          // Delete corrupted proposal
+          await client.del(`scholar_team:${teamId}:proposal`);
+       }
 
        // Also get latest 50 messages and events
        const rawMessages = await client.lRange(`scholar_team:${teamId}:messages`, 0, 50);
-       const messages = rawMessages.map((m: any) => JSON.parse(m));
+       const messages = rawMessages.map((m: any) => safeJsonParse(m, null)).filter(Boolean);
        
        const rawEvents = await client.lRange(`scholar_team:${teamId}:events`, 0, 50);
-       const events = rawEvents.map((m: any) => JSON.parse(m));
+       const events = rawEvents.map((m: any) => safeJsonParse(m, null)).filter(Boolean);
 
        const config = {
           permission: teamData.config_permission || 'captain_only',
@@ -136,7 +157,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
        };
 
        const applicantsData = await client.hGetAll(`scholar_team:${teamId}:applicants`) || {};
-       const applicants = Object.values(applicantsData).map((m: any) => JSON.parse(m));
+       const applicants = Object.values(applicantsData)
+          .map((m: any) => safeJsonParse(m, null))
+          .filter(Boolean);
         const isMember = userId ? members.some((m: any) => m.userId === userId) : false;
         const isPending = userId ? applicants.some((r: any) => r.userId === userId) : false;
 
@@ -194,7 +217,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           avatar: userAvatar,
           title: userTitle,
           bio: userBio,
-          level: userLevel,
+          level: isValidLevel ? userLevelParsed : 1,
           uniqueId: userUniqueId,
           joinedAt: now,
           totalFocusTime: 0,
@@ -225,7 +248,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
              avatar: userAvatar,
              title: userTitle,
              bio: userBio,
-             level: userLevel,
+             level: isValidLevel ? userLevelParsed : 1,
              uniqueId: userUniqueId,
              appliedAt: Date.now()
           };
@@ -248,7 +271,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           avatar: userAvatar,
           title: userTitle,
           bio: userBio,
-          level: userLevel,
+          level: isValidLevel ? userLevelParsed : 1,
           uniqueId: userUniqueId,
           joinedAt: Date.now(),
           totalFocusTime: 0,
@@ -273,8 +296,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // POST: Send message
     if (method === 'POST' && action === 'message') {
        const { teamId, content } = req.body;
+       if (!teamId) return res.status(400).json({ error: 'Missing teamId' });
        if (!content) return res.status(400).json({ error: 'Message empty' });
        
+       const teamExists = await client.exists(`scholar_team:${teamId}`);
+       if (!teamExists) return res.status(404).json({ error: 'Team not found' });
+
+       const isMember = await client.hExists(`scholar_team:${teamId}:members`, userId);
+       if (!isMember) return res.status(403).json({ error: 'Not a member' });
+
        const msg = {
           id: crypto.randomUUID(),
           userId,

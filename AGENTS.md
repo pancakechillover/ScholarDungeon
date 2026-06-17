@@ -23,9 +23,9 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v8.7.39
+- **Current Version:** v8.8.0
 - **Last Update Date:** 2026-06-17
-- **Last Update Time:** 11:45:00
+- **Last Update Time:** 05:38:00
 
 ## Dark Themes Definition
 The following themes are considered "Dark Themes" and form the baseline for vibrant visual effects and high-contrast glowing elements:
@@ -50,6 +50,20 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v8.8.0 (2026-06-17):** Version Bump
+  - *General:* Updated version to 8.8.0.
+
+- **v8.7.42 (2026-06-17):** Fellowship Data Parsing Resilience.
+  - *Bug Fix:* Implemented `safeJsonParse` in `api/teams.ts` to securely handle corrupted Redis list entries for members, messages, events, applicants, and proposals. Corrupted data entries are now cleanly skipped instead of inducing fatal 500 errors across the entire Fellowship endpoint.
+
+- **v8.7.41 (2026-06-17):** Fellowship Chat Reliability Hardening.
+  - *Bug Fix:* Strengthened `TeamModule`'s `sendMessage` optimistic UI by adding explicit server validation checks for `success`, preventing silent message drops and rendering clear error alerts while explicitly rolling back temporary texts upon failure.
+  - *Security:* Hardened `api/teams.ts` `action=message` endpoint to assert the active requesting `userId` against current team rosters explicitly, actively blocking external injection and ensuring 403 errors surface properly.
+
+- **v8.7.40 (2026-06-17):** Fellowship Identity Sync Continuity Fixes.
+  - *Bug Fix:* Hardened identity parsing in `api/teams.ts` to securely validate `userLevel`. Existing levels are now safely preserved instead of defaulting to level 1 for empty payloads during background refresh loops.
+  - *Bug Fix:* Updated Fellowship background polling in `App.tsx` and manual fetch flows in `TeamModule` to fully supply standard identity headers (`x-user-level`, `x-user-title`, `x-user-unique-id`, etc.), ensuring guild members dynamically update without information loss over time.
 
 - **v8.7.39 (2026-06-17):** Local Storage State Parsing Crash Fix.
   - *Bug Fix:* Added proper try-catch handlers when parsing `dungeons` and `majorDungeons` from `localStorage` on initialization. This securely prevents the entire application from failing to mount (white screen) if a specific key was corrupted or contained invalid JSON payloads.

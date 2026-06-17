@@ -241,15 +241,19 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
   };
 
 
+  const [isSendingMessage, setIsSendingMessage] = useState(false);
+
   const sendMessage = async () => {
     const identityCode = getOrGenerateIdentity();
-    if (!chatInput.trim() || !state.teamId) return;
+    if (!chatInput.trim() || !state.teamId || isSendingMessage) return;
     const msg = chatInput.trim();
     setChatInput('');
+    setIsSendingMessage(true);
     
+    const fakeId = "temp-" + Date.now();
     // Optimistic UI update
     const fakeMessage: TeamMessage = {
-      id: "temp-" + Date.now(),
+      id: fakeId,
       userId: team?.myUserId || identityCode,
       name: state.userName || 'Scholar',
       avatar: state.userAvatar || 'User',
@@ -259,13 +263,14 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
     setMessages(prev => [fakeMessage, ...prev]);
 
     try {
-      await fetch('/api/teams?action=message', {
+      const res = await fetch('/api/teams?action=message', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           teamId: state.teamId, 
           secretCode: identityCode,
           userName: state.userName || 'Scholar',
+          userUniqueId: state.userUniqueId || '',
           userAvatar: state.userAvatar || 'User',
           userBio: state.userBio,
           userTitle: state.userTitle,
@@ -273,9 +278,24 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
           content: msg
         })
       });
-      fetchTeam();
-    } catch (e) {
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to send');
+      }
+      // Replace fake message with actual message returned from server
+      if (data.message) {
+        setMessages(prev => prev.map(m => m.id === fakeId ? data.message : m));
+      } else {
+        await fetchTeam();
+      }
+    } catch (e: any) {
       console.error(e);
+      // Revert optimistic message
+      setMessages(prev => prev.filter(m => m.id !== fakeId));
+      setChatInput(msg); // restore input
+      customAlert(e.message || "Message failed to send. Please try again.", "Send Failed");
+    } finally {
+      setIsSendingMessage(false);
     }
   };
 
@@ -725,11 +745,16 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
                     type="text" 
                     value={chatInput}
                     onChange={e => setChatInput(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && sendMessage()}
+                    onKeyDown={e => e.key === 'Enter' && !isSendingMessage && sendMessage()}
                     placeholder="Message the guild..."
-                    className="w-full bg-slate-950 border border-slate-700 text-sm text-white rounded-xl pl-4 pr-10 py-2.5 outline-none focus:border-indigo-500 transition-colors"
+                    disabled={isSendingMessage}
+                    className="w-full bg-slate-950 border border-slate-700 text-sm text-white rounded-xl pl-4 pr-10 py-2.5 outline-none focus:border-indigo-500 transition-colors disabled:opacity-50"
                   />
-                  <button onClick={sendMessage} className="absolute right-2 top-1/2 -translate-y-1/2 text-indigo-400 p-1.5 hover:bg-slate-800 rounded-lg transition-colors">
+                  <button 
+                    onClick={sendMessage} 
+                    disabled={isSendingMessage}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-indigo-400 p-1.5 hover:bg-slate-800 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
                     <Send size={14} />
                   </button>
                 </div>

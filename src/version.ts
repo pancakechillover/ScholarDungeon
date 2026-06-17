@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v8.7.39';
+export const APP_VERSION = 'v8.8.0';
 export const LAST_UPDATE_DATE = '2026-06-17';
-export const LAST_UPDATE_TIME = '11:45:00';
+export const LAST_UPDATE_TIME = '05:38:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,44 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v8.8.0',
+    date: '2026-06-17',
+    time: '05:38:00',
+    title: 'Version Bump',
+    items: [
+      { category: 'General', description: 'Updated version to 8.8.0.' }
+    ]
+  },
+  {
+    version: 'v8.7.42',
+    date: '2026-06-17',
+    time: '05:35:00',
+    title: 'Fellowship Data Parsing Resilience',
+    items: [
+      { category: 'Bug Fix', description: 'Implemented safeJsonParse in api/teams to securely handle corrupted Redis list entries for members, messages, events, applicants, and proposals. Corrupted data entries are now cleanly skipped instead of inducing fatal 500 errors across the entire Fellowship endpoint.' }
+    ]
+  },
+  {
+    version: 'v8.7.41',
+    date: '2026-06-17',
+    time: '05:27:00',
+    title: 'Fellowship Chat Reliability Hardening',
+    items: [
+      { category: 'Bug Fix', description: 'Strengthened TeamModule sendMessage optimistic UI by adding explicit server validation checks for success, preventing silent message drops and rendering clear error alerts while explicitly rolling back temporary texts upon failure.' },
+      { category: 'Security', description: 'Hardened api/teams message endpoint to assert the active requesting userId against current team rosters explicitly, actively blocking external injection.' }
+    ]
+  },
+  {
+    version: 'v8.7.40',
+    date: '2026-06-17',
+    time: '05:25:00',
+    title: 'Fellowship Identity Sync Continuity Fixes',
+    items: [
+      { category: 'Bug Fix', description: 'Hardened identity parsing in api/teams to securely validate userLevel. Existing levels are now safely preserved instead of defaulting to level 1 for empty payloads during background refresh loops.' },
+      { category: 'Bug Fix', description: 'Updated Fellowship background polling in App.tsx and manual fetch flows in TeamModule to fully supply standard identity headers (x-user-level, x-user-title, uniqueId, etc.), ensuring guild members dynamically update without information loss over time.' }
+    ]
+  },
   {
     version: 'v8.7.39',
     date: '2026-06-17',

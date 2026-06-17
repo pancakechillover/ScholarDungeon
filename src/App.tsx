@@ -45,7 +45,7 @@ import { BulkClaimModal } from './components/BulkClaimModal';
 import { useGameState } from './hooks/useGameState';
 import { useCloudSync } from './hooks/useCloudSync';
 import { triggerSimpleConfetti } from './lib/effects';
-import { cn, getXPForLevel, getSettlementDay } from './lib/utils';
+import { cn, getXPForLevel, getSettlementDay, getTitleForLevel } from './lib/utils';
 import { playSound } from './lib/sound';
 import { Dungeon, MajorDungeon, DungeonReward } from './types';
 import { CloudSyncModal } from './components/CloudSyncModal';
@@ -376,7 +376,12 @@ function App() {
           const res = await fetch(`/api/teams?id=${state.teamId}`, {
             headers: {
               'x-secret-code': state.secretCode || '',
-              'x-user-name': encodeURIComponent(state.userName || 'Scholar')
+              'x-user-name': encodeURIComponent(state.userName || 'Scholar'),
+              'x-user-level': (state.level || 1).toString(),
+              'x-user-avatar': state.userAvatar || '🎓',
+              'x-user-bio': encodeURIComponent(state.userBio || ''),
+              'x-user-title': encodeURIComponent(state.userTitle || getTitleForLevel(state.level || 1)),
+              'x-user-unique-id': state.userUniqueId || ''
             }
           });
           if (res.ok) {

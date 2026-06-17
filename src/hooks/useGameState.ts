@@ -1917,7 +1917,7 @@ export function useGameState() {
         return prev; // Conditions not met
       }
 
-      let newState = { ...prev, claimedDailyTalents: [...(prev.claimedDailyTalents || []), talentId] };
+      let newState: AppState = { ...prev, claimedDailyTalents: [...(prev.claimedDailyTalents || []), talentId] };
 
       if (rewardXP > 0) {
         newState = processXP(newState, rewardXP, `Claimed Talent ${talentId.toUpperCase()}`);
