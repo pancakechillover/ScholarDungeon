@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v8.8.2';
+export const APP_VERSION = 'v8.8.3';
 export const LAST_UPDATE_DATE = '2026-06-17';
-export const LAST_UPDATE_TIME = '08:50:00';
+export const LAST_UPDATE_TIME = '18:30:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,16 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v8.8.3',
+    date: '2026-06-17',
+    time: '18:30:00',
+    title: 'Self-Contained WebDAV Proxy & PROPFIND Probe',
+    items: [
+      { category: 'Bug Fix', description: 'Refactored /api/webdav/proxy to be fully self-contained with zero external dependencies to prevent Vercel Serverless Function loading failures.' },
+      { category: 'UX/UI', description: 'Redesigned WebDAV connection verification to utilize a method: PROPFIND request on directory folders instead of a GET check on JSON saves. Permits initial configurations with empty cloud storage.' }
+    ]
+  },
   {
     version: 'v8.8.2',
     date: '2026-06-17',

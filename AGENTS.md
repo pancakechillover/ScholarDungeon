@@ -23,9 +23,9 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v8.8.2
+- **Current Version:** v8.8.3
 - **Last Update Date:** 2026-06-17
-- **Last Update Time:** 08:50:00
+- **Last Update Time:** 18:30:00
 
 ## Dark Themes Definition
 The following themes are considered "Dark Themes" and form the baseline for vibrant visual effects and high-contrast glowing elements:
@@ -50,6 +50,10 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v8.8.3 (2026-06-17):** Self-Contained WebDAV Proxy & PROPFIND Probe.
+  - *Bug Fix:* Refactored `/api/webdav/proxy.ts` into a self-contained runtime function with zero external shared logic dependencies to prevent Vercel Serverless Function module resolution failures.
+  - *UI/UX:* Re-engineered WebDAV connection validation in `CloudSettingsSection.tsx` to utilize `PROPFIND` checking on the actual storage directory instead of attempting a `GET` request on the non-existent `scholars_dungeon_save.json` file. Permits initial setups with empty cloud folders.
 
 - **v8.8.2 (2026-06-17):** Serverless Edge Compatibility.
   - *Bug Fix:* Removed native Node.js `dns/promises` module import explicitly to prevent Vercel Serverless environment worker initialization crashes (`FUNCTION_INVOCATION_FAILED`) when instantiating the WebDAV proxy endpoint.

@@ -195,11 +195,37 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
         // Verification delay to simulate thorough checking as requested
         await new Promise(resolve => setTimeout(resolve, 2000));
 
-        // Ensure folder exists first
         const lastSlashIndex = targetUrl.lastIndexOf('/');
-        if (lastSlashIndex !== -1) {
-            const folderUrl = targetUrl.substring(0, lastSlashIndex + 1);
-            await fetch('/api/webdav/proxy', {
+        const folderUrl = lastSlashIndex !== -1 ? targetUrl.substring(0, lastSlashIndex + 1) : targetUrl;
+
+        let response = await fetch('/api/webdav/proxy', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            url: folderUrl,
+            username: webdavUser,
+            password: webdavPass,
+            method: 'PROPFIND'
+        })
+        });
+        
+        let responseText = await response.text();
+        let serverStatus = response.status;
+        
+        if (response.ok) {
+           try {
+             const json = JSON.parse(responseText);
+             if (json.status !== undefined) {
+               serverStatus = json.status;
+             }
+           } catch { }
+        }
+
+        // Folder 404 means the container or path is correct, but folder itself doesn't exist yet. Let's create it via MKCOL!
+        if (serverStatus === 404) {
+            const mkcolResponse = await fetch('/api/webdav/proxy', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -209,54 +235,55 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
                     method: 'MKCOL'
                 })
             });
-        }
+            const mkcolText = await mkcolResponse.text();
+            let mkcolStatus = mkcolResponse.status;
+            if (mkcolResponse.ok) {
+                try {
+                    const json = JSON.parse(mkcolText);
+                    if (json.status !== undefined) {
+                        mkcolStatus = json.status;
+                    }
+                } catch { }
+            }
+            
+            // Success responses for MKCOL include 201, 200, 204, 405 (already exists), or 409 (already exists)
+            if ([200, 201, 204, 405, 409].includes(mkcolStatus)) {
+                serverStatus = 200;
+            } else {
+                let errMsg = mkcolText;
+                try {
+                    const json = JSON.parse(mkcolText);
+                    if (json.error) errMsg = json.error;
+                } catch { }
 
-        const response = await fetch('/api/webdav/proxy', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            url: targetUrl,
-            username: webdavUser,
-            password: webdavPass,
-            method: 'GET'
-        })
-        });
-        
-        const responseText = await response.text();
-        
-        if (!response.ok) {
-           if (response.status === 404) {
-             // 404 means the endpoint exists and auth works, but the file is not there yet.
-             // This is normal for the first sync.
-             setState(s => ({
-                 ...s,
-                 webdavSettings: {
-                     url: targetUrl,
-                     username: webdavUser,
-                     password: webdavPass
-                 },
-                 syncProvider: 'WebDAV'
-             }));
-             setShowUnlockModal(false);
-             setUnlockTarget(null);
-             return;
-           }
+                if (mkcolStatus === 401 || mkcolStatus === 403) {
+                    errMsg = 'Username, password, or permissions are incorrect. Please check your credentials.';
+                } else if (mkcolStatus >= 500) {
+                    errMsg = `WebDAV server or service error (${mkcolStatus}). Please try again later.`;
+                } else {
+                    errMsg = errMsg ? `WebDAV error: ${errMsg}` : `WebDAV server returned status ${mkcolStatus}`;
+                }
+                throw new Error(errMsg);
+            }
+        } else {
+            // Check status against allowed successful statuses for PROPFIND: 200, 204, 207, 405, 409
+            const isSuccessfulStatus = [200, 204, 207, 405, 409].includes(serverStatus);
+            if (!isSuccessfulStatus) {
+                let errMsg = responseText;
+                try {
+                    const json = JSON.parse(responseText);
+                    if (json.error) errMsg = json.error;
+                } catch { }
 
-           let errMsg = responseText;
-           try {
-             const json = JSON.parse(responseText);
-             if (json.error) errMsg = json.error;
-           } catch { }
-           
-           if (response.status === 401 || response.status === 403) {
-             errMsg = 'Username, password, or permissions are incorrect. Please check your credentials.';
-           } else if (response.status >= 500) {
-             errMsg = errMsg ? `WebDAV error: ${errMsg}` : 'WebDAV server or service is encountering an error. Please try again later.';
-           }
-           
-           throw new Error(errMsg);
+                if (serverStatus === 401 || serverStatus === 403) {
+                    errMsg = 'Username, password, or permissions are incorrect. Please check your credentials.';
+                } else if (serverStatus >= 500) {
+                    errMsg = `WebDAV server or service error (${serverStatus}). Please try again later.`;
+                } else {
+                    errMsg = errMsg ? `WebDAV error: ${errMsg}` : `WebDAV server returned status ${serverStatus}`;
+                }
+                throw new Error(errMsg);
+            }
         }
         
         setState(s => ({
