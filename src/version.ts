@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v8.8.3';
-export const LAST_UPDATE_DATE = '2026-06-17';
-export const LAST_UPDATE_TIME = '18:30:00';
+export const APP_VERSION = 'v8.8.5';
+export const LAST_UPDATE_DATE = '2026-06-19';
+export const LAST_UPDATE_TIME = '01:45:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,26 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v8.8.5',
+    date: '2026-06-19',
+    time: '01:45:00',
+    title: 'Silent Sync Overwrite Integrity Override',
+    items: [
+      { category: 'Bug Fix', description: 'Muted the constant conflict popup defect heavily observed when using background Immediate auto-sync with the Redis provider. Backend endpoints fundamentally enforce un-bypassable 409 Conflict restrictions tracking purely via device code discrepancy. Repaired frontend syncToCloud routines natively injecting runtime forceOverwrite flags safely bypassing the backend limits ONLY perfectly mapping to authenticated silent_upload directives established via local pre-checks whenever local changes identically match or natively branch ahead of the targeted cloud versions.' },
+      { category: 'UI/UX', description: 'Re-instated standard cloud_newer disruption modals expressly triggering selectively on runtime Immediate sync cycles successfully shielding user payloads when cloud saves independently bypass local timestamps natively, strictly abiding by user specifications.' }
+    ]
+  },
+  {
+    version: 'v8.8.4',
+    date: '2026-06-19',
+    time: '00:30:00',
+    title: 'Cloud Sync Auto-Trigger Lifecycle Rescue',
+    items: [
+      { category: 'Bug Fix', description: 'Repaired auto-sync triggers getting completely blocked and resetting silently during application bootstrap. Local mutations are now tracked faithfully via localDirtyAtRef and hasUnsyncedChanges even if the initial synchronization barrier prevents momentary upload. Once the initial bounds check resolves identically against the cloud, the application correctly executes a flush sequence triggering the queue rather than dropping local progress updates silently.' },
+      { category: 'Architecture', description: 'Fully decoupled tracking of hasUnsyncedChanges dirty indicators and component-state lastUpdated times arrays. Re-engineered useCloudSync to pass a strict success acknowledgment payload executing onSuccess solely inside HTTP payload completions ensuring dirty bits are not maliciously cleaned if an upload silently aborts or yields to cloud_newer state constraints.' }
+    ]
+  },
   {
     version: 'v8.8.3',
     date: '2026-06-17',

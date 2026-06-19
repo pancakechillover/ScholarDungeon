@@ -2,6 +2,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { AppState } from '../types';
 import { GoogleDriveAPI } from '../lib/googleDriveApi';
 import { getSyncFingerprint } from '../utils/syncFingerprint';
+import { decideCloudSyncAction } from '../utils/syncDecision';
 
 import { getDeviceCode } from '../lib/utils';
 
@@ -88,7 +89,8 @@ export function useCloudSync(
   const syncToCloud = useCallback(async (
     forceOverwrite = false, 
     specificState?: AppState,
-    syncMethod: 'Manual' | 'Immediate' | 'Interval polling' | 'Visibility API Active' = 'Manual'
+    syncMethod: 'Manual' | 'Immediate' | 'Interval polling' | 'Visibility API Active' = 'Manual',
+    options?: { localDirtyAt?: number; onSuccess?: () => void }
   ) => {
     const currentState = specificState || state;
     
@@ -193,18 +195,28 @@ export function useCloudSync(
 
               const cloudFingerprint = getSyncFingerprint(cloudDataToCompare);
               const localFingerprint = getSyncFingerprint(localDataToCompare);
+              const cloudTime = new Date(result.data.lastUpdated || (result.data.state && result.data.state.lastUpdated) || 0).getTime();
+              const stateLastUpdatedTime = new Date(currentState.lastUpdated || 0).getTime();
+              const dirtyTime = options?.localDirtyAt || 0;
+              const localTime = Math.max(stateLastUpdatedTime, dirtyTime);
 
-              // IF identities mismatch: 
-              // 1. If visibility trigger -> abort (can't show modal)
-              // 2. Otherwise -> show modal
-              if (!identitiesMatch) {
+              const decision = decideCloudSyncAction({
+                localFingerprint,
+                cloudFingerprint,
+                localTime,
+                cloudTime,
+                cloudExists: true,
+                forceOverwrite
+              });
+
+              if (decision === 'block_cloud_newer') {
                 if (syncMethod === 'Visibility API Active') {
-                  console.warn("Cloud sync aborted: Device identity mismatch during visibility change.");
+                  console.warn("Cloud sync aborted: Cloud data is newer during visibility change.");
                   setIsSyncing(false);
                   return;
                 }
                 setSyncCheckResult({
-                    status: 'cloud_newer', // Treat as conflict to show modal
+                    status: 'cloud_newer',
                     cloudData: result.data,
                     code: 'WebDAV'
                 });
@@ -212,27 +224,7 @@ export function useCloudSync(
                 return;
               }
 
-              if (localFingerprint === cloudFingerprint) {
-                  // Data is identical, just update local timestamp silently and abort upload
-                  if (requestId !== activeSyncRequestRef.current) return;
-                  if (result.data.lastUpdated) {
-                      setState(prev => ({ ...prev, lastUpdated: result.data.lastUpdated }));
-                  }
-                  setIsSyncing(false);
-                  return;
-              }
-
-              // Normal timestamp check for silent sync (fingerprints mismatched!)
-              const cloudTime = new Date(result.data.lastUpdated || (result.data.state && result.data.state.lastUpdated) || 0).getTime();
-              const localTime = new Date(currentState.lastUpdated || 0).getTime();
-              
-              setSyncCheckResult({
-                status: cloudTime > localTime ? 'cloud_newer' : 'local_newer',
-                cloudData: result.data,
-                code: 'WebDAV'
-              });
-              setIsSyncing(false);
-              return;
+              // Otherwise continue to write to WebDAV
             }
           }
         }
@@ -269,6 +261,7 @@ export function useCloudSync(
         }));
         setSyncCheckResult(null);
         logSyncEvent(forceOverwrite ? 'force_sync' : 'local_to_cloud', 'WebDAV', 'success', undefined, syncMethod, 'WebDAV');
+        options?.onSuccess?.();
 
       } else if (isGoogleDrive && currentState.googleDriveTokens) {
         const drive = new GoogleDriveAPI(currentState.googleDriveTokens.access_token);
@@ -290,10 +283,23 @@ export function useCloudSync(
 
             const cloudFingerprint = getSyncFingerprint(cloudDataToCompare);
             const localFingerprint = getSyncFingerprint(localDataToCompare);
+            const cloudTime = new Date(cloudData.lastUpdated || (cloudData.state && cloudData.state.lastUpdated) || 0).getTime();
+            const stateLastUpdatedTime = new Date(currentState.lastUpdated || 0).getTime();
+            const dirtyTime = options?.localDirtyAt || 0;
+            const localTime = Math.max(stateLastUpdatedTime, dirtyTime);
 
-            if (!identitiesMatch) {
+            const decision = decideCloudSyncAction({
+              localFingerprint,
+              cloudFingerprint,
+              localTime,
+              cloudTime,
+              cloudExists: true,
+              forceOverwrite
+            });
+
+            if (decision === 'block_cloud_newer') {
               if (syncMethod === 'Visibility API Active') {
-                console.warn("Cloud sync aborted: Device identity mismatch during visibility change.");
+                console.warn("Cloud sync aborted: Cloud data is newer during visibility change.");
                 setIsSyncing(false);
                 return;
               }
@@ -306,25 +312,7 @@ export function useCloudSync(
               return;
             }
 
-            if (localFingerprint === cloudFingerprint) {
-                if (requestId !== activeSyncRequestRef.current) return;
-                if (cloudData.lastUpdated) {
-                    setState(prev => ({ ...prev, lastUpdated: cloudData.lastUpdated }));
-                }
-                setIsSyncing(false);
-                return;
-            }
-
-            const cloudTime = new Date(cloudData.lastUpdated || (cloudData.state && cloudData.state.lastUpdated) || 0).getTime();
-            const localTime = new Date(currentState.lastUpdated || 0).getTime();
-            
-            setSyncCheckResult({
-              status: cloudTime > localTime ? 'cloud_newer' : 'local_newer',
-              cloudData,
-              code: 'Google Drive Auth'
-            });
-            setIsSyncing(false);
-            return;
+            // Otherwise continue to write to Google Drive
           }
         }
 
@@ -343,8 +331,10 @@ export function useCloudSync(
         }));
         setSyncCheckResult(null);
         logSyncEvent(forceOverwrite ? 'force_sync' : 'local_to_cloud', 'Google Drive', 'success', undefined, syncMethod, 'Google Drive');
+        options?.onSuccess?.();
 
       } else {
+        let backendForceOverwrite = forceOverwrite;
         // Redis
         if (!forceOverwrite) {
           // Fetch first to check identity
@@ -378,10 +368,23 @@ export function useCloudSync(
 
               const cloudFingerprint = getSyncFingerprint(cloudDataToCompare);
               const localFingerprint = getSyncFingerprint(localDataToCompare);
+              const cloudTime = new Date(data.cloudData.lastUpdated || (data.cloudData.state && data.cloudData.state.lastUpdated) || 0).getTime();
+              const stateLastUpdatedTime = new Date(currentState.lastUpdated || 0).getTime();
+              const dirtyTime = options?.localDirtyAt || 0;
+              const localTime = Math.max(stateLastUpdatedTime, dirtyTime);
 
-              if (!identitiesMatch) {
+              const decision = decideCloudSyncAction({
+                localFingerprint,
+                cloudFingerprint,
+                localTime,
+                cloudTime,
+                cloudExists: true,
+                forceOverwrite
+              });
+
+              if (decision === 'block_cloud_newer') {
                 if (syncMethod === 'Visibility API Active') {
-                   console.warn("Cloud sync aborted: Device identity mismatch during visibility change.");
+                   console.warn("Cloud sync aborted: Cloud data is newer during visibility change.");
                    setIsSyncing(false);
                    return;
                 }
@@ -394,25 +397,10 @@ export function useCloudSync(
                 return;
               }
 
-              if (localFingerprint === cloudFingerprint) {
-                  if (requestId !== activeSyncRequestRef.current) return;
-                  if (data.cloudData.lastUpdated) {
-                      setState(prev => ({ ...prev, lastUpdated: data.cloudData.lastUpdated }));
-                  }
-                  setIsSyncing(false);
-                  return;
+              if (decision === 'silent_upload') {
+                 backendForceOverwrite = true;
               }
-
-              const cloudTime = new Date(data.cloudData.lastUpdated || (data.cloudData.state && data.cloudData.state.lastUpdated) || 0).getTime();
-              const localTime = new Date(currentState.lastUpdated || 0).getTime();
-              
-              setSyncCheckResult({
-                status: cloudTime > localTime ? 'cloud_newer' : 'local_newer',
-                cloudData: data.cloudData,
-                code: currentState.secretCode!
-              });
-              setIsSyncing(false);
-              return;
+              // Otherwise continue to write to Redis
             }
           }
         }
@@ -420,7 +408,7 @@ export function useCloudSync(
         const payload = {
           secretCode: currentState.secretCode,
           localData,
-          forceOverwrite
+          forceOverwrite: backendForceOverwrite
         };
 
         const response = await fetch('/api/sync/', {
@@ -458,6 +446,7 @@ export function useCloudSync(
             setState(prev => ({ ...prev, lastUpdated: data.cloudData.lastUpdated }));
             setSyncCheckResult(null);
             logSyncEvent(forceOverwrite ? 'force_sync' : 'local_to_cloud', currentState.secretCode!, 'success', undefined, syncMethod, 'Redis');
+            options?.onSuccess?.();
           }
         }
       }
@@ -677,7 +666,16 @@ export function useCloudSync(
         const localFingerprint = getSyncFingerprint(localDataToCompare);
         const cloudFingerprint = getSyncFingerprint(cloudDataToCompare);
 
-        if (localFingerprint === cloudFingerprint && identitiesMatch) {
+        const decision = decideCloudSyncAction({
+          localFingerprint,
+          cloudFingerprint,
+          localTime,
+          cloudTime,
+          cloudExists: true,
+          forceOverwrite: false // it's just check
+        });
+
+        if (decision === 'silent_upload') {
           const isProviderCode = code === 'WebDAV' || code === 'GoogleDrive' || code === 'GoogleDriveAuth';
           setState(prev => ({ 
             ...prev, 
@@ -690,9 +688,10 @@ export function useCloudSync(
           return;
         }
 
-        if (cloudTime > localTime || !identitiesMatch) {
+        if (decision === 'block_cloud_newer') {
           setSyncCheckResult({ status: 'cloud_newer', cloudData: cloudDataToProcess, code });
         } else {
+          // fetchFromCloud is always user-initiated, thus we can show local_newer
           setSyncCheckResult({ status: 'local_newer', cloudData: cloudDataToProcess, code });
         }
       } else {
@@ -748,7 +747,7 @@ export function useCloudSync(
 
     const checkNewer = async (data: any, code: string) => {
         if (!data) {
-            setSyncCheckResult({ status: 'no_save', code });
+            if (forceModal) setSyncCheckResult({ status: 'no_save', code });
             if (isStartup) setIsInitialSyncCheckDone(true);
             return;
         }
@@ -775,8 +774,17 @@ export function useCloudSync(
         const localFingerprint = getSyncFingerprint(localDataToCompare);
         const cloudFingerprint = getSyncFingerprint(cloudDataToCompare);
 
-        // Check for exact data match first
-        if (localFingerprint === cloudFingerprint && !forceModal && identitiesMatch) {
+        const decision = decideCloudSyncAction({
+          localFingerprint,
+          cloudFingerprint,
+          localTime,
+          cloudTime,
+          cloudExists: true,
+          forceOverwrite: false // it's just check
+        });
+
+        // If exact data match, we can silently refresh local identity by not showing modal
+        if (localFingerprint === cloudFingerprint && !forceModal) {
           const isProviderCode = code === 'WebDAV' || code === 'GoogleDrive' || code === 'GoogleDriveAuth';
           setState(prev => ({ 
             ...prev, 
@@ -787,7 +795,7 @@ export function useCloudSync(
           setSyncCheckResult(null);
           setIsVerifying(false);
           setIsSyncing(false);
-          if (isStartup) setIsInitialSyncCheckDone(true);
+          if (isStartup || !forceModal) setIsInitialSyncCheckDone(true);
           return;
         }
 
@@ -797,10 +805,15 @@ export function useCloudSync(
 
         if (requestId !== activeSyncRequestRef.current) return;
 
-        if (cloudTime > localTime || !identitiesMatch) {
+        if (decision === 'block_cloud_newer') {
           setSyncCheckResult({ status: 'cloud_newer', cloudData: data, code });
-        } else {
+        } else if (forceModal) {
           setSyncCheckResult({ status: 'local_newer', cloudData: data, code });
+        } else {
+          setSyncCheckResult(null);
+          setIsVerifying(false);
+          setIsSyncing(false);
+          if (isStartup || !forceModal) setIsInitialSyncCheckDone(true);
         }
     };
 
@@ -815,8 +828,8 @@ export function useCloudSync(
         if (response.ok) {
             const result = await response.json();
             if (result.is404 || !result.data) {
-                setSyncCheckResult({ status: 'no_save', code: 'WebDAV' });
-                if (isStartup) setIsInitialSyncCheckDone(true);
+                if (forceModal) setSyncCheckResult({ status: 'no_save', code: 'WebDAV' });
+                if (isStartup || !forceModal) setIsInitialSyncCheckDone(true);
             } else {
                 await checkNewer(result.data, 'WebDAV');
             }
@@ -830,8 +843,8 @@ export function useCloudSync(
             const result = await drive.readSaveFile(fileId);
             await checkNewer(result, 'GoogleDrive');
         } else {
-            setSyncCheckResult({ status: 'no_save', code: 'GoogleDrive' });
-            if (isStartup) setIsInitialSyncCheckDone(true);
+            if (forceModal) setSyncCheckResult({ status: 'no_save', code: 'GoogleDrive' });
+            if (isStartup || !forceModal) setIsInitialSyncCheckDone(true);
         }
       } else if (state.secretCode) {
         // Redis
@@ -858,8 +871,8 @@ export function useCloudSync(
         if (data.cloudData) {
             await checkNewer(data.cloudData, state.secretCode);
         } else {
-            setSyncCheckResult({ status: 'no_save', code: state.secretCode });
-            if (isStartup) setIsInitialSyncCheckDone(true);
+            if (forceModal) setSyncCheckResult({ status: 'no_save', code: state.secretCode });
+            if (isStartup || !forceModal) setIsInitialSyncCheckDone(true);
         }
       }
     } catch (err: any) {

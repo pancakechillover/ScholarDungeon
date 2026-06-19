@@ -299,7 +299,11 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
         setShowUnlockModal(false);
         setUnlockTarget(null);
     } catch (e: any) {
-        setWebdavCheckError(e.message || 'Connection failed.');
+        let errMessage = e.message || 'Connection failed.';
+        if (errMessage.includes('FUNCTION_INVOCATION_FAILED') || errMessage.includes('Unexpected token') || errMessage.includes('JSON')) {
+             errMessage = 'WebDAV proxy failed on the server. Please check Vercel Function Logs or use Redis sync for now.';
+        }
+        setWebdavCheckError(errMessage);
     } finally {
         setWebdavChecking(false);
     }
@@ -696,7 +700,7 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
               <Eye size={16} className="text-indigo-400 shrink-0 mt-0.5" />
               <div className="text-xs text-slate-400 leading-relaxed">
                 <span className="font-bold text-indigo-300">Visibility API Active: </span>
-                When you leave the app, lock your screen, or close the tab, any unsynced changes will reliably be pushed to the cloud automatically, regardless of your sync strategy.
+                When you leave the app, lock your screen, or close the tab, any unsynced changes will reliably be pushed to the cloud automatically (unless 'Manual Only' is selected).
               </div>
             </div>
           </div>
@@ -926,6 +930,9 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
                   <p className="text-[10px] text-slate-400 leading-relaxed max-w-xs">
                     Enter your WebDAV server details. <strong className="text-indigo-300">Note:</strong> This is a <span className="underline">SERVER URL</span>, not a local folder path on your computer.
                     <br />Example: <code>https://dav.jianguoyun.com/dav/</code>
+                  </p>
+                  <p className="text-[10px] text-amber-500/80 leading-relaxed max-w-xs mt-2 p-2 bg-amber-500/10 rounded-lg">
+                    WebDAV sync is experimental on Vercel deployments. If it fails, please use Redis sync or manual export for now.
                   </p>
                 </div>
                 <div className="space-y-3">

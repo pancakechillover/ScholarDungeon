@@ -1,4 +1,4 @@
-import { VercelRequest, VercelResponse } from '@vercel/node';
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 // Inline helpers to make it fully self-contained on Vercel
 function isForbiddenHost(host: string): boolean {

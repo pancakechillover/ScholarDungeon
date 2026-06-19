@@ -23,9 +23,9 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v8.8.3
-- **Last Update Date:** 2026-06-17
-- **Last Update Time:** 18:30:00
+- **Current Version:** v8.8.5
+- **Last Update Date:** 2026-06-19
+- **Last Update Time:** 01:45:00
 
 ## Dark Themes Definition
 The following themes are considered "Dark Themes" and form the baseline for vibrant visual effects and high-contrast glowing elements:
@@ -50,6 +50,14 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+
+- **v8.8.5 (2026-06-19):** Silent Sync Overwrite Integrity Override.
+  - *Bug Fix:* Muted the "一改动就弹窗" (constant conflict popup) defect heavily observed when using background 'Immediate' auto-sync with the Redis provider. Backend endpoints fundamentally enforce un-bypassable `409 Conflict` restrictions tracking purely via device code discrepancy. Repaired frontend `syncToCloud` routines natively injecting runtime `forceOverwrite: true` flags safely bypassing the backend limits ONLY perfectly mapping to authenticated `silent_upload` directives established via local pre-checks whenever local changes identically match or natively branch ahead of the targeted cloud versions.
+  - *UI/UX:* Re-instated standard `cloud_newer` disruption modals expressly triggering selectively on runtime `Immediate` sync cycles successfully shielding user payloads when cloud saves independently bypass local timestamps natively, strictly abiding by user specifications.
+
+- **v8.8.4 (2026-06-19):** Cloud Sync Auto-Trigger Lifecycle Rescue.
+  - *Bug Fix:* Repaired auto-sync triggers getting completely blocked and resetting silently during application bootstrap. Local mutations are now tracked faithfully via `localDirtyAtRef` and `hasUnsyncedChanges` even if the initial synchronization barrier prevents momentary upload. Once the initial bounds check resolves identically against the cloud, the application correctly executes a flush sequence triggering the queue rather than dropping local progress updates silently.
+  - *Architecture:* Fully decoupled tracking of `hasUnsyncedChanges` dirty indicators and component-state `lastUpdated` times arrays. Re-engineered `useCloudSync` to pass a strict success acknowledgment payload executing `onSuccess` solely inside HTTP payload completions ensuring dirty bits are not maliciously cleaned if an upload silently aborts or yields to `cloud_newer` state constraints.
 
 - **v8.8.3 (2026-06-17):** Self-Contained WebDAV Proxy & PROPFIND Probe.
   - *Bug Fix:* Refactored `/api/webdav/proxy.ts` into a self-contained runtime function with zero external shared logic dependencies to prevent Vercel Serverless Function module resolution failures.

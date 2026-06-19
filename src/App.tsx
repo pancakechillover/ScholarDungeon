@@ -347,7 +347,7 @@ function App() {
     isVerifying,
     syncError,
     syncCheckResult,
-    syncToCloud,
+    syncToCloud: baseSyncToCloud,
     resolveConflict,
     fetchFromCloud,
     unbindFromCloud,
@@ -362,6 +362,22 @@ function App() {
   } = useCloudSync(state, setState, setDungeons, setMajorDungeons);
 
   const [hasUnreadFellowship, setHasUnreadFellowship] = useState(false);
+  const [hasUnsyncedChanges, setHasUnsyncedChanges] = useState(() => {
+    return localStorage.getItem('scholars_dungeon_unsynced') === 'true';
+  });
+
+  const localDirtyAtRef = React.useRef<number>(0);
+
+  const syncToCloud = useCallback((forceOverwrite = false, specificState?: AppState, syncMethod: any = 'Manual', options?: any) => {
+    return baseSyncToCloud(forceOverwrite, specificState, syncMethod, {
+      ...options,
+      onSuccess: () => {
+        setHasUnsyncedChanges(false);
+        localDirtyAtRef.current = 0;
+        options?.onSuccess?.();
+      }
+    });
+  }, [baseSyncToCloud]);
   
   const lastTeamDataRef = useRef(state.lastTeamData);
   useEffect(() => {
@@ -432,10 +448,6 @@ function App() {
     }
   }, [state.lastStartOfDayPrompt, state.enableStartOfDayPrompt, state.timezone, state.timeSettings, appReady]);
 
-  const [hasUnsyncedChanges, setHasUnsyncedChanges] = useState(() => {
-    return localStorage.getItem('scholars_dungeon_unsynced') === 'true';
-  });
-
   React.useEffect(() => {
     localStorage.setItem('scholars_dungeon_unsynced', hasUnsyncedChanges.toString());
   }, [hasUnsyncedChanges]);
@@ -465,65 +477,104 @@ function App() {
 
     if (prevSyncDataRef.current !== currentData) {
       prevSyncDataRef.current = currentData;
+      localDirtyAtRef.current = Date.now();
       
-      const isConfiguredForSync = !!(state.syncProvider === 'Google Drive' || state.syncProvider === 'WebDAV' || state.secretCode);
-      if (isConfiguredForSync && !isInitialSyncCheckDone) {
-        if (import.meta.env.DEV) console.log(`[Cloud Sync] Skipped flagging unsynced changes to prevent overwrite prior to initial sync check completion.`);
-        return;
-      }
-
       setHasUnsyncedChanges(true);
+
+      const isCloudSyncConfigured = !!state.secretCode || state.syncProvider === 'WebDAV' || state.syncProvider === 'Google Drive';
+
+      if (!isCloudSyncConfigured || state.autoSyncMode === 'manual' || !isInitialSyncCheckDone) {
+        return; // Don't auto-upload yet, but dirty state is saved
+      }
 
       if (syncTimeoutRef.current) {
         clearTimeout(syncTimeoutRef.current);
         syncTimeoutRef.current = null;
       }
 
-      const isCloudSyncConfigured = !!state.secretCode || state.syncProvider === 'WebDAV' || state.syncProvider === 'Google Drive';
-
-      if (isCloudSyncConfigured && state.autoSyncMode && state.autoSyncMode !== 'manual') {
-        if (state.autoSyncMode === 'debounce') {
-          const delay = (state.autoSyncDebounceSeconds || 10) * 1000;
-          syncTimeoutRef.current = setTimeout(() => {
-            syncToCloud(false, undefined, 'Immediate');
-            lastSyncTimeRef.current = Date.now();
-          }, delay);
-        } else if (state.autoSyncMode === 'interval') {
-          const interval = (state.autoSyncIntervalMinutes || 1) * 60 * 1000;
-          const timeSinceLastSync = Date.now() - lastSyncTimeRef.current;
-          const timeToNextSync = Math.max(0, interval - timeSinceLastSync);
-          
-          syncTimeoutRef.current = setTimeout(() => {
-            syncToCloud(false, undefined, 'Interval polling');
-            lastSyncTimeRef.current = Date.now();
-          }, timeToNextSync);
+      const syncOptions = { 
+        localDirtyAt: localDirtyAtRef.current,
+        onSuccess: () => {
+          setHasUnsyncedChanges(false);
+          localDirtyAtRef.current = 0;
         }
+      };
+
+      if (state.autoSyncMode === 'debounce') {
+        const delay = (state.autoSyncDebounceSeconds || 10) * 1000;
+        syncTimeoutRef.current = setTimeout(() => {
+          syncToCloud(false, undefined, 'Immediate', syncOptions);
+          lastSyncTimeRef.current = Date.now();
+        }, delay);
+      } else if (state.autoSyncMode === 'interval') {
+        const interval = (state.autoSyncIntervalMinutes || 1) * 60 * 1000;
+        const timeSinceLastSync = Date.now() - lastSyncTimeRef.current;
+        const timeToNextSync = Math.max(0, interval - timeSinceLastSync);
+        
+        syncTimeoutRef.current = setTimeout(() => {
+          syncToCloud(false, undefined, 'Interval polling', syncOptions);
+          lastSyncTimeRef.current = Date.now();
+        }, timeToNextSync);
       }
     }
   }, [state, dungeons, majorDungeons, syncToCloud, isInitialSyncCheckDone]);
 
-  const isInitialMountSync = React.useRef(true);
+  // If initial check completes and we have unsynced changes, run auto-sync
   React.useEffect(() => {
-    if (isInitialMountSync.current) {
-      isInitialMountSync.current = false;
+    const isCloudSyncConfigured = !!state.secretCode || state.syncProvider === 'WebDAV' || state.syncProvider === 'Google Drive';
+    if (!isCloudSyncConfigured || !isInitialSyncCheckDone || !hasUnsyncedChanges || state.autoSyncMode === 'manual') {
       return;
     }
-    setHasUnsyncedChanges(false);
-  }, [state.lastUpdated]);
+
+    if (syncTimeoutRef.current) {
+      clearTimeout(syncTimeoutRef.current);
+    }
+
+    const syncOptions = { 
+      localDirtyAt: localDirtyAtRef.current,
+      onSuccess: () => {
+        setHasUnsyncedChanges(false);
+        localDirtyAtRef.current = 0;
+      }
+    };
+
+    if (state.autoSyncMode === 'debounce') {
+      const delay = (state.autoSyncDebounceSeconds || 10) * 1000;
+      syncTimeoutRef.current = setTimeout(() => {
+        syncToCloud(false, undefined, 'Immediate', syncOptions);
+        lastSyncTimeRef.current = Date.now();
+      }, delay);
+    } else if (state.autoSyncMode === 'interval') {
+      const interval = (state.autoSyncIntervalMinutes || 1) * 60 * 1000;
+      const timeSinceLastSync = Date.now() - lastSyncTimeRef.current;
+      const timeToNextSync = Math.max(0, interval - timeSinceLastSync);
+      
+      syncTimeoutRef.current = setTimeout(() => {
+        syncToCloud(false, undefined, 'Interval polling', syncOptions);
+        lastSyncTimeRef.current = Date.now();
+      }, timeToNextSync);
+    }
+  }, [isInitialSyncCheckDone, hasUnsyncedChanges, state.autoSyncMode, state.autoSyncDebounceSeconds, state.autoSyncIntervalMinutes, state.secretCode, state.syncProvider]);
 
   React.useEffect(() => {
     const isCloudSyncConfigured = !!state.secretCode || state.syncProvider === 'WebDAV' || state.syncProvider === 'Google Drive';
 
     const handleVisibilityChange = () => {
-      if (document.hidden && hasUnsyncedChanges && isCloudSyncConfigured) {
+      if (document.hidden && hasUnsyncedChanges && isCloudSyncConfigured && state.autoSyncMode !== 'manual') {
         if (isInitialSyncCheckDone) {
-          syncToCloud(false, undefined, 'Visibility API Active');
+          syncToCloud(false, undefined, 'Visibility API Active', { 
+            localDirtyAt: localDirtyAtRef.current,
+            onSuccess: () => {
+              setHasUnsyncedChanges(false);
+              localDirtyAtRef.current = 0;
+            }
+          });
         }
       } else if (!document.hidden) {
         // Silent check on return to the page
         if (isCloudSyncConfigured) {
           if (isInitialSyncCheckDone) {
-            checkCloudSync();
+            checkCloudSync(false, false);
           } else {
             checkCloudSync(false, true);
           }
@@ -532,9 +583,15 @@ function App() {
     };
 
     const handleBeforeUnload = () => {
-      if (hasUnsyncedChanges && isCloudSyncConfigured) {
+      if (hasUnsyncedChanges && isCloudSyncConfigured && state.autoSyncMode !== 'manual') {
         if (isInitialSyncCheckDone) {
-          syncToCloud(false, undefined, 'Visibility API Active');
+          syncToCloud(false, undefined, 'Visibility API Active', { 
+            localDirtyAt: localDirtyAtRef.current,
+            onSuccess: () => {
+              setHasUnsyncedChanges(false);
+              localDirtyAtRef.current = 0;
+            }
+          });
         }
       }
     };
