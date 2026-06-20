@@ -162,40 +162,14 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
       <button
         onClick={() => setShowTemplates(!showTemplates)}
         className={cn(
-          "flex items-center justify-center gap-1.5 h-full px-2 rounded-l-lg text-[10px] font-bold uppercase tracking-wider transition-all border-r-0",
+          "flex items-center justify-center gap-1.5 h-full px-3 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all",
           showTemplates 
             ? "bg-indigo-500/20 text-indigo-400 border border-indigo-500/30" 
-            : "bg-slate-800 text-slate-500 border border-slate-700 hover:bg-slate-700"
+            : "bg-slate-800 text-slate-500 border border-slate-700 hover:bg-slate-700 hover:text-white"
         )}
       >
         <LayoutTemplate size={12} />
         <span>Templates</span>
-      </button>
-      <button
-        onClick={() => setTemplateMode('empty')}
-        className={cn(
-          "flex items-center gap-1.5 h-full px-2 border border-slate-700 border-l-0 transition-colors text-[10px] font-bold uppercase tracking-wider",
-          templateMode === 'empty' 
-            ? "bg-indigo-500/20 text-indigo-400" 
-            : "bg-slate-800 text-slate-500 hover:bg-slate-700 hover:text-white"
-        )}
-        title="Blank Template Mode: Load and save templates without examples"
-      >
-        <File size={12} />
-        <span>Blank</span>
-      </button>
-      <button
-        onClick={() => setTemplateMode('example')}
-        className={cn(
-          "flex items-center gap-1.5 h-full px-2 border border-slate-700 border-l-0 rounded-r-lg transition-colors text-[10px] font-bold uppercase tracking-wider",
-          templateMode === 'example' 
-            ? "bg-indigo-500/20 text-indigo-400" 
-            : "bg-slate-800 text-slate-500 hover:bg-slate-700 hover:text-white"
-        )}
-        title="Example Template Mode: Load and save templates with examples"
-      >
-        <FileText size={12} />
-        <span>Example</span>
       </button>
 
       {/* Templates Dropdown */}
@@ -207,6 +181,26 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
             exit={{ opacity: 0, y: -10 }}
             className="absolute right-0 sm:left-0 sm:right-auto top-full mt-2 w-64 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl z-50 overflow-hidden"
           >
+            <div className="flex border-b border-slate-800 p-1 bg-slate-900/50 gap-1 relative z-10">
+               <button
+                  onClick={() => {
+                    setTemplateMode('empty');
+                  }}
+                  className={cn("flex-1 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-colors flex items-center justify-center gap-1", templateMode === 'empty' ? "bg-indigo-500/20 text-indigo-400" : "text-slate-500 hover:bg-slate-800 hover:text-white")}
+                  title="Blank Template Mode: Load templates without examples"
+               >
+                 <File size={12} /> Blank
+               </button>
+               <button
+                  onClick={() => {
+                    setTemplateMode('example');
+                  }}
+                  className={cn("flex-1 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-colors flex items-center justify-center gap-1", templateMode === 'example' ? "bg-indigo-500/20 text-indigo-400" : "text-slate-500 hover:bg-slate-800 hover:text-white")}
+                  title="Example Template Mode: Load templates with examples"
+               >
+                 <FileText size={12} /> Example
+               </button>
+            </div>
             <div className="p-2 space-y-1 max-h-48 overflow-y-auto custom-scrollbar">
               {state.reflectionTemplates?.map((template) => (
                 <div key={template.id} className="group relative">
@@ -449,29 +443,33 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
   };
 
   const modalContent = (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 py-12 bg-slate-950/90 backdrop-blur-md overflow-y-auto border-0 m-0"
-    >
+    <AnimatePresence>
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center sm:p-6 lg:p-8 bg-slate-950/90 backdrop-blur-md m-0">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0"
+        onClick={onClose}
+      />
+      
       <motion.div
         initial={{ scale: 0.9, y: 20 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.9, y: 20 }}
-        className="bg-slate-900 border border-indigo-500/30 rounded-[2.5rem] w-full max-w-2xl shadow-2xl overflow-hidden my-auto relative"
+        className="bg-slate-900 border-0 sm:border border-indigo-500/30 rounded-none sm:rounded-[2.5rem] w-[100vw] sm:w-[95vw] sm:max-w-[1400px] h-[100dvh] sm:h-[90vh] shadow-2xl overflow-hidden relative flex flex-col z-10"
       >
         {/* Header */}
-        <div className="p-5 sm:p-8 border-b border-slate-800 flex justify-between items-start bg-gradient-to-r from-indigo-500/10 to-transparent relative overflow-hidden flex-shrink-0">
-          <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none z-0">
-            <Moon size={120} />
+        <div className="py-4 px-6 sm:px-8 border-b border-slate-800 flex justify-between items-start bg-gradient-to-r from-indigo-500/10 to-transparent relative overflow-hidden flex-shrink-0">
+          <div className="absolute top-0 right-0 p-4 opacity-[0.03] pointer-events-none z-0">
+            <Moon size={80} />
           </div>
           <div className="flex justify-between items-start relative z-10 w-full">
-            <div className="space-y-1">
-              <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tighter uppercase italic pr-1 flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4 md:gap-5">
+              <h2 className="text-xl sm:text-2xl font-black text-white tracking-tighter uppercase italic pr-1 flex items-center gap-3">
                 End of the Day <Moon className="text-indigo-400" size={28} />
               </h2>
-              <div className="text-[10px] sm:text-xs font-medium text-slate-500 tracking-wider flex items-center gap-1.5">
+              <div className="text-[10px] sm:text-xs font-medium text-slate-500 tracking-wider flex items-center gap-1.5 mt-1.5 sm:mt-1">
                  {(() => {
                    const parts = today.settlementPeriod.split(' - ');
                    if (parts.length !== 2) return <span>{today.settlementPeriod}</span>;
@@ -499,16 +497,17 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
           </div>
         </div>
 
-        <div className="p-5 sm:p-8 space-y-6 sm:space-y-8 max-h-[80vh] sm:max-h-[70vh] overflow-y-auto custom-scrollbar">
+        <div className="p-5 sm:p-8 overflow-y-auto flex-grow custom-scrollbar lg:flex lg:flex-row lg:items-stretch lg:gap-8 space-y-6 lg:space-y-0 relative h-full">
+          {/* Left Column */}
+          <div className="space-y-2.5 sm:space-y-3 flex flex-col lg:w-1/2 lg:flex-1 lg:h-full">
           {/* Daily Progress */}
-          <div className="bg-slate-950/50 rounded-3xl border border-slate-800 p-5 sm:p-6">
-            <div className="flex items-center justify-between mb-3 px-1">
-              <div className="flex items-center gap-2">
-                <Target size={14} className="text-indigo-400" />
-                <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Daily Progress</h3>
-              </div>
+          <div className="bg-slate-950/50 rounded-2xl border border-slate-800 p-3.5 sm:p-4">
+            <div className="flex items-center justify-between mb-2.5 px-1">
+              <h3 className="text-sm font-bold text-slate-300 flex items-center gap-2">
+                <Target size={16} className="text-indigo-400" /> Daily Progress
+              </h3>
               <span className="text-xs font-bold text-slate-400">
-                {Math.floor(dailyStats.effectiveMinutes)}m <span className="text-slate-600">/</span> {dailyStats.dailyGoal * (state.standardSessionMinutes || 25)}m
+                {Math.floor(dailyStats.effectiveMinutes)}min <span className="text-slate-600">/</span> {dailyStats.dailyGoal * (state.standardSessionMinutes || 25)}min
               </span>
             </div>
             <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
@@ -520,13 +519,17 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
           </div>
 
           {/* Summary Stats */}
-          <div className="space-y-4">
+          <div className="space-y-2">
             <button 
               onClick={() => setIsStatsExpanded(!isStatsExpanded)}
-              className="w-full flex items-center justify-between text-slate-500 hover:text-white transition-colors"
+              className="w-full flex items-center justify-between hover:text-white transition-colors group"
             >
-              <h3 className="text-xs font-bold uppercase tracking-widest">Today's Record</h3>
-              {isStatsExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+              <h3 className="text-sm font-bold text-slate-300 flex items-center gap-2 group-hover:text-white transition-colors">
+                <Calendar size={16} className="text-emerald-400" /> Today's Record
+              </h3>
+              <div className="text-slate-500 group-hover:text-white transition-colors">
+                {isStatsExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+              </div>
             </button>
 
             <AnimatePresence>
@@ -537,19 +540,26 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
                   exit={{ height: 0, opacity: 0 }}
                   className="overflow-hidden"
                 >
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                    <StatCard icon={Sword} label={"Time"} value={`${Math.floor(dailyStats.effectiveMinutes)}m`} color="text-indigo-400" />
-                    <StatCard icon={Coins} label="Gold" value={dailyStats.gold} color="text-amber-400" />
-                    <StatCard icon={Zap} label="XP" value={dailyStats.xp} color="text-emerald-400" />
-                    {dailyStats.levels > 0 && <StatCard icon={Trophy} label="Levels" value={`+${dailyStats.levels}`} color="text-rose-400" />}
-                    <StatCard icon={Calendar} label="Streak" value={`${dailyStats.streak} Days`} color="text-orange-400" />
-                    {(dailyStats.quests > 0 || dailyStats.achievements > 0 || dailyStats.dungeons > 0) && (
-                      <StatCard 
-                        icon={Target} 
-                        label="Completed" 
-                        value={`${dailyStats.quests + dailyStats.achievements + dailyStats.dungeons}`} 
-                        color="text-blue-400" 
-                      />
+                  <div className="space-y-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5">
+                      <StatCard icon={Sword} label={"Time"} value={`${Math.floor(dailyStats.effectiveMinutes)}min`} color="text-indigo-400" />
+                      <StatCard icon={Coins} label="Gold" value={dailyStats.gold} color="text-amber-400" />
+                      <StatCard icon={Zap} label="XP" value={dailyStats.xp} color="text-emerald-400" />
+                      <StatCard icon={Calendar} label="Streak" value={`${dailyStats.streak} Days`} color="text-orange-400" />
+                    </div>
+
+                    {(dailyStats.levels > 0 || dailyStats.quests > 0 || dailyStats.achievements > 0 || dailyStats.dungeons > 0) && (
+                      <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                        {dailyStats.levels > 0 && <StatCard icon={Trophy} label="Levels" value={`+${dailyStats.levels}`} color="text-rose-400" />}
+                        {(dailyStats.quests > 0 || dailyStats.achievements > 0 || dailyStats.dungeons > 0) && (
+                          <StatCard 
+                            icon={Target} 
+                            label="Completed" 
+                            value={`${dailyStats.quests + dailyStats.achievements + dailyStats.dungeons}`} 
+                            color="text-blue-400" 
+                          />
+                        )}
+                      </div>
                     )}
                   </div>
 
@@ -582,9 +592,11 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
           </div>
 
         {/* Mood Selection */}
-          <div className="pt-6 sm:pt-8 border-t border-slate-800/50 space-y-4">
-            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Daily Feelings</h3>
-            <div className="flex flex-wrap justify-center gap-3 py-4 overflow-y-visible">
+          <div className="bg-slate-800/20 rounded-xl p-3 sm:p-4 border border-slate-700/30 space-y-2.5">
+            <h3 className="text-sm font-bold text-slate-300 flex items-center gap-2">
+              <Heart size={16} className="text-rose-400" /> Daily Feelings
+            </h3>
+            <div className="flex flex-wrap justify-center gap-2.5 py-1.5 overflow-y-visible">
               {MOOD_OPTIONS.filter(m => (state.enabledMoods || DEFAULT_ENABLED_MOODS).includes(m.id)).map((m) => {
                 const isSelected = mood === m.id;
                 const Icon = m.icon;
@@ -593,7 +605,7 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
                     key={m.id}
                     onClick={() => setMood(isSelected ? "" : m.id)}
                     className={cn(
-                      "flex flex-col items-center justify-center min-w-[68px] p-2.5 rounded-2xl border transition-all pointer-events-auto",
+                      "flex flex-col items-center justify-center min-w-[60px] sm:min-w-[64px] p-2 rounded-xl border transition-all pointer-events-auto",
                       isSelected 
                         ? `${m.bg} ${m.border} ${m.color} scale-125 shadow-xl z-10` 
                         : "bg-slate-950/50 border-slate-800 text-slate-500 hover:bg-slate-800 hover:border-slate-700 hover:scale-110"
@@ -606,17 +618,24 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
               })}
             </div>
           </div>
-          <div className="space-y-4">
-            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Efficiency Rating</h3>
-            <div className="flex justify-center gap-1 sm:gap-2 p-4 sm:p-6 bg-slate-950/50 rounded-3xl border border-slate-800">
+          <div className="bg-slate-800/20 rounded-xl p-3 sm:p-4 border border-slate-700/30 space-y-2.5 lg:flex-1 lg:flex lg:flex-col lg:justify-between">
+            <h3 className="text-sm font-bold text-slate-300 flex items-center gap-2">
+              <Star size={16} className="text-amber-400" /> Efficiency Rating
+            </h3>
+            <div className="flex justify-center gap-1 sm:gap-1.5 p-3 sm:p-3.5 bg-slate-950/50 rounded-2xl border border-slate-800 lg:flex-1 lg:flex lg:items-center lg:justify-center">
               {renderStars()}
             </div>
           </div>
+          </div>
 
+          {/* Right Column */}
+          <div className="space-y-4 flex flex-col lg:w-1/2 lg:flex-1 min-h-[500px] lg:h-full">
           {/* Daily Reflection */}
-          <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest shrink-0">Daily Reflection</h3>
+          <div className="bg-slate-800/20 rounded-2xl p-4 sm:p-6 border border-slate-700/30 space-y-4 flex flex-col flex-1">
+            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3">
+              <h3 className="text-sm font-bold text-slate-300 flex items-center gap-2 shrink-0">
+                <MessageSquare size={16} className="text-sky-400" /> Daily Reflection
+              </h3>
               <div className="flex flex-wrap items-center gap-2">
                 <button
                   onClick={() => setIsMarkdownEnabled(!isMarkdownEnabled)}
@@ -685,17 +704,17 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
             
             {/* Split Markdown Pane (Regular Modal View) */}
             <div className={cn(
-              "grid gap-4 transition-all duration-300",
-              isMarkdownEnabled ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1"
+              "grid gap-4 transition-all duration-300 flex-1 h-full min-h-[300px]",
+              isMarkdownEnabled ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2" : "grid-cols-1"
             )}>
               <textarea
                 value={reflection}
                 onChange={(e) => setReflection(e.target.value)}
                 placeholder="Write down your thoughts, achievements, or what you learned today..."
-                className="w-full min-h-[160px] bg-slate-950 border border-slate-800 rounded-3xl p-4 text-sm text-white focus:outline-none focus:border-indigo-500 transition-all resize-y"
+                className="w-full h-full min-h-[160px] bg-slate-950 border border-slate-800 rounded-3xl p-4 text-sm text-white focus:outline-none focus:border-indigo-500 transition-all resize-none"
               />
               {isMarkdownEnabled && (
-                <div className="w-full min-h-[160px] bg-slate-950/30 border border-slate-800/50 rounded-3xl p-4 overflow-y-auto custom-scrollbar">
+                <div className="w-full h-full min-h-[160px] bg-slate-950/30 border border-slate-800/50 rounded-3xl p-4 overflow-y-auto custom-scrollbar">
                   {reflection ? (
                     <div className="prose prose-invert prose-sm max-w-none prose-p:text-slate-300 prose-headings:text-slate-100 prose-strong:text-slate-200 prose-li:text-slate-300">
                       <Markdown>{reflection}</Markdown>
@@ -708,15 +727,6 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
             </div>
           </div>
 
-          {/* Encouragement */}
-          <div className="text-center p-8 bg-indigo-500/5 rounded-3xl border border-indigo-500/10">
-            <p className="text-indigo-400 font-bold italic pr-1 text-lg mb-1">Rest well, Seeker.</p>
-            <p className="text-slate-500 text-sm">The dungeon will be waiting for your return tomorrow.</p>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="p-5 sm:p-8 bg-slate-950/50 border-t border-slate-800">
           <button
             onClick={() => {
               localStorage.removeItem('scholar_reflection_draft');
@@ -726,14 +736,16 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
               onSave(today.dateString, rating, reflection, mood);
               onNavigateToStats();
             }}
-            className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-lg shadow-indigo-500/20"
+            className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-lg shadow-indigo-500/20 flex-shrink-0"
           >
             <span>Save & Rest</span>
             <ArrowRight size={20} />
           </button>
+          </div>
         </div>
       </motion.div>
-    </motion.div>
+      </div>
+    </AnimatePresence>
   );
 
   return (
@@ -757,13 +769,13 @@ export const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ state, dun
 };
 
 const StatCard: React.FC<{ icon: any, label: string, value: string | number, color: string }> = ({ icon: Icon, label, value, color }) => (
-  <div className="bg-slate-800/50 p-4 rounded-2xl border border-slate-700 flex items-center gap-3">
-    <div className={cn("p-2 rounded-xl bg-slate-900", color)}>
-      <Icon size={18} />
+  <div className="bg-slate-800/50 p-2.5 sm:p-3 rounded-xl border border-slate-700 flex items-center gap-2.5 min-w-0">
+    <div className={cn("p-1.5 rounded-lg bg-slate-900 flex-shrink-0", color)}>
+      <Icon size={16} />
     </div>
-    <div className="min-w-0">
-      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest truncate">{label}</p>
-      <p className="text-lg font-black text-white leading-none truncate">{value}</p>
+    <div className="min-w-0 flex-1">
+      <p className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-wider truncate">{label}</p>
+      <p className="text-base sm:text-lg font-black text-white leading-none truncate mt-0.5">{value}</p>
     </div>
   </div>
 );

@@ -19,12 +19,19 @@ import {
   EyeOff,
   Maximize2,
   Upload,
-  Download
+  Download,
+  Plus,
+  Trash2,
+  CheckCircle,
+  Circle,
+  Calendar,
+  ListPlus,
+  Target
 } from 'lucide-react';
 import Markdown from 'react-markdown';
 import { TimePicker } from './TimePicker';
 import { useScrollLock } from '../hooks/useScrollLock';
-import { AppState } from '../types';
+import { AppState, Dungeon, TodayTodo } from '../types';
 import { cn } from '../lib/utils';
 import { getSettlementDay } from '../lib/utils';
 import { ConfirmModal } from './ConfirmModal';
@@ -32,6 +39,7 @@ import { ImmersiveReflectionModal } from './ImmersiveReflectionModal';
 
 interface StartOfDayModalProps {
   state: AppState;
+  dungeons: Dungeon[];
   onClose: () => void;
   onSave: (date: string, sleepTime: string, wakeTime: string, sleepDurationMin: number, reflection: string, mood?: string) => void;
   repairStreak?: (dateStr: string) => void;
@@ -39,7 +47,7 @@ interface StartOfDayModalProps {
   onUpdateState?: (update: Partial<AppState>) => void;
 }
 
-export const StartOfDayModal: React.FC<StartOfDayModalProps> = ({ state, onClose, onSave, initialDateStr, onUpdateState, repairStreak }) => {
+export const StartOfDayModal: React.FC<StartOfDayModalProps> = ({ state, dungeons, onClose, onSave, initialDateStr, onUpdateState, repairStreak }) => {
   useScrollLock(true);
   
   const today = useMemo(() => {
@@ -133,6 +141,51 @@ export const StartOfDayModal: React.FC<StartOfDayModalProps> = ({ state, onClose
   const [templateToDelete, setTemplateToDelete] = useState<string | null>(null);
   const [showNoMedalAlert, setShowNoMedalAlert] = useState(false);
 
+  // Agenda / Todo States & Handlers
+  const [newTodoTitle, setNewTodoTitle] = useState('');
+  const [showExpeditionPicker, setShowExpeditionPicker] = useState(false);
+
+  const allTodos = state.todayTodos || [];
+  const startDayTodos = useMemo(() => {
+    return allTodos.filter(t => t.date === todayStr || (!t.date && todayStr === getSettlementDay(new Date(), state.timeSettings)));
+  }, [allTodos, todayStr, state.timeSettings]);
+
+  const handleAddTodo = (titleText: string, targetDungeonId?: string) => {
+    if (!titleText.trim() || !onUpdateState) return;
+    const newTodo: TodayTodo = {
+      id: Math.random().toString(36).substr(2, 9),
+      title: titleText.trim(),
+      dungeonId: targetDungeonId,
+      completed: false,
+      date: todayStr
+    };
+    onUpdateState({
+      todayTodos: [...allTodos, newTodo]
+    });
+    setNewTodoTitle('');
+    setShowExpeditionPicker(false);
+  };
+
+  const handleToggleTodo = (id: string) => {
+    if (!onUpdateState) return;
+    const updated = allTodos.map(t => 
+      t.id === id ? { ...t, completed: !t.completed } : t
+    );
+    onUpdateState({ todayTodos: updated });
+  };
+
+  const handleRemoveTodo = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!onUpdateState) return;
+    const updated = allTodos.filter(t => t.id !== id);
+    onUpdateState({ todayTodos: updated });
+  };
+
+  const activeExpeditions = useMemo(() => {
+    if (!dungeons) return [];
+    return dungeons.filter(d => d.status !== 'completed' && d.status !== 'archived');
+  }, [dungeons]);
+
   const { sleepDurationMin, isTimeValid } = useMemo(() => {
     if (!sleepTime || !wakeTime) return { sleepDurationMin: 0, isTimeValid: false };
     const [sH, sM] = sleepTime.split(':').map(Number);
@@ -207,40 +260,14 @@ export const StartOfDayModal: React.FC<StartOfDayModalProps> = ({ state, onClose
       <button
         onClick={() => setShowTemplates(!showTemplates)}
         className={cn(
-          "flex items-center justify-center gap-1.5 h-full px-2 rounded-l-lg text-[10px] font-bold uppercase tracking-wider transition-all border-r-0",
+          "flex items-center justify-center gap-1.5 h-full px-3 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all",
           showTemplates 
             ? "bg-indigo-500/20 text-indigo-400 border border-indigo-500/30" 
-            : "bg-slate-800 text-slate-500 border border-slate-700 hover:bg-slate-700"
+            : "bg-slate-800 text-slate-500 border border-slate-700 hover:bg-slate-700 hover:text-white"
         )}
       >
         <LayoutTemplate size={12} />
         <span>Templates</span>
-      </button>
-      <button
-        onClick={() => setTemplateMode('empty')}
-        className={cn(
-          "flex items-center gap-1.5 h-full px-2 border border-slate-700 border-l-0 transition-colors text-[10px] font-bold uppercase tracking-wider",
-          templateMode === 'empty' 
-            ? "bg-indigo-500/20 text-indigo-400" 
-            : "bg-slate-800 text-slate-500 hover:bg-slate-700 hover:text-white"
-        )}
-        title="Blank Template Mode: Load and save templates without examples"
-      >
-        <File size={12} />
-        <span>Blank</span>
-      </button>
-      <button
-        onClick={() => setTemplateMode('example')}
-        className={cn(
-          "flex items-center gap-1.5 h-full px-2 border border-slate-700 border-l-0 rounded-r-lg transition-colors text-[10px] font-bold uppercase tracking-wider",
-          templateMode === 'example' 
-            ? "bg-indigo-500/20 text-indigo-400" 
-            : "bg-slate-800 text-slate-500 hover:bg-slate-700 hover:text-white"
-        )}
-        title="Example Template Mode: Load and save templates with examples"
-      >
-        <FileText size={12} />
-        <span>Example</span>
       </button>
 
       {/* Templates Dropdown */}
@@ -252,6 +279,26 @@ export const StartOfDayModal: React.FC<StartOfDayModalProps> = ({ state, onClose
             exit={{ opacity: 0, y: -10 }}
             className="absolute right-0 sm:left-0 sm:right-auto top-full mt-2 w-64 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl z-50 overflow-hidden"
           >
+            <div className="flex border-b border-slate-800 p-1 bg-slate-900/50 gap-1 relative z-10">
+               <button
+                  onClick={() => {
+                    setTemplateMode('empty');
+                  }}
+                  className={cn("flex-1 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-colors flex items-center justify-center gap-1", templateMode === 'empty' ? "bg-indigo-500/20 text-indigo-400" : "text-slate-500 hover:bg-slate-800 hover:text-white")}
+                  title="Blank Template Mode: Load templates without examples"
+               >
+                 <File size={12} /> Blank
+               </button>
+               <button
+                  onClick={() => {
+                    setTemplateMode('example');
+                  }}
+                  className={cn("flex-1 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-colors flex items-center justify-center gap-1", templateMode === 'example' ? "bg-indigo-500/20 text-indigo-400" : "text-slate-500 hover:bg-slate-800 hover:text-white")}
+                  title="Example Template Mode: Load templates with examples"
+               >
+                 <FileText size={12} /> Example
+               </button>
+            </div>
             <div className="p-2 space-y-1 max-h-48 overflow-y-auto custom-scrollbar">
               {state.reflectionTemplates?.map((template) => (
                 <div key={template.id} className="group relative">
@@ -376,7 +423,7 @@ export const StartOfDayModal: React.FC<StartOfDayModalProps> = ({ state, onClose
 
   const modalContent = (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 py-12 bg-slate-950/90 backdrop-blur-md overflow-y-auto border-0 m-0">
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center sm:p-6 lg:p-8 bg-slate-950/90 backdrop-blur-md m-0">
         <motion.div
            initial={{ opacity: 0 }}
            animate={{ opacity: 1 }}
@@ -389,19 +436,19 @@ export const StartOfDayModal: React.FC<StartOfDayModalProps> = ({ state, onClose
            initial={{ opacity: 0, scale: 0.95, y: 20 }}
            animate={{ opacity: 1, scale: 1, y: 0 }}
            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-           className="bg-slate-900 border border-indigo-500/30 rounded-[2.5rem] w-full max-w-2xl shadow-2xl overflow-hidden my-auto relative flex flex-col"
+           className="bg-slate-900 border-0 sm:border border-indigo-500/30 rounded-none sm:rounded-[2.5rem] w-[100vw] sm:w-[95vw] sm:max-w-[1400px] h-[100dvh] sm:h-[90vh] shadow-2xl overflow-hidden relative flex flex-col z-10"
         >
-          <div className="p-5 sm:p-8 border-b border-slate-800 flex justify-between items-start bg-gradient-to-r from-indigo-500/10 to-transparent relative overflow-hidden flex-shrink-0">
-            <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none z-0">
-              <Sun size={120} />
+          <div className="py-4 px-6 sm:px-8 border-b border-slate-800 flex justify-between items-start bg-gradient-to-r from-indigo-500/10 to-transparent relative overflow-hidden flex-shrink-0">
+            <div className="absolute top-0 right-0 p-4 opacity-[0.03] pointer-events-none z-0">
+              <Sun size={80} />
             </div>
             
             <div className="flex justify-between items-start relative z-10 w-full">
-              <div className="space-y-1">
-                <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tighter uppercase italic pr-1 flex items-center gap-3">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4 md:gap-5">
+                <h2 className="text-xl sm:text-2xl font-black text-white tracking-tighter uppercase italic pr-1 flex items-center gap-3">
                   Start of the Day <Sun className="text-amber-400" size={28} />
                 </h2>
-                <div className="text-[10px] sm:text-xs font-medium text-slate-500 tracking-wider flex items-center gap-1.5">
+                <div className="text-[10px] sm:text-xs font-medium text-slate-500 tracking-wider flex items-center gap-1.5 mt-1.5 sm:mt-1">
                    {(() => {
                      const parts = today.settlementPeriod.split(' - ');
                      if (parts.length !== 2) return <span>{today.settlementPeriod}</span>;
@@ -430,14 +477,16 @@ export const StartOfDayModal: React.FC<StartOfDayModalProps> = ({ state, onClose
             </div>
           </div>
 
-          <div className="p-2 sm:p-6 overflow-y-auto space-y-6 flex-grow custom-scrollbar">
+          <div className="p-4 sm:p-6 lg:p-8 overflow-y-auto flex-grow custom-scrollbar lg:grid lg:grid-cols-2 lg:gap-8 space-y-6 lg:space-y-0 relative">
+             {/* Left Column */}
+             <div className="space-y-2.5 sm:space-y-3 flex flex-col">
              {/* Sleep Tracker */}
-             <div className="bg-slate-800/20 rounded-2xl p-4 sm:p-6 border border-slate-700/30">
-                <h3 className="text-sm font-bold text-slate-300 flex items-center gap-2 mb-4">
+             <div className="bg-slate-800/20 rounded-xl p-3 sm:p-4 border border-slate-700/30">
+                <h3 className="text-sm font-bold text-slate-300 flex items-center gap-2 mb-2.5">
                    <Moon className="text-indigo-400" size={16} /> Sleep Tracker 
                 </h3>
-                <div className="flex flex-col sm:flex-row gap-4 items-center">
-                   <div className="flex-1 w-full flex items-center gap-4 bg-slate-950/50 rounded-xl p-3 border border-slate-800/50">
+                <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 items-center">
+                   <div className="flex-1 w-full flex items-center gap-3 bg-slate-950/50 rounded-xl p-2.5 border border-slate-800/50">
                      <Moon size={18} className="text-indigo-400" />
                      <div className="w-full">
                        <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Fell Asleep</label>
@@ -449,7 +498,7 @@ export const StartOfDayModal: React.FC<StartOfDayModalProps> = ({ state, onClose
                      </div>
                    </div>
                    
-                   <div className="flex-1 w-full flex items-center gap-4 bg-slate-950/50 rounded-xl p-3 border border-slate-800/50">
+                   <div className="flex-1 w-full flex items-center gap-3 bg-slate-950/50 rounded-xl p-2.5 border border-slate-800/50">
                      <Sun size={18} className="text-amber-400" />
                      <div className="w-full">
                        <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Woke Up</label>
@@ -461,18 +510,18 @@ export const StartOfDayModal: React.FC<StartOfDayModalProps> = ({ state, onClose
                      </div>
                    </div>
 
-                   <div className="sm:w-32 w-full flex items-center justify-center gap-2 bg-emerald-500/10 text-emerald-400 rounded-xl p-3 border border-emerald-500/20 flex-shrink-0">
+                   <div className="sm:w-32 w-full flex items-center justify-center gap-2 bg-emerald-500/10 text-emerald-400 rounded-xl p-2.5 border border-emerald-500/20 flex-shrink-0">
                      <Clock size={18} />
                      <span className="font-bold whitespace-nowrap">
-                       {durationHours}h {durationMins}m
+                       {durationHours}h {durationMins}min
                      </span>
                    </div>
                 </div>
              </div>
 
              {/* Streak */}
-             <div className="bg-slate-800/20 rounded-2xl p-4 sm:p-6 border border-slate-700/30">
-                <div className="flex items-center justify-between mb-4">
+             <div className="bg-slate-800/20 rounded-xl p-3 sm:p-4 border border-slate-700/30">
+                <div className="flex items-center justify-between mb-2.5">
                   <h3 className="text-sm font-bold text-slate-300 flex items-center gap-2">
                      <Flame className="text-orange-500" size={16} /> 7-Day Activity Record
                   </h3>
@@ -480,7 +529,7 @@ export const StartOfDayModal: React.FC<StartOfDayModalProps> = ({ state, onClose
                     {state.streak} Days
                   </span>
                 </div>
-                <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 flex justify-between">
+                <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 flex justify-between">
                   {streakData.map((day) => (
                     <div key={day.dateStr} className="flex flex-col items-center gap-1">
                       <span className="text-[9px] font-medium text-slate-500 mb-0.5 tracking-wider">
@@ -533,9 +582,140 @@ export const StartOfDayModal: React.FC<StartOfDayModalProps> = ({ state, onClose
                 </div>
              </div>
 
+             {/* Today's Agenda Card */}
+             <div className="bg-slate-800/20 rounded-xl p-3 sm:p-4 border border-slate-700/30 flex flex-col flex-1 min-h-[220px]">
+                <div className="flex items-center justify-between mb-2.5">
+                  <h3 className="text-sm font-bold text-slate-300 flex items-center gap-2">
+                     <Target className="text-indigo-400" size={16} /> Today's Agenda
+                  </h3>
+                  <span className="text-[10px] font-bold text-indigo-400 bg-indigo-400/10 px-2 py-0.5 rounded-lg flex items-center gap-1">
+                    {startDayTodos.filter(t => t.completed).length} / {startDayTodos.length}
+                  </span>
+                </div>
+
+                {/* Input form */}
+                <div className="flex gap-1.5 mb-3 relative">
+                  <input
+                    type="text"
+                    placeholder="Focus target for today..."
+                    value={newTodoTitle}
+                    onChange={e => setNewTodoTitle(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddTodo(newTodoTitle);
+                      }
+                    }}
+                    className="flex-grow bg-slate-950/50 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500/50 transition-all"
+                  />
+                  
+                  <button 
+                    type="button"
+                    onClick={() => setShowExpeditionPicker(!showExpeditionPicker)}
+                    className={cn(
+                      "p-2 rounded-xl border flex items-center justify-center transition-all shrink-0",
+                      showExpeditionPicker 
+                        ? "bg-indigo-500/20 border-indigo-500/50 text-indigo-400" 
+                        : "bg-slate-950/30 border-slate-800 text-slate-400 hover:text-white"
+                    )}
+                    title="Select from active expeditions"
+                  >
+                    <ListPlus size={16} />
+                  </button>
+
+                  <button 
+                    onClick={() => handleAddTodo(newTodoTitle)}
+                    disabled={!newTodoTitle.trim()}
+                    className="bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 disabled:text-slate-500 text-white rounded-xl px-4 py-2 text-xs font-bold transition-all flex items-center justify-center shrink-0"
+                  >
+                    <Plus size={16} />
+                  </button>
+
+                  {showExpeditionPicker && (
+                    <div className="absolute right-0 bottom-[calc(100%+8px)] w-60 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden z-50">
+                      <div className="p-2 sm:p-2.5 border-b border-slate-800 bg-slate-900/90 flex justify-between items-center mr-1">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Select Expedition</span>
+                        <span className="text-[9px] text-slate-600">Active only</span>
+                      </div>
+                      <div className="max-h-40 overflow-y-auto p-1.5 space-y-1 custom-scrollbar">
+                        {activeExpeditions.length === 0 ? (
+                          <div className="text-[11px] text-slate-500 text-center py-4">No active expeditions</div>
+                        ) : (
+                          activeExpeditions.map(d => (
+                            <button
+                              key={d.id}
+                              type="button"
+                              onClick={() => {
+                                handleAddTodo(d.name, d.id);
+                              }}
+                              className="w-full text-left px-2 py-1.5 rounded-lg hover:bg-slate-800 text-[11px] font-medium text-slate-300 hover:text-white transition-colors flex items-center gap-1.5 truncate"
+                            >
+                              <Target size={12} className="text-indigo-400 shrink-0" />
+                              <span className="truncate">{d.name}</span>
+                            </button>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Todos List */}
+                <div className="flex-grow overflow-y-auto max-h-[160px] pr-0.5 custom-scrollbar space-y-1.5">
+                  {startDayTodos.length === 0 ? (
+                    <div className="h-full min-h-[100px] flex flex-col items-center justify-center border border-dashed border-slate-800/60 rounded-xl py-4 bg-slate-950/20 text-center">
+                      <Target size={20} className="text-slate-600 mb-1.5" />
+                      <p className="text-slate-500 text-xs font-medium mr-1">Your agenda is clear.</p>
+                      <p className="text-slate-600 text-[10px] mt-0.5 w-full">Let's set goals to start strong!</p>
+                    </div>
+                  ) : (
+                    startDayTodos.map(todo => (
+                      <div 
+                        key={todo.id}
+                        onClick={() => handleToggleTodo(todo.id)}
+                        className={cn(
+                          "group flex items-center gap-2 p-2 rounded-xl border transition-all cursor-pointer text-xs",
+                          todo.completed 
+                            ? "bg-slate-900/10 border-slate-900/30 opacity-50" 
+                            : "bg-slate-950/40 border-slate-800 hover:border-indigo-500/30"
+                        )}
+                      >
+                        <button className={cn("flex-shrink-0 transition-colors", todo.completed ? "text-indigo-500" : "text-slate-500 group-hover:text-slate-400")}>
+                          {todo.completed ? <CheckCircle size={16} className="fill-indigo-500/10" /> : <Circle size={16} />}
+                        </button>
+                        
+                        <div className="flex-grow min-w-0 pr-1">
+                          <p className={cn(
+                            "font-medium truncate transition-all text-slate-200",
+                            todo.completed && "text-slate-500 line-through"
+                          )}>
+                            {todo.title}
+                          </p>
+                          {todo.dungeonId && (
+                            <p className="text-[9px] text-slate-500 flex items-center gap-0.5 mt-0.5">
+                              <Calendar size={8} /> Expedition
+                            </p>
+                          )}
+                        </div>
+
+                        <button 
+                          onClick={(e) => handleRemoveTodo(todo.id, e)}
+                          className="w-6 h-6 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 flex items-center justify-center transition-all duration-200 shrink-0"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
+             </div>
+             </div>
+
+             {/* Right Column */}
+             <div className="space-y-6 flex flex-col min-h-[500px] h-full">
              {/* Morning Reflection / Intentions */}
-             <div className="bg-slate-800/20 rounded-2xl p-4 sm:p-6 border border-slate-700/30 space-y-4 flex-col">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+             <div className="bg-slate-800/20 rounded-2xl p-4 sm:p-6 border border-slate-700/30 space-y-4 flex flex-col flex-1">
+                <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
                   <h3 className="text-sm font-bold text-slate-300 flex items-center gap-2">
                     <MessageSquare size={16} className="text-sky-400" /> Daily Reflection
                   </h3>
@@ -603,17 +783,17 @@ export const StartOfDayModal: React.FC<StartOfDayModalProps> = ({ state, onClose
                 </div>
                 
                 <div className={cn(
-                  "grid gap-4 transition-all duration-300",
-                  isMarkdownEnabled ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1"
+                  "grid gap-4 transition-all duration-300 flex-1 h-full min-h-[300px]",
+                  isMarkdownEnabled ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2" : "grid-cols-1"
                 )}>
                   <textarea
                     value={reflection}
                     onChange={(e) => setReflection(e.target.value)}
                     placeholder="What are your main focuses today? How are you feeling?"
-                    className="w-full min-h-[160px] bg-slate-950 border border-slate-800 rounded-3xl p-4 text-sm text-white focus:outline-none focus:border-indigo-500 transition-all resize-y"
+                    className="w-full h-full min-h-[160px] bg-slate-950 border border-slate-800 rounded-3xl p-4 text-sm text-white focus:outline-none focus:border-indigo-500 transition-all resize-none"
                   />
                   {isMarkdownEnabled && (
-                    <div className="w-full min-h-[160px] bg-slate-950/30 border border-slate-800/50 rounded-3xl p-4 overflow-y-auto custom-scrollbar">
+                    <div className="w-full h-full min-h-[160px] bg-slate-950/30 border border-slate-800/50 rounded-3xl p-4 overflow-y-auto custom-scrollbar">
                       {reflection ? (
                         <div className="prose prose-invert prose-sm max-w-none prose-p:text-slate-300 prose-headings:text-slate-100 prose-strong:text-slate-200 prose-li:text-slate-300">
                           <Markdown>{reflection}</Markdown>
@@ -625,27 +805,26 @@ export const StartOfDayModal: React.FC<StartOfDayModalProps> = ({ state, onClose
                   )}
                 </div>
              </div>
-          </div>
-          
-          <div className="p-6 border-t border-slate-800/50 bg-slate-900/50 flex-shrink-0 flex flex-col gap-3">
-            {!isTimeValid && (
-              <div className="flex items-center justify-center gap-1.5 text-rose-400 bg-rose-500/10 py-2 rounded-lg text-xs font-bold uppercase tracking-wider">
-                <X size={14} /> Sleep must be logically before wake (max 16h)
-              </div>
-            )}
-            <button
-              onClick={handleSave}
-              disabled={!isTimeValid}
-              className={cn(
-                "w-full py-4 rounded-xl font-bold uppercase tracking-widest text-sm transition-all shadow-lg flex items-center justify-center gap-2",
-                isTimeValid
-                  ? "bg-emerald-600 hover:bg-emerald-500 text-white hover:shadow-emerald-500/20"
-                  : "bg-slate-800 text-slate-500 cursor-not-allowed"
-              )}
-            >
-              <CheckCircle2 size={18} />
-              Start My Focus
-            </button>
+
+             {!isTimeValid && (
+               <div className="flex items-center justify-center gap-1.5 text-rose-400 bg-rose-500/10 py-2 rounded-lg text-xs font-bold uppercase tracking-wider flex-shrink-0 mt-3">
+                 <X size={14} /> Sleep must be logically before wake (max 16h)
+               </div>
+             )}
+             <button
+               onClick={handleSave}
+               disabled={!isTimeValid}
+               className={cn(
+                 "w-full py-4 rounded-xl font-bold uppercase tracking-widest text-sm transition-all shadow-lg flex items-center justify-center gap-2 flex-shrink-0",
+                 isTimeValid
+                   ? "bg-emerald-600 hover:bg-emerald-500 text-white hover:shadow-emerald-500/20"
+                   : "bg-slate-800 text-slate-500 cursor-not-allowed"
+               )}
+             >
+               <CheckCircle2 size={18} />
+               Start My Focus
+             </button>
+             </div>
           </div>
         </motion.div>
 

@@ -4,7 +4,8 @@ export type SyncDecision =
   | 'block_cloud_newer'
   | 'block_read_failed'
   | 'force_upload'
-  | 'ask_local_newer';
+  | 'ask_local_newer'
+  | 'device_mismatch_conflict';
 
 interface SyncDecisionParams {
   localFingerprint: string;
@@ -14,6 +15,7 @@ interface SyncDecisionParams {
   cloudExists: boolean;
   cloudReadError?: boolean;
   forceOverwrite: boolean;
+  identitiesMatch?: boolean;
 }
 
 export function decideCloudSyncAction({
@@ -23,7 +25,8 @@ export function decideCloudSyncAction({
   cloudTime,
   cloudExists,
   cloudReadError,
-  forceOverwrite
+  forceOverwrite,
+  identitiesMatch = true
 }: SyncDecisionParams): SyncDecision {
   if (cloudReadError) {
     return 'block_read_failed';
@@ -45,17 +48,21 @@ export function decideCloudSyncAction({
     return 'silent_upload'; // To refresh metadata
   }
 
+  // Critical Mismatch Guard: If device codes strictly differ, NEVER silently overwrite.
+  // Force a conflict modal, unless explicitly forced by user.
+  if (!identitiesMatch) {
+    if (cloudTime > localTime) {
+      return 'block_cloud_newer';
+    }
+    return 'device_mismatch_conflict';
+  }
+
   // Fingerprints differ. Check timestamps.
   if (cloudTime > localTime) { // cloud is newer
     return 'block_cloud_newer';
   }
 
-  // Local is newer. In auto sync, we want to push it silently.
-  // In manual explicit check, we MIGHT want to show 'local_newer', but wait...
-  // User said: "local_newer 不弹窗，静默上传。"
-  // "如果用户只是点击 Manual Check / Verify，可以显示本地和云端比较弹窗，但这应该在调用方根据情况区分" -> wait, if we are in checkCloudSync(forceModal=true), we return 'ask_local_newer'.
-  // Actually, let's just return 'silent_upload' here and the caller can override if it's forceModal.
-  // We'll let `decideCloudSyncAction` dictate the automatic logic.
-  
+  // Local is newer AND identities match. 
+  // Safe to silently overwrite.
   return 'silent_upload';
 }

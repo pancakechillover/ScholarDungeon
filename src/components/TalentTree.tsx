@@ -291,7 +291,7 @@ export const TalentTree = React.memo<TalentTreeProps>(({
 
                       {/* Tooltip for collapsed mode or hover info */}
                       <div className={cn(
-                        "absolute z-[110] invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none",
+                        "absolute z-[110] invisible group-hover:visible transition-opacity transition-all duration-200 pointer-events-none",
                         isCollapsed 
                           ? "bottom-full left-1/2 -translate-x-1/2 mb-3 w-48" 
                           : "bottom-full left-1/2 -translate-x-1/2 mb-3 w-48 lg:bottom-auto lg:mb-0 lg:translate-x-0 lg:w-56",

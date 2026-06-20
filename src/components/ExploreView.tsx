@@ -618,7 +618,7 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
 
           {/* Right Column: Active Talents & Current Build */}
           {!isFullscreenExplore && (
-            <div className="w-full h-full flex flex-col gap-6 min-h-0 overflow-y-auto custom-scrollbar pr-1">
+            <div className="w-full h-full flex flex-col gap-6 min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar pr-1">
               {/* Timer Settings (Moved Here for Wide Screens) */}
               <TimerSettings 
                 focusDuration={focusDuration}

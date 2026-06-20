@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Cloud, Server, HardDrive, CheckCircle2, ChevronRight, Settings, Lock, X, History, ArrowDownUp, RefreshCw, LogIn, Trash2, ShieldBan, Eye, Search, UploadCloud, DownloadCloud, Download, Laptop, Monitor, Smartphone, Tablet, Copy, Key, WifiOff, Users } from 'lucide-react';
+import { Cloud, Server, HardDrive, CheckCircle2, ChevronRight, Settings, Lock, X, History, ArrowDownUp, RefreshCw, LogIn, Trash2, ShieldBan, Eye, Search, UploadCloud, DownloadCloud, Download, Laptop, Monitor, Smartphone, Tablet, Copy, Key, WifiOff, Users, Database } from 'lucide-react';
 import { AppState } from '../../types';
 import { cn, getDeviceCode } from '../../lib/utils';
 import { ConfirmModal } from '../ConfirmModal';
+import { CloudHistoryModal } from './CloudHistoryModal';
 
 interface CloudSettingsSectionProps {
   state: AppState;
@@ -29,6 +30,7 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
   const intervalMinutes = state.autoSyncIntervalMinutes || 1;
 
   const [showUnlockModal, setShowUnlockModal] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [unlockTarget, setUnlockTarget] = useState<'redis' | 'google' | 'webdav' | null>(null);
   const [isOnline, setIsOnline] = useState(typeof window !== 'undefined' ? window.navigator.onLine : true);
   const [stats, setStats] = useState<{ users: number, maxUsers: number, teams: number, maxTeams: number } | null>(null);
@@ -140,6 +142,27 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
   };
 
   const handleUnlock = async () => {
+    setIsUnlocking(true);
+    setUnlockError('');
+    try {
+      const res = await fetch('/api/verify-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: unlockPassword })
+      });
+      if (!res.ok) {
+        setUnlockError('Invalid password');
+        setIsUnlocking(false);
+        return;
+      }
+    } catch (err) {
+      setUnlockError('Verification failed');
+      setIsUnlocking(false);
+      return;
+    }
+
+    setIsUnlocking(false);
+    setUnlockPassword('');
     if (unlockTarget === 'redis') {
       setState(s => ({ ...s, isRedisUnlocked: true }));
       setShowUnlockModal(false);
@@ -158,6 +181,9 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
   const [webdavPass, setWebdavPass] = useState(state.webdavSettings?.password || '');
   const [webdavChecking, setWebdavChecking] = useState(false);
   const [webdavCheckError, setWebdavCheckError] = useState('');
+  const [unlockPassword, setUnlockPassword] = useState('');
+  const [unlockError, setUnlockError] = useState('');
+  const [isUnlocking, setIsUnlocking] = useState(false);
 
   const handleWebdavConnection = async () => {
     if (!webdavUrl || !webdavUser || !webdavPass) {
@@ -396,11 +422,50 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
                 <Search size={18} /> 
                 Verify & Compare Archives
               </button>
+
+              <button 
+                onClick={() => setShowHistoryModal(true)}
+                title="View previous cloud save configurations"
+                className="relative z-10 w-full sm:w-auto px-6 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-black uppercase tracking-widest text-[11px] transition-all flex items-center justify-center gap-2.5 border border-slate-700 shadow-lg active:scale-[0.98]"
+              >
+                <History size={18} /> 
+                Cloud History
+              </button>
             </div>
           </div>
         </div>
       )}
       </div>
+
+      {showHistoryModal && (
+        <CloudHistoryModal 
+          onClose={() => setShowHistoryModal(false)}
+          state={state}
+          onRestore={(historyData) => {
+            setConfirmDialog({
+              isOpen: true,
+              title: 'Restore Cloud Backup?',
+              message: 'This will completely replace your current local progress with the selected history backup. This action cannot be reversed. Are you sure?',
+              isAlert: false,
+              type: 'danger',
+              onConfirm: () => {
+                // To restore safely, we just update the local state and trigger a refresh.
+                // We'll pass the payload to setState and major dungeons etc if possible, but actually we need to trigger the hook's replace logic. 
+                // Or we can just rewrite localStorage here.
+                const stateData = historyData.state || historyData;
+                const dungs = historyData.dungeons || [];
+                const majorDungs = historyData.majorDungeons || [];
+                
+                localStorage.setItem('scholars_dungeon_state', JSON.stringify({ ...stateData, deviceCode: getDeviceCode() }));
+                if (historyData.dungeons) localStorage.setItem('scholars_dungeon_dungeons', JSON.stringify(historyData.dungeons));
+                if (historyData.majorDungeons) localStorage.setItem('scholars_dungeon_major_dungeons', JSON.stringify(historyData.majorDungeons));
+                
+                window.location.reload();
+              }
+            });
+          }}
+        />
+      )}
 
       <div className="space-y-6 pt-6 border-t border-slate-800">
         <div className="flex items-center gap-2.5 text-slate-300 mb-6 pb-2">
@@ -1012,11 +1077,27 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
                   </p>
                 </div>
                 <div className="space-y-4">
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Unlock Password</label>
+                    <input
+                      type="password"
+                      placeholder="Enter access code"
+                      value={unlockPassword}
+                      onChange={(e) => setUnlockPassword(e.target.value)}
+                      className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder:text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-mono text-sm text-center tracking-widest"
+                    />
+                  </div>
+                  {unlockError && (
+                    <p className="text-red-400 text-xs text-center mt-2 break-words">
+                      {unlockError}
+                    </p>
+                  )}
                   <button
                     onClick={handleUnlock}
-                    className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-indigo-500/20"
+                    disabled={isUnlocking || !unlockPassword}
+                    className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 disabled:text-slate-500 text-white rounded-xl font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-indigo-500/20"
                   >
-                    Acknowledge & Proceed
+                    {isUnlocking ? 'Verifying...' : 'Acknowledge & Proceed'}
                   </button>
                 </div>
               </>

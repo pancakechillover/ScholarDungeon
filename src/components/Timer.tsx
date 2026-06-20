@@ -667,7 +667,7 @@ export const Timer = React.memo<TimerProps>(({
       {typeof document !== 'undefined' && createPortal(
         <AnimatePresence>
           {showRewards && (
-            <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-slate-950 px-4 overflow-y-auto no-scrollbar overflow-x-hidden">
+            <div className="fixed inset-0 z-[100] flex flex-col items-center justify-start sm:justify-center bg-slate-950 px-4 py-8 sm:py-12 overflow-y-auto no-scrollbar overflow-x-hidden">
               {/* Background Atmosphere */}
               <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 <motion.div 

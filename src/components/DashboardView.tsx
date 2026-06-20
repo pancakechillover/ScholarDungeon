@@ -32,7 +32,8 @@ import {
   Trash2,
   Edit2,
   Settings as SettingsIcon,
-  Sun
+  Sun,
+  ArrowRight
 } from 'lucide-react';
 import { format, startOfMonth, startOfWeek, endOfMonth, endOfWeek, eachDayOfInterval, isSameMonth, isToday, isSameDay, subDays, addDays } from 'date-fns';
 import ReactMarkdown from 'react-markdown';
@@ -43,6 +44,7 @@ import { cn, getSessionEffectiveMinutes, getSettlementDay, getSessionSettlementD
 import { ExpeditionPlanPreview } from './ExpeditionPlanPreview';
 import { ConfirmModal } from './ConfirmModal';
 import { PopoverPortal } from './PopoverPortal';
+import { TodayView } from './dashboard/TodayView';
 import { DatePicker } from './DatePicker';
 
 interface DashboardViewProps {
@@ -73,6 +75,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   dungeons
 }) => {
   const isDarkTheme = ['night', 'forest', 'ocean'].includes(state.theme || '');
+  const [showTodayView, setShowTodayView] = React.useState(false);
   const [showSageConsult, setShowSageConsult] = React.useState(false);
   const [selectedDateAnchor, setSelectedDateAnchor] = React.useState<{ day: Date, ddls: Dungeon[], element: HTMLElement } | null>(null);
   const [horizonMode, setHorizonMode] = React.useState<'recent' | 'week'>(() => {
@@ -228,14 +231,35 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   }, [state.timeSettings, state.timezone]);
 
   return (
-    <motion.div
-      key="dashboard"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      className="w-full p-6 lg:p-8 space-y-8"
-    >
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <>
+      <AnimatePresence mode="wait" initial={false}>
+        {showTodayView ? (
+          <motion.div
+            key="today-view"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ duration: 0.15 }}
+            className="w-full"
+          >
+            <TodayView 
+              state={state} 
+              setState={setState} 
+              dungeons={dungeons} 
+              onBack={() => setShowTodayView(false)} 
+              setActiveTab={setActiveTab} 
+            />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="dashboard-content"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ duration: 0.15 }}
+            className="w-full p-6 lg:p-8 space-y-8"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2 flex flex-col space-y-6 md:h-full">
           <div className="bg-slate-900 rounded-3xl border border-slate-800 p-8 relative overflow-hidden">
             <div className="absolute top-0 right-0 p-8 opacity-10">
@@ -461,21 +485,27 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
 
         <div className="space-y-6">
-          <div className="bg-slate-900 rounded-3xl border border-slate-800 p-6">
-            <div className="mb-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Target size={16} className="text-indigo-400" />
-                <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest leading-none mt-0.5">Daily Progress</h3>
+          <div 
+            role="button"
+            tabIndex={0}
+            onClick={() => setShowTodayView(true)}
+            className="w-full text-left bg-slate-900 rounded-3xl border border-slate-800 p-6 hover:border-indigo-500/30 hover:shadow-[0_0_20px_rgba(99,102,241,0.1)] hover:-translate-y-1 cursor-pointer transition-all group overflow-hidden relative"
+          >
+            <div className="absolute top-0 right-0 p-6 transition-opacity">
+              <div className="w-8 h-8 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
+                <ArrowRight size={16} />
               </div>
-              <div className="flex items-center gap-1.5 text-[10px] font-medium px-2 py-1 bg-slate-800/50 rounded-lg border border-slate-700/50 inline-flex">
-                <Clock size={10} className="text-indigo-400" />
-                <span className="text-slate-500/80">SETTLEMENT:</span>
-                <span className="text-slate-400 font-semibold">{settlementPeriod}</span>
+            </div>
+            
+            <div className="mb-4">
+              <div className="flex items-center gap-2 mb-1">
+                <Target size={16} className="text-indigo-400" />
+                <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest leading-none mt-0.5">Today</h3>
               </div>
             </div>
             <div className="flex items-center justify-between mb-2">
               <span className="text-2xl font-bold text-slate-50">
-                {Math.floor(todayEffectiveMinutes)}m
+                {Math.floor(todayEffectiveMinutes)}min
               </span>
               {(() => {
                 const timezone = state.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -498,7 +528,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
                 return (
                   <span className="text-slate-500 text-xs text-right">
-                    <span className="opacity-50 mx-1">/</span> {dailyGoal * (state.standardSessionMinutes || 25)}m
+                    <span className="opacity-50 mx-1">/</span> {dailyGoal * (state.standardSessionMinutes || 25)}min
                   </span>
                 );
               })()}
@@ -531,22 +561,24 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 );
               })()}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col gap-2">
               <button
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   setShowStartOfDayModal(true);
                 }}
-                className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-all border border-slate-700 flex items-center justify-center gap-2"
+                className="w-full py-3 bg-slate-800/80 hover:bg-slate-700 text-white rounded-xl text-xs font-bold uppercase tracking-widest transition-all border border-slate-700 flex flex-row items-center justify-center gap-2 z-10 relative"
               >
                 <Sun size={14} className="text-amber-400" />
                 Start the Day
               </button>
               <button
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   setShowDailySummary(true);
                   playSound('success', state.soundVolume, state.soundEnabled);
                 }}
-                className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-all border border-slate-700 flex items-center justify-center gap-2"
+                className="w-full py-3 bg-slate-800/80 hover:bg-slate-700 text-white rounded-xl text-xs font-bold uppercase tracking-widest transition-all border border-slate-700 flex flex-row items-center justify-center gap-2 z-10 relative"
               >
                 <Calendar size={14} className="text-indigo-400" />
                 End the Day
@@ -592,6 +624,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
          document.body
       )}
     </motion.div>
+    )}
+    </AnimatePresence>
+    </>
   );
 };
 
@@ -953,7 +988,7 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
                       </div>
                     </div>
                     {editingConvoId !== convo.id && (
-                      <div className="flex flex-col gap-2 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity lg:opacity-100">
+                      <div className="flex flex-col gap-2 flex-shrink-0 transition-opacity">
                         <button
                           onClick={(e) => handleRenameConversation(convo.id, convo.title, e)}
                           className={cn("p-1", isDarkTheme ? "text-slate-500 hover:text-indigo-400" : "text-indigo-600/60 hover:text-indigo-800")}

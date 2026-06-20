@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Cloud, Key, X, AlertTriangle, Check, Loader2, Database, Sparkles, HelpCircle, Unlink, Info, Eye, EyeOff, Copy, RefreshCw, Trash2, History, UploadCloud, DownloadCloud, Search, CheckCircle2, XCircle, AlertCircle, WifiOff, ShieldAlert, ZapOff } from 'lucide-react';
-import { getDeviceType } from '../lib/utils';
+import { getDeviceType, getDeviceCode } from '../lib/utils';
 
 interface CloudSyncModalProps {
   isOpen: boolean;
@@ -841,17 +841,41 @@ export function CloudSyncModal({
                     
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <button 
-                        onClick={() => setConfirmDialog({
-                          title: 'Upload Local Save?',
-                          message: 'Your current local progress will overwrite the cloud save. This is permanent.',
-                          action: () => onResolveConflict(false),
-                          isDestructive: false,
-                          showComparison: true
-                        })}
+                        onClick={() => {
+                          const cloudDeviceCode = syncCheckResult?.cloudData?.savedByDeviceCode || syncCheckResult?.cloudData?.state?.deviceCode || syncCheckResult?.cloudData?.deviceCode;
+                          const localDeviceCode = localState?.deviceCode || getDeviceCode();
+                          const identitiesMatch = cloudDeviceCode ? cloudDeviceCode === localDeviceCode : false;
+
+                          if (!identitiesMatch) {
+                            setConfirmDialog({
+                              title: 'Upload Blocked',
+                              message: 'Device code mismatch! The cloud save belongs to another device. You must Download Cloud Save first to inherit its identity before you can upload.',
+                              action: () => setConfirmDialog(null),
+                              isDestructive: true,
+                              showComparison: false
+                            });
+                            return;
+                          }
+
+                          setConfirmDialog({
+                            title: 'Upload Local Save?',
+                            message: 'Your current local progress will overwrite the cloud save. This is permanent.',
+                            action: () => onResolveConflict(false),
+                            isDestructive: false,
+                            showComparison: true
+                          });
+                        }}
                         className="p-4 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-2xl text-center transition-all group active:scale-95 shadow-lg"
                       >
                         <span className="font-black text-slate-200 text-xs sm:text-sm block mb-1 uppercase tracking-widest">Upload Local Save</span>
-                        <span className="text-[10px] text-slate-500 font-medium tracking-tight">Overwrite Cloud with Local</span>
+                        <span className="text-[10px] text-slate-500 font-medium tracking-tight">
+                          {(() => {
+                            const cloudDeviceCode = syncCheckResult?.cloudData?.savedByDeviceCode || syncCheckResult?.cloudData?.state?.deviceCode || syncCheckResult?.cloudData?.deviceCode;
+                            const localDeviceCode = localState?.deviceCode || getDeviceCode();
+                            const identitiesMatch = cloudDeviceCode ? cloudDeviceCode === localDeviceCode : (!syncCheckResult?.cloudData?.savedBy || syncCheckResult?.cloudData?.savedBy === (localState?.deviceNickname || getDeviceType()));
+                            return identitiesMatch ? "Overwrite Cloud with Local" : "BLOCKED (Device Mismatch)";
+                          })()}
+                        </span>
                       </button>
                       <button 
                         onClick={() => setConfirmDialog({

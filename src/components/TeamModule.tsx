@@ -77,6 +77,10 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
   const [showSettings, setShowSettings] = useState(false);
   
   const [showJoin, setShowJoin] = useState(false);
+  const [showUnlockModal, setShowUnlockModal] = useState(false);
+  const [unlockPassword, setUnlockPassword] = useState('');
+  const [unlockError, setUnlockError] = useState('');
+  const [isUnlocking, setIsUnlocking] = useState(false);
   const [viewingProfile, setViewingProfile] = useState<string | null>(null);
   const [showPlazaModal, setShowPlazaModal] = useState(false);
   const [showDetailedGoal, setShowDetailedGoal] = useState(false);
@@ -110,6 +114,33 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
       confirmText,
       onConfirm
     });
+  };
+
+  const handleUnlock = async () => {
+    setIsUnlocking(true);
+    setUnlockError('');
+    try {
+      const res = await fetch('/api/verify-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: unlockPassword })
+      });
+      if (!res.ok) {
+        setUnlockError('Invalid password');
+        setIsUnlocking(false);
+        return;
+      }
+    } catch (err) {
+      setUnlockError('Verification failed');
+      setIsUnlocking(false);
+      return;
+    }
+
+    setIsUnlocking(false);
+    setUnlockPassword('');
+    setState(s => ({ ...s, isRedisUnlocked: true }));
+    setShowUnlockModal(false);
+    setShowCreate(true);
   };
 
   const fetchLobby = async () => {
@@ -355,7 +386,13 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
             <LogIn size={14} /> Join Guild
           </button>
           <button 
-            onClick={() => setShowCreate(true)}
+            onClick={() => {
+              if (!state.isRedisUnlocked) {
+                setShowUnlockModal(true);
+              } else {
+                setShowCreate(true);
+              }
+            }}
             className="flex-1 sm:flex-none justify-center px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1.5"
           >
             <Plus size={14} /> Create Guild
@@ -475,7 +512,7 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
               onClick={() => setShowDetailedGoal(true)}
               className="bg-slate-900 border border-slate-800 rounded-2xl p-5 text-center cursor-pointer group hover:border-indigo-500/50 hover:shadow-[0_0_20px_rgba(99,102,241,0.15)] transition-all overflow-hidden relative"
             >
-              <div className="absolute inset-0 bg-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="absolute inset-0 bg-indigo-500/5 transition-opacity transition-opacity" />
               {isCompleted && <div className="absolute -top-10 -right-10 w-24 h-24 bg-indigo-500/20 blur-2xl rounded-full pointer-events-none" />}
               
               <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 flex items-center justify-center gap-1.5 relative z-10">
@@ -766,22 +803,6 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
     );
   };
 
-  if (!state.isRedisUnlocked) {
-    return (
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 relative overflow-hidden group mb-6 text-center">
-        <div className="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center mx-auto mb-4 text-indigo-400">
-          <Lock size={32} />
-        </div>
-        <h2 className="text-xl font-black text-white italic uppercase tracking-tight mb-2">
-          Sanctum Plaza Locked
-        </h2>
-        <p className="text-sm text-slate-400 mb-6 max-w-md mx-auto leading-relaxed">
-          Due to free-tier cloud limits, Fellowship network capabilities are currently restricted to authorized testers via an invite code. You can enter your invite code in the <strong className="text-slate-300">Settings -&gt; Data Management -&gt; Developer Access</strong> to unlock these features.
-        </p>
-      </div>
-    );
-  }
-
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 relative overflow-hidden group mb-6">
       <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none group-hover:scale-110 transition-transform duration-700">
@@ -822,6 +843,59 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
              }, title, 'danger', isCap ? 'Disband' : 'Leave');
            }}
         />
+      )}
+
+      {showUnlockModal && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm border-0 m-0">
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
+            className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 max-w-sm w-full relative shadow-2xl overflow-hidden"
+          >
+            <button 
+              onClick={() => {
+                setShowUnlockModal(false);
+                setUnlockPassword('');
+                setUnlockError('');
+              }}
+              className="absolute top-4 right-4 text-slate-500 hover:text-white transition-colors p-2"
+            >
+              <X size={20} />
+            </button>
+            
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 rounded-2xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center mx-auto mb-4 border border-indigo-500/30">
+                <Lock size={32} />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">Unlock Guild Creation</h3>
+              <p className="text-sm text-slate-400">Please enter the developer password to access guild creation tools.</p>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Password</label>
+                <input
+                  type="password"
+                  placeholder="Enter password"
+                  value={unlockPassword}
+                  onChange={(e) => setUnlockPassword(e.target.value)}
+                  className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder:text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-mono text-sm text-center tracking-widest"
+                />
+                {unlockError && <p className="text-red-400 text-xs text-center mt-1">{unlockError}</p>}
+              </div>
+              
+              <button 
+                onClick={handleUnlock}
+                disabled={isUnlocking || !unlockPassword}
+                className="w-full py-3 bg-indigo-600 disabled:bg-slate-800 disabled:text-slate-500 text-white rounded-xl font-bold uppercase tracking-widest text-xs transition-all shadow-xl hover:bg-indigo-500"
+              >
+                {isUnlocking ? 'Verifying...' : 'Unlock Features'}
+              </button>
+            </div>
+          </motion.div>
+        </div>,
+        document.body
       )}
 
       {showCreate && (
@@ -1743,7 +1817,7 @@ const DetailedGoalModal = ({ team, onClose }: { team: Team, onClose: () => void 
 
           <div className="flex flex-col gap-4">
             <div className="bg-slate-950/80 border border-slate-800 rounded-3xl p-6 flex flex-col items-center text-center h-[180px] justify-center relative overflow-hidden group hover:border-indigo-500/30 transition-colors">
-               <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+               <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent transition-opacity transition-opacity pointer-events-none" />
                <div className="w-12 h-12 bg-indigo-500/10 text-indigo-400 rounded-2xl flex items-center justify-center mb-3 shadow-[0_0_15px_rgba(99,102,241,0.15)] border border-indigo-500/20 relative z-10 shrink-0">
                  <Crown size={24} />
                </div>

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo, useEffect } from 'react';
+import React, { useState, useRef, useMemo, useEffect, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { 
   format, eachDayOfInterval, isSameDay, 
@@ -9,7 +9,7 @@ import {
 import { StudySession, AppState, RewardHistoryItem, Dungeon, MajorDungeon } from '../types';
 import { cn, getSessionEffectiveMinutes } from '../lib/utils';
 import { 
-  BarChart2, Zap, Coins, ChevronLeft, ChevronRight, ChevronDown, Calendar, CalendarDays, Flame, Star, StarHalf, Edit2, Save, X, Eye, EyeOff, LineChart as LineChartIcon, Trophy, Sword, Heart, Maximize2, Minimize2, LayoutTemplate, File, FileText, RotateCcw, Share2, Moon
+  BarChart2, Zap, Coins, ChevronLeft, ChevronRight, ChevronDown, Calendar, CalendarDays, Flame, Star, StarHalf, Edit2, Save, X, Eye, EyeOff, LineChart as LineChartIcon, Trophy, Sword, Heart, Maximize2, Minimize2, LayoutTemplate, File, FileText, RotateCcw, Share2, Moon, Clock, Target
 } from 'lucide-react';
 import { MOOD_OPTIONS, DEFAULT_ENABLED_MOODS } from '../constants';
 
@@ -49,6 +49,14 @@ interface StatsProps {
   setShowStartOfDayModal?: (val: string | boolean) => void;
 }
 
+const formatDuration = (val: number) => {
+  if (typeof val !== 'number' || isNaN(val) || !isFinite(val) || val < 0) return '0min';
+  const totalMin = Math.round(val);
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  return h > 0 ? `${h}h ${m}min` : `${m}min`;
+};
+
 const SharedPopoverContent = ({
   label,
   totalSessions,
@@ -62,22 +70,44 @@ const SharedPopoverContent = ({
   mood,
   dateTimestamp,
   period,
-  
 }: any) => {
   const moodObj = mood ? MOOD_OPTIONS.find(m => m.id === mood) : null;
   const MoodIcon = moodObj ? moodObj.icon : null;
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    if (containerRef.current) {
+      containerRef.current.style.transform = 'none';
+      const rect = containerRef.current.getBoundingClientRect();
+      const padding = 12;
+      let shift = 0;
+      if (rect.right > window.innerWidth - padding) {
+        shift = -(rect.right - window.innerWidth + padding);
+      } else if (rect.left < padding) {
+        shift = padding - rect.left;
+      }
+      if (shift !== 0) {
+        containerRef.current.style.transform = `translateX(${shift}px)`;
+      } else {
+        containerRef.current.style.transform = 'none';
+      }
+    }
+  });
 
   return (
-    <div className="shared-popover-content bg-slate-900/95 backdrop-blur-md border border-slate-700/50 shadow-xl shadow-indigo-500/10 rounded-xl p-3 sm:p-4 z-[100] w-[180px] sm:w-[200px]">
+    <div 
+      ref={containerRef}
+      className="shared-popover-content bg-slate-900/95 backdrop-blur-md border border-slate-700/50 shadow-xl shadow-indigo-500/10 rounded-xl p-3 sm:p-4 z-[100] w-[180px] sm:w-[200px]"
+    >
       <p className="text-slate-50 font-bold mb-2 pb-2 border-b border-slate-800/50 text-[13px] sm:text-sm">{label}</p>
       <div className="space-y-1.5 text-xs text-slate-300">
         {totalSessions > 0 ? (
           <>
-            <div className="flex justify-between gap-4"><span className="text-slate-500">{'Time (min)'}</span> <span className="text-slate-50 font-bold">{totalSessions}</span></div>
-            {morning > 0 && <div className="flex justify-between gap-4"><span className="text-amber-400">Morning</span> <span className="text-slate-200">{morning}</span></div>}
-            {afternoon > 0 && <div className="flex justify-between gap-4"><span className="text-orange-400">Afternoon</span> <span className="text-slate-200">{afternoon}</span></div>}
-            {night > 0 && <div className="flex justify-between gap-4"><span className="text-indigo-400">Night</span> <span className="text-slate-200">{night}</span></div>}
-            {other > 0 && <div className="flex justify-between gap-4"><span className="text-slate-400">Other</span> <span className="text-slate-200">{other}</span></div>}
+            <div className="flex justify-between gap-4"><span className="text-slate-500">Study Time</span> <span className="text-slate-50 font-bold">{formatDuration(totalSessions)}</span></div>
+            {morning > 0 && <div className="flex justify-between gap-4"><span className="text-amber-400">Morning</span> <span className="text-slate-200">{formatDuration(morning)}</span></div>}
+            {afternoon > 0 && <div className="flex justify-between gap-4"><span className="text-orange-400">Afternoon</span> <span className="text-slate-200">{formatDuration(afternoon)}</span></div>}
+            {night > 0 && <div className="flex justify-between gap-4"><span className="text-indigo-400">Night</span> <span className="text-slate-200">{formatDuration(night)}</span></div>}
+            {other > 0 && <div className="flex justify-between gap-4"><span className="text-slate-400">Other</span> <span className="text-slate-200">{formatDuration(other)}</span></div>}
             <div className="border-t border-slate-800/50 my-1 pt-1 flex justify-between gap-4"><span className="text-yellow-400">Gold</span> <span className="text-slate-200">+{coins}</span></div>
             <div className="flex justify-between gap-4"><span className="text-cyan-400">XP</span> <span className="text-slate-200">+{xp}</span></div>
           </>
@@ -155,15 +185,39 @@ const CustomWeeklyTooltip = ({ active, payload, label }: any) => {
 };
 
 const CustomDailyTooltip = ({ active, payload, label, dateTimestamp }: any) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    if (active && containerRef.current) {
+      containerRef.current.style.transform = 'none';
+      const rect = containerRef.current.getBoundingClientRect();
+      const padding = 12;
+      let shift = 0;
+      if (rect.right > window.innerWidth - padding) {
+        shift = -(rect.right - window.innerWidth + padding);
+      } else if (rect.left < padding) {
+        shift = padding - rect.left;
+      }
+      if (shift !== 0) {
+        containerRef.current.style.transform = `translateX(${shift}px)`;
+      } else {
+        containerRef.current.style.transform = 'none';
+      }
+    }
+  });
+
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
-      <div className="bg-slate-900/95 backdrop-blur-md border border-slate-700/50 shadow-xl shadow-indigo-500/10 rounded-xl p-3 z-50 min-w-[120px]">
+      <div 
+        ref={containerRef}
+        className="bg-slate-900/95 backdrop-blur-md border border-slate-700/50 shadow-xl shadow-indigo-500/10 rounded-xl p-3 z-50 min-w-[125px]"
+      >
         <p className="text-slate-50 font-bold mb-1.5 pb-1.5 border-b border-slate-800/50 text-[13px] sm:text-sm">{label}</p>
         {data.sessions > 0 ? (
           <div className="flex justify-between gap-4 text-xs mb-3">
-            <span className="text-slate-400">{'Time (min)'}</span>
-            <span className="text-indigo-400 font-bold">{data.sessions}</span>
+            <span className="text-slate-400">Time</span>
+            <span className="text-indigo-400 font-bold">{formatDuration(data.sessions)}</span>
           </div>
         ) : (
           <p className="text-slate-500 italic text-xs mb-3">No activity</p>
@@ -186,6 +240,58 @@ const CustomDailyTooltip = ({ active, payload, label, dateTimestamp }: any) => {
             </button>
           </div>
         )}
+      </div>
+    );
+  }
+  return null;
+};
+
+const CustomSleepTooltip = ({ active, payload }: any) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    if (active && containerRef.current) {
+      containerRef.current.style.transform = 'none';
+      const rect = containerRef.current.getBoundingClientRect();
+      const padding = 12;
+      let shift = 0;
+      if (rect.right > window.innerWidth - padding) {
+        shift = -(rect.right - window.innerWidth + padding);
+      } else if (rect.left < padding) {
+        shift = padding - rect.left;
+      }
+      if (shift !== 0) {
+        containerRef.current.style.transform = `translateX(${shift}px)`;
+      } else {
+        containerRef.current.style.transform = 'none';
+      }
+    }
+  });
+
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    if (!data.hasRecord) return null;
+    const formatT = (val: number | null) => {
+      if (val === null) return '--:--';
+      let h = Math.floor(val);
+      const m = Math.round((val - h) * 60);
+      if (h >= 24) h -= 24;
+      return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+    };
+    return (
+      <div 
+        ref={containerRef}
+        className="bg-slate-900 border border-slate-700 p-3 rounded-xl shadow-xl flex flex-col gap-2 z-50 min-w-[140px]"
+      >
+        <p className="text-white font-bold text-sm">{data.fullName}</p>
+        <div className="text-xs text-slate-300 grid grid-cols-2 gap-x-4 gap-y-2">
+           <span className="text-indigo-400 font-bold">Fell Asleep:</span>
+           <span className="text-right font-mono">{formatT(data.sleepTime)}</span>
+           <span className="text-amber-400 font-bold">Woke Up:</span>
+           <span className="text-right font-mono">{formatT(data.wakeTime)}</span>
+           <span className="text-emerald-400 font-bold">Duration:</span>
+           <span className="text-right font-mono">{data.duration}h</span>
+        </div>
       </div>
     );
   }
@@ -1133,7 +1239,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
   };
 
   const heatmapSummary = useMemo(() => {
-    if (heatmapMode === 'year' || heatmapDays.length === 0) return null;
+    if (heatmapDays.length === 0) return null;
     const startObj = heatmapDays[0];
     const endObj = addDays(heatmapDays[heatmapDays.length - 1], 1);
     
@@ -1157,11 +1263,11 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
     return {
       activeDays: activeDaysCount,
       totalTimeOrTasks: timeOrTasks,
-      avgTimeOrTasks: activeDaysCount > 0 ? Math.round(timeOrTasks / activeDaysCount) : 0,
+      avgTimeOrTasks: heatmapDays.length > 0 ? Math.round(timeOrTasks / heatmapDays.length) : 0,
       totalGold: gold,
-      avgGold: activeDaysCount > 0 ? Math.round(gold / activeDaysCount) : 0,
+      avgGold: heatmapDays.length > 0 ? Math.round(gold / heatmapDays.length) : 0,
       totalExp: xp,
-      avgExp: activeDaysCount > 0 ? Math.round(xp / activeDaysCount) : 0,
+      avgExp: heatmapDays.length > 0 ? Math.round(xp / heatmapDays.length) : 0,
     };
   }, [heatmapDays, heatmapMode, history]);
 
@@ -1201,7 +1307,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
         {shareConfig.showDaily && (
           <div id="daily-activity-section" className="bg-slate-900 p-6 rounded-3xl border border-slate-800 flex flex-col space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 border-b border-slate-800/50 pb-4">
-            <div className="flex items-center justify-between w-full sm:w-auto gap-2">
+            <div className="flex items-center justify-start w-full sm:w-auto gap-2">
               <Calendar className="text-indigo-400" size={20} />
               <h3 className="text-lg font-bold text-slate-100 uppercase tracking-widest">Daily</h3>
             </div>
@@ -1229,26 +1335,26 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
           </div>
 
           {/* Daily Gains Summary */}
-          <div className="grid grid-cols-3 gap-3">
-            <div className="bg-slate-950/40 border border-slate-800/60 rounded-2xl p-3 flex flex-col items-center justify-center text-center">
-              <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Gold</span>
-              <div className="flex items-center gap-1.5 text-amber-400">
-                <Coins size={12} className="sm:w-4 sm:h-4 shrink-0" />
-                <span className="text-sm sm:text-lg font-black font-mono">+{dailyGains.coins}</span>
+          <div className="grid grid-cols-3 gap-1.5 sm:gap-3">
+            <div className="bg-slate-950/40 border border-slate-800/60 rounded-2xl p-1.5 sm:p-3 flex flex-col items-center justify-center text-center min-w-0">
+              <span className="text-[8px] sm:text-[9px] font-black text-slate-500 uppercase tracking-wider sm:tracking-widest mb-1 sm:mb-1.5 line-clamp-1 break-all w-full">Gold</span>
+              <div className="flex items-center gap-1 sm:gap-1.5 text-amber-400 min-w-0">
+                <Coins size={12} className="w-3 h-3 sm:w-4 sm:h-4 shrink-0 hidden sm:block" />
+                <span className="text-[10px] sm:text-lg font-black font-mono truncate">+{dailyGains.coins}</span>
               </div>
             </div>
-            <div className="bg-slate-950/40 border border-slate-800/60 rounded-2xl p-3 flex flex-col items-center justify-center text-center">
-              <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Exp</span>
-              <div className="flex items-center gap-1.5 text-indigo-400">
-                <Zap size={12} className="sm:w-4 sm:h-4 shrink-0" />
-                <span className="text-sm sm:text-lg font-black font-mono">+{dailyGains.xp}</span>
+            <div className="bg-slate-950/40 border border-slate-800/60 rounded-2xl p-1.5 sm:p-3 flex flex-col items-center justify-center text-center min-w-0">
+              <span className="text-[8px] sm:text-[9px] font-black text-slate-500 uppercase tracking-wider sm:tracking-widest mb-1 sm:mb-1.5 line-clamp-1 break-all w-full">Exp</span>
+              <div className="flex items-center gap-1 sm:gap-1.5 text-indigo-400 min-w-0">
+                <Zap size={12} className="w-3 h-3 sm:w-4 sm:h-4 shrink-0 hidden sm:block" />
+                <span className="text-[10px] sm:text-lg font-black font-mono truncate">+{dailyGains.xp}</span>
               </div>
             </div>
-            <div className="bg-slate-950/40 border border-slate-800/60 rounded-2xl p-3 flex flex-col items-center justify-center text-center">
-              <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1.5">{'Time (min)'}</span>
-              <div className="flex items-center gap-1.5 text-emerald-400">
-                <Sword size={12} className="sm:w-4 sm:h-4 shrink-0" />
-                <span className="text-sm sm:text-lg font-black font-mono">{dailyGains.tasks}</span>
+            <div className="bg-slate-950/40 border border-slate-800/60 rounded-2xl p-1.5 sm:p-3 flex flex-col items-center justify-center text-center min-w-0">
+              <span className="text-[8px] sm:text-[9px] font-black text-slate-500 uppercase tracking-wider sm:tracking-widest mb-1 sm:mb-1.5 line-clamp-1 break-all w-full">Time</span>
+              <div className="flex items-center gap-1 sm:gap-1.5 text-emerald-400 min-w-0">
+                <Sword size={12} className="w-3 h-3 sm:w-4 sm:h-4 shrink-0 hidden sm:block" />
+                <span className="text-[10px] sm:text-lg font-black font-mono truncate">{formatDuration(dailyGains.tasks)}</span>
               </div>
             </div>
           </div>
@@ -1280,7 +1386,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
             {(viewOpts.showDailyDonut) && (
               <DailyPieChart 
                 date={dailyDate} 
-                history={history} 
+                sessions={dailySessions} 
                 dungeons={dungeons} 
                 majorDungeons={majorDungeons} 
                 mode={viewOpts.dailyDonutMode || 'compact'} 
@@ -1526,26 +1632,26 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
           </div>
 
           {/* Weekly Gains Summary */}
-          <div className="grid grid-cols-3 gap-3">
-            <div className="bg-slate-950/40 border border-slate-800/60 rounded-2xl p-3 flex flex-col items-center justify-center text-center">
-              <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Daily Avg Gold</span>
-              <div className="flex items-center gap-1.5 text-amber-400">
-                <Coins size={12} className="sm:w-4 sm:h-4 shrink-0" />
-                <span className="text-sm sm:text-lg font-black font-mono">+{Math.round(weeklyGains.coins / weeklyActiveDaysCount)}</span>
+          <div className="grid grid-cols-3 gap-1.5 sm:gap-3">
+            <div className="bg-slate-950/40 border border-slate-800/60 rounded-2xl p-1.5 sm:p-3 flex flex-col items-center justify-center text-center min-w-0">
+              <span className="text-[8px] sm:text-[9px] font-black text-slate-500 uppercase tracking-wider sm:tracking-widest mb-1 sm:mb-1.5 line-clamp-1 break-all w-full truncate">Avg Gold</span>
+              <div className="flex items-center gap-1 sm:gap-1.5 text-amber-400 min-w-0">
+                <Coins size={12} className="w-3 h-3 sm:w-4 sm:h-4 shrink-0 hidden sm:block" />
+                <span className="text-[10px] sm:text-lg font-black font-mono truncate">+{Math.round(weeklyGains.coins / Math.max(1, weeklyDays.length))}</span>
               </div>
             </div>
-            <div className="bg-slate-950/40 border border-slate-800/60 rounded-2xl p-3 flex flex-col items-center justify-center text-center">
-              <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Daily Avg Exp</span>
-              <div className="flex items-center gap-1.5 text-indigo-400">
-                <Zap size={12} className="sm:w-4 sm:h-4 shrink-0" />
-                <span className="text-sm sm:text-lg font-black font-mono">+{Math.round(weeklyGains.xp / weeklyActiveDaysCount)}</span>
+            <div className="bg-slate-950/40 border border-slate-800/60 rounded-2xl p-1.5 sm:p-3 flex flex-col items-center justify-center text-center min-w-0">
+              <span className="text-[8px] sm:text-[9px] font-black text-slate-500 uppercase tracking-wider sm:tracking-widest mb-1 sm:mb-1.5 line-clamp-1 break-all w-full truncate">Avg Exp</span>
+              <div className="flex items-center gap-1 sm:gap-1.5 text-indigo-400 min-w-0">
+                <Zap size={12} className="w-3 h-3 sm:w-4 sm:h-4 shrink-0 hidden sm:block" />
+                <span className="text-[10px] sm:text-lg font-black font-mono truncate">+{Math.round(weeklyGains.xp / Math.max(1, weeklyDays.length))}</span>
               </div>
             </div>
-            <div className="bg-slate-950/40 border border-slate-800/60 rounded-2xl p-3 flex flex-col items-center justify-center text-center">
-              <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1.5">{'Avg Time (min)'}</span>
-              <div className="flex items-center gap-1.5 text-emerald-400">
-                <Sword size={12} className="sm:w-4 sm:h-4 shrink-0" />
-                <span className="text-sm sm:text-lg font-black font-mono">{Math.round(weeklyGains.tasks / weeklyActiveDaysCount || 0)}</span>
+            <div className="bg-slate-950/40 border border-slate-800/60 rounded-2xl p-1.5 sm:p-3 flex flex-col items-center justify-center text-center min-w-0">
+              <span className="text-[8px] sm:text-[9px] font-black text-slate-500 uppercase tracking-wider sm:tracking-widest mb-1 sm:mb-1.5 line-clamp-1 break-all w-full truncate">Avg Time</span>
+              <div className="flex items-center gap-1 sm:gap-1.5 text-emerald-400 min-w-0">
+                <Sword size={12} className="w-3 h-3 sm:w-4 sm:h-4 shrink-0 hidden sm:block" />
+                <span className="text-[10px] sm:text-lg font-black font-mono truncate">{formatDuration(Math.round(weeklyGains.tasks / Math.max(1, weeklyDays.length)))}</span>
               </div>
             </div>
           </div>
@@ -1649,7 +1755,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
       )}
 
       {(viewOpts.showSleepTracker ?? true) && (
-        <div id="sleep-tracker-section" className="bg-slate-900 rounded-3xl border border-slate-800 p-6 w-full flex flex-col space-y-6">
+        <div id="sleep-tracker-section" className="bg-slate-900 rounded-3xl border border-slate-800 p-4 sm:p-6 w-full flex flex-col space-y-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800/50 pb-4">
             <div className="flex items-center gap-2">
               <Moon className="text-indigo-400" size={20} />
@@ -1711,16 +1817,16 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
                 data={sleepData} 
                 onClick={(state) => handleChartClick(state, 'sleep')}
                 style={{ outline: 'none', touchAction: 'pan-y', overflow: 'visible', cursor: 'pointer' }} 
-                margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                margin={{ top: 10, right: -5, left: -30, bottom: 0 }}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10 }} />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 9 }} />
                 <YAxis 
                    yAxisId="right" 
                    orientation="right" 
                    domain={[0, 24]}
                    tickCount={7}
-                   tick={{ fill: '#64748b', fontSize: 10 }} 
+                   tick={{ fill: '#64748b', fontSize: 9 }} 
                    axisLine={false} 
                    tickLine={false} 
                    tickFormatter={(val) => `${val}h`} 
@@ -1730,7 +1836,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
                    orientation="left"
                    domain={[4, 40]}
                    tickCount={7}
-                   tick={{ fill: '#64748b', fontSize: 10 }}
+                   tick={{ fill: '#64748b', fontSize: 9 }}
                    axisLine={false}
                    tickLine={false}
                    scale="time"
@@ -1741,38 +1847,12 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
                      return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
                    }}
                 />
-                <Tooltip
+                 <Tooltip
                   key={chartKeys.sleep}
                   trigger="click"
                   wrapperStyle={{ zIndex: 9999, pointerEvents: 'auto' }}
                   allowEscapeViewBox={{ x: true, y: true }}
-                  content={({ active, payload }) => {
-                    if (active && payload && payload.length) {
-                      const data = payload[0].payload;
-                      if (!data.hasRecord) return null;
-                      const formatT = (val: number | null) => {
-                        if (val === null) return '--:--';
-                        let h = Math.floor(val);
-                        const m = Math.round((val - h) * 60);
-                        if (h >= 24) h -= 24;
-                        return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-                      };
-                      return (
-                        <div className="bg-slate-900 border border-slate-700 p-3 rounded-xl shadow-xl flex flex-col gap-2">
-                          <p className="text-white font-bold text-sm">{data.fullName}</p>
-                          <div className="text-xs text-slate-300 grid grid-cols-2 gap-x-4 gap-y-2">
-                             <span className="text-indigo-400 font-bold">Fell Asleep:</span>
-                             <span className="text-right font-mono">{formatT(data.sleepTime)}</span>
-                             <span className="text-amber-400 font-bold">Woke Up:</span>
-                             <span className="text-right font-mono">{formatT(data.wakeTime)}</span>
-                             <span className="text-emerald-400 font-bold">Duration:</span>
-                             <span className="text-right font-mono">{data.duration}h</span>
-                          </div>
-                        </div>
-                      );
-                    }
-                    return null;
-                  }}
+                  content={<CustomSleepTooltip />}
                   cursor={{ fill: 'rgba(100, 116, 139, 0.2)' }}
                 />
                 <Bar yAxisId="right" dataKey="duration" fill="#818cf8" radius={[4, 4, 0, 0]} opacity={0.5} barSize={20} />
@@ -1781,14 +1861,32 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
               </ComposedChart>
             </ResponsiveContainer>
           </div>
+
+          {/* Custom Sleep Legend */}
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[10px] sm:text-xs text-slate-400 font-medium pt-2 border-t border-slate-800/30">
+            <div className="flex items-center gap-1.5">
+              <span className="w-3.5 h-2 rounded-sm bg-[#818cf8]" style={{ opacity: 0.5 }} />
+              <span>Sleep Duration (h)</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-3 h-0.5 bg-[#6366f1]" />
+              <span className="w-1.5 h-1.5 rounded-full bg-slate-900 border border-[#6366f1] -ml-2.5" />
+              <span>Fell Asleep</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-3 h-0.5 bg-[#fbbf24]" />
+              <span className="w-1.5 h-1.5 rounded-full bg-slate-900 border border-[#fbbf24] -ml-2.5" />
+              <span>Woke Up</span>
+            </div>
+          </div>
         </div>
       )}
 
       {/* Study Heatmap */}
       {(shareConfig.showHeatmap && (viewOpts.showHeatmap ?? true)) && (
-        <div id="heatmap-section" className="bg-slate-900 p-6 rounded-3xl border border-slate-800 lg:col-span-2">
+        <div id="heatmap-section" className="bg-slate-900 p-4 sm:p-6 rounded-3xl border border-slate-800 lg:col-span-2">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 border-b border-slate-800/50 pb-4">
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-4">
               <div className="flex items-center gap-2">
                 <Flame className="text-indigo-400" size={20} />
                 <h3 className="text-lg font-bold text-slate-100 uppercase tracking-widest">Heatmap</h3>
@@ -1845,9 +1943,9 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
                     value={format(heatmapDate, 'yyyy-MM-dd')}
                     onChange={(val) => val && setHeatmapDate(parseISO(val))}
                     indicators={dateIndicators}
-                    className="text-xs font-bold text-slate-300 w-full sm:w-24 text-center hover:text-indigo-400 transition-colors py-1 inline-block whitespace-nowrap cursor-pointer"
+                    className="text-xs font-bold text-slate-300 w-full sm:w-36 text-center hover:text-indigo-400 transition-colors py-1 inline-block whitespace-nowrap cursor-pointer"
                   >
-                    {heatmapMode === '30days' ? 'Custom' : heatmapMode === 'month' ? format(heatmapDate, 'MMM yyyy') : format(heatmapDate, 'yyyy')}
+                    {heatmapMode === '30days' ? `${format(subDays(heatmapDate, 29), 'MMM dd')} - ${format(heatmapDate, 'MMM dd')}` : heatmapMode === 'month' ? format(heatmapDate, 'MMM yyyy') : format(heatmapDate, 'yyyy')}
                   </DatePicker>
                 </div>
                 <button 
@@ -1867,11 +1965,18 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
           <div className={cn("flex flex-col lg:flex-row gap-6 w-full mt-4", heatmapMode === 'year' ? "justify-center lg:items-center" : "justify-center lg:items-stretch")}>
             <style>{`
               .heatmap-responsive {
-                 --cell-size: 24px;
+                 --cell-size: min(9vw, 36px);
                  --cell-gap: 4px;
                  --cell-radius: 4px;
                  --label-size: 10px;
-                 --mood-size: 16px;
+                 --mood-size: calc(var(--cell-size) * 0.6);
+              }
+              @media (min-width: 380px) {
+                 .heatmap-responsive {
+                   --cell-size: min(10vw, 42px);
+                   --cell-gap: 5px;
+                   --cell-radius: 5px;
+                 }
               }
               @media (min-width: 640px) {
                  .heatmap-responsive {
@@ -1927,8 +2032,8 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
               }
             `}</style>
             
-            <div className={cn("overflow-x-auto pb-4 custom-scrollbar flex", heatmapMode === 'year' ? "w-full justify-center" : "justify-center")}>
-              <div className={cn("min-w-max flex", heatmapMode === 'year' ? "heatmap-year gap-1.5" : "heatmap-responsive gap-2")}>
+            <div className="overflow-x-auto pb-4 custom-scrollbar w-full lg:w-auto flex justify-start lg:justify-center">
+              <div className={cn("min-w-max flex mx-auto", heatmapMode === 'year' ? "heatmap-year gap-1.5" : "heatmap-responsive gap-2")}>
                 <div 
                    className="grid grid-rows-7 text-slate-500 font-medium pr-1 text-right mt-6"
                    style={{ rowGap: 'var(--cell-gap)', fontSize: 'var(--label-size)' }}
@@ -2012,44 +2117,90 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
             </div>
 
             {(heatmapMode === '30days' || heatmapMode === 'month' || heatmapMode === 'year') && heatmapSummary && (
-               <div className="w-full lg:w-64 shrink-0 flex flex-col justify-center bg-slate-950/40 p-5 rounded-2xl border border-slate-800/60 mb-4 lg:mb-0">
-                 <div className="text-center pb-3 border-b border-slate-800/50">
-                    <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest leading-none">
+               <div className="w-full lg:w-72 shrink-0 flex flex-col bg-slate-950/40 p-4 sm:p-5 rounded-2xl border border-slate-800/60 mb-4 lg:mb-0">
+                 <div className="flex items-center justify-center gap-2 pb-3 border-b border-slate-800/50 mb-4">
+                    <CalendarDays size={14} className="text-indigo-400 shrink-0" />
+                    <span className="text-sm sm:text-base font-black text-slate-100 uppercase tracking-wide leading-none italic pr-1 select-none">
                        {heatmapMode === '30days' ? '30 Days Summary' : heatmapMode === 'month' ? 'Month Summary' : 'Year Summary'}
                     </span>
                  </div>
-                 <div className="flex flex-col gap-3">
-                    <div className="flex flex-col text-center">
-                       <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 leading-none">Focused Days</span>
-                       <span className="text-2xl font-black font-mono text-indigo-400">{heatmapSummary.activeDays}</span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                        <div className="flex flex-col text-center bg-slate-900/50 rounded-xl p-2 border border-slate-800/30">
-                           <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 leading-none">Total Gold</span>
-                           <span className="text-sm font-black font-mono text-amber-400">+{heatmapSummary.totalGold}</span>
+                 
+                 <div className="grid grid-cols-2 lg:grid-cols-1 gap-3">
+                     <div className="flex justify-between items-center bg-slate-900/50 px-3 py-2.5 rounded-xl col-span-2 lg:col-span-1 border border-slate-800/40">
+                       <div className="flex items-center gap-2">
+                           <Flame size={14} className="text-orange-500" />
+                           <span className="text-xs font-bold text-slate-500 uppercase">Focused Days</span>
+                       </div>
+                       <div className="flex items-baseline gap-1">
+                          <span className="text-xl font-black font-mono text-indigo-400">{heatmapSummary.activeDays}</span>
+                          <span className="text-xs font-bold text-slate-600">/{heatmapDays.length}</span>
+                       </div>
+                     </div>
+
+                     {/* Merged Time/Task Stats Card */}
+                     <div className="flex flex-col bg-slate-900/50 p-3 rounded-xl border border-slate-800/40 col-span-2 lg:col-span-1">
+                        <div className="flex items-center gap-2 pb-1.5 mb-1.5 border-b border-slate-800/30">
+                           {heatmapMetric === 'time' ? <Clock size={14} className="text-sky-400" /> : <Target size={14} className="text-sky-400" />}
+                           <span className="text-xs font-bold text-slate-500 uppercase">
+                              {heatmapMetric === 'time' ? 'Study Time' : 'Tasks Completed'}
+                           </span>
                         </div>
-                        <div className="flex flex-col text-center bg-slate-900/50 rounded-xl p-2 border border-slate-800/30">
-                           <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 leading-none">Total Exp</span>
-                           <span className="text-sm font-black font-mono text-emerald-400">+{heatmapSummary.totalExp}</span>
+                        <div className="flex items-center justify-center gap-10 sm:gap-16 py-0.5">
+                           <div className="flex flex-col items-center text-center">
+                              <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1 leading-none">Total</span>
+                              <span className="text-base font-black font-mono text-sky-400">
+                                 {heatmapMetric === 'time' ? formatDuration(heatmapSummary.totalTimeOrTasks) : heatmapSummary.totalTimeOrTasks}
+                              </span>
+                           </div>
+                           <div className="flex flex-col items-center text-center">
+                              <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1 leading-none">Avg/Day</span>
+                              <span className="text-base font-black font-mono text-sky-400/80">
+                                 {heatmapMetric === 'time' ? formatDuration(heatmapSummary.avgTimeOrTasks) : Math.round(heatmapSummary.avgTimeOrTasks * 10) / 10}
+                              </span>
+                           </div>
                         </div>
-                        <div className="flex flex-col text-center bg-slate-900/50 rounded-xl p-2 border border-slate-800/30">
-                           <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 leading-none">Avg Gold</span>
-                           <span className="text-sm font-black font-mono text-amber-400">+{heatmapSummary.avgGold}</span>
+                     </div>
+
+                     {/* Merged Gold Stats Card */}
+                     <div className="flex flex-col bg-slate-900/50 p-3 rounded-xl border border-slate-800/40 col-span-2 lg:col-span-1">
+                        <div className="flex items-center gap-2 pb-1.5 mb-1.5 border-b border-slate-800/30">
+                           <Coins size={14} className="text-amber-500" />
+                           <span className="text-xs font-bold text-slate-500 uppercase">Gold Earnings</span>
                         </div>
-                        <div className="flex flex-col text-center bg-slate-900/50 rounded-xl p-2 border border-slate-800/30">
-                           <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 leading-none">Avg Exp</span>
-                           <span className="text-sm font-black font-mono text-emerald-400">+{heatmapSummary.avgExp}</span>
+                        <div className="flex items-center justify-center gap-10 sm:gap-16 py-0.5">
+                           <div className="flex flex-col items-center text-center">
+                              <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1 leading-none">Total</span>
+                              <span className="text-base font-black font-mono text-amber-400">+{heatmapSummary.totalGold}</span>
+                           </div>
+                           <div className="flex flex-col items-center text-center">
+                              <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1 leading-none">Avg/Day</span>
+                              <span className="text-base font-black font-mono text-amber-400/80">+{heatmapSummary.avgGold}</span>
+                           </div>
                         </div>
-                    </div>
-                    <div className="flex flex-col text-center mt-2">
-                       <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 leading-none">Avg {'Time (min)'} / Day</span>
-                       <span className="text-xl font-black font-mono text-slate-200">{heatmapSummary.avgTimeOrTasks}</span>
-                    </div>
+                     </div>
+
+                     {/* Merged EXP Stats Card */}
+                     <div className="flex flex-col bg-slate-900/50 p-3 rounded-xl border border-slate-800/40 col-span-2 lg:col-span-1">
+                        <div className="flex items-center gap-2 pb-1.5 mb-1.5 border-b border-slate-800/30">
+                           <Zap size={14} className="text-indigo-400" />
+                           <span className="text-xs font-bold text-slate-500 uppercase">EXP Earnings</span>
+                        </div>
+                        <div className="flex items-center justify-center gap-10 sm:gap-16 py-0.5">
+                           <div className="flex flex-col items-center text-center">
+                              <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1 leading-none">Total</span>
+                              <span className="text-base font-black font-mono text-indigo-400">+{heatmapSummary.totalExp}</span>
+                           </div>
+                           <div className="flex flex-col items-center text-center">
+                              <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1 leading-none">Avg/Day</span>
+                              <span className="text-base font-black font-mono text-indigo-400/80">+{heatmapSummary.avgExp}</span>
+                           </div>
+                        </div>
+                     </div>
                  </div>
                </div>
             )}
           </div>
-          <div className="mt-2 flex items-center justify-between text-[10px] text-slate-500 uppercase font-bold px-2">
+          <div className="mt-3 flex flex-col sm:flex-row items-center justify-between gap-3 text-[10px] text-slate-500 uppercase font-bold px-2">
             <label className="flex items-center gap-2 cursor-pointer hover:text-slate-300 transition-colors">
               <input 
                 type="checkbox" 

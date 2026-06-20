@@ -8,7 +8,7 @@ const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'
 
 interface Props {
   date: Date;
-  history: StudySession[];
+  sessions: StudySession[];
   dungeons: Dungeon[];
   majorDungeons: MajorDungeon[];
   mode: '24h' | 'compact';
@@ -16,10 +16,9 @@ interface Props {
   timeSettings?: TimeSettings;
 }
 
-export const DailyPieChart: React.FC<Props> = ({ date, history, dungeons, majorDungeons, mode, includeRestTimeInTasks = true, timeSettings }) => {
+export const DailyPieChart: React.FC<Props> = ({ date, sessions, dungeons, majorDungeons, mode, includeRestTimeInTasks = true, timeSettings }) => {
   const { chartData, legendPayload } = useMemo(() => {
-    const targetDateStr = getSettlementDay(date, timeSettings);
-    const daySessions = history.filter(s => s.timestamp && getSessionSettlementDate(s, timeSettings) === targetDateStr);
+    const daySessions = sessions;
     
     const getDungeonName = (id: string) => {
       if (id === 'free_study') return 'Free Study';
@@ -55,7 +54,11 @@ export const DailyPieChart: React.FC<Props> = ({ date, history, dungeons, majorD
           color: getColor(name)
         }));
     } else {
+      const ts = timeSettings || { morning: { start: 8, end: 12 }, afternoon: { start: 14, end: 18 }, night: { start: 20, end: 24 } };
       const dayStart = startOfDay(date);
+      if (ts.night.start > ts.night.end) {
+        dayStart.setHours(ts.night.end, 0, 0, 0);
+      }
       const sorted = [...daySessions].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
       
       let currentMinute = 0; 
@@ -156,9 +159,11 @@ export const DailyPieChart: React.FC<Props> = ({ date, history, dungeons, majorD
             trigger="click"
             formatter={(val: number, name: string, props: any) => {
               if (props?.payload?.isIdle) return ['...', 'Idle'];
-              const h = Math.floor(val / 60);
-              const m = val % 60;
-              const formattedTime = h > 0 ? `${h}h ${m}m` : `${m}m`;
+              if (val < 0) return ['0min', props?.payload?.realName || name];
+              const totalMin = Math.round(val);
+              const h = Math.floor(totalMin / 60);
+              const m = totalMin % 60;
+              const formattedTime = h > 0 ? `${h}h ${m}min` : `${m}min`;
               return [formattedTime, props?.payload?.realName || name];
             }}
             contentStyle={{ borderRadius: '12px', border: 'none', backgroundColor: '#0f172a', fontWeight: 'bold', color: '#f8fafc', zIndex: 100 }}

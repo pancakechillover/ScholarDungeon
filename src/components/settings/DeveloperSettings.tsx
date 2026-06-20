@@ -20,6 +20,9 @@ export const DeveloperSettings: React.FC<DeveloperSettingsProps> = ({
   getNow
 }) => {
   const [isDevUnlocked, setIsDevUnlocked] = useState(state.devModeEnabled || false);
+  const [unlockPassword, setUnlockPassword] = useState('');
+  const [unlockError, setUnlockError] = useState('');
+  const [isUnlocking, setIsUnlocking] = useState(false);
   const [testNotificationTitle, setTestNotificationTitle] = useState('Dungeon Alert!');
   const [testNotificationBody, setTestNotificationBody] = useState('Your focus session has ended.');
   const [isTestingNotification, setIsTestingNotification] = useState(false);
@@ -175,7 +178,28 @@ export const DeveloperSettings: React.FC<DeveloperSettingsProps> = ({
     }
   };
 
-  const handleUnlockDev = () => {
+  const handleUnlockDev = async () => {
+    setIsUnlocking(true);
+    setUnlockError('');
+    try {
+      const res = await fetch('/api/verify-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: unlockPassword })
+      });
+      if (!res.ok) {
+        setUnlockError('Invalid password');
+        setIsUnlocking(false);
+        return;
+      }
+    } catch (err) {
+      setUnlockError('Verification failed');
+      setIsUnlocking(false);
+      return;
+    }
+
+    setIsUnlocking(false);
+    setUnlockPassword('');
     setIsDevUnlocked(true);
     setState(prev => ({ ...prev, devModeEnabled: true }));
   };
@@ -185,13 +209,29 @@ export const DeveloperSettings: React.FC<DeveloperSettingsProps> = ({
       {!isDevUnlocked ? (
         <div className="max-w-md mx-auto space-y-4 text-center py-12">
           <h3 className="text-xl font-bold text-white">Developer Mode Warning</h3>
-          <p className="text-slate-400 text-sm">Developer tools allow modifying game state and resources directly. Earned features may not work as intended. Are you sure you want to enable Developer Mode?</p>
+          <p className="text-slate-400 text-sm mb-4">Developer tools allow modifying game state and resources directly. Earned features may not work as intended. Are you sure you want to enable Developer Mode?</p>
+          <div className="space-y-2 mt-4 text-left">
+            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Unlock Password</label>
+            <input
+              type="password"
+              placeholder="Enter access code"
+              value={unlockPassword}
+              onChange={(e) => setUnlockPassword(e.target.value)}
+              className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder:text-slate-700 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all font-mono text-sm text-center tracking-widest"
+            />
+            {unlockError && (
+              <p className="text-red-400 text-xs text-center mt-1">
+                {unlockError}
+              </p>
+            )}
+          </div>
           <div className="flex justify-center mt-6">
             <button 
               onClick={handleUnlockDev}
-              className="px-6 py-3 bg-amber-600 text-white rounded-xl font-bold hover:bg-amber-500 transition-colors w-full uppercase tracking-widest text-sm"
+              disabled={isUnlocking || !unlockPassword}
+              className="px-6 py-3 bg-amber-600 disabled:bg-slate-800 disabled:text-slate-500 text-white rounded-xl font-bold hover:bg-amber-500 transition-colors w-full uppercase tracking-widest text-sm"
             >
-              Enable Developer Mode
+              {isUnlocking ? 'Verifying...' : 'Enable Developer Mode'}
             </button>
           </div>
         </div>

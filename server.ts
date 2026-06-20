@@ -153,6 +153,19 @@ const syncHandler = async (req: express.Request, res: express.Response) => {
     }
 
     if (!localData.lastUpdated) localData.lastUpdated = new Date().toISOString();
+    
+    // Save backup history (up to 3 recent copies)
+    if (cloudData && cloudData.lastUpdated && cloudData.lastUpdated !== localData.lastUpdated) {
+        const historyKey = `${key}_history`;
+        const historyRaw = await client.get(historyKey);
+        let historyList = historyRaw ? JSON.parse(historyRaw.toString()) : [];
+        // Insert at beginning
+        historyList.unshift(cloudData);
+        // Keep only last 3
+        historyList = historyList.slice(0, 3);
+        await client.set(historyKey, JSON.stringify(historyList));
+    }
+
     await client.set(key, JSON.stringify(localData));
     res.json({ success: true, cloudData: localData });
   } catch (error) {
@@ -178,8 +191,44 @@ const deleteHandler = async (req: express.Request, res: express.Response) => {
   }
 };
 
+const historyHandler = async (req: express.Request, res: express.Response) => {
+  try {
+    const { secretCode } = req.body;
+    if (!secretCode) return res.status(400).json({ error: "Secret code is required" });
+    
+    const client = await getRedisClient();
+    if (!client) return res.status(500).json({ error: "Cloud sync is not configured." });
+
+    const historyKey = `scholar_sync_${secretCode}_history`;
+    const historyRaw = await client.get(historyKey);
+    const historyList = historyRaw ? JSON.parse(historyRaw.toString()) : [];
+    
+    res.json({ success: true, history: historyList });
+  } catch (error) {
+    console.error("History error:", error);
+    res.status(500).json({ error: "History fetch failed" });
+  }
+};
+
+const verifyPasswordHandler = (req: express.Request, res: express.Response) => {
+  const { password } = req.body;
+  if (!password) {
+    return res.status(400).json({ error: "Password is required" });
+  }
+
+  // The requested hardcoded password
+  if (password === "8424") {
+    return res.json({ success: true });
+  } else {
+    return res.status(401).json({ error: "Invalid password" });
+  }
+};
+
+app.post("/api/verify-password", verifyPasswordHandler);
+
 app.post("/api/sync", syncHandler);
 app.post("/api/sync/", syncHandler);
+app.post("/api/sync/history", historyHandler);
 app.delete("/api/sync", deleteHandler);
 app.delete("/api/sync/", deleteHandler);
 

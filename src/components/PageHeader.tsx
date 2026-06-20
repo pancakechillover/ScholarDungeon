@@ -21,7 +21,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
 }) => {
   return (
     <div className={cn("flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8", className)}>
-      <div className="flex-1 min-w-0 flex flex-row items-start justify-between gap-4">
+      <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           <h2 className="text-xl sm:text-3xl font-black text-slate-50 tracking-tighter uppercase italic pr-2 flex items-center gap-2 sm:gap-3 min-w-0">
             <Icon className="text-indigo-500 w-5 h-5 sm:w-7 sm:h-7 shrink-0" />
@@ -31,7 +31,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
           {children}
         </div>
         {action && (
-          <div className="shrink-0 flex items-center justify-end">
+          <div className="shrink-0 flex items-center justify-start sm:justify-end gap-2">
             {action}
           </div>
         )}

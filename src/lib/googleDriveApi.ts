@@ -20,8 +20,12 @@ export class GoogleDriveAPI {
   }
 
   async findSaveFile(): Promise<string | null> {
+    return this.findFileByName('scholars_dungeon_save.json');
+  }
+
+  async findFileByName(filename: string): Promise<string | null> {
     const response = await this.request(
-      'https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name=\'scholars_dungeon_save.json\'&fields=files(id,modifiedTime)'
+      `https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name='${filename}'&fields=files(id,modifiedTime)`
     );
     const data = await response.json();
     if (data.files && data.files.length > 0) {
@@ -38,8 +42,12 @@ export class GoogleDriveAPI {
   }
 
   async createSaveFile(data: any): Promise<string> {
+    return this.createFileByName('scholars_dungeon_save.json', data);
+  }
+
+  async createFileByName(filename: string, data: any): Promise<string> {
     const metadata = {
-      name: 'scholars_dungeon_save.json',
+      name: filename,
       parents: ['appDataFolder']
     };
     

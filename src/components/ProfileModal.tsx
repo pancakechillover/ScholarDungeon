@@ -191,7 +191,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                   ) : (
                     <AvatarIcon className="w-10 h-10 sm:w-14 sm:h-14" />
                   )}
-                  <div className="absolute inset-0 bg-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="absolute inset-0 bg-indigo-500/5 transition-opacity transition-opacity" />
                 </div>
                 <div className="absolute -bottom-2 -right-2 sm:-bottom-3 sm:-right-3 w-8 h-8 sm:w-12 sm:h-12 bg-slate-950 rounded-xl sm:rounded-2xl border-2 sm:border-4 border-slate-950 flex items-center justify-center shadow-lg">
                   <span className="text-white font-black text-sm sm:text-lg">

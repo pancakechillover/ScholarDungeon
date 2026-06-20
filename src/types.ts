@@ -185,6 +185,15 @@ export interface Transaction {
   reason: string;
 }
 
+export interface TodayTodo {
+  id: string;
+  title: string;
+  dungeonId?: string;
+  completed: boolean;
+  durationMinutes?: number;
+  date?: string; // Format: YYYY-MM-DD
+}
+
 export interface AppState {
   level: number;
   xp: number;
@@ -222,6 +231,7 @@ export interface AppState {
   userBio?: string;
   userAvatar?: string;
   userTitle?: string;
+  todayTodos?: TodayTodo[];
   // Quests & Achievements
   quests: Quest[];
   questNotificationStyle: 'red_dot' | 'popup';

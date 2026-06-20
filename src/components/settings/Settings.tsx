@@ -412,7 +412,7 @@ export const Settings = React.memo<SettingsProps & { onOpenAstralArchives?: () =
                       <h3 className="font-bold text-white uppercase tracking-widest text-xs sm:text-sm truncate">{compartment.title}</h3>
                       <p className="text-xs text-slate-500 font-medium mt-1 leading-normal sm:line-clamp-1 line-clamp-2">{compartment.desc}</p>
                     </div>
-                    <div className="ml-auto w-8 h-8 shrink-0 rounded-full bg-white/5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="ml-auto w-8 h-8 shrink-0 rounded-full bg-white/5 flex items-center justify-center transition-opacity transition-opacity">
                       <ChevronRight className={compartment.iconColor} size={16} />
                     </div>
                   </button>
@@ -456,7 +456,7 @@ export const Settings = React.memo<SettingsProps & { onOpenAstralArchives?: () =
                           <h3 className="font-bold text-white tracking-tight text-sm sm:text-base truncate">{item.title}</h3>
                           <p className="text-xs text-slate-400 font-medium mt-1 leading-normal sm:line-clamp-1 line-clamp-2">{item.description}</p>
                         </div>
-                        <div className="ml-auto w-8 h-8 shrink-0 rounded-full bg-white/5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity self-center">
+                        <div className="ml-auto w-8 h-8 shrink-0 rounded-full bg-white/5 flex items-center justify-center transition-opacity transition-opacity self-center">
                           <ChevronRight className={compartment.iconColor} size={16} />
                         </div>
                       </button>

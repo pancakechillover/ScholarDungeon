@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v8.8.5';
-export const LAST_UPDATE_DATE = '2026-06-19';
-export const LAST_UPDATE_TIME = '01:45:00';
+export const APP_VERSION = 'v8.10.20';
+export const LAST_UPDATE_DATE = '2026-06-20';
+export const LAST_UPDATE_TIME = '23:59:59';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,378 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v8.10.20',
+    date: '2026-06-20',
+    time: '23:59:59',
+    title: 'Study Heatmap Year Summary',
+    items: [
+      { category: 'Feature', description: 'Enabled the same detailed summary module (Total/Avg metrics) seamlessly inside the Year View of the Heatmap.' }
+    ]
+  },
+  {
+    version: 'v8.10.19',
+    date: '2026-06-20',
+    time: '23:59:59',
+    title: 'Study Heatmap Layout Center Alignment',
+    items: [
+      { category: 'UI/UX', description: 'Centering both the heatmap calendar cards and summary nodes horizontally inside standard container viewports.' }
+    ]
+  },
+  {
+    version: 'v8.10.18',
+    date: '2026-06-20',
+    time: '23:59:59',
+    title: 'Study Heatmap Cards Centered Layout',
+    items: [
+      { category: 'UI/UX', description: 'Re-aligned Study Time, Gold Earnings, and EXP Earnings statistics total and average metrics to be beautifully grouped inside the card center, avoiding separation to extreme left and right margins on wide viewports.' }
+    ]
+  },
+  {
+    version: 'v8.10.17',
+    date: '2026-06-20',
+    time: '23:59:59',
+    title: 'Study Heatmap Cards Realignment',
+    items: [
+      { category: 'UI/UX', description: 'Consolidated Total Time and Daily Average Time stats into a single unified Study Time metric card.' },
+      { category: 'UI/UX', description: 'Standardized and adjusted text labels and icon sizes for Gold Earnings and EXP Earnings cards to align exactly with Focused Days card.' },
+      { category: 'Typography', description: 'Optimized typography for the 30 Days Summary header, scaling it down to a more precise, elegant text size.' }
+    ]
+  },
+  {
+    version: 'v8.10.16',
+    date: '2026-06-20',
+    time: '23:59:59',
+    title: 'Study Heatmap Summary Cards Consolidation',
+    items: [
+      { category: 'UI/UX', description: 'Consolidated Gold Total and Avg cards into a single elegant metrics card. Consolidated EXP Total and Avg cards into a single card.' },
+      { category: 'UI/UX', description: 'Replaced XP badge icons with matching Zap icons from daily metrics.' },
+      { category: 'Typography', description: 'Optimized typography hierarchy by scaling up the main 30 Days Summary header to the largest prominent size in the panel.' }
+    ]
+  },
+  {
+    version: 'v8.10.15',
+    date: '2026-06-20',
+    time: '23:59:59',
+    title: 'Study Heatmap Rich Summary UI',
+    items: [
+      { category: 'Feature', description: 'Enriched the 30 Days/Month/Year timeframe summary by showing total accumulated Time, percentages, and cleanly aligned metrics across the board.' },
+      { category: 'UI/UX', description: 'Redesigned the heatmap summary card utilizing modern Lucide icon pairings, intelligent mobile-responsive grid spanning, and replacing legacy plain-text emojis.' }
+    ]
+  },
+  {
+    version: 'v8.10.14',
+    date: '2026-06-20',
+    time: '23:59:59',
+    title: 'Time Display Compact Spacing Optimizer',
+    items: [
+      { category: 'Bug Fix', description: 'Re-formatted all time duration occurrences across the Daily, Weekly, and Heatmap statistics from [x] h [y] min to the compact [x]h [y]min format.' },
+      { category: 'UI/UX', description: 'Removed distracting whitespaces around time units to create a seamless, professional, and visually condensed statistical display.' }
+    ]
+  },
+  {
+    version: 'v8.10.13',
+    date: '2026-06-20',
+    time: '23:59:59',
+    title: 'Study Heatmap Header Labels Formatting',
+    items: [
+      { category: 'Bug Fix', description: 'Replaced generic Custom date text label with precise, auto-updating 30-day start and end date ranges formatted in clean sans-serif typography.' },
+      { category: 'UI/UX', description: 'Optimized width of the date range picker container to comfortably display localized spans without ellipsis clipping.' }
+    ]
+  },
+  {
+    version: 'v8.10.12',
+    date: '2026-06-20',
+    time: '23:59:59',
+    title: 'Study Heatmap Mobile Scaling & Layout Alignment',
+    items: [
+      { category: 'Bug Fix', description: 'Re-aligned the scroll-safe centering architecture using auto flex margins (mx-auto), ensuring the grid is centered across all screens.' },
+      { category: 'UI/UX', description: 'Integrated fluid viewport units (vw) with protective caps to dynamically magnify cells on mobile screens for better visibility and touch interactions.' }
+    ]
+  },
+  {
+    version: 'v8.10.11',
+    date: '2026-06-20',
+    time: '23:59:59',
+    title: 'Study Heatmap Mobile Layout Optimizer',
+    items: [
+      { category: 'Bug Fix', description: 'Resolved CSS flex centering bug causing scroll clipping on narrow mobile viewports, enabling fluid overflow scroll starting cleanly from the left boundary.' },
+      { category: 'UI/UX', description: 'Compacted heatmap container margins and grid paddings, wrapped action labels to fit smaller smartphone dimensions, and optimized summary widgets.' }
+    ]
+  },
+  {
+    version: 'v8.10.10',
+    date: '2026-06-20',
+    time: '23:59:59',
+    title: 'Sleep Tracker Mobile Layout Optimizer',
+    items: [
+      { category: 'Bug Fix', description: 'Optimized Sleep activity chart margins and font boundaries on compact screen views, preventing label overflow truncation.' },
+      { category: 'UI/UX', description: 'Re-designed interactive chart containers with responsive fluid paddings and integrated a stylish, high-contrast visual legend.' }
+    ]
+  },
+  {
+    version: 'v8.10.9',
+    date: '2026-06-20',
+    time: '23:59:59',
+    title: 'Chart Tooltips Viewport-Aware Auto-Bounding',
+    items: [
+      { category: 'Bug Fix', description: 'Re-engineered custom Recharts tooltips (Shared, Daily, and Sleep graphs) using React layout effects to dynamically shift bounding boxes inside viewport gutters.' },
+      { category: 'UI/UX', description: 'Eliminated off-screen popover cropping on extreme mobile viewport margins by applying math-perfect horizontal translateX translation vectors.' }
+    ]
+  },
+  {
+    version: 'v8.10.8',
+    date: '2026-06-20',
+    time: '23:59:59',
+    title: 'Victory Screen Container Overflow Fix',
+    items: [
+      { category: 'Bug Fix', description: 'Corrected CSS vertical centering on the session complete Reward Screen modal, allowing top-aligned layouts and vertical scrollability on compact mobile viewports.' },
+      { category: 'UI/UX', description: 'Configured safe vertical paddings ensuring session intelligence details and stat gains display cleanly without cropping at the top edge of mobile touchpoints.' }
+    ]
+  },
+  {
+    version: 'v8.10.7',
+    date: '2026-06-20',
+    time: '23:55:00',
+    title: 'Responsive Calendar Popover Bounds Safety',
+    items: [
+      { category: 'Bug Fix', description: 'Re-engineered PopoverPortal to dynamically calculate popover element widths, bounding calculations perfectly on screen margins and preventing off-screen clipping on mobile screens.' },
+      { category: 'UI/UX', description: 'Enforced synchronous useLayoutEffect paint constraints and set robust safety paddings preserving balanced visual layouts regardless of viewports.' }
+    ]
+  },
+  {
+    version: 'v8.10.6',
+    date: '2026-06-20',
+    time: '23:50:00',
+    title: 'Agenda Mobile Transition Flash Correction',
+    items: [
+      { category: 'Bug Fix', description: 'Re-synchronized transition handlers and wrapped the Today View page in a dedicated motion container, eliminating blank black frame flashes on mobile screens.' },
+      { category: 'UI/UX', description: 'Upgraded AnimatePresence tab mode to coordinate exit and enter cycles seamlessly, ensuring stable container scale thresholds without heights collapsing.' }
+    ]
+  },
+  {
+    version: 'v8.10.5',
+    date: '2026-06-20',
+    time: '23:30:00',
+    title: 'Agenda Mobile Navigation and Typography Refinements',
+    items: [
+      { category: 'Bug Fix', description: 'Removed the hardcoded, absolute-positioned pure black background overlay from the Agenda page to eliminate black frame flashes during transitions.' },
+      { category: 'UI/UX', description: 'Re-structured the Agenda sub-view within the standard page layout. The global level, experience, and resource status top bar is now correctly pinned and visible above Agenda content.' },
+      { category: 'UI/UX', description: 'Uppercase and italicized the Agenda header title to size 3xl, matching full-size Expedition and Explore page banners identically.' }
+    ]
+  },
+  {
+    version: 'v8.10.4',
+    date: '2026-06-20',
+    time: '20:00:00',
+    title: 'Mobile Screen Agenda Form Optimizer',
+    items: [
+      { category: 'UI/UX', description: 'Reduced container padding to prevent clipping of action controls on narrower mobile displays.' },
+      { category: 'UI/UX', description: 'Configured input layout with flex min-width rules to guarantee graceful shrinking and prevent horizontal layout squeezing.' }
+    ]
+  },
+  {
+    version: 'v8.10.3',
+    date: '2026-06-20',
+    time: '19:30:00',
+    title: 'End of the Day Compact Spacing Alignment',
+    items: [
+      { category: 'UI/UX', description: 'Tightened vertical spacing of the right column inside the End of the Day settlement modal by adjusting container gaps.' },
+      { category: 'UI/UX', description: 'Removed redundant top margin from the "Save & Rest" button to allow elements to flow cleanly and match the minimal layout of the Start of the Day modal.' }
+    ]
+  },
+  {
+    version: 'v8.10.2',
+    date: '2026-06-20',
+    time: '19:00:00',
+    title: 'End of the Day Column Dual-Height Absolute Symmetry',
+    items: [
+      { category: 'UI/UX', description: 'Matched left column wrapper properties symmetrically with the right column, enforcing exact same vertical scaling.' },
+      { category: 'UI/UX', description: 'Re-designed Efficiency Rating card to stretch dynamically and center elements neatly on widescreen, completing absolute high-precision alignment.' }
+    ]
+  },
+  {
+    version: 'v8.10.1',
+    date: '2026-06-20',
+    time: '18:00:00',
+    title: 'End of the Day Column Height Equalization',
+    items: [
+      { category: 'UI/UX', description: 'Upgraded End of the Day modal structure using standard high-performance flex stretching layout, aligning left and right column heights symmetrically.' },
+      { category: 'UI/UX', description: 'Enabled the Daily Reflection card to dynamically expand and fill all remaining vertical space inside the right column for perfect design proportions.' }
+    ]
+  },
+  {
+    version: 'v8.10.0',
+    date: '2026-06-20',
+    time: '17:00:00',
+    title: 'Start of the Day Agenda List & Dynamic Integration',
+    items: [
+      { category: 'Feature', description: 'Added an interactive, beautiful "Today\'s Agenda" Todo card within the Start of the Day modal to fully fill the unoccupied left column workspace.' },
+      { category: 'Feature', description: 'Fully synchronized card state with the application\'s master Today/Agenda module, allowing seamlessly adding objective checkmarks, delete targets, and custom quests.' },
+      { category: 'Feature', description: 'Integrated dynamic expedition selectors, allowing players to assign specific active dungeon quests directly into their daily focus agenda.' }
+    ]
+  },
+  {
+    version: 'v8.9.5',
+    date: '2026-06-20',
+    time: '16:00:00',
+    title: 'Widescreen Settlement Modal Refining & Button Placement',
+    items: [
+      { category: 'UI/UX', description: 'Redesigned "Start of the Day" and "End of the Day" modals by removing the redundant bottom fixed footer bars.' },
+      { category: 'UI/UX', description: 'Repositioned primary "Save & Rest / Start My Focus" action buttons inside the right column directly under the daily reflection card to avoid scrolling clipping issues.' },
+      { category: 'UI/UX', description: 'Deleted the redundant "Rest well, Seeker" encouragement block from the End of the Day modal to optimize content density.' },
+      { category: 'UI/UX', description: 'Slightly scaled down the modal banner headings (from 2xl/3xl to xl/2xl) for a cleaner, high-contrast, professional visual presentation on all viewports.' }
+    ]
+  },
+  {
+    version: 'v8.9.4',
+    date: '2026-06-20',
+    time: '15:00:00',
+    title: 'Widescreen Timeline & Dense Layout Integration',
+    items: [
+      { category: 'UI/UX', description: 'Repositioned the settlement period timeline inline to the right of the header title for responsive widescreen optimization.' },
+      { category: 'UI/UX', description: 'Compacted layouts in both Start of the Day and End of the Day modals, lowering vertical margins, grid gaps, card paddings, and button widths to prevent overflow and reveal inner cards like Efficiency Rating.' }
+    ]
+  },
+  {
+    version: 'v8.9.3',
+    date: '2026-06-20',
+    time: '14:00:00',
+    title: 'Settlement Header & Record Alignment',
+    items: [
+      { category: 'UI/UX', description: 'Narrowed vertical padding and height dimensions on Start of the Day and End of the Day header banners for responsive precision.' },
+      { category: 'UI/UX', description: 'Refactored Today\'s Record stats to stay aligned on a single row with 4 columns on larger viewports.' },
+      { category: 'UI/UX', description: 'Updated time suffix representation universally from m to min.' }
+    ]
+  },
+  {
+    version: 'v8.9.2',
+    date: '2026-06-20',
+    time: '12:00:00',
+    title: 'Settlement UI Equalization & Template Flow',
+    items: [
+      { category: 'UI/UX', description: 'Upgraded Daily Settlement dialogs enforcing flawless 50-50 equal right/left column balances under widescreen bounds.' },
+      { category: 'UI/UX', description: 'Streamlined Reflection controls, directly importing standard Template generation buttons inside standard dropdown triggers eliminating horizontal bloating.' }
+    ]
+  },
+  {
+    version: 'v8.9.1',
+    date: '2026-06-20',
+    time: '12:00:00',
+    title: 'Dual-Column Settlement Flow',
+    items: [
+      { category: 'UI/UX', description: 'Redesign Start of the Day and End of the Day prompts targeting responsive dual-column layouts for wide screens.' },
+      { category: 'UI/UX', description: 'Unified typography styling across modals and fully aligned heading SVG icons.' }
+    ]
+  },
+  {
+    version: 'v8.9.0',
+    date: '2026-06-20',
+    time: '12:00:00',
+    title: 'Full-Page "Today" Agenda View',
+    items: [
+      { category: 'Feature', description: 'Introduced a new dedicated "Today" screen accessed from the dashboard, replacing the previous "Daily Progress" module logic.' },
+      { category: 'Feature', description: 'Implemented interactive daily task list management inside the Today view, allowing users to define specific objectives and seamlessly tap into ongoing Expedition dungeons.' },
+      { category: 'UI/UX', description: 'Renamed "Daily Progress" to "Today". Streamlined the widget by removing non-essential Settlement text, stacking the Start/End triggers vertically, setting the exact time suffix to "min", and ensuring the deep-link arrow is persistently visible.' }
+    ]
+  },
+  {
+    version: 'v8.8.15',
+    date: '2026-06-19',
+    time: '19:54:00',
+    title: 'Sanctum Plaza Unlock Independence',
+    items: [
+      { category: 'Feature', description: 'Unlocked core Fellowship visibility removing the strict Developer Mode entrance barrier. All users can now normally view available guilds and join the lobby.' },
+      { category: 'Security', description: 'Rerouted strict password constraints specifically to the Guild Creation action instead, preserving server limits via the unified secure password engine.' }
+    ]
+  },
+  {
+    version: 'v8.8.14',
+    date: '2026-06-19',
+    time: '19:47:00',
+    title: 'Developer Access Security Password',
+    items: [
+      { category: 'Security', description: 'Hardcoded developer modes, Redis backend synchronization, and Google Drive access flows now require a secure server-sided authentication password rather than being strictly click-through mock unlocks.' },
+      { category: 'UI/UX', description: 'Integrated dynamic password verification text fields directly into Developer Settings and Cloud Settings modal windows for explicit data protection.' }
+    ]
+  },
+  {
+    version: 'v8.8.13',
+    date: '2026-06-19',
+    time: '19:40:00',
+    title: 'Cloud Save History Restorations',
+    items: [
+      { category: 'Feature', description: 'Added secure access enabling users to view and surgically restore from the 3 most recently overwritten cloud states (available universally across Redis, Google Drive, and WebDAV endpoints).' },
+      { category: 'UI/UX', description: 'Introduced the Cloud History Modal overlay inside the configuration matrix containing non-blocking parallel fetch queries directly injecting chronologically tracked backups preventing historical state loss.' }
+    ]
+  },
+  {
+    version: 'v8.8.12',
+    date: '2026-06-19',
+    time: '21:30:00',
+    title: 'Cloud Sync Device Overwrite Guard',
+    items: [
+      { category: 'Bug Fix', description: 'Resolved critical silent-upload data loss bug where initializing a new device would silently overwrite cloud configurations when standard automatic checkpoints bypassed device mismatch verifications.' },
+      { category: 'Security', description: 'Hardcoded structural device ID boundaries: uploading local payloads to the cloud now strictly enforces a device inheritance lock. You must explicitly download and merge existing cloud progress first (sharing its identity) before the system will authorize any upstream uploads.' }
+    ]
+  },
+  {
+    version: 'v8.8.11',
+    date: '2026-06-19',
+    time: '19:14:00',
+    title: 'Stats View Dashboard Alignment',
+    items: [
+      { category: 'UI/UX', description: 'Left-aligned the "Daily" header title relative to its accompanying inline calendar icon within the core Stats/Record dashboard, ensuring symmetrical spacing and preventing extreme right-ward justification across narrow screens.' }
+    ]
+  },
+  {
+    version: 'v8.8.10',
+    date: '2026-06-19',
+    time: '08:55:00',
+    title: 'Explore View Mobile Layout Fixes',
+    items: [
+      { category: 'UI/UX', description: 'Resolved horizontal scrolling issue on narrow mobile devices occurring under the Explore tab (Current Build, Active Talents cards). Applied strict horizontal overflow bounds accurately clipping inner layout spillovers (such as wide tooltip thresholds) preventing structural sliding across the screen.' }
+    ]
+  },
+  {
+    version: 'v8.8.9',
+    date: '2026-06-19',
+    time: '08:43:00',
+    title: 'UI Responsiveness & Refinement',
+    items: [
+      { category: 'UI/UX', description: 'Resolved horizontal viewport overflow within StatsView causing screen sliding on narrow mobile screens. Migrated grid-gap constraints from gap-3 inside 3-column Daily and Weekly Gain summaries seamlessly down to gap-1.5 on narrow viewports while shrinking embedded cell padding correctly. Integrated robust text truncation arrays (line-clamp-1, break-all, min-w-0) aggressively securing structural layout limits preventing rigid data inputs (e.g., elongated time duration strings) from distorting grid definitions dynamically.' }
+    ]
+  },
+  {
+    version: 'v8.8.8',
+    date: '2026-06-19',
+    time: '04:15:00',
+    title: 'Daily Statistics Synchronization & Stability',
+    items: [
+      { category: 'Bug Fix', description: 'Resolved critical bug where Daily statistics charts (Pie and Donut formats) failed to populate data for the current day due to erroneous date-boundary math causing shifts backwards to yesterday on initial load.' },
+      { category: 'Architecture', description: 'Re-routed the DailyPieChart source stream to directly depend on dailySessions established centrally within Stats.tsx, overriding localized parsing logic and securing 1:1 identical structural symmetry between Bar charts and Donut variations.' },
+      { category: 'Bug Fix', description: 'Eliminated potential NaN generation deep within getSessionEffectiveMinutes core calculation routines caused by incomplete or corrupted historical timestamp lengths. All non-numeric derivations strictly resolve to 0 safe defaults safely.' }
+    ]
+  },
+  {
+    version: 'v8.8.7',
+    date: '2026-06-19',
+    time: '03:26:00',
+    title: 'Fixed Avg Time Calculations and Chart Formats',
+    items: [
+      { category: 'Bug Fix', description: 'Repaired NaN evaluation errors in Javascript causing full statistics unmounting across the application whenever the denominator active days length resolved to zeros or floats inside custom formatDuration tools.' },
+      { category: 'Architecture', description: 'Standardized all Weekly and Heatmap metric engines (Avg Time, Daily Avg Gold, Daily Avg Exp) to calculate their sum strictly across the exact date ranges selected (e.g. ÷ 7 for week scales), instead of solely depending on localized activeDaysCount modifiers, ensuring true statistical symmetry for blank inactivity periods.' }
+    ]
+  },
+  {
+    version: 'v8.8.6',
+    date: '2026-06-19',
+    time: '03:15:00',
+    title: 'Unified Time Formatting',
+    items: [
+      { category: 'UI/UX', description: 'Upgraded time display formatting across the Record module\'s Daily, Weekly, and Heatmap statistics. Replaced raw minute counts and compact representations with a consistent, readable [x] h [y] min string. Changed corresponding "Time (min)" labels simply to "Time" or "Study Time".' }
+    ]
+  },
   {
     version: 'v8.8.5',
     date: '2026-06-19',

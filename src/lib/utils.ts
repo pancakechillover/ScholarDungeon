@@ -26,11 +26,15 @@ export function getSettlementDay(date: Date, timeSettings?: any): string {
 }
 
 export function getSessionEffectiveMinutes(session: any, includeRestTimeInTasks: boolean): number {
-  const baseDuration = (session.focusDuration !== undefined && session.focusDuration !== null) 
+  let baseDuration = (session.focusDuration !== undefined && session.focusDuration !== null) 
     ? session.focusDuration 
-    : session.duration;
+    : (session.duration || 0);
+
+  if (typeof baseDuration !== 'number' || isNaN(baseDuration)) {
+    baseDuration = 0;
+  }
     
-  if (includeRestTimeInTasks && typeof session.restDuration === 'number') {
+  if (includeRestTimeInTasks && typeof session.restDuration === 'number' && !isNaN(session.restDuration)) {
     return baseDuration + session.restDuration;
   }
   

@@ -156,7 +156,7 @@ export function PresetControl<T>({ type, currentData, onLoad, className, default
                       <span className="text-xs font-medium text-slate-300 group-hover:text-white truncate pr-2">{name}</span>
                       <button
                         onClick={(e) => deletePreset(name, e)}
-                        className="p-1 text-slate-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"
+                        className="p-1 text-slate-600 hover:text-red-400 transition-opacity transition-all"
                       >
                         <Trash2 size={12} />
                       </button>

@@ -126,9 +126,11 @@ export const WeeklyPieChart: React.FC<Props> = ({ weekSessions, mode, includeRes
           <Tooltip 
             trigger="click"
             formatter={(val: number, name: string) => {
-              const h = Math.floor(val / 60);
-              const m = val % 60;
-              const formattedTime = h > 0 ? `${h}h ${m}m` : `${m}m`;
+              if (val < 0) return ['0min', name];
+              const totalMin = Math.round(val);
+              const h = Math.floor(totalMin / 60);
+              const m = totalMin % 60;
+              const formattedTime = h > 0 ? `${h}h ${m}min` : `${m}min`;
               return [formattedTime, name];
             }}
             contentStyle={{ borderRadius: '12px', border: 'none', backgroundColor: '#0f172a', fontWeight: 'bold', color: '#f8fafc', zIndex: 100 }}

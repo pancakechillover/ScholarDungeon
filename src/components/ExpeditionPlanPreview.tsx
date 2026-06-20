@@ -127,7 +127,7 @@ export const ExpeditionPlanPreview: React.FC<Props> = ({ plan: initialPlan, onAp
               {isEditing && (
                 <button
                   onClick={() => removeTier(idx)}
-                  className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full transition-opacity transition-opacity"
                 >
                   <X size={12} />
                 </button>

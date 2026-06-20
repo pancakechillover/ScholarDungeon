@@ -442,7 +442,7 @@ export const QuestBoardCssDebugger: React.FC<QuestBoardCssDebuggerProps> = ({ on
                       </div>
                     </div>
                     
-                    <div className="mt-3 text-[9px] font-mono text-slate-600 truncate opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="mt-3 text-[9px] font-mono text-slate-600 truncate transition-opacity transition-opacity">
                       {variable.name}
                     </div>
                   </div>

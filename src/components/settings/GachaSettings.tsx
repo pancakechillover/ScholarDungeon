@@ -200,7 +200,7 @@ export const GachaSettings = ({ pools, onUpdate }: { pools: GachaPool[], onUpdat
                             setIsRenaming(pool.id);
                             setRenameValue(pool.name);
                           }}
-                          className="p-1.5 text-slate-600 opacity-0 group-hover:opacity-100 hover:text-indigo-400 transition-all"
+                          className="p-1.5 text-slate-600 transition-opacity hover:text-indigo-400 transition-all"
                         >
                           <Edit2 size={14} />
                         </button>
@@ -309,7 +309,7 @@ export const GachaSettings = ({ pools, onUpdate }: { pools: GachaPool[], onUpdat
                             setIsRenaming(pool.id);
                             setRenameValue(pool.name);
                           }}
-                          className="p-1.5 text-slate-600 opacity-0 group-hover:opacity-100 hover:text-indigo-400 transition-all"
+                          className="p-1.5 text-slate-600 transition-opacity hover:text-indigo-400 transition-all"
                         >
                           <Edit2 size={14} />
                         </button>
@@ -523,7 +523,7 @@ export const GachaSettings = ({ pools, onUpdate }: { pools: GachaPool[], onUpdat
                                     "absolute -top-3 -right-3 w-8 h-8 rounded-full flex items-center justify-center border shadow-lg z-10 transition-all",
                                     rarities.length <= 1 
                                       ? "opacity-0 pointer-events-none" 
-                                      : "bg-slate-800 text-slate-400 border-slate-700 hover:bg-red-500 hover:text-white hover:border-red-400 opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100"
+                                      : "bg-slate-800 text-slate-400 border-slate-700 hover:bg-red-500 hover:text-white hover:border-red-400 transition-opacity scale-90 group-hover:scale-100"
                                   )}
                                 >
                                   <X size={14} />
@@ -679,7 +679,7 @@ export const GachaSettings = ({ pools, onUpdate }: { pools: GachaPool[], onUpdat
                                   "absolute -top-3 -right-3 w-8 h-8 rounded-full flex items-center justify-center border shadow-lg z-10 transition-all",
                                   isLastOne
                                     ? "opacity-0 pointer-events-none" 
-                                    : "bg-slate-800 text-slate-400 border-slate-700 hover:bg-red-500 hover:text-white hover:border-red-400 opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100"
+                                    : "bg-slate-800 text-slate-400 border-slate-700 hover:bg-red-500 hover:text-white hover:border-red-400 transition-opacity scale-90 group-hover:scale-100"
                                 )}
                               >
                                 <X size={14} />

@@ -275,7 +275,7 @@ const SageConfigManager: React.FC<{ state: AppState, setState: React.Dispatch<Re
                      <div key={p.id} className="group p-3 bg-slate-800/30 border border-slate-800 rounded-xl hover:border-indigo-500/30 transition-colors">
                        <div className="flex items-center justify-between mb-1">
                          <span className="text-sm font-bold text-slate-200">{p.title}</span>
-                         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                         <div className="flex gap-1 transition-opacity transition-opacity">
                            <button onClick={() => setEditingPrompt(p)} className="p-1 px-2 text-[10px] font-bold text-slate-400 hover:text-white transition-colors flex items-center gap-1"><Edit2 size={10} /> Edit</button>
                            <button 
                              onClick={() => {
@@ -732,7 +732,7 @@ const SageInterface: React.FC<SageInterfaceProps> = ({ state, setState }) => {
                       </div>
                     </div>
                     {editingConvoId !== convo.id && (
-                      <div className="flex flex-col gap-2 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity lg:opacity-100">
+                      <div className="flex flex-col gap-2 flex-shrink-0 transition-opacity transition-opacity lg:opacity-100">
                         <button
                           onClick={(e) => handleRenameConversation(convo.id, convo.title, e)}
                           className={cn("p-1", isDarkTheme ? "text-slate-500 hover:text-indigo-400" : "text-indigo-600/60 hover:text-indigo-800")}

@@ -47,7 +47,7 @@ import { useCloudSync } from './hooks/useCloudSync';
 import { triggerSimpleConfetti } from './lib/effects';
 import { cn, getXPForLevel, getSettlementDay, getTitleForLevel } from './lib/utils';
 import { playSound } from './lib/sound';
-import { Dungeon, MajorDungeon, DungeonReward } from './types';
+import { Dungeon, MajorDungeon, DungeonReward, AppState } from './types';
 import { CloudSyncModal } from './components/CloudSyncModal';
 import { SplashScreen } from './components/SplashScreen';
 import { CompactTimer } from './components/CompactTimer';
@@ -1750,6 +1750,7 @@ function App() {
         {showStartOfDayModal && (
           <StartOfDayModal
             state={state}
+            dungeons={dungeons}
             initialDateStr={typeof showStartOfDayModal === 'string' ? showStartOfDayModal : undefined}
             repairStreak={repairStreak}
             onUpdateState={(update) => setState(s => ({ ...s, ...update }))}

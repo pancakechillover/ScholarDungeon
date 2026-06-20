@@ -169,6 +169,7 @@ export function useCloudSync(
           console.warn("WebDAV folder creation check handled:", e);
         }
         
+        let oldCloudData = null;
         if (!forceOverwrite) {
           // Check if cloud is newer
           const getResponse = await fetch('/api/webdav/proxy', {
@@ -184,6 +185,7 @@ export function useCloudSync(
           if (getResponse.ok) {
             const result = await getResponse.json();
             if (result.data) {
+              oldCloudData = result.data;
               const cloudDeviceCode = result.data.savedByDeviceCode;
               const identitiesMatch = cloudDeviceCode ? cloudDeviceCode === getDeviceCode() : (!result.data.savedBy || result.data.savedBy === localIdentity);
 
@@ -206,18 +208,19 @@ export function useCloudSync(
                 localTime,
                 cloudTime,
                 cloudExists: true,
+                identitiesMatch,
                 forceOverwrite
               });
 
-              if (decision === 'block_cloud_newer') {
+              if (decision === 'block_cloud_newer' || decision === 'device_mismatch_conflict') {
                 if (syncMethod === 'Visibility API Active') {
-                  console.warn("Cloud sync aborted: Cloud data is newer during visibility change.");
-                  setIsSyncing(false);
-                  return;
+                   console.warn("Cloud sync aborted: " + decision);
+                   setIsSyncing(false);
+                   return;
                 }
                 setSyncCheckResult({
-                    status: 'cloud_newer',
-                    cloudData: result.data,
+                    status: cloudTime > localTime ? 'cloud_newer' : 'local_newer',
+                    cloudData: oldCloudData,
                     code: 'WebDAV'
                 });
                 setIsSyncing(false);
@@ -229,6 +232,38 @@ export function useCloudSync(
           }
         }
         
+        // Backup WebDAV History (Non-blocking)
+        if (oldCloudData && oldCloudData.lastUpdated && oldCloudData.lastUpdated !== localData.lastUpdated) {
+           setTimeout(async () => {
+             try {
+                let historyUrl = url;
+                if (historyUrl.endsWith('scholars_dungeon_save.json')) {
+                    historyUrl = historyUrl.replace('scholars_dungeon_save.json', '');
+                }
+                if (!historyUrl.endsWith('/')) historyUrl += '/';
+                historyUrl += 'scholars_dungeon_save_history.json';
+                
+                const historyGet = await fetch('/api/webdav/proxy', {
+                  method: 'POST', headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ url: historyUrl, username, password, method: 'GET' })
+                });
+                let historyList = [];
+                if (historyGet.ok) {
+                  const historyRaw = await historyGet.json();
+                  historyList = Array.isArray(historyRaw) ? historyRaw : [];
+                }
+                historyList.unshift(oldCloudData);
+                historyList = historyList.slice(0, 3);
+                await fetch('/api/webdav/proxy', {
+                  method: 'POST', headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ url: historyUrl, username, password, method: 'PUT', body: historyList })
+                });
+             } catch (err) {
+                console.error("Failed to backup WebDAV history", err);
+             }
+           }, 100);
+        }
+
         // Write to WebDAV
         const payloadText = JSON.stringify({ url, username, password, method: 'PUT', body: localData });
         const payloadSize = new Blob([payloadText]).size;
@@ -268,10 +303,12 @@ export function useCloudSync(
         
         let fileId = currentState.googleDriveFileId || await drive.findSaveFile();
         
+        let oldCloudData = null;
         if (fileId && !forceOverwrite) {
           // Check if cloud is newer or identity mismatch
           const cloudData = await drive.readSaveFile(fileId);
           if (cloudData) {
+            oldCloudData = cloudData;
             const cloudDeviceCode = cloudData.savedByDeviceCode;
             const identitiesMatch = cloudDeviceCode ? cloudDeviceCode === getDeviceCode() : (!cloudData.savedBy || cloudData.savedBy === localIdentity);
 
@@ -294,17 +331,18 @@ export function useCloudSync(
               localTime,
               cloudTime,
               cloudExists: true,
+              identitiesMatch,
               forceOverwrite
             });
 
-            if (decision === 'block_cloud_newer') {
+            if (decision === 'block_cloud_newer' || decision === 'device_mismatch_conflict') {
               if (syncMethod === 'Visibility API Active') {
-                console.warn("Cloud sync aborted: Cloud data is newer during visibility change.");
+                console.warn("Cloud sync aborted: " + decision);
                 setIsSyncing(false);
                 return;
               }
               setSyncCheckResult({
-                  status: 'cloud_newer', 
+                  status: cloudTime > localTime ? 'cloud_newer' : 'local_newer', 
                   cloudData,
                   code: 'Google Drive Auth'
               });
@@ -314,6 +352,29 @@ export function useCloudSync(
 
             // Otherwise continue to write to Google Drive
           }
+        }
+
+        // Backup Drive History (Non-blocking)
+        if (oldCloudData && oldCloudData.lastUpdated && oldCloudData.lastUpdated !== localData.lastUpdated) {
+          setTimeout(async () => {
+            try {
+              const historyId = await drive.findFileByName('scholars_dungeon_save_history.json');
+              let historyList = [];
+              if (historyId) {
+                const historyRaw = await drive.readSaveFile(historyId);
+                historyList = Array.isArray(historyRaw) ? historyRaw : [];
+              }
+              historyList.unshift(oldCloudData);
+              historyList = historyList.slice(0, 3);
+              if (historyId) {
+                await drive.updateSaveFile(historyId, historyList);
+              } else {
+                await drive.createFileByName('scholars_dungeon_save_history.json', historyList);
+              }
+            } catch (err) {
+              console.error("Failed to backup Drive history", err);
+            }
+          }, 100);
         }
 
         if (fileId) {
@@ -379,17 +440,18 @@ export function useCloudSync(
                 localTime,
                 cloudTime,
                 cloudExists: true,
+                identitiesMatch,
                 forceOverwrite
               });
 
-              if (decision === 'block_cloud_newer') {
+              if (decision === 'block_cloud_newer' || decision === 'device_mismatch_conflict') {
                 if (syncMethod === 'Visibility API Active') {
-                   console.warn("Cloud sync aborted: Cloud data is newer during visibility change.");
+                   console.warn("Cloud sync aborted: " + decision);
                    setIsSyncing(false);
                    return;
                 }
                 setSyncCheckResult({
-                  status: 'cloud_newer', // Conflict
+                  status: cloudTime > localTime ? 'cloud_newer' : 'local_newer', // Conflict
                   cloudData: data.cloudData,
                   code: currentState.secretCode!
                 });
@@ -483,7 +545,7 @@ export function useCloudSync(
                     ...cloudState,
                     // Preserve local identity/sync settings
                     deviceNickname: localState.deviceNickname || cloudState.deviceNickname,
-                    deviceCode: localState.deviceCode || getDeviceCode(),
+                    deviceCode: cloudState.deviceCode || syncCheckResult.cloudData.savedByDeviceCode || getDeviceCode(),
                     secretCode: localState.secretCode || cloudState.secretCode,
                     syncProvider: localState.syncProvider || cloudState.syncProvider,
                     googleDriveTokens: localState.googleDriveTokens || cloudState.googleDriveTokens,
@@ -501,7 +563,7 @@ export function useCloudSync(
           localStorage.setItem('scholars_dungeon_state', JSON.stringify({
               ...syncCheckResult.cloudData.state,
               deviceNickname: state.deviceNickname || syncCheckResult.cloudData.state.deviceNickname,
-              deviceCode: state.deviceCode || getDeviceCode(),
+              deviceCode: syncCheckResult.cloudData.state.deviceCode || syncCheckResult.cloudData.savedByDeviceCode || getDeviceCode(),
               secretCode: state.secretCode || syncCheckResult.cloudData.state.secretCode,
               syncProvider: state.syncProvider || syncCheckResult.cloudData.state.syncProvider,
               googleDriveTokens: state.googleDriveTokens || syncCheckResult.cloudData.state.googleDriveTokens,
@@ -514,7 +576,7 @@ export function useCloudSync(
         const mergedState = {
             ...syncCheckResult.cloudData.state,
             deviceNickname: state.deviceNickname || syncCheckResult.cloudData.state.deviceNickname,
-            deviceCode: state.deviceCode || getDeviceCode(),
+            deviceCode: syncCheckResult.cloudData.state.deviceCode || syncCheckResult.cloudData.savedByDeviceCode || getDeviceCode(),
             secretCode: (syncCheckResult.code !== 'WebDAV' && syncCheckResult.code !== 'GoogleDrive' && syncCheckResult.code !== 'GoogleDriveAuth') 
                 ? syncCheckResult.code 
                 : (state.secretCode || syncCheckResult.cloudData.state.secretCode),
@@ -529,6 +591,11 @@ export function useCloudSync(
             isGoogleDriveUnlocked: state.isGoogleDriveUnlocked || syncCheckResult.cloudData.state.isGoogleDriveUnlocked,
             isRedisUnlocked: state.isRedisUnlocked || syncCheckResult.cloudData.state.isRedisUnlocked
         };
+
+        const newDeviceCode = syncCheckResult.cloudData.state?.deviceCode || syncCheckResult.cloudData?.savedByDeviceCode;
+        if (newDeviceCode) {
+            localStorage.setItem('scholars_dungeon_device_code', newDeviceCode);
+        }
 
         setState(mergedState);
         setDungeons(syncCheckResult.cloudData.dungeons);
@@ -672,6 +739,7 @@ export function useCloudSync(
           localTime,
           cloudTime,
           cloudExists: true,
+          identitiesMatch,
           forceOverwrite: false // it's just check
         });
 
@@ -688,8 +756,8 @@ export function useCloudSync(
           return;
         }
 
-        if (decision === 'block_cloud_newer') {
-          setSyncCheckResult({ status: 'cloud_newer', cloudData: cloudDataToProcess, code });
+        if (decision === 'block_cloud_newer' || decision === 'device_mismatch_conflict') {
+          setSyncCheckResult({ status: cloudTime > localTime ? 'cloud_newer' : 'local_newer', cloudData: cloudDataToProcess, code });
         } else {
           // fetchFromCloud is always user-initiated, thus we can show local_newer
           setSyncCheckResult({ status: 'local_newer', cloudData: cloudDataToProcess, code });
@@ -780,6 +848,7 @@ export function useCloudSync(
           localTime,
           cloudTime,
           cloudExists: true,
+          identitiesMatch,
           forceOverwrite: false // it's just check
         });
 
@@ -805,8 +874,8 @@ export function useCloudSync(
 
         if (requestId !== activeSyncRequestRef.current) return;
 
-        if (decision === 'block_cloud_newer') {
-          setSyncCheckResult({ status: 'cloud_newer', cloudData: data, code });
+        if (decision === 'block_cloud_newer' || decision === 'device_mismatch_conflict') {
+          setSyncCheckResult({ status: cloudTime > localTime ? 'cloud_newer' : 'local_newer', cloudData: data, code });
         } else if (forceModal) {
           setSyncCheckResult({ status: 'local_newer', cloudData: data, code });
         } else {
