@@ -104,9 +104,9 @@ export const TodayView: React.FC<TodayViewProps> = ({ state, setState, dungeons,
               <ArrowLeft size={20} />
             </button>
             <div className="min-w-0">
-              <h1 className="text-xl sm:text-3xl font-black text-slate-50 tracking-tighter uppercase italic pr-2 flex items-center gap-2 sm:gap-3 min-w-0">
+              <h1 className="text-xl sm:text-3xl font-black text-slate-50 tracking-tighter uppercase italic pr-4 flex items-center gap-2 sm:gap-3 min-w-0">
                 <ListPlus className="text-indigo-400 w-5 h-5 sm:w-7 sm:h-7 shrink-0" />
-                <span className="truncate pr-1">Agenda</span>
+                <span className="truncate pr-3.5 leading-none">Agenda</span>
               </h1>
               <p className="text-sm text-slate-500 font-medium">
                 {format(startTime, 'MMM do, HH:mm')} - {format(endTime, 'MMM do, HH:mm')}

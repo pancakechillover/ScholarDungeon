@@ -122,7 +122,7 @@ export const TalentTree = React.memo<TalentTreeProps>(({
   };
 
   return (
-    <div className="p-6 space-y-8 relative">
+    <div className="w-full space-y-6 sm:space-y-8 relative">
       <PageHeader 
         title="Talent Tree"
         description="Customize your learning build"

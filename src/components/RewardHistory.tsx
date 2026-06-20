@@ -133,7 +133,7 @@ export const RewardHistory: React.FC<RewardHistoryProps> = ({ history, transacti
 
   if (activeTab === 'menu') {
     return (
-      <div className="space-y-6">
+      <div className="w-full space-y-6 sm:space-y-8">
         <PageHeader 
           title="Reward Vault"
           description="Select a vault compartment to view."
@@ -184,7 +184,7 @@ export const RewardHistory: React.FC<RewardHistoryProps> = ({ history, transacti
   }
 
   return (
-    <div className="space-y-6">
+    <div className="w-full space-y-6 sm:space-y-8">
       {activeTab === 'economy' ? (
         <PageHeader 
           title="Economy Log"

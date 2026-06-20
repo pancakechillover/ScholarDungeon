@@ -26,7 +26,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v8.10.27
+- **Current Version:** v8.10.31
 - **Last Update Date:** 2026-06-20
 - **Last Update Time:** 23:59:59
 
@@ -53,6 +53,22 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+- **v8.10.31 (2026-06-20):** Global Page Padding & Layout Standardization
+  - *UI/UX:* Standardized layout constraints across all major dashboard views (Expedition, Explore, Talent Tree, Merchant's Outpost, Reward Vault, Record).
+  - *UI/UX:* Unified all dynamic rendering gutters and space dividers, aligning inner viewport coordinates consistently to identical padding standards.
+
+- **v8.10.30 (2026-06-20):** Italic Title Clipping Prevention & Spacer Safety
+  - *Bug Fix:* Resolved right-side clipping of italic banner titles (e.g., "EXPEDITION" and "AGENDA") on mobile and desktop viewports.
+  - *UI/UX:* Upgraded custom `PageHeader` layouts and `TodayView` titles with precise padding configurations and flexible spacing boundaries, successfully preventing italic truncation.
+
+- **v8.10.29 (2026-06-20):** Expedition Horizon Active Day High Contrast Enhancement
+  - *UI/UX:* Re-engineered children elements and background definitions of the Expedition Horizon Today active cell to adopt a beautiful, theme-aware glowing style, eliminating the dark, dull, greyish look.
+  - *UI/UX:* Integrated theme-specific dynamic contrast logic, yielding sharp, glowing white day labels under dark themes and crisp dark indigo text on light themes.
+
+- **v8.10.28 (2026-06-20):** State Updater Pure Function Re-architecture
+  - *Bug Fix:* Eliminated critical strict-mode side-effects embedded deep within \`setDungeons\` and \`setMajorDungeons\` updater functions preventing dual-computation reward loops and state duplication.
+  - *Architecture:* Synchronized React array mapping patterns utilizing synchronous scope injections instead of relying dynamically on enclosed parameter arrays, natively detaching \`addRewardToHistory\` execution curves from concurrent evaluations safely.
+
 - **v8.10.27 (2026-06-20):** Expedition Blueprint Optimization & Fullscreen Feature
   - *UI/UX:* Resolved truncation and layout clipping on the Expedition Blueprint module inside Sage's Council specifically on compact mobile viewports.
   - *Feature:* Added a standalone togglable Fullscreen display mode to significantly expand the Blueprint container for enhanced reading and detailed editing.

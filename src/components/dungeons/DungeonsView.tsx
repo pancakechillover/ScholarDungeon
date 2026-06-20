@@ -117,7 +117,7 @@ export const DungeonsView: React.FC<DungeonsViewProps> = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="w-full p-6 lg:p-8 space-y-8"
+      className="w-full p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8"
     >
       <PageHeader 
         title={dungeonSubTab === 'list' ? "Expedition" : dungeonSubTab === 'quests' ? "Quest Board" : dungeonSubTab === 'achievements' ? "Achievements" : "Quest History"} 

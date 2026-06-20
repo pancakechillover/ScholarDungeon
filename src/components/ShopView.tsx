@@ -28,7 +28,7 @@ export const ShopView: React.FC<ShopViewProps> = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="w-full"
+      className="w-full p-4 sm:p-6 lg:p-8"
     >
       <Shop 
         coins={state.coins} 

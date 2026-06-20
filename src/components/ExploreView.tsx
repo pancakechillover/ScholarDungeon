@@ -410,17 +410,15 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
       exit={{ opacity: 0, y: -20 }}
       className={cn(
         "w-full flex-1 min-h-0 flex flex-col",
-        isFullscreenExplore ? "h-[100dvh] items-center justify-center p-0 m-0" : "px-4 py-4 sm:px-8 sm:py-6"
+        isFullscreenExplore ? "h-[100dvh] items-center justify-center p-0 m-0" : "w-full p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8"
       )}
     >
       {!isFullscreenExplore && (
-        <div className="shrink-0 mb-2 sm:mb-3">
-          <PageHeader 
-            title="Explore"
-            description="Venture into the unknown and sharpen your mind"
-            icon={TimerIcon}
-          />
-        </div>
+        <PageHeader 
+          title="Explore"
+          description="Venture into the unknown and sharpen your mind"
+          icon={TimerIcon}
+        />
       )}
 
       {isFullscreenExplore && (
@@ -439,7 +437,7 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
 
       <div className={cn(
         "w-full flex-1 min-h-0 flex flex-col",
-        isFullscreenExplore ? "items-center justify-center pt-[env(safe-area-inset-top)]" : "px-4 sm:px-6 lg:px-8"
+        isFullscreenExplore ? "items-center justify-center pt-[env(safe-area-inset-top)]" : ""
       )}>
         <div className={cn(
           "w-full flex-1 min-h-0",

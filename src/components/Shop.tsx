@@ -52,7 +52,7 @@ export const Shop = React.memo<ShopProps>(({
     ?.reduce((acc, i) => acc + (i.count || 0), 0) || 0;
 
   return (
-    <div className="p-6 space-y-8">
+    <div className="w-full space-y-6 sm:space-y-8">
       <PageHeader 
         title="Merchant's Outpost"
         description="Exchange your hard-earned gold"

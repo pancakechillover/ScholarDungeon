@@ -1272,7 +1272,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
   }, [heatmapDays, heatmapMode, history]);
 
   return (
-    <div ref={statsContainerRef} className="p-6 space-y-8" onClick={() => {}} style={{ cursor: 'auto' }}>
+    <div ref={statsContainerRef} className="w-full space-y-6 sm:space-y-8" onClick={() => {}} style={{ cursor: 'auto' }}>
       <PageHeader 
         title="Record"
         description="Your journey through the dungeon"

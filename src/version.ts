@@ -1,4 +1,4 @@
-export const APP_VERSION = 'v8.10.27';
+export const APP_VERSION = 'v8.10.31';
 export const LAST_UPDATE_DATE = '2026-06-20';
 export const LAST_UPDATE_TIME = '23:59:59';
 
@@ -12,7 +12,36 @@ export interface ReleaseLog {
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
   {
-    version: 'v8.10.27',
+    version: 'v8.10.31',
+    date: '2026-06-20',
+    time: '23:59:59',
+    title: 'Global Page Padding & Layout Standardization',
+    items: [
+      { category: 'UI/UX', description: 'Standardized layout constraints across all major dashboard views (Expedition, Explore, Talent Tree, Merchant\'s Outpost, Reward Vault, Record) to ensure identical inner padding scaling, unified banner spacing, and symmetrical screen gutters across device viewports.' }
+    ]
+  },
+  {
+    version: 'v8.10.30',
+    date: '2026-06-20',
+    time: '23:59:59',
+    title: 'Italic Clipping Prevention and Spacer Safety',
+    items: [
+      { category: 'Bug Fix', description: 'Resolved page header title right-side truncation on the Expedition tab and Agenda views caused by italic text styling.' },
+      { category: 'UI/UX', description: 'Added proper trailing safety padding and fluid spacers ensuring dynamic headings preserve geometric rendering bounds across various devices.' }
+    ]
+  },
+  {
+    version: 'v8.10.29',
+    date: '2026-06-20',
+    time: '23:59:59',
+    title: 'Expedition Horizon Active Day Contrast Enhancement',
+    items: [
+      { category: 'UI/UX', description: 'Re-engineered the Today active cell on Expedition Horizon using a vibrant, theme-aware background to eliminate any dark, muddy default appearance.' },
+      { category: 'UI/UX', description: 'Upgraded typography contrast dynamically, applying soft white text with a prominent light drop shadow on dark themes and a clean dark indigo layout on light themes.' }
+    ]
+  },
+  {
+    version: 'v8.10.28',
     date: '2026-06-20',
     time: '23:59:59',
     title: 'Expedition Blueprint Mobile Optimization',

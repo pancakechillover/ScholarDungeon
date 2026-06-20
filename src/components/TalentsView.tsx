@@ -40,7 +40,7 @@ export const TalentsView: React.FC<TalentsViewProps> = ({ state, unlockTalent, t
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="w-full"
+      className="w-full p-4 sm:p-6 lg:p-8"
     >
       <TalentTree 
         points={state.talentPoints}

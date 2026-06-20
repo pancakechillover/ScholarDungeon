@@ -343,7 +343,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     className={cn(
                       "flex flex-col items-center p-2 rounded-xl border transition-all cursor-pointer group relative",
                       isTo 
-                        ? ("ring-2 ring-indigo-500 ring-offset-2 ring-offset-slate-900 bg-indigo-900/20 border-indigo-500/30 shadow-md shadow-indigo-500/20")
+                        ? (isDarkTheme ? "bg-indigo-500/15 border-indigo-500 shadow-lg shadow-indigo-500/20 ring-1 ring-indigo-500/30" : "bg-indigo-50/70 border-indigo-500 shadow shadow-indigo-500/10")
                         : ("bg-slate-900/40 border-slate-800/50 hover:bg-slate-800"),
                       hasDDL && !isTo 
                         ? ("border-indigo-500/50 bg-indigo-950/30") 
@@ -353,14 +353,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   >
                     <span className={cn(
                       "text-[10px] font-bold uppercase tracking-widest mb-1 transition-colors",
-                      isTo ? ("text-indigo-400") : (isPast ? ("text-slate-600 group-hover:text-slate-500") : ("text-slate-500 group-hover:text-slate-400"))
+                      isTo ? (isDarkTheme ? "text-indigo-300 font-extrabold" : "text-indigo-600 font-extrabold") : (isPast ? ("text-slate-600 group-hover:text-slate-500") : ("text-slate-500 group-hover:text-slate-400"))
                     )}>
                       {format(day, 'EEE')}
                     </span>
                     <span className={cn(
                       "text-lg font-black transition-colors",
                       isTo 
-                        ? ("text-indigo-400")
+                        ? (isDarkTheme ? "text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.45)]" : "text-indigo-900 font-black")
                         : (isPast ? ("text-slate-600") : ("text-white"))
                     )}>
                       {format(day, 'd')}

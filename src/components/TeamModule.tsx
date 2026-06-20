@@ -1730,7 +1730,7 @@ const DetailedGoalModal = ({ team, onClose }: { team: Team, onClose: () => void 
            <div className="w-16 h-16 bg-slate-950 text-indigo-500 flex items-center justify-center rounded-2xl border border-slate-800 shadow-sm mb-4">
              <Target size={32} />
            </div>
-           <h2 className="text-3xl font-black text-white italic tracking-tighter uppercase mb-1">Guild Horizon</h2>
+           <h2 className="text-3xl font-black text-white italic tracking-tighter uppercase mb-2 pr-1.5">Guild Horizon</h2>
            <p className="text-sm text-slate-500 font-medium max-w-sm mb-4">
              The collective target for {(team.name).toUpperCase()}
            </p>
