@@ -438,12 +438,12 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
       )}
 
       <div className={cn(
-        "w-full flex-1 min-h-0",
-        isFullscreenExplore ? "flex items-center justify-center w-full h-full pt-[env(safe-area-inset-top)]" : "px-4 sm:px-6 lg:px-8"
+        "w-full flex-1 min-h-0 flex flex-col",
+        isFullscreenExplore ? "items-center justify-center pt-[env(safe-area-inset-top)]" : "px-4 sm:px-6 lg:px-8"
       )}>
         <div className={cn(
-          "w-full",
-          !isFullscreenExplore ? "grid grid-cols-1 lg:grid-cols-[1fr_360px] xl:grid-cols-[1fr_440px] 2xl:grid-cols-[1fr_500px] gap-6 xl:gap-8 2xl:gap-12 lg:h-[calc(100dvh-12.5rem)] lg:max-h-[960px] lg:min-h-[700px]" : "flex flex-col items-center justify-center h-full w-full"
+          "w-full flex-1 min-h-0",
+          !isFullscreenExplore ? "grid grid-cols-1 lg:grid-cols-[1fr_360px] xl:grid-cols-[1fr_440px] 2xl:grid-cols-[1fr_500px] gap-6 xl:gap-8 2xl:gap-12 lg:h-[calc(100dvh-6.5rem)] lg:max-h-[960px] pb-4 lg:pb-0" : "flex flex-col items-center justify-center h-full w-full"
         )}>
           {/* Left Column: Timer & Timer Settings area */}
           <div className={cn(
@@ -566,12 +566,9 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
                   </div>
                 </div>
 
-                <div className="flex-1 relative p-4 sm:p-8 flex flex-col items-center justify-center">
-                
-                <div className="w-full max-w-md aspect-square sm:aspect-auto flex items-center justify-center scale-90 sm:scale-100">
+                <div className="flex-1 relative py-2 sm:py-6 flex flex-col items-center justify-center min-h-0 w-full h-full">
                   {renderTimerContent()}
                 </div>
-              </div>
               </div>
             )}
 

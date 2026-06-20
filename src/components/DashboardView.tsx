@@ -275,18 +275,19 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </p>
           
           <div className={cn(
-            "p-4 sm:p-6 rounded-2xl border mt-4 overflow-visible relative z-10 transition-colors",
-            isDarkTheme ? "bg-slate-950/50 border-slate-800/60 shadow-lg" : "bg-slate-950 border-slate-800 shadow-sm"
+            "p-3 sm:p-6 rounded-2xl border mt-4 overflow-visible relative z-10 transition-colors",
+            "bg-slate-950/50 border-slate-800/60 shadow-lg"
           )}>
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between gap-1.5 sm:gap-2 mb-4">
               <span className={cn(
-                "text-[10px] sm:text-xs font-bold uppercase tracking-widest flex items-center gap-2",
-                isDarkTheme ? "text-slate-400" : "text-slate-500"
+                "text-[10px] sm:text-xs font-bold uppercase tracking-widest flex items-center gap-1.5 shrink-0 whitespace-nowrap",
+                "text-slate-400"
               )}>
-                 <Calendar className={cn("w-3.5 h-3.5", isDarkTheme ? "text-indigo-400" : "text-indigo-600")} />
-                 Expedition Horizon
+                 <Calendar className={cn("w-3.5 h-3.5 shrink-0", "text-indigo-400")} />
+                 <span className="hidden xs:inline sm:inline">Expedition Horizon</span>
+                 <span className="xs:hidden sm:hidden">Horizon</span>
               </span>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 sm:gap-2 min-w-0">
                 <select
                   value={horizonMode}
                   onChange={(e) => {
@@ -294,12 +295,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     setHorizonDate(new Date());
                   }}
                   className={cn(
-                    "text-[10px] font-bold uppercase tracking-wider outline-none cursor-pointer rounded-md px-1 py-0.5 border text-center appearance-none transition-colors",
-                    isDarkTheme ? "bg-slate-900 border-slate-700 text-slate-300 hover:border-indigo-500" : "bg-slate-950 border-slate-800 text-slate-400 hover:border-indigo-400"
+                    "text-[10px] font-bold uppercase tracking-wider outline-none cursor-pointer rounded-md px-1.5 py-0.5 border text-center appearance-none transition-colors shrink-0",
+                    "bg-slate-900 border-slate-700 text-slate-300 hover:border-indigo-500"
                   )}
                 >
-                  <option value="recent">Recent 7 Days</option>
-                  <option value="week">Current Week</option>
+                  <option value="recent">Recent 7</option>
+                  <option value="week">This Week</option>
                 </select>
                 <DatePicker
                   value={format(horizonDate, 'yyyy-MM-dd')}
@@ -310,15 +311,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     }
                   }}
                   className={cn(
-                    "w-auto min-w-0 bg-transparent border-transparent text-xs font-bold uppercase tracking-wider hover:border-transparent px-1 py-0.5 text-right cursor-pointer flex items-center transition-opacity hover:opacity-70 group",
-                    isDarkTheme ? "text-slate-300" : "text-slate-100"
+                    "w-auto min-w-0 bg-transparent border-transparent text-xs font-bold uppercase tracking-wider hover:border-transparent px-1 py-0.5 text-right cursor-pointer flex items-center transition-opacity hover:opacity-70 group shrink-0",
+                    "text-slate-300"
                   )}
                 >
                   <div className="flex items-center gap-1">
-                     {ddlsCountInView > 0 && <span className={cn("text-[9px] font-black rounded px-1 hidden sm:inline-block", isDarkTheme ? "bg-indigo-500/20 text-indigo-400" : "bg-indigo-100 text-indigo-700")}>{ddlsCountInView} DDL</span>}
+                     {ddlsCountInView > 0 && <span className={cn("text-[9px] font-black rounded px-1 hidden sm:inline-block", "bg-indigo-500/20 text-indigo-400")}>{ddlsCountInView} DDL</span>}
                      <span className="hidden sm:inline group-hover:text-indigo-500 transition-colors">{format(horizonDate, 'MMM yyyy')}</span>
                      <span className="sm:hidden group-hover:text-indigo-500 transition-colors">{format(horizonDate, 'MMM')}</span>
-                     <ChevronDown size={14} className={cn("ml-0.5 transition-colors", isDarkTheme ? "text-slate-500 group-hover:text-indigo-400" : "text-slate-400 group-hover:text-indigo-600")} />
+                     <ChevronDown size={14} className={cn("ml-0.5 transition-colors shrink-0", "text-slate-500 group-hover:text-indigo-400")} />
                   </div>
                 </DatePicker>
               </div>
@@ -342,31 +343,25 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     className={cn(
                       "flex flex-col items-center p-2 rounded-xl border transition-all cursor-pointer group relative",
                       isTo 
-                        ? (isDarkTheme 
-                            ? "ring-2 ring-indigo-500 ring-offset-2 ring-offset-slate-900 bg-indigo-900/20 border-indigo-500/30 shadow-md shadow-indigo-500/20" 
-                            : "bg-indigo-50 border-indigo-400 shadow-md shadow-indigo-500/10 ring-4 ring-indigo-500/20")
-                        : (isDarkTheme 
-                            ? "bg-slate-900/40 border-slate-800/50 hover:bg-slate-800"
-                            : "bg-slate-900 border-slate-800 hover:bg-slate-800/70 shadow-sm"),
+                        ? ("ring-2 ring-indigo-500 ring-offset-2 ring-offset-slate-900 bg-indigo-900/20 border-indigo-500/30 shadow-md shadow-indigo-500/20")
+                        : ("bg-slate-900/40 border-slate-800/50 hover:bg-slate-800"),
                       hasDDL && !isTo 
-                        ? (isDarkTheme 
-                            ? "border-indigo-500/50 bg-indigo-950/30" 
-                            : "border-indigo-300 bg-indigo-500/10") 
+                        ? ("border-indigo-500/50 bg-indigo-950/30") 
                         : "",
-                      isPast && !isTo ? (isDarkTheme ? "opacity-60" : "bg-slate-800 opacity-70") : ""
+                      isPast && !isTo ? ("opacity-60") : ""
                     )}
                   >
                     <span className={cn(
                       "text-[10px] font-bold uppercase tracking-widest mb-1 transition-colors",
-                      isTo ? (isDarkTheme ? "text-indigo-400" : "text-indigo-700") : (isPast ? (isDarkTheme ? "text-slate-600 group-hover:text-slate-500" : "text-slate-400 group-hover:text-slate-200") : (isDarkTheme ? "text-slate-500 group-hover:text-slate-400" : "text-slate-300 group-hover:text-slate-100"))
+                      isTo ? ("text-indigo-400") : (isPast ? ("text-slate-600 group-hover:text-slate-500") : ("text-slate-500 group-hover:text-slate-400"))
                     )}>
                       {format(day, 'EEE')}
                     </span>
                     <span className={cn(
                       "text-lg font-black transition-colors",
                       isTo 
-                        ? (isDarkTheme ? "text-indigo-400" : "text-indigo-700")
-                        : (isPast ? (isDarkTheme ? "text-slate-600" : "text-slate-400") : (isDarkTheme ? "text-white" : "text-slate-100"))
+                        ? ("text-indigo-400")
+                        : (isPast ? ("text-slate-600") : ("text-white"))
                     )}>
                       {format(day, 'd')}
                     </span>
@@ -375,11 +370,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       {hasDDL && (
                         <div className="flex items-center justify-center relative w-full">
                           {ddls.length === 1 ? (
-                            <Sword className={cn("w-4 h-4", isPast ? "text-rose-500" : (isDarkTheme ? "text-indigo-400" : "text-indigo-600"))} />
+                            <Sword className={cn("w-4 h-4", isPast ? "text-rose-500" : ("text-indigo-400"))} />
                           ) : (
                             <div className="flex items-center gap-1">
-                              <Sword className={cn("w-3 h-3", isPast ? "text-rose-500" : (isDarkTheme ? "text-indigo-400" : "text-indigo-600"))} />
-                              <span className={cn("text-[10px] font-bold", isPast ? "text-rose-500" : (isDarkTheme ? "text-indigo-400" : "text-indigo-700"))}>x{ddls.length}</span>
+                              <Sword className={cn("w-3 h-3", isPast ? "text-rose-500" : ("text-indigo-400"))} />
+                              <span className={cn("text-[10px] font-bold", isPast ? "text-rose-500" : ("text-indigo-400"))}>x{ddls.length}</span>
                             </div>
                           )}
                         </div>
@@ -397,13 +392,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 id="horizon-popover"
                 className={cn(
                 "border rounded-xl p-3 w-64 max-h-64 overflow-y-auto z-50 transition-colors shadow-2xl flex flex-col gap-3",
-                isDarkTheme ? "bg-slate-900 border-slate-700/80 shadow-[0_10px_40px_-5px_rgba(0,0,0,0.5)]" : "bg-slate-950 border-slate-800 shadow-[0_10px_40px_-5px_rgba(0,0,0,0.1)]"
+                "bg-slate-900 border-slate-700/80 shadow-[0_10px_40px_-5px_rgba(0,0,0,0.5)]"
               )}>
-                <div className={cn("flex items-center justify-between border-b pb-2", isDarkTheme ? "border-slate-800" : "border-slate-800")}>
-                  <span className={cn("text-xs font-bold tracking-widest uppercase", isDarkTheme ? "text-slate-400" : "text-slate-300")}>
+                <div className={cn("flex items-center justify-between border-b pb-2", "border-slate-800")}>
+                  <span className={cn("text-xs font-bold tracking-widest uppercase", "text-slate-400")}>
                     {format(selectedDateAnchor.day, 'MMM d, yyyy')}
                   </span>
-                  <button onClick={() => setSelectedDateAnchor(null)} className={cn("p-1 transition-colors rounded", isDarkTheme ? "text-slate-500 hover:text-white hover:bg-slate-800" : "text-slate-400 hover:text-slate-100 hover:bg-slate-800")}>
+                  <button onClick={() => setSelectedDateAnchor(null)} className={cn("p-1 transition-colors rounded", "text-slate-500 hover:text-white hover:bg-slate-800")}>
                     <X size={14} />
                   </button>
                 </div>
@@ -415,20 +410,18 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       return (
                         <div key={i} className={cn(
                           "border p-2 rounded-lg cursor-pointer transition-colors",
-                          isDarkTheme 
-                            ? "bg-slate-950/50 border-slate-800 hover:border-indigo-500/50" 
-                            : "bg-slate-900 border-slate-800 hover:border-indigo-400"
+                          "bg-slate-950/50 border-slate-800 hover:border-indigo-500/50"
                         )} onClick={() => {
                             setSelectedDateAnchor(null);
                             setActiveTab('dungeons');
                           }}>
                           <div className="flex items-center gap-2 mb-1">
-                            <Sword size={12} className={isPast ? "text-rose-500" : (isDarkTheme ? "text-indigo-400" : "text-indigo-600")} />
-                            <h4 className={cn("text-xs font-bold truncate pr-2", isDarkTheme ? "text-white" : "text-slate-50")}>{d.name}</h4>
+                            <Sword size={12} className={isPast ? "text-rose-500" : ("text-indigo-400")} />
+                            <h4 className={cn("text-xs font-bold truncate pr-2", "text-white")}>{d.name}</h4>
                           </div>
                           <div className="flex justify-between items-center text-[10px] font-bold">
-                            <span className={isDarkTheme ? "text-slate-500" : "text-slate-400"}>{d.completedSessions} / {d.totalSessions} Sessions</span>
-                            <span className={isPast ? "text-rose-500" : (isDarkTheme ? "text-indigo-400" : "text-indigo-600")}>
+                            <span className={"text-slate-500"}>{d.completedSessions} / {d.totalSessions} Sessions</span>
+                            <span className={isPast ? "text-rose-500" : ("text-indigo-400")}>
                                {isPast ? "OVERDUE" : "EXPEDITION TIER"}
                             </span>
                           </div>
@@ -438,9 +431,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center p-4 py-6 text-center">
-                    <Calendar className={cn("w-8 h-8 mb-2 opacity-50", isDarkTheme ? "text-slate-500" : "text-slate-300")} />
-                    <span className={cn("text-xs font-bold mb-1", isDarkTheme ? "text-slate-400" : "text-slate-200")}>No Deadlines Today</span>
-                    <span className={cn("text-[10px]", isDarkTheme ? "text-slate-500" : "text-slate-400")}>Enjoy your peaceful day.</span>
+                    <Calendar className={cn("w-8 h-8 mb-2 opacity-50", "text-slate-500")} />
+                    <span className={cn("text-xs font-bold mb-1", "text-slate-400")}>No Deadlines Today</span>
+                    <span className={cn("text-[10px]", "text-slate-500")}>Enjoy your peaceful day.</span>
                   </div>
                 )}
                 
@@ -451,9 +444,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   }}
                   className={cn(
                     "w-full py-2 rounded-lg text-xs font-bold tracking-wide transition-colors flex items-center justify-center border",
-                    isDarkTheme 
-                      ? "bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 border-indigo-500/30" 
-                      : "bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-indigo-200"
+                    "bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 border-indigo-500/30"
                   )}
                 >
                   Manage Expeditions
@@ -648,11 +639,20 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
   const [error, setError] = React.useState<string | null>(null);
   const [copiedId, setCopiedId] = React.useState<string | null>(null);
   const [showPromptSelector, setShowPromptSelector] = React.useState(false);
-  const [sidebarOpen, setSidebarOpen] = React.useState(true);
+  const [isMobile, setIsMobile] = React.useState(() => window.innerWidth < 768);
+  const [sidebarOpen, setSidebarOpen] = React.useState(() => window.innerWidth >= 768);
   const [editingConvoId, setEditingConvoId] = React.useState<string | null>(null);
   const [editingTitle, setEditingTitle] = React.useState('');
   const scrollRef = React.useRef<HTMLDivElement>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   
   const [confirmDialog, setConfirmDialog] = React.useState<{
     isOpen: boolean; title: string; message: string; type?: 'danger'|'warning'|'info'; isAlert?: boolean; onConfirm?: () => void;
@@ -914,33 +914,49 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 md:p-4 bg-slate-950/80 backdrop-blur-md">
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
         className={cn(
-          "w-full max-w-4xl rounded-[2.5rem] border overflow-hidden shadow-2xl flex h-[85vh] relative",
-          isDarkTheme ? "bg-slate-900 border-indigo-500/30 shadow-indigo-500/10" : "bg-indigo-50 border-indigo-200 shadow-indigo-900/10"
+          "w-full max-w-4xl rounded-none md:rounded-[2.25rem] border-0 md:border overflow-hidden shadow-2xl flex h-full md:h-[85vh] relative",
+          "bg-slate-900 border-slate-800 shadow-[0_0_50px_rgba(30,41,59,0.5)]"
         )}
       >
+        {/* Sidebar Mobile Backdrop */}
+        <AnimatePresence>
+          {isMobile && sidebarOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSidebarOpen(false)}
+              className="absolute inset-0 z-25 bg-slate-950/60 backdrop-blur-xs md:hidden"
+            />
+          )}
+        </AnimatePresence>
+
         {/* Sidebar */}
         <AnimatePresence initial={false}>
           {sidebarOpen && (
             <motion.div
-              initial={{ width: 0, opacity: 0 }}
-              animate={{ width: 280, opacity: 1 }}
-              exit={{ width: 0, opacity: 0 }}
+              key="sage-sidebar"
+              initial={isMobile ? { x: -285, opacity: 1 } : { width: 0, opacity: 0 }}
+              animate={isMobile ? { x: 0, opacity: 1 } : { width: 280, opacity: 1 }}
+              exit={isMobile ? { x: -285, opacity: 0 } : { width: 0, opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 220 }}
               className={cn(
-                "h-full border-r flex flex-col flex-shrink-0 z-10",
-                isDarkTheme ? "border-slate-800 bg-slate-950/80" : "border-indigo-200 bg-indigo-50"
+                "h-full border-r flex flex-col flex-shrink-0 z-30 shadow-2xl md:shadow-none w-[280px]",
+                isMobile ? "absolute left-0 top-0" : "relative",
+                "border-slate-800 bg-slate-950"
               )}
             >
-              <div className={cn("p-4 border-b flex items-center justify-between", isDarkTheme ? "border-slate-800" : "border-indigo-200")}>
-                <span className={cn("text-xs font-black uppercase tracking-widest pl-2", isDarkTheme ? "text-slate-400" : "text-indigo-700")}>Consultations</span>
+              <div className={cn("p-4 border-b flex items-center justify-between", "border-slate-800")}>
+                <span className={cn("text-xs font-black uppercase tracking-widest pl-2", "text-slate-400")}>Consultations</span>
                 <button
                   onClick={handleNewConversation}
-                  className={cn("p-1.5 rounded-lg transition-colors", isDarkTheme ? "bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20" : "bg-indigo-200 text-indigo-700 hover:bg-indigo-300")}
+                  className={cn("p-1.5 rounded-lg transition-colors", "bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20")}
                   title="New Consultation"
                 >
                   <Plus size={16} />
@@ -954,19 +970,22 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
                       if (editingConvoId !== convo.id) {
                         setState(prev => ({ ...prev, activeSageConversationId: convo.id }));
                       }
+                      if (isMobile) {
+                        setSidebarOpen(false);
+                      }
                     }}
                     className={cn(
                       "w-full text-left p-3 rounded-2xl transition-all group flex items-start gap-3",
                       editingConvoId !== convo.id ? "cursor-pointer" : "",
                       activeConversationId === convo.id
-                        ? (isDarkTheme ? "bg-indigo-500/15 border border-indigo-500/30" : "bg-indigo-200 border border-indigo-400")
-                        : (isDarkTheme ? "bg-slate-900 border border-transparent hover:border-slate-800" : "bg-indigo-100/50 border border-transparent hover:bg-indigo-100")
+                        ? "bg-indigo-500/15 border border-indigo-500/30"
+                        : ("bg-slate-900 border border-transparent hover:border-slate-800")
                     )}
                   >
-                    <MessageSquare size={16} className={cn("mt-0.5 flex-shrink-0", activeConversationId === convo.id ? (isDarkTheme ? "text-indigo-400" : "text-indigo-700") : (isDarkTheme ? "text-slate-500 group-hover:text-slate-400" : "text-indigo-600/70 group-hover:text-indigo-700"))} />
+                    <MessageSquare size={16} className={cn("mt-0.5 flex-shrink-0", activeConversationId === convo.id ? "text-indigo-500" : ("text-slate-500 group-hover:text-slate-400"))} />
                     <div className="flex-1 overflow-hidden">
                       {editingConvoId === convo.id ? (
-                        <input
+                         <input
                           autoFocus
                           type="text"
                           value={editingTitle}
@@ -976,14 +995,14 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
                             if (e.key === 'Enter') saveConversationTitle(convo.id);
                             if (e.key === 'Escape') setEditingConvoId(null);
                           }}
-                          className={cn("text-xs font-bold w-full bg-transparent outline-none border-b border-dashed", isDarkTheme ? "text-indigo-100 border-indigo-500/50" : "text-indigo-900 border-indigo-700")}
+                          className={cn("text-xs font-bold w-full bg-transparent outline-none border-b border-dashed", "text-slate-200 border-indigo-500/50")}
                         />
                       ) : (
-                        <div className={cn("text-xs font-bold line-clamp-1 break-all", activeConversationId === convo.id ? (isDarkTheme ? "text-indigo-100" : "text-indigo-900") : (isDarkTheme ? "text-slate-300 group-hover:text-slate-200" : "text-indigo-800 group-hover:text-indigo-950"))}>
+                        <div className={cn("text-xs font-bold line-clamp-1 break-all", activeConversationId === convo.id ? ("text-slate-200") : ("text-slate-300 group-hover:text-slate-200"))}>
                           {convo.title}
                         </div>
                       )}
-                      <div className={cn("text-[10px] mt-1", isDarkTheme ? "text-slate-600" : "text-indigo-700/60")}>
+                      <div className={cn("text-[10px] mt-1", "text-slate-600")}>
                         {new Date(convo.updatedAt).toLocaleDateString()}
                       </div>
                     </div>
@@ -991,7 +1010,7 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
                       <div className="flex flex-col gap-2 flex-shrink-0 transition-opacity">
                         <button
                           onClick={(e) => handleRenameConversation(convo.id, convo.title, e)}
-                          className={cn("p-1", isDarkTheme ? "text-slate-500 hover:text-indigo-400" : "text-indigo-600/60 hover:text-indigo-800")}
+                          className={cn("p-1", "text-slate-500 hover:text-indigo-400")}
                           title="Rename"
                         >
                           <Edit2 size={12} />
@@ -999,7 +1018,7 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
                         {conversations.length > 1 && (
                           <button
                             onClick={(e) => handleDeleteConversation(convo.id, e)}
-                            className={cn("p-1 hover:text-red-400", isDarkTheme ? "text-slate-500" : "text-indigo-600/60")}
+                            className={cn("p-1 hover:text-red-400", "text-slate-500")}
                             title="Delete"
                           >
                             <Trash2 size={12} />
@@ -1015,29 +1034,29 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
         </AnimatePresence>
 
         {/* Main Chat Area */}
-        <div className={cn("flex-1 flex flex-col min-w-0 transition-colors", isDarkTheme ? "" : "bg-indigo-50")}>
-          <div className={cn("p-6 border-b flex justify-between items-center", isDarkTheme ? "border-slate-800 bg-indigo-500/5" : "border-indigo-200 bg-indigo-50")}>
-            <div className="flex items-center gap-3">
+        <div className={cn("flex-1 flex flex-col min-w-0 transition-colors", "")}>
+          <div className={cn("p-3.5 md:p-5 border-b flex justify-between items-center transition-colors", "border-slate-800 bg-slate-900/40")}>
+            <div className="flex items-center gap-2 sm:gap-3">
               <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
-                className={cn("p-2 mr-1 transition-colors rounded-xl", isDarkTheme ? "text-slate-400 hover:text-white bg-slate-800/50" : "text-indigo-700 hover:text-indigo-900 bg-indigo-200/50")}
+                className={cn("p-2 transition-colors rounded-xl", "text-slate-400 hover:text-white bg-slate-800/50")}
                 title={sidebarOpen ? "Close Sidebar" : "Open Sidebar"}
               >
                 {sidebarOpen ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
               </button>
-              <div className={cn("p-2 rounded-xl hidden sm:block", isDarkTheme ? "bg-indigo-500/20" : "bg-indigo-200")}>
-                 <Bot className={cn(isDarkTheme ? "text-indigo-400" : "text-indigo-700")} size={20} />
+              <div className={cn("p-1.5 rounded-lg hidden xs:block", "bg-indigo-500/20")}>
+                 <Bot className={cn("text-indigo-400")} size={16} />
               </div>
-              <div>
-                 <h3 className={cn("text-lg font-black uppercase tracking-widest leading-none mb-1", isDarkTheme ? "text-white" : "text-indigo-950")}>Sage's Council</h3>
-                 <span className={cn("text-[10px] font-bold uppercase tracking-tighter line-clamp-1", isDarkTheme ? "text-indigo-400/60" : "text-indigo-700/80")}>{activeConversation?.title || 'Illuminating the Path'}</span>
+              <div className="min-w-0">
+                 <h3 className={cn("text-sm md:text-lg font-black uppercase tracking-widest leading-none mb-1 truncate", "text-white")}>Sage's Council</h3>
+                 <span className={cn("text-[9px] md:text-[10px] font-bold uppercase tracking-tighter line-clamp-1 max-w-[120px] xs:max-w-[180px] md:max-w-none transition-colors", "text-indigo-400/60")}>{activeConversation?.title || 'Illuminating the Path'}</span>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2">
               <button 
                 onClick={handleExport}
                 title="Export Conversation"
-                className={cn("p-2 transition-colors", isDarkTheme ? "text-slate-400 hover:text-indigo-400" : "text-indigo-700 hover:text-indigo-600")}
+                className={cn("p-2 transition-colors", "text-slate-400 hover:text-indigo-400")}
                 disabled={!activeConversation || activeConversation.messages.length === 0}
               >
                 <Download size={18} />
@@ -1050,32 +1069,35 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
                   }
                 }}
                 title="Settings"
-                className={cn("p-2 transition-colors", isDarkTheme ? "text-slate-400 hover:text-indigo-400" : "text-indigo-700 hover:text-indigo-950")}
+                className={cn("p-2 transition-colors", "text-slate-400 hover:text-indigo-400")}
               >
                 <SettingsIcon size={18} />
               </button>
-              <button onClick={onClose} className={cn("p-2 transition-colors", isDarkTheme ? "text-slate-400 hover:text-white" : "text-indigo-700 hover:text-indigo-950")}>
+              <button onClick={onClose} className={cn("p-2 transition-colors", "text-slate-400 hover:text-white")}>
                 <X size={20} />
               </button>
             </div>
           </div>
 
-        <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar space-y-6">
+        <div ref={scrollRef} className={cn(
+          "flex-1 overflow-y-auto p-3.5 md:p-8 custom-scrollbar space-y-4 md:space-y-6 transition-colors",
+          ""
+        )}>
           {history.length === 0 && !loading && (
-            <div className="h-full flex flex-col items-center justify-center text-center space-y-8 py-10">
+            <div className="h-full flex flex-col items-center justify-center text-center space-y-6 md:space-y-8 py-6 md:py-10">
                <div className="relative">
-                 <div className="w-24 h-24 bg-indigo-500/10 rounded-full flex items-center justify-center border border-indigo-500/20 animate-pulse" />
-                 <Bot className="absolute inset-0 m-auto text-indigo-500/40" size={40} />
+                 <div className="w-16 h-16 md:w-24 md:h-24 bg-indigo-500/10 rounded-full flex items-center justify-center border border-indigo-500/20 animate-pulse" />
+                 <Bot className="absolute inset-0 m-auto text-indigo-500/40" size={32} />
                </div>
                <div>
-                 <h4 className={cn("font-black uppercase tracking-widest mb-3", isDarkTheme ? "text-white" : "text-indigo-950")}>Begin the Consultation</h4>
-                 <p className={cn("text-sm max-w-xs leading-relaxed", isDarkTheme ? "text-slate-400" : "text-indigo-700/80")}>The Oracle is ready to evaluate your scrolls. Speak, and the path shall be revealed.</p>
+                 <h4 className={cn("font-black uppercase tracking-widest text-xs md:text-base mb-2 md:mb-3", "text-white")}>Begin the Consultation</h4>
+                 <p className={cn("text-xs md:text-sm max-w-xs leading-relaxed px-4", "text-slate-400")}>The Oracle is ready to evaluate your scrolls. Speak, and the path shall be revealed.</p>
                </div>
-               <div className="flex flex-wrap gap-2 justify-center max-w-lg px-4">
+               <div className="flex flex-wrap gap-1.5 md:gap-2 justify-center max-w-lg px-4">
                  {state.sagePrompts?.map(p => (
                    <button key={p.id} onClick={() => handleSend(p.prompt)} className={cn(
-                     "py-2 px-3.5 border rounded-xl text-xs font-bold transition-all whitespace-nowrap",
-                     isDarkTheme ? "bg-slate-900 border-indigo-500/30 hover:border-indigo-500/60 hover:bg-indigo-500/10 text-indigo-300 hover:text-white" : "bg-indigo-50 border-indigo-200 hover:border-indigo-400 hover:bg-indigo-100 text-indigo-700 hover:text-indigo-900"
+                     "py-1.5 px-2.5 md:py-2 md:px-3.5 border rounded-xl text-[10px] md:text-xs font-bold transition-all whitespace-nowrap",
+                     "bg-slate-900 border-slate-800 hover:border-indigo-500/60 hover:bg-indigo-500/10 text-indigo-300 hover:text-white"
                    )}>{p.title}</button>
                  ))}
                </div>
@@ -1085,24 +1107,22 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
           {history.map((msg, idx) => (
             <div key={idx} className={cn("flex flex-col group", msg.role === 'user' ? "items-end" : "items-start")}>
               <div className={cn(
-                "max-w-[85%] p-4 rounded-2xl text-sm font-medium leading-relaxed shadow-lg relative",
+                "max-w-[92%] sm:max-w-[82%] p-3.5 sm:p-4 rounded-2xl text-xs sm:text-sm font-medium leading-relaxed shadow-lg relative",
                 msg.role === 'user' 
                   ? "bg-indigo-600 border border-indigo-500 text-white rounded-tr-none" 
                   : cn(
-                      "rounded-tl-none font-serif italic shadow-indigo-500/10 pr-1",
-                      isDarkTheme 
-                        ? "bg-slate-900/80 border border-indigo-500/20 text-indigo-50" 
-                        : "bg-indigo-50 border border-indigo-200 text-indigo-950"
+                      "rounded-tl-none font-serif shadow-sm",
+                      "bg-slate-900/80 border border-slate-800 text-slate-300"
                     )
               )}>
                 {msg.role === 'assistant' ? (
-                  <div className={cn("prose prose-sm max-w-none", isDarkTheme ? "prose-invert prose-indigo" : "prose-indigo")}>
+                  <div className={cn("prose prose-sm max-w-none", "prose-sage")}>
                     {msg.reasoningContent && (
-                      <details className={cn("mb-4 rounded-xl border group overflow-hidden bg-transparent", isDarkTheme ? "border-indigo-500/20 hover:bg-indigo-500/5" : "border-indigo-200 hover:bg-black/5")}>
-                        <summary className={cn("px-3 py-2 text-xs font-bold cursor-pointer select-none transition-colors outline-none", isDarkTheme ? "text-indigo-400" : "text-indigo-700")}>
+                      <details className={cn("mb-4 rounded-xl border group overflow-hidden bg-transparent", "border-indigo-500/20 hover:bg-indigo-500/5")}>
+                        <summary className={cn("px-3 py-2 text-xs font-bold cursor-pointer select-none transition-colors outline-none", "text-indigo-400")}>
                           Thought Process
                         </summary>
-                        <div className={cn("px-3 pb-3 pt-1 text-[11px] opacity-80 border-t", isDarkTheme ? "border-indigo-500/20" : "border-indigo-200")}>
+                        <div className={cn("px-3 pb-3 pt-1 text-[11px] opacity-80 border-t", "border-indigo-500/20")}>
                           <ReactMarkdown>{msg.reasoningContent}</ReactMarkdown>
                         </div>
                       </details>
@@ -1157,7 +1177,7 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
                                   // We already extracted top-level JSON above. 
                                   // If there are other code blocks, just render them as normal.
                                   return (
-                                    <code className={cn("px-1 py-0.5 rounded text-xs select-auto font-mono", isDarkTheme ? "bg-slate-900/50 text-indigo-300" : "bg-white/50 text-indigo-700", className)} {...props}>
+                                    <code className={cn("px-1 py-0.5 rounded text-xs select-auto font-mono", "bg-slate-900/50 text-indigo-300", className)} {...props}>
                                       {children}
                                     </code>
                                   );
@@ -1179,18 +1199,18 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
                           )}
                           
                           {parsedSettings && setState && (
-                            <div className={cn("my-4 p-4 border rounded-2xl flex flex-col items-start gap-3", isDarkTheme ? "bg-slate-900 border-indigo-500/30" : "bg-white border-slate-200 shadow-sm")}>
-                              <h4 className={cn("font-black tracking-wide flex items-center gap-2", isDarkTheme ? "text-indigo-400" : "text-indigo-600")}>
+                            <div className={cn("my-4 p-4 border rounded-2xl flex flex-col items-start gap-3", "bg-slate-900 border-indigo-500/30")}>
+                              <h4 className={cn("font-black tracking-wide flex items-center gap-2", "text-indigo-400")}>
                                 <SettingsIcon size={16} /> Balance Settings Update
                               </h4>
                               <div className="flex gap-4 items-center">
                                 {parsedSettings.devBaseXP !== undefined && (
-                                  <div className={cn("px-3 py-1.5 rounded-lg border", isDarkTheme ? "bg-slate-800 border-slate-700" : "bg-slate-50 border-slate-200")}>
+                                  <div className={cn("px-3 py-1.5 rounded-lg border", "bg-slate-800 border-slate-700")}>
                                     <span className="text-xs font-bold text-indigo-500">XP: {parsedSettings.devBaseXP}</span>
                                   </div>
                                 )}
                                 {parsedSettings.devBaseCoins !== undefined && (
-                                  <div className={cn("px-3 py-1.5 rounded-lg border", isDarkTheme ? "bg-slate-800 border-slate-700" : "bg-slate-50 border-slate-200")}>
+                                  <div className={cn("px-3 py-1.5 rounded-lg border", "bg-slate-800 border-slate-700")}>
                                     <span className="text-xs font-bold text-amber-500">Gold: {parsedSettings.devBaseCoins}</span>
                                   </div>
                                 )}
@@ -1260,19 +1280,22 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
           )}
         </div>
 
-        <div className="p-6 bg-slate-900 border-t border-slate-800 relative">
+        <div className={cn(
+          "p-3.5 md:p-6 border-t relative transition-colors duration-200",
+          "bg-slate-900 border-slate-800"
+        )}>
            <AnimatePresence>
             {showPromptSelector && (
               <motion.div
                 initial={{ opacity: 0, y: 10, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                className={cn("absolute bottom-full left-6 mb-4 w-72 rounded-3xl shadow-2xl p-2 z-50 overflow-hidden",
-                  isDarkTheme ? "bg-slate-900 border border-slate-800" : "bg-indigo-50 border border-indigo-200"
+                className={cn("absolute bottom-full left-4 md:left-6 mb-4 w-[280px] sm:w-72 rounded-2xl md:rounded-3xl shadow-2xl p-2 z-50 overflow-hidden",
+                  "bg-slate-900 border border-slate-800"
                 )}
               >
                 <div className={cn("text-[10px] font-black uppercase tracking-widest px-4 py-3 border-b mb-1 flex justify-between items-center",
-                  isDarkTheme ? "text-indigo-500/50 border-slate-800/50" : "text-indigo-700/60 border-indigo-200/50"
+                  "text-indigo-500/50 border-slate-800/50"
                 )}>
                   <span>Prompt Library</span>
                   {(!state.sagePrompts || state.sagePrompts.length === 0) && (
@@ -1283,7 +1306,7 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
                         });
                       }}
                       className={cn("text-[9px] font-bold transition-colors",
-                        isDarkTheme ? "text-indigo-400 hover:text-indigo-300" : "text-indigo-600 hover:text-indigo-800"
+                        "text-indigo-400 hover:text-indigo-300"
                       )}
                     >
                       Load Defaults
@@ -1301,22 +1324,22 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
                           inputRef.current?.focus();
                         }}
                         className={cn("w-full text-left p-4 rounded-[1.25rem] transition-colors group",
-                          isDarkTheme ? "hover:bg-indigo-500/10" : "hover:bg-indigo-100"
+                          "hover:bg-indigo-500/10"
                         )}
                       >
                         <div className={cn("text-xs font-bold",
-                          isDarkTheme ? "text-slate-200 group-hover:text-indigo-400" : "text-indigo-950 group-hover:text-indigo-700"
+                          "text-slate-200 group-hover:text-indigo-400"
                         )}>{p.title}</div>
                         <div className={cn("text-[10px] line-clamp-2 mt-1",
-                          isDarkTheme ? "text-slate-500" : "text-indigo-700/60"
+                          "text-slate-500"
                         )}>{p.prompt}</div>
                       </button>
                     ))
                   ) : (
                     <div className="p-8 text-center">
                       <p className={cn("text-[10px] font-bold uppercase tracking-widest",
-                        isDarkTheme ? "text-slate-600" : "text-indigo-700/40"
-                      )}>Library is empty</p>
+                        "text-slate-600"
+                       )}>Library is empty</p>
                     </div>
                   )}
                 </div>
@@ -1324,50 +1347,50 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
             )}
            </AnimatePresence>
 
-           <div className="flex flex-wrap items-center gap-3 mb-3 pl-1">
+           <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-3 pl-1">
               <div className="flex items-center gap-1 opacity-80 hover:opacity-100 transition-opacity">
-                <span className={cn("text-[9px] font-black uppercase tracking-widest mr-1", isDarkTheme ? "text-slate-500" : "text-indigo-900/40")}>Persona:</span>
+                <span className={cn("text-[8px] sm:text-[9.5px] font-black uppercase tracking-widest mr-1", "text-slate-500")}>Persona:</span>
                 {(['sage', 'friend', 'master'] as const).map(p => (
                   <button
                     key={p}
                     onClick={() => setState(prev => ({ ...prev, sagePersonality: p }))}
-                    className={cn("text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded-lg transition-colors border",
+                    className={cn("text-[8px] sm:text-[9.5px] font-bold uppercase tracking-widest px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-lg transition-colors border",
                       (state.sagePersonality || 'sage') === p 
-                        ? (isDarkTheme ? "bg-indigo-600 border-indigo-500 text-white" : "bg-indigo-500 border-indigo-400 text-white")
-                        : (isDarkTheme ? "bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-600" : "bg-slate-50 border-slate-200 text-slate-500 hover:border-slate-300 hover:bg-slate-100")
+                        ? ("bg-indigo-600 border-indigo-500 text-white")
+                        : ("bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-600")
                     )}
                   >
                     {p}
                   </button>
                 ))}
               </div>
-              <div className={cn("w-px h-3 mx-1", isDarkTheme ? "bg-slate-800" : "bg-slate-200")}></div>
+              <div className={cn("w-px h-3 mx-1", "bg-slate-800")}></div>
               <button
                 onClick={() => setState(prev => ({ ...prev, sageAllowGameModifiers: !prev.sageAllowGameModifiers }))}
-                className={cn("flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-lg border transition-all",
+                className={cn("flex items-center gap-1 text-[8px] sm:text-[9.5px] font-bold uppercase tracking-widest px-2 py-0.5 sm:py-1 rounded-lg border transition-all",
                   state.sageAllowGameModifiers 
-                    ? (isDarkTheme ? "bg-rose-500/10 border-rose-500/30 text-rose-400" : "bg-rose-500/10 border-rose-200 text-rose-600")
-                    : (isDarkTheme ? "bg-slate-900 border-slate-800 text-slate-500 hover:border-slate-600" : "bg-slate-50 border-slate-200 text-slate-500 hover:border-slate-300")
+                    ? ("bg-rose-500/10 border-rose-500/30 text-rose-400")
+                    : ("bg-slate-900 border-slate-800 text-slate-500 hover:border-slate-600")
                 )}
                 title="Allow AI to propose game modifications (quests, settings)"
               >
-                <Edit2 size={10} />
+                <Edit2 size={8} className="sm:w-2.5 sm:h-2.5" />
                 Modify Mode
               </button>
            </div>
 
-           <div className="flex gap-3">
+           <div className="flex gap-2 sm:gap-3">
               <button 
                 onClick={() => setShowPromptSelector(!showPromptSelector)}
                 className={cn(
-                  "flex-shrink-0 w-14 h-14 rounded-2xl border-2 transition-all flex items-center justify-center",
+                  "flex-shrink-0 w-11 h-11 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl border-2 transition-all flex items-center justify-center",
                   showPromptSelector 
                     ? "bg-indigo-600 border-indigo-500 text-white" 
-                    : (isDarkTheme ? "bg-slate-950 border-slate-800 text-slate-500 hover:border-indigo-500/50 hover:text-indigo-400" : "bg-indigo-50 border-indigo-200 text-indigo-700/60 hover:border-indigo-400 hover:text-indigo-700")
+                    : ("bg-slate-950 border-slate-800 text-slate-500 hover:border-indigo-500/50 hover:text-indigo-400")
                 )}
                 title="Select Prompt"
               >
-                <Library size={22} />
+                <Library size={18} className="sm:w-[22px] sm:h-[22px]" />
               </button>
               <div className="relative flex-1 group">
                 <input 
@@ -1377,18 +1400,18 @@ const SageConsultModal: React.FC<SageConsultModalProps> = ({ state, setState, on
                   onChange={(e) => setUserInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                   placeholder="Ask the Sage..."
-                  className={cn("w-full h-14 border-2 rounded-2xl px-6 pr-16 outline-none transition-all font-medium",
-                    isDarkTheme ? "bg-slate-950 border-slate-800 text-slate-200 focus:border-indigo-500 placeholder:text-slate-600" : "bg-indigo-100 border-indigo-300 text-indigo-950 focus:border-indigo-500 placeholder:text-indigo-900/40"
+                  className={cn("w-full h-11 sm:h-14 border-2 rounded-xl sm:rounded-2xl px-4 sm:px-6 pr-12 sm:pr-16 outline-none transition-all font-medium text-xs sm:text-sm",
+                    "bg-slate-950 border-slate-800 text-slate-200 focus:border-indigo-500 placeholder:text-slate-600"
                   )}
                 />
                 <button 
                   onClick={() => handleSend()}
                   disabled={loading || !userInput.trim()}
-                  className={cn("absolute right-2 top-2 bottom-2 w-12 text-white rounded-xl transition-all flex items-center justify-center p-0",
-                    isDarkTheme ? "bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800" : "bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-100"
+                  className={cn("absolute right-1 sm:right-2 top-1 sm:top-2 bottom-1 sm:bottom-2 w-9 sm:w-12 text-white rounded-lg sm:rounded-xl transition-all flex items-center justify-center p-0",
+                    "bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 disabled:text-slate-600"
                   )}
                 >
-                  <Send size={18} />
+                  <Send size={15} className="sm:w-[18px] sm:h-[18px]" />
                 </button>
               </div>
            </div>

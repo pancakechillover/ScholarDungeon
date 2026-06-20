@@ -26,7 +26,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v8.10.20
+- **Current Version:** v8.10.27
 - **Last Update Date:** 2026-06-20
 - **Last Update Time:** 23:59:59
 
@@ -53,6 +53,34 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+- **v8.10.27 (2026-06-20):** Expedition Blueprint Optimization & Fullscreen Feature
+  - *UI/UX:* Resolved truncation and layout clipping on the Expedition Blueprint module inside Sage's Council specifically on compact mobile viewports.
+  - *Feature:* Added a standalone togglable Fullscreen display mode to significantly expand the Blueprint container for enhanced reading and detailed editing.
+
+- **v8.10.26 (2026-06-20):** Sage Bubble Theme Adaptability
+  - *Bug Fix:* Repaired legibility issue where Sage's Markdown prose retained pure white text (prose-invert) leading to invisible text against light-background themes like Candy.
+  - *UI/UX:* Deployed custom `.prose-sage` class to directly bridge `react-markdown` outputs onto the dynamic inverted SLATE dimension palette.
+  - *UI/UX:* Restored intended horizontal bubble paddings by eliminating over-zealous manual right-margin clipping rules.
+
+- **v8.10.25 (2026-06-20):** Sage's Council Native Theme Inversion Optomization
+  - *Architecture:* Removed hardcoded explicit light mode conditional branch blocks (`isDarkTheme ? A : B`) throughout Sage's Council layout containers.
+  - *UI/UX:* Unified structural colors to standard foundational Dark Semantic Tokens (e.g. `bg-slate-900`, `border-slate-800`, `text-slate-300`) to perfectly align with Sanctum Plaza architectures, thereby accurately unlocking the app's native CSS Variable inversion engine to flawlessly project intended Daylight, Warm Sun, and Candy theme palettes natively without artificial background overwriting.
+  
+- **v8.10.24 (2026-06-20):** Consultations Sanctum Color Customization
+  - *UI/UX:* Re-engineered the Consultations layout color schema in both the Dashboard and global Settings modules to fundamentally align with the sleek, high-contrast visual identity of the Sanctum Plaza.
+  - *UI/UX:* Replaced static, hardcoded indigo backgrounds, bright borders, and overly blue message bubbles with polished neutral slate architectures featuring intentional, exact indigo active accenting.
+
+- **v8.10.23 (2026-06-20):** Consultations Mobile Popup Drawer Layout
+  - *UI/UX:* Re-designed Consultations sidebar into an absolute overlay drawer with backdrop strictly on mobile screens, replicating modern AI chat interface spatial behaviors.
+  - *UI/UX:* Integrated dynamic auto-closing bounds ensuring the Consultations drawer immediately conceals itself upon topic selection saving physical viewport area on constrained devices.
+
+- **v8.10.22 (2026-06-20):** Expedition Horizon Mobile Header Optimization
+  - *UI/UX:* Optimized Expedition Horizon header spacing and padding on mobile screens to prevent text overflow and layout wrapping.
+  - *UI/UX:* Shortened dynamic title label on narrow displays to custom Horizon form, while preserving the full Expedition Horizon title on standard sizes.
+
+- **v8.10.21 (2026-06-20):** Study Heatmap Year Summary Layout Refinement
+  - *UI/UX:* Displayed the "Year Summary" card fixedly below the large year heatmap calendar, avoiding side-by-side columns and centering it perfectly.
+  - *UI/UX:* Re-organized the internal sub-cards of the Year Summary into a neat, balanced 2-column/2x2 grid on standard displays for optimal spacing and density.
 
 - **v8.10.20 (2026-06-20):** Study Heatmap Year Summary
   - *Feature:* Enabled the same detailed summary module (Total/Avg metrics) seamlessly inside the Year View of the Heatmap.

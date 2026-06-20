@@ -511,10 +511,11 @@ export const Timer = React.memo<TimerProps>(({
   };
 
   return (
-    <div className="relative flex flex-col items-center space-y-8 w-full">
+    <div className="relative flex flex-col items-center justify-center gap-4 sm:gap-6 lg:gap-8 w-full h-full min-h-0 flex-1">
       {/* Timer Display */}
-      <div className="relative w-full max-w-[320px] sm:max-w-[400px] lg:max-w-[480px] aspect-square">
-        <svg viewBox="0 0 320 320" className="w-full h-full transform -rotate-90">
+      <div className="relative flex-1 min-h-0 w-full flex items-center justify-center max-w-[280px] sm:max-w-[360px] lg:max-w-[420px] xl:max-w-[480px] max-h-[280px] sm:max-h-[360px] lg:max-h-[420px] xl:max-h-[480px]">
+        <div className="relative w-full h-full aspect-square max-w-full max-h-full">
+          <svg viewBox="0 0 320 320" className="w-full h-full transform -rotate-90">
           <circle
             cx="160"
             cy="160"
@@ -607,6 +608,7 @@ export const Timer = React.memo<TimerProps>(({
             })()}
           </div>
         </div>
+      </div>
       </div>
 
       {/* Controls */}

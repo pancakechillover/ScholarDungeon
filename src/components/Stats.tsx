@@ -1962,7 +1962,12 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
             </div>
           </div>
           
-          <div className={cn("flex flex-col lg:flex-row gap-6 w-full mt-4", heatmapMode === 'year' ? "justify-center lg:items-center" : "justify-center lg:items-stretch")}>
+          <div className={cn(
+             "flex flex-col gap-6 w-full mt-4",
+             heatmapMode === 'year' 
+               ? "items-center justify-center" 
+               : "lg:flex-row lg:items-stretch justify-center"
+          )}>
             <style>{`
               .heatmap-responsive {
                  --cell-size: min(9vw, 36px);
@@ -2117,7 +2122,10 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
             </div>
 
             {(heatmapMode === '30days' || heatmapMode === 'month' || heatmapMode === 'year') && heatmapSummary && (
-               <div className="w-full lg:w-72 shrink-0 flex flex-col bg-slate-950/40 p-4 sm:p-5 rounded-2xl border border-slate-800/60 mb-4 lg:mb-0">
+               <div className={cn(
+                  "shrink-0 flex flex-col bg-slate-950/40 p-4 sm:p-5 rounded-2xl border border-slate-800/60 mb-4",
+                  heatmapMode === 'year' ? "w-full max-w-2xl mx-auto" : "w-full lg:w-72 lg:mb-0"
+               )}>
                  <div className="flex items-center justify-center gap-2 pb-3 border-b border-slate-800/50 mb-4">
                     <CalendarDays size={14} className="text-indigo-400 shrink-0" />
                     <span className="text-sm sm:text-base font-black text-slate-100 uppercase tracking-wide leading-none italic pr-1 select-none">
@@ -2125,8 +2133,14 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
                     </span>
                  </div>
                  
-                 <div className="grid grid-cols-2 lg:grid-cols-1 gap-3">
-                     <div className="flex justify-between items-center bg-slate-900/50 px-3 py-2.5 rounded-xl col-span-2 lg:col-span-1 border border-slate-800/40">
+                 <div className={cn(
+                    "grid gap-3",
+                    heatmapMode === 'year' ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-2 lg:grid-cols-1"
+                 )}>
+                     <div className={cn(
+                        "flex justify-between items-center bg-slate-900/50 px-3 py-2.5 rounded-xl border border-slate-800/40",
+                        heatmapMode === 'year' ? "col-span-1" : "col-span-2 lg:col-span-1"
+                     )}>
                        <div className="flex items-center gap-2">
                            <Flame size={14} className="text-orange-500" />
                            <span className="text-xs font-bold text-slate-500 uppercase">Focused Days</span>
@@ -2138,7 +2152,10 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
                      </div>
 
                      {/* Merged Time/Task Stats Card */}
-                     <div className="flex flex-col bg-slate-900/50 p-3 rounded-xl border border-slate-800/40 col-span-2 lg:col-span-1">
+                     <div className={cn(
+                        "flex flex-col bg-slate-900/50 p-3 rounded-xl border border-slate-800/40",
+                        heatmapMode === 'year' ? "col-span-1" : "col-span-2 lg:col-span-1"
+                     )}>
                         <div className="flex items-center gap-2 pb-1.5 mb-1.5 border-b border-slate-800/30">
                            {heatmapMetric === 'time' ? <Clock size={14} className="text-sky-400" /> : <Target size={14} className="text-sky-400" />}
                            <span className="text-xs font-bold text-slate-500 uppercase">
@@ -2162,7 +2179,10 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
                      </div>
 
                      {/* Merged Gold Stats Card */}
-                     <div className="flex flex-col bg-slate-900/50 p-3 rounded-xl border border-slate-800/40 col-span-2 lg:col-span-1">
+                     <div className={cn(
+                        "flex flex-col bg-slate-900/50 p-3 rounded-xl border border-slate-800/40",
+                        heatmapMode === 'year' ? "col-span-1" : "col-span-2 lg:col-span-1"
+                     )}>
                         <div className="flex items-center gap-2 pb-1.5 mb-1.5 border-b border-slate-800/30">
                            <Coins size={14} className="text-amber-500" />
                            <span className="text-xs font-bold text-slate-500 uppercase">Gold Earnings</span>
@@ -2180,7 +2200,10 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
                      </div>
 
                      {/* Merged EXP Stats Card */}
-                     <div className="flex flex-col bg-slate-900/50 p-3 rounded-xl border border-slate-800/40 col-span-2 lg:col-span-1">
+                     <div className={cn(
+                        "flex flex-col bg-slate-900/50 p-3 rounded-xl border border-slate-800/40",
+                        heatmapMode === 'year' ? "col-span-1" : "col-span-2 lg:col-span-1"
+                     )}>
                         <div className="flex items-center gap-2 pb-1.5 mb-1.5 border-b border-slate-800/30">
                            <Zap size={14} className="text-indigo-400" />
                            <span className="text-xs font-bold text-slate-500 uppercase">EXP Earnings</span>

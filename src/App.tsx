@@ -1475,7 +1475,7 @@ function App() {
         </header>
         )}
 
-        <div className={cn("relative max-w-[1600px] mx-auto w-full flex-grow pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]", isFullscreenExplore ? "h-[100dvh] flex flex-col justify-center" : "pb-[calc(7.5rem+env(safe-area-inset-bottom))] md:pb-8")}>
+        <div className={cn("relative max-w-[1600px] mx-auto w-full flex-grow flex flex-col min-h-0 pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]", isFullscreenExplore ? "h-[100dvh] justify-center" : "pb-[calc(7.5rem+env(safe-area-inset-bottom))] md:pb-8")}>
           <AnimatePresence mode="popLayout" initial={false}>
             {activeTab === 'dashboard' && (
               <DashboardView 

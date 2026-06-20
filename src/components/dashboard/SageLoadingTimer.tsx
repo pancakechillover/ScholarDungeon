@@ -20,10 +20,10 @@ export const SageLoadingTimer: React.FC<SageLoadingTimerProps> = ({ startTime, i
 
   return (
     <div className={cn("p-4 rounded-2xl rounded-tl-none flex items-center gap-3 border",
-      isDarkTheme ? "bg-slate-900/80 border-indigo-500/20" : "bg-indigo-50 border-indigo-200"
+      "bg-slate-900/80 border-indigo-500/20"
     )}>
-       <RefreshCw className={cn("animate-spin", isDarkTheme ? "text-indigo-400" : "text-indigo-600")} size={16} />
-       <span className={cn("text-xs font-serif italic pr-1 flex-1", isDarkTheme ? "text-indigo-400/70" : "text-indigo-700")}>
+       <RefreshCw className={cn("animate-spin", "text-indigo-400")} size={16} />
+       <span className={cn("text-xs font-serif italic pr-1 flex-1", "text-indigo-400/70")}>
          The Sage is consulting the scrolls... ({elapsed}s)
        </span>
        {onCancel && (

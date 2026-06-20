@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { AppState, MajorDungeon, Dungeon, DungeonReward } from '../types';
-import { Check, Edit2, Plus, Save, Trash2, X, Sword, Target, Coins, Zap, Map } from 'lucide-react';
+import { Check, Edit2, Plus, Save, Trash2, X, Sword, Target, Coins, Zap, Map, Maximize, Minimize } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 export interface ExpeditionPlan {
@@ -33,6 +34,7 @@ interface Props {
 export const ExpeditionPlanPreview: React.FC<Props> = ({ plan: initialPlan, onApply, isDarkTheme }) => {
   const [plan, setPlan] = useState<ExpeditionPlan>(initialPlan);
   const [isEditing, setIsEditing] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const handleApply = () => {
     onApply(plan);
@@ -61,22 +63,35 @@ export const ExpeditionPlanPreview: React.FC<Props> = ({ plan: initialPlan, onAp
     setPlan({ ...plan, tiers: newTiers });
   };
 
-  return (
-    <div className={cn("mt-4 mb-2 rounded-2xl overflow-hidden border", isDarkTheme ? "bg-slate-900 border-indigo-500/30" : "bg-white border-slate-200 shadow-sm")}>
-      <div className={cn("p-4 border-b flex items-center justify-between", isDarkTheme ? "bg-slate-800/80 border-indigo-500/30" : "bg-slate-50 border-slate-200")}>
-        <div className="flex items-center gap-2">
-          <Map className={isDarkTheme ? "text-indigo-400" : "text-indigo-600"} size={20} />
-          <h4 className={cn("font-black tracking-wide", isDarkTheme ? "text-slate-100" : "text-slate-900")}>
+  const containerClasses = isFullscreen 
+    ? cn("w-full max-w-2xl mx-auto shadow-2xl relative rounded-2xl overflow-hidden border max-h-[90vh] overflow-y-auto", isDarkTheme ? "bg-slate-900 border-indigo-500/30" : "bg-white border-slate-200")
+    : cn("mt-4 mb-2 rounded-2xl overflow-hidden border", isDarkTheme ? "bg-slate-900 border-indigo-500/30" : "bg-white border-slate-200 shadow-sm");
+
+  const renderContent = (
+    <div className={containerClasses} onClick={e => e.stopPropagation()}>
+      <div className={cn("p-4 border-b flex items-center justify-center relative", isDarkTheme ? "bg-slate-800/80 border-indigo-500/30" : "bg-slate-50 border-slate-200")}>
+        <div className="flex items-center justify-center gap-2 min-w-0 max-w-[70%]">
+          <Map className={cn("shrink-0", isDarkTheme ? "text-indigo-400" : "text-indigo-600")} size={20} />
+          <h4 className={cn("font-black tracking-wide truncate text-center", isDarkTheme ? "text-slate-100" : "text-slate-900")}>
             Expedition Blueprint
           </h4>
         </div>
-        <button
-          onClick={() => setIsEditing(!isEditing)}
-          className={cn("p-1.5 rounded-lg transition-colors", isDarkTheme ? "hover:bg-slate-700 text-slate-300" : "hover:bg-slate-200 text-slate-600")}
-          title={isEditing ? "Save Edits" : "Edit Blueprint"}
-        >
-          {isEditing ? <Check size={16} /> : <Edit2 size={16} />}
-        </button>
+        <div className="absolute right-4 flex items-center gap-1 shrink-0">
+          <button
+            onClick={() => setIsFullscreen(!isFullscreen)}
+            className={cn("p-1.5 rounded-lg transition-colors", isDarkTheme ? "hover:bg-slate-700 text-slate-300" : "hover:bg-slate-200 text-slate-600")}
+            title={isFullscreen ? "Minimize" : "Fullscreen"}
+          >
+            {isFullscreen ? <Minimize size={16} /> : <Maximize size={16} />}
+          </button>
+          <button
+            onClick={() => setIsEditing(!isEditing)}
+            className={cn("p-1.5 rounded-lg transition-colors", isDarkTheme ? "hover:bg-slate-700 text-slate-300" : "hover:bg-slate-200 text-slate-600")}
+            title={isEditing ? "Save Edits" : "Edit Blueprint"}
+          >
+            {isEditing ? <Check size={16} /> : <Edit2 size={16} />}
+          </button>
+        </div>
       </div>
 
       <div className="p-4 space-y-4">
@@ -148,33 +163,35 @@ export const ExpeditionPlanPreview: React.FC<Props> = ({ plan: initialPlan, onAp
                     className={cn("w-full px-2 py-1 rounded text-[11px] border outline-none", isDarkTheme ? "bg-slate-900 border-slate-600 text-slate-300" : "bg-slate-50 border-slate-300 text-slate-600")}
                     placeholder="E.g. Complete 10 sessions"
                   />
-                  <div className="flex items-center gap-4 mt-2">
+                  <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 mt-2">
                     <div className="flex items-center gap-1" title="Sessions Required">
-                      <Target size={12} className="text-slate-400" />
+                      <Target size={12} className="text-slate-400 shrink-0" />
                       <input 
                         type="number" 
                         value={tier.sessions || 1} 
                         onChange={e => updateTier(idx, 'sessions', Number(e.target.value))}
-                        className={cn("w-16 px-1 py-0.5 rounded text-xs font-mono border outline-none", isDarkTheme ? "bg-slate-900 border-slate-600 text-rose-400" : "bg-slate-50 border-slate-300 text-rose-600")}
+                        className={cn("w-14 px-1 py-0.5 rounded text-[11px] sm:text-xs font-mono border outline-none text-center", isDarkTheme ? "bg-slate-900 border-slate-600 text-rose-400" : "bg-slate-50 border-slate-300 text-rose-600")}
                         min="1"
                       />
                     </div>
                     <div className="flex items-center gap-1" title="Gold Reward">
-                      <Coins size={12} className="text-slate-400" />
+                      <Coins size={12} className="text-slate-400 shrink-0" />
                       <input 
                         type="number" 
                         value={tier.reward.amount} 
                         onChange={e => updateTier(idx, 'reward', { amount: Number(e.target.value) })}
-                        className={cn("w-16 px-1 py-0.5 rounded text-xs font-mono border outline-none", isDarkTheme ? "bg-slate-900 border-slate-600 text-amber-400" : "bg-slate-50 border-slate-300 text-amber-600")}
+                        className={cn("w-14 px-1 py-0.5 rounded text-[11px] sm:text-xs font-mono border outline-none text-center", isDarkTheme ? "bg-slate-900 border-slate-600 text-amber-400" : "bg-slate-50 border-slate-300 text-amber-600")}
+                        min="0"
                       />
                     </div>
                     <div className="flex items-center gap-1" title="XP Reward">
-                      <Zap size={12} className="text-slate-400" />
+                      <Zap size={12} className="text-slate-400 shrink-0" />
                       <input 
                         type="number" 
                         value={tier.reward.xp} 
                         onChange={e => updateTier(idx, 'reward', { xp: Number(e.target.value) })}
-                        className={cn("w-16 px-1 py-0.5 rounded text-xs font-mono border outline-none", isDarkTheme ? "bg-slate-900 border-slate-600 text-indigo-400" : "bg-slate-50 border-slate-300 text-indigo-600")}
+                        className={cn("w-14 px-1 py-0.5 rounded text-[11px] sm:text-xs font-mono border outline-none text-center", isDarkTheme ? "bg-slate-900 border-slate-600 text-indigo-400" : "bg-slate-50 border-slate-300 text-indigo-600")}
+                        min="0"
                       />
                     </div>
                   </div>
@@ -220,4 +237,18 @@ export const ExpeditionPlanPreview: React.FC<Props> = ({ plan: initialPlan, onAp
       </div>
     </div>
   );
+
+  if (isFullscreen) {
+    return createPortal(
+      <div 
+        className={cn("fixed inset-0 z-[100] flex justify-center items-center overflow-y-auto p-4 sm:p-6 backdrop-blur-sm", isDarkTheme ? "bg-slate-950/80" : "bg-slate-900/50")}
+        onClick={() => setIsFullscreen(false)}
+      >
+        {renderContent}
+      </div>,
+      document.body
+    );
+  }
+
+  return renderContent;
 };
