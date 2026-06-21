@@ -1,4 +1,4 @@
-export const APP_VERSION = 'v8.10.31';
+export const APP_VERSION = 'v8.10.36';
 export const LAST_UPDATE_DATE = '2026-06-20';
 export const LAST_UPDATE_TIME = '23:59:59';
 
@@ -11,6 +11,55 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v8.10.36',
+    date: '2026-06-20',
+    time: '23:59:59',
+    title: 'Explore Viewport Strict Height Enforcements',
+    items: [
+      { category: 'Architecture', description: 'Removed overflow-hidden constraints allowing normal page scrollability for historical panels gracefully.' },
+      { category: 'UI/UX', description: 'Upgraded CSS Grid parameters replacing stretch intrinsic heights with exact viewport offset coordinates (calc). Enforced the Timer module stays perfectly within the fold bounding limits regardless of active tall secondary content.' }
+    ]
+  },
+  {
+    version: 'v8.10.35',
+    date: '2026-06-20',
+    time: '23:59:59',
+    title: 'Explore Viewport Timer Visibility Restoration',
+    items: [
+      { category: 'Bug Fix', description: 'Resolved critical disappearance of the active timer and focus controls on widescreen environments.' },
+      { category: 'UI/UX', description: 'Re-programmed structural height inheritance inside the flex-grid hybrid layout, securing perfect visibility of all timer buttons without expanding beyond viewport vertical boundaries.' }
+    ]
+  },
+  {
+    version: 'v8.10.34',
+    date: '2026-06-20',
+    time: '23:59:59',
+    title: 'Explore Viewport Vertical Constraints Optimization II',
+    items: [
+      { category: 'UI/UX', description: 'Re-programmed the Explore dashboard structural viewport grid calculations from fixed screen heights to dynamic offsets.' },
+      { category: 'UI/UX', description: 'Eliminated vertical scrolling on wide landscape screens, natively bounding the timer module perfectly within a single view without clipping buttons or leaving empty whitespace.' }
+    ]
+  },
+  {
+    version: 'v8.10.33',
+    date: '2026-06-20',
+    time: '23:59:59',
+    title: 'Explore Viewport Vertical Constraints Optimization',
+    items: [
+      { category: 'UI/UX', description: 'Re-programmed the Explore dashboard structural viewport grid calculations from fixed screen heights to dynamic offsets.' },
+      { category: 'UI/UX', description: 'Eliminated vertical scrolling on wide landscape screens, natively bounding the timer module perfectly within a single view without clipping buttons.' }
+    ]
+  },
+  {
+    version: 'v8.10.32',
+    date: '2026-06-20',
+    time: '23:59:59',
+    title: 'Cloud History Memory Restoration Fix',
+    items: [
+      { category: 'Bug Fix', description: 'Resolved critical restoration error in Cloud History where pulling backups failed to restore active dungeon and quest data correctly due to internal storage key mismatches.' }
+    ]
+  },
   {
     version: 'v8.10.31',
     date: '2026-06-20',

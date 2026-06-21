@@ -26,7 +26,7 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v8.10.31
+- **Current Version:** v8.10.36
 - **Last Update Date:** 2026-06-20
 - **Last Update Time:** 23:59:59
 
@@ -53,6 +53,25 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+- **v8.10.36 (2026-06-20):** Explore Viewport Strict Height Enforcements
+  - *Architecture:* Removed `overflow-hidden` constraints allowing normal page scrollability for historical panels gracefully without collapsing the grid.
+  - *UI/UX:* Upgraded CSS Grid parameters replacing stretch intrinsic heights with exact viewport offset coordinates (`calc(100dvh-12rem)`). Enforced the Timer module stays perfectly vertically balanced within the fold bounding limits regardless of active tall secondary content triggering the scrollbar natively on the right column.
+
+- **v8.10.35 (2026-06-20):** Explore Viewport Timer Visibility Restoration
+  - *Bug Fix:* Resolved critical disappearance of the active timer and focus controls on widescreen environments.
+  - *UI/UX:* Re-programmed structural height inheritance inside the flex-grid hybrid layout, securing perfect visibility of all timer buttons without expanding beyond viewport vertical boundaries.
+
+- **v8.10.34 (2026-06-20):** Explore Viewport Vertical Constraints Optimization II
+  - *UI/UX:* Re-programmed the Explore dashboard structural viewport grid calculations from fixed screen heights to dynamic offsets.
+  - *UI/UX:* Eliminated vertical scrolling on wide landscape screens, natively bounding the timer module perfectly within a single view without clipping buttons or leaving empty whitespace.
+
+- **v8.10.33 (2026-06-20):** Explore Viewport Vertical Constraints Optimization
+  - *UI/UX:* Re-programmed the Explore dashboard structural viewport grid calculations from fixed screen heights to dynamic offsets.
+  - *UI/UX:* Eliminated vertical scrolling on wide landscape screens, natively bounding the timer module perfectly within a single view without clipping buttons.
+
+- **v8.10.32 (2026-06-20):** Cloud History Memory Restoration Fix
+  - *Bug Fix:* Resolved critical restoration error in Cloud History where pulling backups visually triggered but failed to restore active dungeon and major objective data correctly due to internal local storage key mismatches.
+
 - **v8.10.31 (2026-06-20):** Global Page Padding & Layout Standardization
   - *UI/UX:* Standardized layout constraints across all major dashboard views (Expedition, Explore, Talent Tree, Merchant's Outpost, Reward Vault, Record).
   - *UI/UX:* Unified all dynamic rendering gutters and space dividers, aligning inner viewport coordinates consistently to identical padding standards.

@@ -457,8 +457,8 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
                 const majorDungs = historyData.majorDungeons || [];
                 
                 localStorage.setItem('scholars_dungeon_state', JSON.stringify({ ...stateData, deviceCode: getDeviceCode() }));
-                if (historyData.dungeons) localStorage.setItem('scholars_dungeon_dungeons', JSON.stringify(historyData.dungeons));
-                if (historyData.majorDungeons) localStorage.setItem('scholars_dungeon_major_dungeons', JSON.stringify(historyData.majorDungeons));
+                if (historyData.dungeons) localStorage.setItem('scholars_dungeon_state_dungeons', JSON.stringify(historyData.dungeons));
+                if (historyData.majorDungeons) localStorage.setItem('scholars_dungeon_state_major_dungeons', JSON.stringify(historyData.majorDungeons));
                 
                 window.location.reload();
               }

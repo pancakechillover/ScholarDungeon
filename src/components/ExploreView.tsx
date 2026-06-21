@@ -441,12 +441,12 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
       )}>
         <div className={cn(
           "w-full flex-1 min-h-0",
-          !isFullscreenExplore ? "grid grid-cols-1 lg:grid-cols-[1fr_360px] xl:grid-cols-[1fr_440px] 2xl:grid-cols-[1fr_500px] gap-6 xl:gap-8 2xl:gap-12 lg:h-[calc(100dvh-6.5rem)] lg:max-h-[960px] pb-4 lg:pb-0" : "flex flex-col items-center justify-center h-full w-full"
+          !isFullscreenExplore ? "grid grid-cols-1 lg:grid-cols-[1fr_360px] xl:grid-cols-[1fr_440px] 2xl:grid-cols-[1fr_500px] gap-6 xl:gap-8 2xl:gap-12 pb-4 lg:pb-0 h-full lg:h-[calc(100dvh-12rem)] lg:min-h-[600px]" : "flex flex-col items-center justify-center h-full w-full"
         )}>
           {/* Left Column: Timer & Timer Settings area */}
           <div className={cn(
-            "w-full flex flex-col min-h-0",
-            !isFullscreenExplore ? "gap-6 lg:h-full" : "h-full"
+            "w-full h-full flex flex-col min-h-0",
+            !isFullscreenExplore ? "gap-6" : ""
           )}>
             {!isFullscreenExplore && (
               <div className="flex flex-col flex-1 min-h-0 bg-slate-900/20 rounded-[2.5rem] border border-slate-800/50 overflow-hidden">
