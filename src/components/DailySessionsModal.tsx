@@ -17,7 +17,7 @@ import {
   Star
 } from 'lucide-react';
 import { StudySession, Dungeon, MajorDungeon, RewardCard, AppState } from '../types';
-import { cn } from '../lib/utils';
+import { cn, getSessionEffectiveMinutes } from '../lib/utils';
 import { format, parseISO, isSameDay } from 'date-fns';
 import { SpinnerInput } from './SpinnerInput';
 import { createPortal } from 'react-dom';
@@ -254,11 +254,11 @@ export const DailySessionsModal: React.FC<DailySessionsModalProps> = ({
                         <td className="px-5 py-4 text-center whitespace-nowrap">
                           <div className="flex flex-col items-center">
                             <div className="text-[11px] font-bold">
-                              <span className="text-indigo-400">{session.focusDuration || 0}m</span>
+                              <span className="text-indigo-400">{session.focusDuration || session.duration || 0}m</span>
                               <span className="text-slate-600 mx-1">+</span>
                               <span className="text-emerald-400">{session.restDuration || 0}m</span>
                             </div>
-                            <div className="text-[9px] text-slate-500 uppercase tracking-tighter mt-0.5">Total: {session.duration}m</div>
+                            <div className="text-[9px] text-slate-500 uppercase tracking-tighter mt-0.5">Total: {getSessionEffectiveMinutes(session, includeRestTimeInTasks)}m</div>
                           </div>
                         </td>
                         <td className="px-5 py-4 text-center">
@@ -310,7 +310,7 @@ export const DailySessionsModal: React.FC<DailySessionsModalProps> = ({
 
         {/* Footer info */}
         <div className="p-4 bg-slate-900 border-t border-slate-800 text-[10px] text-slate-600 text-center font-bold uppercase tracking-widest">
-          {dailyHistory.length} Sessions Recorded • Total Focus: {dailyHistory.reduce((acc, s) => acc + (s.focusDuration || s.duration) + (includeRestTimeInTasks ? (s.restDuration || 0) : 0), 0)}m
+          {dailyHistory.length} Sessions Recorded • Total Focus: {dailyHistory.reduce((acc, s) => acc + getSessionEffectiveMinutes(s, includeRestTimeInTasks), 0)}m
         </div>
       </motion.div>
 

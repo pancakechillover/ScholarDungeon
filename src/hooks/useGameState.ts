@@ -3,7 +3,7 @@ import { AppState, Dungeon, StudySession, Talent, RewardCard, MajorDungeon, Rewa
 import { TALENTS, INITIAL_REWARD_POOL, INITIAL_GACHA, DEFAULT_QUESTS, DEFAULT_SAGE_PROMPTS } from '../constants';
 import { format, isSameDay, parseISO, differenceInDays, subDays } from 'date-fns';
 
-import { getXPForLevel, getDefaultRewardForLevel, getDeviceType, getDeviceCode, getSettlementDay, getSessionSettlementDate } from '../lib/utils';
+import { getXPForLevel, getDefaultRewardForLevel, getDeviceType, getDeviceCode, getSettlementDay, getSessionSettlementDate, getSessionEffectiveMinutes } from '../lib/utils';
 import { generateRewardChoicesForSession } from '../lib/rewardLogic';
 
 const STORAGE_KEY = 'scholars_dungeon_state';
@@ -31,6 +31,32 @@ const generateUniqueId = () => {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
   }
   return `ID-${result}`;
+};
+
+const recalculateStreakAndLastStudyDate = (history: StudySession[], timeSettings: AppState['timeSettings']): { streak: number, lastStudyDate: string | null } => {
+  if (!history || history.length === 0) return { streak: 0, lastStudyDate: null };
+  const sorted = [...history].sort((a,b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+  let currentStreak = 0;
+  let lastDate: string | null = null;
+  
+  for (const session of sorted) {
+    const sessionDate = getSettlementDay(new Date(session.timestamp), timeSettings);
+    if (!lastDate) {
+      currentStreak = 1;
+      lastDate = sessionDate;
+    } else if (sessionDate === lastDate) {
+      // same date, keep current streak
+    } else {
+      const diff = differenceInDays(parseISO(sessionDate), parseISO(lastDate));
+      if (diff === 1) {
+        currentStreak++;
+      } else if (diff > 1) {
+        currentStreak = 1;
+      }
+      lastDate = sessionDate;
+    }
+  }
+  return { streak: currentStreak, lastStudyDate: lastDate };
 };
 
 const recalculateQuestProgressFromHistory = (state: AppState, now: Date): AppState => {
@@ -1789,27 +1815,45 @@ export function useGameState() {
         return getAddedProgress(prev.includeRestTimeInTasks, sess.focusDuration || sess.duration, sess.restDuration, prev.standardSessionMinutes, prev.standardRestMinutes);
       };
       
+      const getActualDuration = (sess: StudySession) => {
+        return getSessionEffectiveMinutes(sess, !!prev.includeRestTimeInTasks);
+      };
+      
       const oldProgress = getProgress(session);
       const newProgress = getProgress(updatedSession);
       const progressDiff = newProgress - oldProgress;
+
+      const oldDuration = getActualDuration(session);
+      const newDuration = getActualDuration(updatedSession);
       
       // Update dungeons
       if (session.dungeonId !== 'free_study' || updatedSession.dungeonId !== 'free_study') {
         setDungeons(prevDungeons => {
           return prevDungeons.map(d => {
             if (session.dungeonId === updatedSession.dungeonId && d.id === session.dungeonId) {
-               // Same dungeon, but progress might have changed
+               // Same dungeon, but progress or duration might have changed
                const newCount = Math.max(0, d.completedSessions + progressDiff);
+               const newFocusTime = Math.max(0, (d.totalFocusTime || 0) + (newDuration - oldDuration));
                const isCompleted = newCount >= d.totalSessions;
-               return { ...d, completedSessions: newCount, status: isCompleted ? 'completed' : 'active', completedAt: isCompleted ? getNow().toISOString() : undefined };
+               
+               // Edits to history only affect derived statistics (Total Time, Dungeon Progress).
+               // Edits DO NOT re-issue or withdraw rewards (coins, items, levels) to prevent exploits or complex state rollbacks on minor edits.
+               return { ...d, completedSessions: newCount, totalFocusTime: newFocusTime, status: isCompleted ? 'completed' : (d.status === 'completed' && !d.isOpenEnded && newCount < d.totalSessions ? 'active' : d.status), completedAt: isCompleted && d.status !== 'completed' ? getNow().toISOString() : d.completedAt };
             } else if (session.dungeonId !== updatedSession.dungeonId) {
                if (d.id === session.dungeonId) {
-                 return { ...d, completedSessions: Math.max(0, d.completedSessions - oldProgress), status: 'active' };
+                 const newCount = Math.max(0, d.completedSessions - oldProgress);
+                 const newFocusTime = Math.max(0, (d.totalFocusTime || 0) - oldDuration);
+                 let newStatus = d.status;
+                 if (d.status === 'completed' && !d.isOpenEnded && newCount < d.totalSessions) {
+                     newStatus = 'active';
+                 }
+                 return { ...d, completedSessions: newCount, totalFocusTime: newFocusTime, status: newStatus };
                }
                if (d.id === updatedSession.dungeonId) {
                  const newCount = d.completedSessions + newProgress;
+                 const newFocusTime = (d.totalFocusTime || 0) + newDuration;
                  const isCompleted = newCount >= d.totalSessions;
-                 return { ...d, completedSessions: newCount, status: isCompleted ? 'completed' : 'active', completedAt: isCompleted ? getNow().toISOString() : undefined };
+                 return { ...d, completedSessions: newCount, totalFocusTime: newFocusTime, status: isCompleted ? 'completed' : d.status, completedAt: isCompleted && d.status !== 'completed' ? getNow().toISOString() : d.completedAt };
                }
             }
             return d;
@@ -1817,8 +1861,13 @@ export function useGameState() {
         });
       }
 
-      // Handle XP and Coins updates
+      // We explicitly DO NOT recalculate or reimburse coins/XP automatically here 
+      // if it was manually driven by the duration edit, to prevent exploit loops.
+      // E.g., user edits session to 500 minutes -> gets 1M coins -> sets it back.
+      // Edits ONLY repair historical charts, streaks, and objective/dungeon tracking counters.
+      
       if (updates.coinsEarned !== undefined && updates.coinsEarned !== session.coinsEarned) {
+        // If the user manually edits the coin string in an advanced UI somewhere, allow it directly
         const diff = updates.coinsEarned - session.coinsEarned;
         newState = processTransaction(newState, 'coins', diff, `Edited Session: ${updatedSession.dungeonId}`);
         newState.coins = Math.max(0, newState.coins + diff);
@@ -1849,6 +1898,10 @@ export function useGameState() {
          newState.dailySessions = Math.max(0, newState.dailySessions + dailySessionsDiff);
       }
 
+      const { streak, lastStudyDate } = recalculateStreakAndLastStudyDate(newHistory, prev.timeSettings);
+      newState.streak = streak;
+      newState.lastStudyDate = lastStudyDate;
+
       newState = recalculateQuestProgressFromHistory(newState, now);
       return newState;
     });
@@ -1860,13 +1913,35 @@ export function useGameState() {
       if (!session) return prev;
 
       const newHistory = prev.history.filter(s => s.id !== sessionId);
+      let xpToReverse = session.xpEarned || 0;
+      let coinsToReverse = session.coinsEarned || 0;
+      let talentPointsToReverse = 0;
 
       if (session.dungeonId !== 'free_study') {
          setDungeons(prevDungeons => {
             const addedProgress = getAddedProgress(prev.includeRestTimeInTasks, session.focusDuration || session.duration, session.restDuration, prev.standardSessionMinutes, prev.standardRestMinutes);
+            const actualDuration = getSessionEffectiveMinutes(session, !!prev.includeRestTimeInTasks);
+
             return prevDungeons.map(d => {
                if (d.id === session.dungeonId) {
-                  return { ...d, completedSessions: Math.max(0, d.completedSessions - addedProgress), status: 'active' };
+                  const newCompleted = Math.max(0, d.completedSessions - addedProgress);
+                  const newTotalFocusTime = Math.max(0, (d.totalFocusTime || 0) - actualDuration);
+                  let newStatus = d.status;
+
+                  if (d.status === 'completed' && !d.isOpenEnded && newCompleted < d.totalSessions) {
+                     newStatus = 'active';
+                     if (d.rewardXP > 0) xpToReverse += d.rewardXP;
+                     if (d.rewardCoins > 0) coinsToReverse += d.rewardCoins;
+                     if (d.rewards) {
+                       d.rewards.forEach(r => {
+                         if (r.type === 'xp') xpToReverse += (r.amount || 0);
+                         if (r.type === 'coins') coinsToReverse += (r.amount || 0);
+                         if (r.type === 'talentPoint') talentPointsToReverse += (r.amount || 0);
+                       });
+                     }
+                  }
+
+                  return { ...d, completedSessions: newCompleted, totalFocusTime: newTotalFocusTime, status: newStatus };
                }
                return d;
             });
@@ -1875,15 +1950,53 @@ export function useGameState() {
 
       let newState = { ...prev, history: newHistory };
 
-      // Withdraw XP and Coins
-      if (session.coinsEarned > 0) {
-        newState = processTransaction(newState, 'coins', -session.coinsEarned, `Deleted Session: ${session.dungeonId}`);
-        newState.coins = Math.max(0, newState.coins - session.coinsEarned);
+      if (coinsToReverse > 0) {
+        newState = processTransaction(newState, 'coins', -coinsToReverse, `Deleted Session: ${session.dungeonId}`);
+        newState.coins = Math.max(0, newState.coins - coinsToReverse);
       }
       
-      if (session.xpEarned > 0) {
-        newState = processTransaction(newState, 'xp', -session.xpEarned, `Deleted Session: ${session.dungeonId}`);
-        newState.xp = Math.max(0, newState.xp - session.xpEarned);
+      if (xpToReverse > 0) {
+        newState = processTransaction(newState, 'xp', -xpToReverse, `Deleted Session: ${session.dungeonId}`);
+        
+        let newXP = newState.xp - xpToReverse;
+        let newLevel = newState.level;
+        let newTalentPoints = (newState.talentPoints || 0) - talentPointsToReverse;
+        let newCoins = newState.coins;
+
+        while (newXP < 0 && newLevel > 1) {
+          newLevel--;
+          newXP += getXPForLevel(newLevel);
+          
+          const customReward = newState.levelRewards?.find(r => r.level === newLevel + 1);
+          if (customReward) {
+            const subRewards = customReward.rewards && customReward.rewards.length > 0
+              ? customReward.rewards
+              : [{ type: customReward.type, amount: customReward.amount }];
+            for (const reward of subRewards) {
+              if (reward.type === 'talentPoint') newTalentPoints -= (reward.amount || 0);
+              else if (reward.type === 'coins') {
+                const coinDeduct = reward.amount || 0;
+                newCoins = Math.max(0, newCoins - coinDeduct);
+                newState = processTransaction(newState, 'coins', -coinDeduct, `Level ${newLevel + 1} Rollback`);
+              }
+            }
+          } else {
+            const defaultReward = getDefaultRewardForLevel(newLevel + 1);
+            if (defaultReward.type === 'talentPoint') newTalentPoints -= defaultReward.amount;
+            else if (defaultReward.type === 'coins') {
+               newCoins = Math.max(0, newCoins - defaultReward.amount);
+               newState = processTransaction(newState, 'coins', -defaultReward.amount, `Level ${newLevel + 1} Rollback`);
+            }
+          }
+        }
+        
+        newState.xp = Math.max(0, newXP);
+        newState.level = newLevel;
+        newState.talentPoints = Math.max(0, newTalentPoints);
+        newState.coins = Math.max(0, newCoins);
+      } else if (talentPointsToReverse > 0) {
+        // Even if XP isn't reversed, talent points might be reversed from dungeon completion
+        newState.talentPoints = Math.max(0, (newState.talentPoints || 0) - talentPointsToReverse);
       }
 
       // Check for pending chest for this session
@@ -1895,9 +2008,9 @@ export function useGameState() {
          newState.pendingRewardChest = pendingChests;
       }
 
-      // Decrement dailySessions if the session was today
       const now = getNow();
 
+      // Decrement dailySessions if the session was today
       const todayStr = getSettlementDay(now, prev.timeSettings);
       const sessionDay = getSettlementDay(new Date(session.timestamp), prev.timeSettings);
 
@@ -1905,6 +2018,10 @@ export function useGameState() {
         const addedProgress = getAddedProgress(prev.includeRestTimeInTasks, session.focusDuration || session.duration, session.restDuration, prev.standardSessionMinutes, prev.standardRestMinutes);
         newState.dailySessions = Math.max(0, newState.dailySessions - addedProgress);
       }
+
+      const { streak, lastStudyDate } = recalculateStreakAndLastStudyDate(newHistory, prev.timeSettings);
+      newState.streak = streak;
+      newState.lastStudyDate = lastStudyDate;
 
       newState = recalculateQuestProgressFromHistory(newState, now);
       return newState;
@@ -2278,16 +2395,14 @@ export function useGameState() {
     setState(prev => {
       let newState = { ...prev };
       const newSessions: StudySession[] = [];
-      const newPendingChests: AppState['pendingRewardChest'] = [...(prev.pendingRewardChest || [])];
       
       for (let i = 0; i < count; i++) {
         const randomTimestamp = new Date(start + Math.random() * (end - start)).toISOString();
         const focus = data.focusDuration ?? 25;
         const rest = data.restDuration ?? 5;
         const duration = focus + rest;
-        const xp = Math.floor(100 * (focus / 25));
-        const coins = Math.floor(10 * (focus / 25));
         
+        // Plan A: Bulk added sessions do not grant game rewards.
         const session: StudySession = {
           id: Math.random().toString(36).substr(2, 9),
           dungeonId: data.objectiveId || 'free_study',
@@ -2295,53 +2410,172 @@ export function useGameState() {
           focusDuration: focus,
           restDuration: rest,
           timestamp: randomTimestamp,
-          coinsEarned: coins,
-          xpEarned: xp,
+          coinsEarned: 0,
+          xpEarned: 0,
         };
         
         newSessions.push(session);
-        
-        const generated = generateRewardChoicesForSession(session, {
-          rewardPool: prev.rewardPool,
-          activeTalents: prev.activeTalents || [],
-          pendingRewardChest: newPendingChests,
-          standardSessionMinutes: prev.standardSessionMinutes
-        });
-        
-        newPendingChests.push(...generated);
-
-        if (data.objectiveId && data.objectiveId !== 'free_study') {
-          setDungeons(prevD => prevD.map(d => {
-            if (d.id === data.objectiveId && d.status === 'active') {
-              return { ...d, completedSessions: d.completedSessions + 1 };
-            }
-            return d;
-          }));
-        }
       }
       
-      return {
-        ...newState,
-        history: [...newState.history, ...newSessions].sort((a, b) => 
-          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-        ),
-        pendingRewardChest: newPendingChests
-      };
+      newState.history = [...newState.history, ...newSessions].sort((a, b) => 
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      );
+      
+      // Update quests tracking since new sessions are in history
+      const now = getNow();
+      newState = recalculateQuestProgressFromHistory(newState, now);
+      
+      return newState;
     });
-  }, [setDungeons]);
+  }, [getNow]);
 
   const bulkDeleteSessions = useCallback((data: { startTime: string, endTime: string }) => {
     const start = new Date(data.startTime).getTime();
     const end = new Date(data.endTime).getTime();
     
-    setState(prev => ({
-      ...prev,
-      history: prev.history.filter(s => {
+    setState(prev => {
+      let newState = { ...prev };
+      
+      const sessionsToDelete = prev.history.filter(s => {
         const ts = new Date(s.timestamp).getTime();
-        return ts < start || ts > end;
-      })
-    }));
-  }, []);
+        return ts >= start && ts <= end;
+      });
+      
+      if (sessionsToDelete.length === 0) return prev;
+      
+      const sessionIdsToDelete = new Set(sessionsToDelete.map(s => s.id));
+      
+      // Filter out history
+      newState.history = prev.history.filter(s => !sessionIdsToDelete.has(s.id));
+      
+      let totalXpToReverse = 0;
+      let totalCoinsToReverse = 0;
+      let totalTalentPointsToReverse = 0;
+
+      let dungeonProgressToReverse: Record<string, number> = {};
+      let dungeonTimeToReverse: Record<string, number> = {};
+      let dungeonsResetToActive: Set<string> = new Set();
+      
+      sessionsToDelete.forEach(session => {
+        if (session.xpEarned > 0) totalXpToReverse += session.xpEarned;
+        if (session.coinsEarned > 0) totalCoinsToReverse += session.coinsEarned;
+        
+        if (session.dungeonId && session.dungeonId !== 'free_study') {
+           const addedProgress = getAddedProgress(prev.includeRestTimeInTasks, session.focusDuration || session.duration, session.restDuration, prev.standardSessionMinutes, prev.standardRestMinutes);
+           const actualDuration = getSessionEffectiveMinutes(session, !!prev.includeRestTimeInTasks);
+
+           dungeonProgressToReverse[session.dungeonId] = (dungeonProgressToReverse[session.dungeonId] || 0) + addedProgress;
+           dungeonTimeToReverse[session.dungeonId] = (dungeonTimeToReverse[session.dungeonId] || 0) + actualDuration;
+        }
+      });
+      
+      if (Object.keys(dungeonProgressToReverse).length > 0) {
+        setDungeons(prevDungeons => 
+           prevDungeons.map(d => {
+              if (dungeonProgressToReverse[d.id]) {
+                 const newCompleted = Math.max(0, d.completedSessions - dungeonProgressToReverse[d.id]);
+                 const newTotalFocusTime = Math.max(0, (d.totalFocusTime || 0) - (dungeonTimeToReverse[d.id] || 0));
+                 let newStatus = d.status;
+
+                 if (d.status === 'completed' && !d.isOpenEnded && newCompleted < d.totalSessions) {
+                    newStatus = 'active';
+                    if (d.rewardXP > 0) totalXpToReverse += d.rewardXP;
+                    if (d.rewardCoins > 0) totalCoinsToReverse += d.rewardCoins;
+                    if (d.rewards) {
+                      d.rewards.forEach(r => {
+                        if (r.type === 'xp') totalXpToReverse += (r.amount || 0);
+                        if (r.type === 'coins') totalCoinsToReverse += (r.amount || 0);
+                        if (r.type === 'talentPoint') totalTalentPointsToReverse += (r.amount || 0);
+                      });
+                    }
+                 }
+
+                 return { ...d, completedSessions: newCompleted, totalFocusTime: newTotalFocusTime, status: newStatus };
+              }
+              return d;
+           })
+        );
+      }
+      
+      if (totalCoinsToReverse > 0) {
+        newState = processTransaction(newState, 'coins', -totalCoinsToReverse, `Bulk Deleted Sessions`);
+        newState.coins = Math.max(0, newState.coins - totalCoinsToReverse);
+      }
+      
+      if (totalXpToReverse > 0) {
+        newState = processTransaction(newState, 'xp', -totalXpToReverse, `Bulk Deleted Sessions`);
+        
+        let newXP = newState.xp - totalXpToReverse;
+        let newLevel = newState.level;
+        let newTalentPoints = (newState.talentPoints || 0) - totalTalentPointsToReverse;
+        let newCoins = newState.coins;
+
+        while (newXP < 0 && newLevel > 1) {
+          newLevel--;
+          newXP += getXPForLevel(newLevel);
+          
+          const customReward = newState.levelRewards?.find(r => r.level === newLevel + 1);
+          if (customReward) {
+            const subRewards = customReward.rewards && customReward.rewards.length > 0
+              ? customReward.rewards
+              : [{ type: customReward.type, amount: customReward.amount }];
+            for (const reward of subRewards) {
+              if (reward.type === 'talentPoint') newTalentPoints -= (reward.amount || 0);
+              else if (reward.type === 'coins') {
+                const coinDeduct = reward.amount || 0;
+                newCoins = Math.max(0, newCoins - coinDeduct);
+                newState = processTransaction(newState, 'coins', -coinDeduct, `Level ${newLevel + 1} Rollback`);
+              }
+            }
+          } else {
+            const defaultReward = getDefaultRewardForLevel(newLevel + 1);
+            if (defaultReward.type === 'talentPoint') newTalentPoints -= defaultReward.amount;
+            else if (defaultReward.type === 'coins') {
+               newCoins = Math.max(0, newCoins - defaultReward.amount);
+               newState = processTransaction(newState, 'coins', -defaultReward.amount, `Level ${newLevel + 1} Rollback`);
+            }
+          }
+        }
+        
+        newState.xp = Math.max(0, newXP);
+        newState.level = newLevel;
+        newState.talentPoints = Math.max(0, newTalentPoints);
+        newState.coins = Math.max(0, newCoins);
+      } else if (totalTalentPointsToReverse > 0) {
+        newState.talentPoints = Math.max(0, (newState.talentPoints || 0) - totalTalentPointsToReverse);
+      }
+      
+      if (newState.pendingRewardChest) {
+        newState.pendingRewardChest = newState.pendingRewardChest.filter(c => !sessionIdsToDelete.has(c.session.id));
+      }
+      
+      const now = getNow();
+      
+      // Calculate properly how much today's dailySessions drops
+      const todayStr = getSettlementDay(now, prev.timeSettings);
+      let todaySessionsProgressToReverse = 0;
+
+      sessionsToDelete.forEach(session => {
+         const sessionDay = getSettlementDay(new Date(session.timestamp), prev.timeSettings);
+         if (sessionDay === todayStr) {
+            const addedProgress = getAddedProgress(prev.includeRestTimeInTasks, session.focusDuration || session.duration, session.restDuration, prev.standardSessionMinutes, prev.standardRestMinutes);
+            todaySessionsProgressToReverse += addedProgress;
+         }
+      });
+
+      if (todaySessionsProgressToReverse > 0) {
+         newState.dailySessions = Math.max(0, newState.dailySessions - todaySessionsProgressToReverse);
+      }
+      
+      const { streak, lastStudyDate } = recalculateStreakAndLastStudyDate(newState.history, prev.timeSettings);
+      newState.streak = streak;
+      newState.lastStudyDate = lastStudyDate;
+
+      newState = recalculateQuestProgressFromHistory(newState, now);
+      
+      return newState;
+    });
+  }, [setDungeons, getNow]);
 
   return {
     state,

@@ -35,11 +35,105 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
   const [isOnline, setIsOnline] = useState(typeof window !== 'undefined' ? window.navigator.onLine : true);
   const [stats, setStats] = useState<{ users: number, maxUsers: number, teams: number, maxTeams: number } | null>(null);
   const [confirmDialog, setConfirmDialog] = useState<{
-    isOpen: boolean; title: string; message: string; type?: 'danger'|'warning'|'info'; isAlert?: boolean; onConfirm?: () => void;
+    isOpen: boolean; title: string; message: React.ReactNode; type?: 'danger'|'warning'|'info'; isAlert?: boolean; onConfirm?: () => void;
   }>({ isOpen: false, title: '', message: '' });
 
   const customAlert = (message: string, title = 'Notification') => {
     setConfirmDialog({ isOpen: true, title, message, isAlert: true, type: 'info' });
+  };
+
+  const [localBackups, setLocalBackups] = useState<any[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('scholars_dungeon_local_backups') || '[]');
+    } catch {
+      return [];
+    }
+  });
+
+  const createLocalBackup = () => {
+    try {
+      const stateData = JSON.parse(localStorage.getItem('scholars_dungeon_state') || '{}');
+      const dungeons = JSON.parse(localStorage.getItem('scholars_dungeon_state_dungeons') || '[]');
+      const majorDungeons = JSON.parse(localStorage.getItem('scholars_dungeon_state_major_dungeons') || '[]');
+      
+      const newBackup = {
+        id: Date.now().toString(),
+        timestamp: new Date().toISOString(),
+        level: stateData.level || 1,
+        coins: stateData.coins || 0,
+        state: stateData,
+        dungeons,
+        majorDungeons
+      };
+      
+      const updatedBackups = [newBackup, ...localBackups].slice(0, 10);
+      setLocalBackups(updatedBackups);
+      localStorage.setItem('scholars_dungeon_local_backups', JSON.stringify(updatedBackups));
+      
+      customAlert('Local snapshot created successfully.', 'Snapshot Saved');
+    } catch (e) {
+      console.error(e);
+      customAlert('Failed to create local snapshot.', 'Error');
+    }
+  };
+
+  const restoreLocalBackup = (backup: any) => {
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Restore Local Snapshot?',
+      message: (
+        <div className="mt-2 space-y-4 text-left">
+          <p className="text-slate-400 text-sm leading-relaxed">
+            This will replace your current active game profile with this snapshot. Please compare the data below:
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-slate-950 p-4 rounded-xl border border-blue-500/30 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-16 h-16 bg-blue-500/10 blur-2xl rounded-full -mr-8 -mt-8" />
+              <div className="text-[10px] font-black uppercase tracking-widest text-blue-400 mb-3 flex items-center gap-1.5">
+                <Cloud size={12} /> Current / Cloud Save
+              </div>
+              <div className="space-y-1">
+                <div className="text-sm font-bold text-slate-200">Level {state.level || 1}</div>
+                <div className="text-xs text-amber-500/90 font-mono">{state.coins || 0} Coins</div>
+                <div className="text-[9px] text-slate-500 font-mono mt-2 pt-2 border-t border-slate-800">
+                  {new Date(state.lastUpdated || Date.now()).toLocaleString()}
+                </div>
+              </div>
+            </div>
+            <div className="bg-slate-950 p-4 rounded-xl border border-emerald-500/30 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-16 h-16 bg-emerald-500/10 blur-2xl rounded-full -mr-8 -mt-8" />
+              <div className="text-[10px] font-black uppercase tracking-widest text-emerald-400 mb-3 flex items-center gap-1.5">
+                <Database size={12} /> Snapshot
+              </div>
+              <div className="space-y-1">
+                <div className="text-sm font-bold text-slate-200">Level {backup.level}</div>
+                <div className="text-xs text-amber-500/90 font-mono">{backup.coins} Coins</div>
+                <div className="text-[9px] text-slate-500 font-mono mt-2 pt-2 border-t border-slate-800">
+                  {new Date(backup.timestamp).toLocaleString()}
+                </div>
+              </div>
+            </div>
+          </div>
+          <p className="text-rose-400 text-xs font-bold uppercase tracking-widest bg-rose-500/10 inline-block px-3 py-1.5 rounded-lg border border-rose-500/20">
+            This action cannot be reversed. Are you sure?
+          </p>
+        </div>
+      ),
+      isAlert: false,
+      type: 'danger',
+      onConfirm: () => {
+        localStorage.setItem('scholars_dungeon_state', JSON.stringify({ ...backup.state, deviceCode: getDeviceCode() }));
+        if (backup.dungeons) localStorage.setItem('scholars_dungeon_state_dungeons', JSON.stringify(backup.dungeons));
+        if (backup.majorDungeons) localStorage.setItem('scholars_dungeon_state_major_dungeons', JSON.stringify(backup.majorDungeons));
+        window.location.reload();
+      }
+    });
+  };
+
+  const deleteLocalBackup = (id: string) => {
+    const updated = localBackups.filter(b => b.id !== id);
+    setLocalBackups(updated);
+    localStorage.setItem('scholars_dungeon_local_backups', JSON.stringify(updated));
   };
 
   useEffect(() => {
@@ -731,6 +825,89 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
       </div>
 
       <div className="space-y-6 pt-6 border-t border-slate-800">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-2">
+          <div className="flex items-center gap-2.5 text-slate-300">
+            <Database size={20} className="text-emerald-400" />
+            <h4 className="text-lg font-bold uppercase tracking-widest pr-1">SNAPSHOTS</h4>
+          </div>
+          <button
+            onClick={createLocalBackup}
+            className="flex items-center justify-center gap-1.5 px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 rounded-lg text-xs font-black uppercase tracking-widest transition-all border border-emerald-500/30 w-full sm:w-auto"
+          >
+            <Download size={14} /> Create Snapshot (Max 10)
+          </button>
+        </div>
+
+        <div className="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden">
+          <div className="p-4 border-b border-slate-800 bg-slate-950/30 flex items-center justify-between">
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Saved Snapshots</span>
+            <div className="flex items-center gap-3">
+              <span className="text-[10px] text-slate-500 font-medium">Count:</span>
+              <span className="text-[11px] font-black text-emerald-400 tracking-tight">
+                {localBackups.length} / 10
+              </span>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto custom-scrollbar">
+            <table className="w-full text-left border-collapse min-w-[600px]">
+              <thead>
+                <tr className="bg-slate-950/20 border-b border-slate-800">
+                  <th className="px-4 py-3 text-[9px] font-black text-slate-500 uppercase tracking-widest">Time</th>
+                  <th className="px-4 py-3 text-[9px] font-black text-slate-500 uppercase tracking-widest">State Data</th>
+                  <th className="px-4 py-3 text-[9px] font-black text-slate-500 uppercase tracking-widest text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800/40">
+                {localBackups.length > 0 ? (
+                  localBackups.map((bkp: any) => (
+                    <tr key={bkp.id} className="hover:bg-slate-800/30 transition-colors">
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <div className="text-[10px] text-slate-400 font-mono">
+                          {new Date(bkp.timestamp).toLocaleDateString()}
+                        </div>
+                        <div className="text-[9px] text-slate-500 font-mono opacity-70">
+                          {new Date(bkp.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <div className="flex flex-col">
+                           <span className="text-[10px] font-bold text-emerald-300">Level {bkp.level}</span>
+                           <span className="text-[9px] text-amber-500/80 font-mono">{bkp.coins} Coins</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => restoreLocalBackup(bkp)}
+                          className="p-1.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 rounded-md transition-colors"
+                          title="Restore"
+                        >
+                          <History size={14} />
+                        </button>
+                        <button
+                          onClick={() => deleteLocalBackup(bkp.id)}
+                          className="p-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded-md transition-colors"
+                          title="Delete"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={3} className="px-4 py-8 text-center text-xs text-slate-600 italic">
+                      No local snapshots found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-6 pt-6 border-t border-slate-800">
         <div className="flex items-center gap-2.5 text-slate-300 mb-6 pb-2">
           <Settings size={20} />
           <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Auto-Sync Preferences</h4>
@@ -776,7 +953,7 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
                 onClick={() => {
                   setActiveSection('general');
                   setTimeout(() => {
-                    const el = document.getElementById('data-management');
+                    const el = document.getElementById('setting-data-management');
                     if (el) {
                       el.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }

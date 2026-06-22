@@ -72,31 +72,31 @@ export const RewardSettings = ({ pool, onUpdate, onReset, appState }: { pool: Re
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center pb-4 mb-6">
-        <div className="flex items-center gap-2.5 text-indigo-400">
-          <Package size={20} />
-          <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Reward Pool Management</h4>
+    <div id="setting-rewards" className="space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 mb-6">
+        <div className="flex flex-wrap items-center gap-2 text-indigo-400 min-w-0">
+          <Package size={20} className="shrink-0" />
+          <h4 className="text-base sm:text-lg font-extrabold uppercase tracking-widest pr-1 italic">Reward Pool Management</h4>
           {appState && (
-            <>
+            <div className="flex items-center gap-1">
               <button 
                 onClick={() => setShowRealtimeProb(true)} 
-                className="p-1.5 text-slate-500 hover:text-indigo-400 bg-slate-800/50 hover:bg-slate-800 rounded-full transition-colors ml-1"
+                className="p-1.5 text-slate-500 hover:text-indigo-400 bg-slate-800/50 hover:bg-slate-800 rounded-full transition-colors"
                 title="Real-Time Probability"
               >
                 <HelpCircle size={14} />
               </button>
               <button 
                 onClick={() => setShowExpectedStats(true)} 
-                className="p-1.5 text-slate-500 hover:text-indigo-400 bg-slate-800/50 hover:bg-slate-800 rounded-full transition-colors ml-1"
+                className="p-1.5 text-slate-500 hover:text-indigo-400 bg-slate-800/50 hover:bg-slate-800 rounded-full transition-colors"
                 title="Economy Mathematics"
               >
                 <Info size={14} />
               </button>
-            </>
+            </div>
           )}
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 w-full sm:w-auto">
           {onReset && (
             <button 
               onClick={() => setModalConfig({
@@ -107,17 +107,17 @@ export const RewardSettings = ({ pool, onUpdate, onReset, appState }: { pool: Re
                 type: "warning",
                 onConfirm: onReset
               })}
-              className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-sm font-bold transition-colors"
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs sm:text-sm font-bold transition-colors shrink-0"
               title="Reset to Defaults"
             >
-              <RefreshCw size={16} /> Reset
+              <RefreshCw size={14} className="shrink-0" /> <span className="truncate">Reset</span>
             </button>
           )}
           <button 
             onClick={() => setEditing({ id: Math.random().toString(36).substr(2, 9), name: '', description: '', rarity: 'common', type: 'text', weight: 10 })}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold shadow-lg shadow-indigo-600/20"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 bg-indigo-600 text-white rounded-lg text-xs sm:text-sm font-bold shadow-lg shadow-indigo-600/20 shrink-0"
           >
-            <Plus size={16} /> Add Reward
+            <Plus size={14} className="shrink-0" /> <span className="truncate">Add Reward</span>
           </button>
         </div>
       </div>

@@ -118,12 +118,27 @@ export const ShareRecordModal: React.FC<ShareRecordModalProps> = ({ onClose, con
       const origShareDisplay = shareBtn ? shareBtn.style.display : '';
       if (shareBtn) shareBtn.style.display = 'none';
 
-      let targetWidth = el.offsetWidth;
-      let targetHeight = el.offsetHeight;
+      let targetWidth = Math.max(el.offsetWidth, el.scrollWidth);
+      let targetHeight = Math.max(el.offsetHeight, el.scrollHeight);
 
       const origStyle = el.getAttribute('style') || '';
       const origMaxWidth = el.style.maxWidth;
       el.style.maxWidth = 'none';
+
+      // Enforce a minimum realistic desktop-like width on mobile viewports
+      // so the charts and titles do not truncate or squish together in the exported image.
+      const isMobile = window.innerWidth < 768;
+      if (config.aspectRatio === 'auto' && isMobile && targetWidth < 800) {
+         targetWidth = 800;
+      }
+      
+      el.style.width = `${targetWidth}px`;
+      
+      if (config.aspectRatio === 'auto' && isMobile) {
+         // Let Recharts adjust to the forced wider width
+         await new Promise(r => setTimeout(r, 600));
+         targetHeight = Math.max(el.offsetHeight, el.scrollHeight); // re-measure height after width expansion
+      }
 
       const sectionIds = ['charts-grid', 'routine-tracker-section', 'heatmap-section', 'daily-activity-section', 'weekly-activity-section', 'sleep-tracker-section'];
       const origSectionStyles: Record<string, string> = {};
@@ -219,17 +234,20 @@ export const ShareRecordModal: React.FC<ShareRecordModalProps> = ({ onClose, con
       el.appendChild(watermark);
 
       // Capture beautifully scaled pristine layout
+      const exportPadding = 32;
+      const finalWidth = el.offsetWidth + exportPadding * 2;
+      const finalHeight = el.offsetHeight + exportPadding * 2;
+
       const dataUrl = await toPng(el, {
         pixelRatio: 2, // High resolution for crystal clear text
-        skipFonts: true, // Speeds up generation considerably
-        fontEmbedCSS: '', // Avoid fetching external fonts during rendering
-        width: el.offsetWidth,
-        height: el.offsetHeight,
+        width: finalWidth,
+        height: finalHeight,
         style: {
           transform: 'none',
           backgroundColor: themeBgColor, // Ensure background is filled perfectly
           margin: '0',
-          padding: window.getComputedStyle(el).padding // Retain original padding without doubling
+          padding: `${exportPadding}px`, // Generous padding for a clean canvas
+          boxSizing: 'border-box'
         }
       });
 
@@ -246,10 +264,11 @@ export const ShareRecordModal: React.FC<ShareRecordModalProps> = ({ onClose, con
          }
       });
 
+      // Always restore original container styles since we modify them unconditionally
+      el.setAttribute('style', origStyle);
+      el.style.maxWidth = origMaxWidth;
+      
       if (config.aspectRatio !== 'auto') {
-        el.setAttribute('style', origStyle);
-        el.style.maxWidth = origMaxWidth;
-        
         sectionIds.forEach(id => {
           const sec = el.querySelector(`#${id}`) as HTMLElement;
           if (sec) {
@@ -263,6 +282,9 @@ export const ShareRecordModal: React.FC<ShareRecordModalProps> = ({ onClose, con
         });
 
         // Wait for snap back
+        await new Promise(r => setTimeout(r, 100));
+      } else if (isMobile) {
+        // Wait for snap back even on mobile auto ratio since we modified the width
         await new Promise(r => setTimeout(r, 100));
       }
     } catch (err) {
@@ -351,7 +373,7 @@ export const ShareRecordModal: React.FC<ShareRecordModalProps> = ({ onClose, con
     hiddenDiaryRef.current?.appendChild(wrapper);
     
     await new Promise(r => setTimeout(r, 100)); // Layout
-    const dataUrl = await toPng(wrapper, { pixelRatio: 2, skipFonts: true, fontEmbedCSS: '', style: { backgroundColor: themeColor }});
+    const dataUrl = await toPng(wrapper, { pixelRatio: 2, style: { backgroundColor: themeColor }});
     
     wrapper.remove();
     return dataUrl;
@@ -461,60 +483,73 @@ export const ShareRecordModal: React.FC<ShareRecordModalProps> = ({ onClose, con
         onClick={onClose}
       />
       
-      <div className="relative bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col md:flex-row shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
         
-        {/* Preview Area */}
-        <div className="flex-1 bg-slate-950 p-6 flex flex-col items-center min-h-[300px] border-b md:border-b-0 md:border-r border-slate-800 overflow-y-auto max-h-[60vh] md:max-h-full custom-scrollbar">
-          {isGenerating ? (
-            <div className="flex flex-col items-center justify-center m-auto gap-4 text-slate-400">
-              <Loader2 size={32} className="animate-spin text-indigo-500" />
-              <p className="font-bold tracking-wider text-sm uppercase">Rendering Preview...</p>
-            </div>
-          ) : exportMode === 'diary' && filteredLogs.length === 0 ? (
-            <div className="flex flex-col items-center justify-center m-auto gap-3 text-slate-500">
-              <Calendar size={48} className="opacity-20" />
-              <p className="font-bold text-lg">No Diary Entries</p>
-              <p className="text-sm">No diary entries found for the selected date range.</p>
-            </div>
-          ) : previewUrls.length > 0 ? (
-            <div className="flex flex-col gap-6 w-full items-center m-auto">
-              {previewUrls.map((url, i) => (
-                <img 
-                  key={i}
-                  src={url} 
-                  alt={`Preview ${i}`} 
-                  className="max-w-full h-auto rounded-lg shadow-lg border border-slate-800 object-contain transition-all"
-                />
-              ))}
-            </div>
-          ) : exportMode !== 'history' ? (
-            <div className="flex flex-col items-center justify-center m-auto gap-4 text-slate-500">
-              <ImageIcon size={48} className="opacity-20" />
-              <p className="font-bold text-lg">Preview not generated</p>
-              <p className="text-sm text-center mb-2">Adjust your settings, then click the button below to render the preview.</p>
-              <button
-                onClick={() => exportMode === 'statistics' ? generatePreview() : generateDiaryImagePreview()}
-                disabled={isGenerating}
-                className="flex items-center justify-center gap-2 py-3 px-8 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold transition-colors"
-              >
-                <ImageIcon size={18} />
-                Generate Preview
-              </button>
-            </div>
-          ) : null}
+        {/* Mobile Header (Hidden on Desktop) */}
+        <div className="md:hidden flex items-center justify-between p-4 border-b border-slate-800 bg-slate-900 shrink-0 z-10">
+          <h2 className="text-lg font-black text-slate-100 uppercase tracking-tight flex items-center gap-2">
+            <ImageIcon className="text-indigo-500" size={20} />
+             Export Image 
+          </h2>
+          <button onClick={onClose} className="p-2 hover:bg-slate-800 rounded-xl text-slate-400 hover:text-white transition-colors">
+            <X size={18} />
+          </button>
         </div>
 
-        {/* Controls */}
-        <div className="w-full md:w-80 p-6 flex flex-col gap-6 overflow-y-auto bg-slate-900">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-black text-slate-100 uppercase tracking-tight flex items-center justify-between gap-2">
-              <ImageIcon className="text-indigo-500" size={24} />
-               Export Image 
-            </h2>
-            <button onClick={onClose} className="p-2 hover:bg-slate-800 rounded-xl text-slate-400 hover:text-white transition-colors">
-              <X size={20} />
-            </button>
+        <div className="flex flex-col md:flex-row flex-1 overflow-hidden min-h-0">
+          {/* Preview Area */}
+          <div className="flex-1 bg-slate-950 p-4 md:p-6 flex flex-col items-center min-h-[30vh] border-b md:border-b-0 md:border-r border-slate-800 overflow-y-auto custom-scrollbar">
+            {isGenerating ? (
+              <div className="flex flex-col items-center justify-center m-auto gap-4 text-slate-400">
+                <Loader2 size={32} className="animate-spin text-indigo-500" />
+                <p className="font-bold tracking-wider text-sm uppercase">Rendering Preview...</p>
+              </div>
+            ) : exportMode === 'diary' && filteredLogs.length === 0 ? (
+              <div className="flex flex-col items-center justify-center m-auto gap-3 text-slate-500">
+                <Calendar size={48} className="opacity-20" />
+                <p className="font-bold text-lg">No Diary Entries</p>
+                <p className="text-sm">No diary entries found for the selected date range.</p>
+              </div>
+            ) : previewUrls.length > 0 ? (
+              <div className="flex flex-col gap-6 w-full items-center m-auto">
+                {previewUrls.map((url, i) => (
+                  <img 
+                    key={i}
+                    src={url} 
+                    alt={`Preview ${i}`} 
+                    className="max-w-full h-auto rounded-lg shadow-lg border border-slate-800 object-contain transition-all"
+                  />
+                ))}
+              </div>
+            ) : exportMode !== 'history' ? (
+              <div className="flex flex-col items-center justify-center m-auto gap-4 text-slate-500">
+                <ImageIcon size={48} className="opacity-20" />
+                <p className="font-bold text-lg">Preview not generated</p>
+                <p className="text-sm text-center mb-2">Adjust your settings, then click the button below to render the preview.</p>
+                <button
+                  onClick={() => exportMode === 'statistics' ? generatePreview() : generateDiaryImagePreview()}
+                  disabled={isGenerating}
+                  className="flex items-center justify-center gap-2 py-3 px-8 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold transition-colors"
+                >
+                  <ImageIcon size={18} />
+                  Generate Preview
+                </button>
+              </div>
+            ) : null}
           </div>
+
+          {/* Controls */}
+          <div className="w-full md:w-80 p-4 md:p-6 flex flex-col gap-6 overflow-y-auto bg-slate-900 custom-scrollbar flex-1 md:flex-none md:shrink-0 min-h-0">
+            {/* Desktop Header */}
+            <div className="hidden md:flex items-center justify-between">
+              <h2 className="text-xl font-black text-slate-100 uppercase tracking-tight flex items-center justify-between gap-2">
+                <ImageIcon className="text-indigo-500" size={24} />
+                 Export Image 
+              </h2>
+              <button onClick={onClose} className="p-2 hover:bg-slate-800 rounded-xl text-slate-400 hover:text-white transition-colors">
+                <X size={20} />
+              </button>
+            </div>
           
           <div className="flex gap-2 p-1 bg-slate-950 rounded-lg">
             <button
@@ -800,6 +835,7 @@ export const ShareRecordModal: React.FC<ShareRecordModalProps> = ({ onClose, con
               </button>
             )}
           </div>
+        </div>
         </div>
       </div>
 

@@ -521,7 +521,7 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
             })}
           </div>
 
-          <div className="flex items-center justify-between p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
+          <div id="setting-auto-sync" className="flex items-center justify-between p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
             <div className="flex items-center gap-3">
               <div className={cn("p-2 rounded-xl transition-colors", autoTheme ? "bg-indigo-500/10 text-indigo-400" : "bg-slate-800 text-slate-500")}>
                 <History size={20} />
@@ -534,7 +534,7 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
             <button
               onClick={() => setState(prev => ({ ...prev, autoTheme: !autoTheme }))}
               className={cn(
-                "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
+                "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors",
                 autoTheme ? "bg-indigo-500" : "bg-slate-700"
               )}
             >
@@ -663,7 +663,7 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
         </div>
 
         <div className="space-y-6">
-          <div className="flex items-center justify-between p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
+          <div id="setting-sound" className="flex items-center justify-between p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
             <div className="flex items-center gap-3">
               <div className={cn("p-2 rounded-xl", soundEnabled ? "bg-emerald-500/10 text-emerald-400" : "bg-slate-800 text-slate-500")}>
                 {soundEnabled ? <Volume2 size={20} /> : <VolumeX size={20} />}
@@ -676,7 +676,7 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
             <button
               onClick={toggleSound}
               className={cn(
-                "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
+                "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors",
                 soundEnabled ? "bg-emerald-500" : "bg-slate-700"
               )}
             >
@@ -828,7 +828,7 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
         </div>
 
         <div className="space-y-6">
-          <div className="flex items-center justify-between p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
+          <div id="setting-markdown" className="flex items-center justify-between p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
             <div className="flex items-center gap-3">
               <div className={cn("p-2 rounded-xl", defaultMarkdownEnabled ? "bg-indigo-500/10 text-indigo-400" : "bg-slate-800 text-slate-500")}>
                 <Eye size={20} />
@@ -841,7 +841,7 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
             <button
               onClick={() => setState(prev => ({ ...prev, defaultMarkdownEnabled: !defaultMarkdownEnabled }))}
               className={cn(
-                "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
+                "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors",
                 defaultMarkdownEnabled ? "bg-indigo-500" : "bg-slate-700"
               )}
             >
@@ -915,7 +915,7 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
                 <button
                   onClick={() => setState(prev => ({ ...prev, useSameDailyProgressGoalEveryDay: !prev.useSameDailyProgressGoalEveryDay }))}
                   className={cn(
-                    "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
+                    "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors",
                     state.useSameDailyProgressGoalEveryDay ?? true ? "bg-slate-700" : "bg-amber-500"
                   )}
                 >
@@ -1032,7 +1032,7 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
                 onClick={handleNotificationToggle}
                 disabled={isSubscribing}
                 className={cn(
-                  "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
+                  "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors",
                   state.pushEnabled ? "bg-indigo-500" : "bg-slate-700",
                   isSubscribing && "opacity-50 cursor-not-allowed"
                 )}

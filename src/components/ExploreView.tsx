@@ -779,7 +779,7 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
               </div>
 
               {/* Current Build */}
-              <div className="bg-slate-900/50 rounded-3xl border border-slate-800 p-6 backdrop-blur-sm flex-1 min-h-0 flex flex-col justify-between">
+              <div className="bg-slate-900/50 rounded-3xl border border-slate-800 p-6 backdrop-blur-sm shrink-0 flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between mb-6">
                     <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
@@ -840,6 +840,7 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
             bulkDeleteSessions={bulkDeleteSessions}
             rewardPool={state.rewardPool}
             timeSettings={state.timeSettings}
+            includeRestTimeInTasks={!!state.includeRestTimeInTasks}
           />
         </div>
       )}

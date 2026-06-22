@@ -214,10 +214,10 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="w-full max-w-7xl h-full flex flex-col py-8 relative"
+        className="w-full max-w-7xl h-full flex flex-col py-4 sm:py-8 relative"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="text-center mb-4 sm:mb-8 relative shrink-0">
+        <div className="text-center mb-2 sm:mb-6 relative shrink-0">
           <motion.div
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -237,12 +237,14 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({
           </motion.div>
           
           {!showSummary && !canClose && isMulti && (
-            <button
-              onClick={handleSkipAnimation}
-              className="absolute top-0 right-0 px-3 py-1 bg-white/5 hover:bg-white/10 text-white/50 hover:text-white rounded-full text-[8px] sm:text-[10px] font-black uppercase tracking-widest transition-all border border-white/5 hover:border-white/20"
-            >
-              Skip Animation
-            </button>
+            <div className="mt-2 sm:mt-0 sm:absolute sm:top-0 sm:right-0 flex justify-center">
+              <button
+                onClick={handleSkipAnimation}
+                className="px-3 py-1 bg-white/5 hover:bg-white/10 text-white/50 hover:text-white rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest transition-all border border-white/5 hover:border-white/20"
+              >
+                Skip Animation
+              </button>
+            </div>
           )}
         </div>
 
@@ -435,7 +437,9 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({
                     "h-full w-full flex flex-col items-center relative overflow-hidden transition-all",
                     isTenPull 
                       ? "rounded-[1rem] sm:rounded-[1.5rem] p-3 sm:p-5" 
-                      : gachaEffect === 'card' ? "rounded-[1.5rem] p-6" : "rounded-[1.5rem] p-4",
+                      : gachaEffect === 'card' 
+                        ? (normalResults.length === 1 ? "rounded-[1.75rem] p-6 sm:p-8" : "rounded-[1.5rem] p-6") 
+                        : "rounded-[1.5rem] p-4",
                     styles.bg
                   )}>
                     <div className={cn("absolute inset-0 opacity-30 bg-gradient-to-br", styles.gradient)} />
@@ -453,7 +457,7 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({
                         <motion.div
                           animate={{ y: [0, -4, 0], filter: ["brightness(1)", "brightness(1.4)", "brightness(1)"] }}
                           transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                          className={isTenPull ? "scale-125" : "scale-150"}
+                          className={isTenPull ? "scale-125" : (normalResults.length === 1 ? "scale-[1.75] sm:scale-[2.25]" : "scale-150")}
                         >
                           {styles.icon}
                         </motion.div>
@@ -461,8 +465,10 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({
                       </div>
                       <div className="w-full text-center px-1">
                         <h3 className={cn(
-                          "font-black leading-snug uppercase italic pr-1 mb-2 max-h-[3rem] overflow-hidden line-clamp-2",
-                          isTenPull ? "text-xs sm:text-sm md:text-base" : "text-sm sm:text-lg",
+                          "font-black leading-snug uppercase italic pr-1 mb-2 max-h-[3.5rem] overflow-hidden line-clamp-2",
+                          isTenPull 
+                            ? "text-xs sm:text-sm md:text-base" 
+                            : (normalResults.length === 1 ? "text-base sm:text-xl md:text-2xl" : "text-sm sm:text-lg"),
                           styles.text
                         )}>
                           {res.item}
@@ -484,8 +490,12 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({
                       isTenPull 
                         ? "w-full aspect-[4/5] sm:aspect-square rounded-2xl sm:rounded-[1.5rem] p-[2px]" 
                         : gachaEffect === 'card' 
-                          ? "w-[min(200px,45vw)] sm:w-[min(260px,45vw)] aspect-[2/3] rounded-[1.5rem] p-[2px]" 
-                          : "w-[min(260px,80vw)] sm:w-[min(320px,80vw)] aspect-[16/9] rounded-[1.5rem] p-[2px]",
+                          ? (normalResults.length === 1 
+                              ? "w-[min(280px,75vw)] sm:w-[min(320px,45vw)] aspect-[2/3] rounded-[1.75rem] p-[2px]" 
+                              : "w-[min(200px,45vw)] sm:w-[min(260px,45vw)] aspect-[2/3] rounded-[1.5rem] p-[2px]")
+                          : (normalResults.length === 1
+                              ? "w-[min(300px,85vw)] sm:w-[min(380px,80vw)] aspect-[16/9] rounded-[1.75rem] p-[2px]"
+                              : "w-[min(260px,80vw)] sm:w-[min(320px,80vw)] aspect-[16/9] rounded-[1.5rem] p-[2px]"),
                       (gachaEffect !== 'scratch' || revealedIndices.includes(idx)) ? styles.accent : "bg-slate-400",
                       (gachaEffect !== 'scratch' || revealedIndices.includes(idx)) ? styles.glow : "shadow-none",
                     )}
@@ -534,10 +544,10 @@ export const GachaResultModal: React.FC<GachaResultModalProps> = ({
               <motion.button
                 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
                 onClick={handleClaim}
-                className="group relative flex items-center gap-2 px-8 py-4 bg-white text-slate-950 rounded-full font-black uppercase tracking-[0.2em] italic pr-1 text-sm sm:text-base transition-all hover:scale-105 active:scale-95 shadow-[0_15px_30px_-5px_rgba(255,255,255,0.3)]"
+                className="group relative flex items-center justify-center gap-2 px-6 py-3 sm:px-8 sm:py-4 bg-white text-slate-950 rounded-full font-black uppercase tracking-[0.2em] italic pr-1 text-xs sm:text-base transition-all hover:scale-105 active:scale-95 shadow-xl shadow-black/40 border border-slate-200/10 dark:border-white/10 w-[80%] max-w-[280px] sm:w-auto"
               >
-                <CheckCircle2 size={20} className="group-hover:rotate-12 transition-transform" />
-                {showSummary ? 'Finish Summon' : 'Claim Rewards'}
+                <CheckCircle2 size={18} className="group-hover:rotate-12 transition-transform shrink-0 w-4 h-4 sm:w-5 sm:h-5 text-slate-950" />
+                <span className="truncate">{showSummary ? 'Finish Summon' : 'Claim Rewards'}</span>
               </motion.button>
             )}
           </AnimatePresence>

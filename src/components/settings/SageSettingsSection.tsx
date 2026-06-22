@@ -15,7 +15,7 @@ interface SageSettingsProps {
 
 export const SageSettingsSection: React.FC<SageSettingsProps> = ({ state, setState }) => {
   return (
-    <div className="space-y-8">
+    <div id="setting-sage" className="space-y-8">
       <div>
         <h3 className="text-xl font-black uppercase tracking-widest text-white mb-2">Emerald Sage</h3>
         <p className="text-sm text-slate-400">An AI mentor fueled by your reflections and journey data.</p>

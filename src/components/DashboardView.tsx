@@ -346,7 +346,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         ? (isDarkTheme ? "bg-indigo-500/15 border-indigo-500 shadow-lg shadow-indigo-500/20 ring-1 ring-indigo-500/30" : "bg-indigo-50/70 border-indigo-500 shadow shadow-indigo-500/10")
                         : ("bg-slate-900/40 border-slate-800/50 hover:bg-slate-800"),
                       hasDDL && !isTo 
-                        ? ("border-indigo-500/50 bg-indigo-950/30") 
+                        ? ("border-indigo-500/40 bg-indigo-500/10 ring-1 ring-indigo-500/10") 
                         : "",
                       isPast && !isTo ? ("opacity-60") : ""
                     )}

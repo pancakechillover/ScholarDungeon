@@ -270,7 +270,7 @@ export const ActivityTimeSettings = ({ state, setState }: { state: any, setState
         <button
           onClick={() => setState(prev => ({ ...prev, showOtherInActivityLog: prev.showOtherInActivityLog === false ? true : false }))}
           className={cn(
-            "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
+            "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors",
             state.showOtherInActivityLog !== false ? "bg-indigo-400" : "bg-slate-700"
           )}
         >

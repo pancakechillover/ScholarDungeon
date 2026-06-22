@@ -16,7 +16,7 @@ export const SETTINGS_SEARCH_INDEX: SettingsSearchItem[] = [
   { id: 'setting-sound', tab: 'general', title: 'Sound Effects', description: 'Play sounds for actions like gacha and rewards', keywords: ['audio', 'music', 'volume'] },
 
   // General Time-Based Calculation
-  { id: 'setting-time-based', tab: 'general', title: 'Time-Based Calculation', description: 'Compute tasks by time instead of sessions', keywords: ['compute', 'session duration', 'minutes', 'rest time', 'include rest'] },
+  { id: 'setting-time-based', tab: 'timer', title: 'Time-Based Calculation', description: 'Compute tasks by time instead of sessions', keywords: ['compute', 'session duration', 'minutes', 'rest time', 'include rest'] },
   { id: 'setting-open-ended', tab: 'general', title: 'Tasks Default to Open-Ended', description: 'Tasks default to tracking total time with no specific session limits', keywords: ['rooms', 'endless', 'open-ended', 'default'] },
   
   // General Heatmap
@@ -57,5 +57,6 @@ export const SETTINGS_SEARCH_INDEX: SettingsSearchItem[] = [
   { id: 'setting-drive', tab: 'cloud', title: 'Google Drive Sync', description: 'Sync via Google Drive', keywords: ['gdrive', 'google cloud'] },
 
   // Developer Panel
-  { id: 'setting-dev', tab: 'dev', title: 'Developer Control', description: 'Access developer console commands and hard overrides', keywords: ['cheats', 'testing', 'override', 'debug'] }
+  { id: 'setting-dev', tab: 'dev', title: 'Developer Control', description: 'Access developer console commands and hard overrides', keywords: ['cheats', 'testing', 'override', 'debug'] },
+  { id: 'setting-rewards', tab: 'timer', title: 'Reward Pool Management', description: 'Configure random rewards from chests and focus sessions', keywords: ['drop pool', 'items', 'copper bag', 'energy drink', 'rates'] }
 ];

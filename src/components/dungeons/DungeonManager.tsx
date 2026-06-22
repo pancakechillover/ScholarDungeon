@@ -364,7 +364,7 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
     if (rewards.length === 0) return null;
 
     return (
-      <div className="flex items-center gap-1.5 ml-auto mr-2 overflow-hidden flex-wrap shrink-0">
+      <div className="flex items-center gap-1.5 flex-wrap shrink-0">
         {rewards.slice(0, 3).map((r, i) => (
           <div key={i} className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-900/50 border border-slate-800 text-[10px] font-bold text-slate-400 shrink-0 max-w-[120px] truncate">
             {r.type === 'coins' && <Coins size={10} className="text-amber-500 min-w-[10px]" />}
@@ -449,14 +449,14 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                 data-id={sub.id}
                 data-drop-target="true"
                 className={cn(
-                  "p-2 flex items-center justify-between gap-4 transition-colors group/sub rounded-lg relative bg-slate-900/40",
+                  "p-2.5 flex flex-col md:flex-row md:items-center justify-between gap-2.5 md:gap-4 transition-colors group/sub rounded-lg relative bg-slate-900/40",
                   currentDungeonId === sub.id ? "bg-indigo-500/10" : "hover:bg-slate-800/40",
                   "before:content-[''] before:absolute before:left-[-12px] before:top-1/2 before:w-[12px] before:h-[1px] before:bg-slate-800"
                 )}
                 onClick={() => onSelect(sub.id)}
               >
-                <div className="min-w-0 flex-1 flex items-baseline">
-                  <div className="flex items-center shrink-0 mr-1 gap-1">
+                <div className="min-w-0 flex-1 flex items-start md:items-center gap-1.5">
+                  <div className="flex items-center shrink-0 mt-[2px] md:mt-0 gap-1">
                     <span className="text-[10px] font-mono text-slate-500 w-4 text-center">{idx + 1}.</span>
                     {hasChildren && (
                       <button 
@@ -467,54 +467,58 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                       </button>
                     )}
                   </div>
-                  <div className="min-w-0 flex-1 flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-3">
-                    <span className={cn(
-                      "font-bold text-[13px] sm:text-xs transition-all truncate",
-                      sub.status === 'completed' ? "text-slate-500 line-through font-medium" : currentDungeonId === sub.id ? "text-indigo-400" : "text-slate-200"
-                    )}>
-                      {sub.name}
-                    </span>
-                    {sub.deadline && sub.status !== 'completed' && (
-                      <div className={cn("flex items-center gap-1 shrink-0 px-1.5 py-0.5 rounded border text-[10px] font-black uppercase shadow-sm",
-                        sub.deadline < format(new Date(), 'yyyy-MM-dd') ? "border-rose-500/30 bg-rose-500/10 text-rose-400" : "border-amber-500/30 bg-amber-500/10 text-amber-400"
+                  
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                      <span className={cn(
+                        "font-bold text-[13px] sm:text-xs transition-all max-w-full truncate",
+                        sub.status === 'completed' ? "text-slate-500 line-through font-medium" : currentDungeonId === sub.id ? "text-indigo-400" : "text-slate-200"
                       )}>
-                        <Calendar size={10} />
-                        <span>{sub.deadline}</span>
-                      </div>
-                    )}
+                        {sub.name || <span className="italic opacity-50">Unnamed Task</span>}
+                      </span>
+                      
+                      {sub.deadline && sub.status !== 'completed' && (
+                        <div className={cn("flex items-center gap-1 shrink-0 px-1.5 py-0.5 rounded border text-[10px] font-black uppercase shadow-sm",
+                          sub.deadline < format(new Date(), 'yyyy-MM-dd') ? "border-rose-500/30 bg-rose-500/10 text-rose-400" : "border-amber-500/30 bg-amber-500/10 text-amber-400"
+                        )}>
+                          <Calendar size={10} />
+                          <span>{sub.deadline}</span>
+                        </div>
+                      )}
+                      
+                      {sub.isRoutine && (
+                        <div className="flex items-center gap-1 px-1.5 py-0.5 rounded border border-indigo-500/30 bg-indigo-500/10 text-indigo-400 text-[9px] font-black uppercase shadow-sm shrink-0" title="Refreshes progress on reset">
+                          <RefreshCcw size={8} />
+                          <span>{sub.routineType}</span>
+                          {sub.lastRoutineReset && (
+                            <span className="opacity-75 font-normal ml-0.5 border-l border-indigo-500/30 pl-1 py-[1px]">
+                              {(() => {
+                                const lastReset = new Date(sub.lastRoutineReset!);
+                                const next = new Date(lastReset);
+                                if (sub.routineType === 'daily') {
+                                  next.setDate(next.getDate() + 1);
+                                } else if (sub.routineType === 'weekly') {
+                                  next.setDate(next.getDate() + 7);
+                                } else if (sub.routineType === 'monthly') {
+                                  next.setMonth(next.getMonth() + 1);
+                                  next.setDate(1);
+                                }
+                                return `${next.getMonth() + 1}/${next.getDate()}`;
+                              })()}
+                            </span>
+                          )}
+                        </div>
+                      )}
+
+                      {renderRewards(sub)}
+                    </div>
                     {sub.description && (
-                      <span className="text-[11px] text-slate-400 italic truncate font-medium pr-1">{sub.description}</span>
+                      <div className="text-[11px] text-slate-400 italic truncate font-medium mt-0.5 max-w-full pr-1">{sub.description}</div>
                     )}
                   </div>
                 </div>
 
-                {sub.isRoutine && (
-                  <div className="flex items-center gap-1 px-1.5 py-0.5 rounded border border-indigo-500/30 bg-indigo-500/10 text-indigo-400 text-[9px] font-black uppercase shadow-sm shrink-0" title="Refreshes progress on reset">
-                    <RefreshCcw size={8} />
-                    <span>{sub.routineType}</span>
-                    {sub.lastRoutineReset && (
-                      <span className="opacity-75 font-normal ml-0.5 border-l border-indigo-500/30 pl-1">
-                        {(() => {
-                          const lastReset = new Date(sub.lastRoutineReset!);
-                          const next = new Date(lastReset);
-                          if (sub.routineType === 'daily') {
-                            next.setDate(next.getDate() + 1);
-                          } else if (sub.routineType === 'weekly') {
-                            next.setDate(next.getDate() + 7);
-                          } else if (sub.routineType === 'monthly') {
-                            next.setMonth(next.getMonth() + 1);
-                            next.setDate(1);
-                          }
-                          return `${next.getMonth() + 1}/${next.getDate()}`;
-                        })()}
-                      </span>
-                    )}
-                  </div>
-                )}
-
-                {renderRewards(sub)}
-
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex flex-wrap items-center justify-between md:justify-end gap-2 md:gap-3 pl-7 md:pl-0 shrink-0 w-full md:w-auto mt-1 md:mt-0">
                   <div className="hidden sm:flex items-center gap-2 opacity-60">
                     {sub.isOpenEnded ? (
                       <span className="text-[10px] font-bold text-slate-400 tabular-nums inline-block w-24 text-right whitespace-nowrap overflow-hidden text-ellipsis mr-auto">
@@ -554,87 +558,89 @@ export const DungeonManager = React.memo<DungeonManagerProps>(({
                     )}
                   </div>
 
-                  <div className="shrink-0 order-2 flex items-center ml-1">
-                    <div className={currentDungeonId === sub.id ? "text-indigo-500" : "text-slate-800"}>
-                      {sub.status === 'completed' ? (
-                        <CheckSquare size={16} className="text-emerald-500" />
-                      ) : (
-                        <button 
-                          onClick={(e) => { 
-                            e.stopPropagation(); 
-                            if (sub.isOpenEnded) {
+                  <div className="flex flex-1 md:flex-none justify-end items-center gap-2">
+                    <div className={cn(
+                      "flex items-center gap-1.5 shrink-0 transition-opacity",
+                      isEditMode ? "opacity-100" : "opacity-0 group-hover/sub:opacity-100 md:opacity-0 md:group-hover/sub:opacity-100 opacity-100"
+                    )}>
+                      {isEditMode && (
+                        <>
+                          {currentDepth < 3 && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setIsAddingSub({ parentId: sub.id }); }}
+                              className="p-1 bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 rounded transition-all"
+                              title={`ADD TIER ${currentDepth + 1}`}
+                            >
+                              <Plus size={11} />
+                            </button>
+                          )}
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setEditingSub(sub); }}
+                            className={cn(
+                              "p-1 rounded transition-all",
+                              (sub.status === 'completed' || majorDungeons.find(m => m.id === (typeof sub.parentId === 'string' && sub.parentId.length > 10 ? dungeons.find(d => d.id === sub.parentId)?.parentId : sub.parentId))?.isFinalized)
+                                ? "bg-amber-500/10 text-amber-500"
+                                : "bg-slate-800/50 text-slate-500 hover:text-white"
+                            )}
+                          >
+                            <Edit2 size={12} />
+                          </button>
+                          <button 
+                            onClick={(e) => { 
+                              e.stopPropagation(); 
                               setModalConfig({
                                 isOpen: true,
-                                title: "Complete Task",
-                                message: `Are you sure you have finished "${sub.name}"? This will complete the task and grant rewards based on your progress.`,
-                                confirmText: "Complete",
-                                type: "info",
-                                onConfirm: () => onForceCompleteSub?.(sub.id)
+                                title: `Delete ${getSubDungeonDepth(sub.id) > 1 ? 'Tier' : 'Sub-Dungeon'}`,
+                                message: `Are you sure you want to delete "${sub.name}"? This action cannot be undone.`,
+                                confirmText: "Delete",
+                                type: "danger",
+                                onConfirm: () => onDeleteSub(sub.id)
                               });
-                            } else {
-                              setModalConfig({
-                                isOpen: true,
-                                title: "Force Complete Task",
-                                message: `Are you sure you want to magically force complete "${sub.name}"? This will grant the remaining rewards immediately without completing the required sessions.`,
-                                confirmText: "Force Complete",
-                                type: "warning",
-                                onConfirm: () => onForceCompleteSub?.(sub.id)
-                              });
-                            }
-                          }}
-                          className="hover:text-amber-400 transition-colors flex items-center justify-center p-0.5 rounded cursor-pointer"
-                          title={sub.isOpenEnded ? "Complete Task" : "Force Complete Task"}
-                        >
-                          <Square size={16} />
-                        </button>
+                            }}
+                            className="p-1 bg-slate-800/50 text-slate-500 hover:text-red-400 rounded transition-all"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        </>
                       )}
                     </div>
-                  </div>
 
-                  <div className={cn(
-                    "flex items-center gap-1.5 shrink-0 transition-opacity order-1",
-                    isEditMode ? "opacity-100" : "opacity-0 group-hover/sub:opacity-100"
-                  )}>
-                    {isEditMode && (
-                      <>
-                        {currentDepth < 3 && (
-                          <button
-                            onClick={(e) => { e.stopPropagation(); setIsAddingSub({ parentId: sub.id }); }}
-                            className="p-1 bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 rounded transition-all"
-                            title={`ADD TIER ${currentDepth + 1}`}
+                    <div className="shrink-0 flex items-center ml-1">
+                      <div className={currentDungeonId === sub.id ? "text-indigo-500" : "text-slate-800"}>
+                        {sub.status === 'completed' ? (
+                          <CheckSquare size={16} className="text-emerald-500" />
+                        ) : (
+                          <button 
+                            onClick={(e) => { 
+                              e.stopPropagation(); 
+                              if (sub.isOpenEnded) {
+                                setModalConfig({
+                                  isOpen: true,
+                                  title: "Complete Task",
+                                  message: `Are you sure you have finished "${sub.name}"? This will complete the task and grant rewards based on your progress.`,
+                                  confirmText: "Complete",
+                                  type: "info",
+                                  onConfirm: () => onForceCompleteSub?.(sub.id)
+                                });
+                              } else {
+                                setModalConfig({
+                                  isOpen: true,
+                                  title: "Force Complete Task",
+                                  message: `Are you sure you want to magically force complete "${sub.name}"? This will grant the remaining rewards immediately without completing the required sessions.`,
+                                  confirmText: "Force Complete",
+                                  type: "warning",
+                                  onConfirm: () => onForceCompleteSub?.(sub.id)
+                                });
+                              }
+                            }}
+                            className="hover:text-amber-400 transition-colors flex items-center justify-center p-0.5 rounded cursor-pointer"
+                            title={sub.isOpenEnded ? "Complete Task" : "Force Complete Task"}
                           >
-                            <Plus size={11} />
+                            <Square size={16} />
                           </button>
                         )}
-                        <button
-                          onClick={(e) => { e.stopPropagation(); setEditingSub(sub); }}
-                          className={cn(
-                            "p-1 rounded transition-all",
-                            (sub.status === 'completed' || majorDungeons.find(m => m.id === (typeof sub.parentId === 'string' && sub.parentId.length > 10 ? dungeons.find(d => d.id === sub.parentId)?.parentId : sub.parentId))?.isFinalized)
-                              ? "bg-amber-500/10 text-amber-500"
-                              : "bg-slate-800/50 text-slate-500 hover:text-white"
-                          )}
-                        >
-                          <Edit2 size={12} />
-                        </button>
-                        <button 
-                          onClick={(e) => { 
-                            e.stopPropagation(); 
-                            setModalConfig({
-                              isOpen: true,
-                              title: `Delete ${getSubDungeonDepth(sub.id) > 1 ? 'Tier' : 'Sub-Dungeon'}`,
-                              message: `Are you sure you want to delete "${sub.name}"? This action cannot be undone.`,
-                              confirmText: "Delete",
-                              type: "danger",
-                              onConfirm: () => onDeleteSub(sub.id)
-                            });
-                          }}
-                          className="p-1 bg-slate-800/50 text-slate-500 hover:text-red-400 rounded transition-all"
-                        >
-                          <Trash2 size={12} />
-                        </button>
-                      </>
-                    )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

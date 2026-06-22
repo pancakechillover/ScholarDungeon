@@ -11,7 +11,7 @@ interface GuideBookModalProps {
   initialPage: number;
   soundEnabled?: boolean;
   soundVolume?: number;
-  navigateToSettings: (section: 'general' | 'timer' | 'rewards' | 'shop' | 'gacha' | 'dev' | 'levelRewards' | 'about' | 'level' | 'merchant', settingId?: string) => void;
+  navigateToSettings: (section: 'general' | 'timer' | 'level' | 'merchant' | 'calculator' | 'sage' | 'cloud' | 'dev' | 'about', settingId?: string) => void;
   onTabChange: (tab: 'dashboard' | 'dungeons' | 'explore' | 'talents' | 'shop' | 'vault' | 'stats' | 'settings', subTab?: string) => void;
 }
 
@@ -302,8 +302,8 @@ export const GuideBookModal: React.FC<GuideBookModalProps> = ({
           <div className="flex gap-2 items-start">
             <span className="text-[var(--gb-label)] font-bold mt-0.5 sm:mt-1">-</span>
             <div>
-              <strong className="text-emerald-700 font-serif text-base sm:text-lg flex items-center gap-2 transition-colors duration-300"><Sparkles size={16} /> XP (Experience)</strong>
-              <p className="mt-1 leading-relaxed text-[var(--gb-body)] transition-colors duration-300">Represents your overall growth. Earn <span className="font-bold">XP</span> to level up, which unlocks rewards and <button onClick={() => { onClose(); onTabChange('talents'); }} className="font-bold underline text-emerald-700 decoration-emerald-700/30 hover:text-emerald-800 transition-colors">Talent Scrolls</button>.</p>
+              <strong className="text-[var(--gb-xp-color)] font-serif text-base sm:text-lg flex items-center gap-2 transition-colors duration-300"><Sparkles size={16} /> XP (Experience)</strong>
+              <p className="mt-1 leading-relaxed text-[var(--gb-body)] transition-colors duration-300">Represents your overall growth. Earn <span className="font-bold">XP</span> to level up, which unlocks rewards and <button onClick={() => { onClose(); onTabChange('talents'); }} className="font-bold underline text-[var(--gb-xp-color)] decoration-[var(--gb-xp-border)] hover:opacity-80 transition-colors">Talent Scrolls</button>.</p>
             </div>
           </div>
         </div>
@@ -378,8 +378,8 @@ export const GuideBookModal: React.FC<GuideBookModalProps> = ({
           <div className="flex gap-2 items-start bg-[var(--gb-accent-bg)] p-2 sm:p-3 rounded-xl border border-[var(--gb-accent-border)]">
             <span className="text-[var(--gb-label)] font-bold mt-0.5 sm:mt-1">-</span>
             <div>
-              <strong className="text-amber-500 font-serif flex text-base items-center gap-2 transition-colors duration-300"><Briefcase size={16} /> Double Gold Card</strong>
-              <p className="mt-1 text-xs sm:text-sm leading-relaxed text-[var(--gb-body)] transition-colors duration-300">When activated in your <button onClick={() => { onClose(); onTabChange('vault'); }} className="font-bold underline text-amber-500 decoration-amber-500/30 hover:text-amber-600 transition-colors">Vault</button>, temporarily doubles all <span className="font-bold">Gold Coins</span> earned, accelerating your wealth.</p>
+              <strong className="text-[var(--gb-gold-color)] font-serif flex text-base items-center gap-2 transition-colors duration-300"><Briefcase size={16} /> Double Gold Card</strong>
+              <p className="mt-1 text-xs sm:text-sm leading-relaxed text-[var(--gb-body)] transition-colors duration-300">When activated in your <button onClick={() => { onClose(); onTabChange('vault'); }} className="font-bold underline text-[var(--gb-gold-color)] decoration-[var(--gb-gold-border)] hover:opacity-80 transition-colors">Vault</button>, temporarily doubles all <span className="font-bold">Gold Coins</span> earned, accelerating your wealth.</p>
             </div>
           </div>
         </div>
@@ -399,20 +399,20 @@ export const GuideBookModal: React.FC<GuideBookModalProps> = ({
       <div className="w-full h-full paper-texture p-4 sm:p-8 flex flex-col pb-12 sm:pb-16 relative shadow-[inset_-10px_0_20px_rgba(0,0,0,0.06)] transition-colors duration-300 overflow-y-auto hide-scrollbar">
         <div className="absolute right-0 top-0 bottom-0 w-8 bg-[var(--gb-spine-l)] pointer-events-none" />
         <div className="flex items-center gap-2 sm:gap-3 border-b-2 border-[var(--gb-border)] pb-2 sm:pb-4 mb-4 sm:mb-6 transition-colors duration-300">
-          <HandCoins className="text-amber-600 w-7 h-7" />
+          <HandCoins className="text-[var(--gb-gold-color)] w-7 h-7" />
           <h2 className="text-2xl sm:text-3xl font-bold font-serif text-[var(--gb-title)] transition-colors duration-300">Gold Coins</h2>
         </div>
         <p className="text-[var(--gb-body)] text-xs sm:text-sm md:text-base mb-3 sm:mb-3 sm:mb-6 leading-relaxed font-sans transition-colors duration-300">
-          Gold is the primary currency within the Sanctum. It is used to purchase items from the <button onClick={() => { onClose(); onTabChange('shop'); }} className="font-bold underline text-amber-700 decoration-amber-700/30 hover:text-amber-800 transition-colors">Merchant's Outpost</button> and roll the Gacha.
+          Gold is the primary currency within the Sanctum. It is used to purchase items from the <button onClick={() => { onClose(); onTabChange('shop'); }} className="font-bold underline text-[var(--gb-gold-color)] decoration-[var(--gb-gold-border)] hover:opacity-80 transition-colors">Merchant's Outpost</button> and roll the Gacha.
         </p>
         <div className="bg-[var(--gb-accent-bg)] p-3 sm:p-5 rounded-xl border border-[var(--gb-accent-border)] transition-colors duration-300">
           <h3 className="font-bold text-[var(--gb-title)] mb-2 sm:mb-3 uppercase tracking-wider font-serif text-lg transition-colors duration-300">How to Acquire</h3>
           <ul className="space-y-1 sm:space-y-2 text-[var(--gb-body)] text-sm md:text-base font-sans transition-colors duration-300">
-            <li className="flex gap-2"><span className="text-amber-600">❖</span> Complete sessions using the <button onClick={() => { onClose(); onTabChange('explore'); }} className="font-bold underline text-amber-700 decoration-amber-700/30 hover:text-amber-800">Timer</button></li>
-            <li className="flex gap-2"><span className="text-amber-600">❖</span> Clear rooms in <button onClick={() => { onClose(); onTabChange('dungeons'); }} className="font-bold underline text-amber-700 decoration-amber-700/30 hover:text-amber-800">Dungeons</button></li>
-            <li className="flex gap-2">
-              <span className="text-amber-600">❖</span> 
-              <span>Complete <button onClick={() => { onClose(); onTabChange('dungeons', 'quests'); }} className="font-bold underline text-amber-700 decoration-amber-700/30 hover:text-amber-800">Quests</button> & <button onClick={() => { onClose(); onTabChange('dungeons', 'achievements'); }} className="font-bold underline text-amber-700 decoration-amber-700/30 hover:text-amber-800">Achievements</button></span>
+            <li className="flex gap-2 items-start"><span className="text-[var(--gb-gold-color)] mt-[2px] shrink-0">❖</span> <span>Complete sessions using the <button onClick={() => { onClose(); onTabChange('explore'); }} className="font-bold underline text-[var(--gb-gold-color)] decoration-[var(--gb-gold-border)] hover:opacity-80">Timer</button></span></li>
+            <li className="flex gap-2 items-start"><span className="text-[var(--gb-gold-color)] mt-[2px] shrink-0">❖</span> <span>Clear rooms in <button onClick={() => { onClose(); onTabChange('dungeons'); }} className="font-bold underline text-[var(--gb-gold-color)] decoration-[var(--gb-gold-border)] hover:opacity-80">Dungeons</button></span></li>
+            <li className="flex gap-2 items-start">
+              <span className="text-[var(--gb-gold-color)] mt-[2px] shrink-0">❖</span> 
+              <span>Complete <button onClick={() => { onClose(); onTabChange('dungeons', 'quests'); }} className="font-bold underline text-[var(--gb-gold-color)] decoration-[var(--gb-gold-border)] hover:opacity-80">Quests</button> & <button onClick={() => { onClose(); onTabChange('dungeons', 'achievements'); }} className="font-bold underline text-[var(--gb-gold-color)] decoration-[var(--gb-gold-border)] hover:opacity-80">Achievements</button></span>
             </li>
           </ul>
         </div>
@@ -425,15 +425,15 @@ export const GuideBookModal: React.FC<GuideBookModalProps> = ({
       <div className="w-full h-full paper-texture p-4 sm:p-8 flex flex-col pb-12 sm:pb-16 relative shadow-[inset_10px_0_20px_rgba(0,0,0,0.06)] transition-colors duration-300 overflow-y-auto hide-scrollbar">
         <div className="absolute left-0 top-0 bottom-0 w-8 bg-[var(--gb-spine-r)] pointer-events-none" />
         <div className="bg-[var(--gb-accent-bg)] p-3 sm:p-5 rounded-xl border border-[var(--gb-accent-border)] shadow-inner mb-auto mt-4 transition-colors duration-300">
-          <h3 className="font-bold text-amber-600 mb-2 sm:mb-3 uppercase tracking-wider font-serif text-lg border-b border-[var(--gb-border)] pb-2 transition-colors duration-300">Pro Tip: Customization</h3>
+          <h3 className="font-bold text-[var(--gb-gold-color)] mb-2 sm:mb-3 uppercase tracking-wider font-serif text-lg border-b border-[var(--gb-border)] pb-2 transition-colors duration-300">Pro Tip: Customization</h3>
           <p className="text-sm md:text-base text-[var(--gb-body)] leading-relaxed mb-4 font-sans transition-colors duration-300">
             You can adjust how much Gold you earn and customize level-up gifts!
           </p>
           <div className="flex flex-col gap-2 sm:gap-3">
-            <button onClick={() => { onClose(); navigateToSettings('dev', 'setting-dev'); }} className="text-left w-full p-2 sm:p-3 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-600 text-sm md:text-base font-serif font-bold transition-all shadow-sm">
-              Go to Settings &gt; Developer<br/><span className="font-normal font-sans text-xs sm:text-sm opacity-80 mt-1 block">Adjust base Gold rates and multipliers.</span>
+            <button onClick={() => { onClose(); navigateToSettings('timer', 'setting-time-based'); }} className="text-left w-full p-2 sm:p-3 rounded-lg bg-[var(--gb-gold-bg)] hover:opacity-90 border border-[var(--gb-gold-border)] text-[var(--gb-gold-color)] text-sm md:text-base font-serif font-bold transition-all shadow-sm">
+              Go to Settings &gt; Timer<br/><span className="font-normal font-sans text-xs sm:text-sm opacity-80 mt-1 block">Adjust base Gold rates and multipliers.</span>
             </button>
-            <button onClick={() => { onClose(); navigateToSettings('level', 'setting-milestones'); }} className="text-left w-full p-2 sm:p-3 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-600 text-sm md:text-base font-serif font-bold transition-all shadow-sm">
+            <button onClick={() => { onClose(); navigateToSettings('level', 'setting-milestones'); }} className="text-left w-full p-2 sm:p-3 rounded-lg bg-[var(--gb-gold-bg)] hover:opacity-90 border border-[var(--gb-gold-border)] text-[var(--gb-gold-color)] text-sm md:text-base font-serif font-bold transition-all shadow-sm">
               Go to Settings &gt; Level Rewards<br/><span className="font-normal font-sans text-xs sm:text-sm opacity-80 mt-1 block">Add or modify Gold gifts upon leveling up.</span>
             </button>
           </div>
@@ -447,20 +447,20 @@ export const GuideBookModal: React.FC<GuideBookModalProps> = ({
       <div className="w-full h-full paper-texture p-4 sm:p-8 flex flex-col pb-12 sm:pb-16 relative shadow-[inset_-10px_0_20px_rgba(0,0,0,0.06)] transition-colors duration-300 overflow-y-auto hide-scrollbar">
         <div className="absolute right-0 top-0 bottom-0 w-8 bg-[var(--gb-spine-l)] pointer-events-none" />
         <div className="flex items-center gap-2 sm:gap-3 border-b-2 border-[var(--gb-border)] pb-2 sm:pb-4 mb-4 sm:mb-6 transition-colors duration-300">
-          <HandTarget className="text-emerald-600 w-7 h-7" />
+          <HandTarget className="text-[var(--gb-xp-color)] w-7 h-7" />
           <h2 className="text-2xl sm:text-3xl font-bold font-serif text-[var(--gb-title)] transition-colors duration-300">XP <span className="font-sans">&</span> Leveling</h2>
         </div>
         <p className="text-[var(--gb-body)] text-xs sm:text-sm md:text-base mb-3 sm:mb-3 sm:mb-6 leading-relaxed font-sans transition-colors duration-300">
-          Gain Experience Points (XP) to level up. Leveling up can reward you with items, <button onClick={() => { onClose(); onTabChange('talents'); }} className="font-bold underline text-emerald-700 decoration-emerald-700/30 hover:text-emerald-800 transition-colors">Talent Scrolls</button>, or Gold.
+          Gain Experience Points (XP) To level up. Leveling up can reward you with items, <button onClick={() => { onClose(); onTabChange('talents'); }} className="font-bold underline text-[var(--gb-xp-color)] decoration-[var(--gb-xp-border)] hover:opacity-80 transition-colors">Talent Scrolls</button>, or Gold.
         </p>
         <div className="bg-[var(--gb-accent-bg)] p-3 sm:p-5 rounded-xl border border-[var(--gb-accent-border)] transition-colors duration-300">
           <h3 className="font-bold text-[var(--gb-title)] mb-2 sm:mb-3 uppercase tracking-wider font-serif text-lg transition-colors duration-300">How to Acquire</h3>
           <ul className="space-y-1 sm:space-y-2 text-[var(--gb-body)] text-sm md:text-base font-sans transition-colors duration-300">
-            <li className="flex gap-2"><span className="text-emerald-600">❖</span> Complete focus blocks via the <button onClick={() => { onClose(); onTabChange('explore'); }} className="font-bold underline text-emerald-700 decoration-emerald-700/30 hover:text-emerald-800">Timer</button></li>
-            <li className="flex gap-2"><span className="text-emerald-600">❖</span> Slay monsters in <button onClick={() => { onClose(); onTabChange('dungeons'); }} className="font-bold underline text-emerald-700 decoration-emerald-700/30 hover:text-emerald-800">Dungeons</button></li>
-            <li className="flex gap-2">
-              <span className="text-emerald-600">❖</span>
-              <span>Claim <button onClick={() => { onClose(); onTabChange('dungeons', 'quests'); }} className="font-bold underline text-emerald-700 decoration-emerald-700/30 hover:text-emerald-800">Quests</button> & <button onClick={() => { onClose(); onTabChange('dungeons', 'achievements'); }} className="font-bold underline text-emerald-700 decoration-emerald-700/30 hover:text-emerald-800">Achievements</button></span>
+            <li className="flex gap-2 items-start"><span className="text-[var(--gb-xp-color)] mt-[2px] shrink-0">❖</span> <span>Complete focus blocks via the <button onClick={() => { onClose(); onTabChange('explore'); }} className="font-bold underline text-[var(--gb-xp-color)] decoration-[var(--gb-xp-border)] hover:opacity-80">Timer</button></span></li>
+            <li className="flex gap-2 items-start"><span className="text-[var(--gb-xp-color)] mt-[2px] shrink-0">❖</span> <span>Slay monsters in <button onClick={() => { onClose(); onTabChange('dungeons'); }} className="font-bold underline text-[var(--gb-xp-color)] decoration-[var(--gb-xp-border)] hover:opacity-80">Dungeons</button></span></li>
+            <li className="flex gap-2 items-start">
+              <span className="text-[var(--gb-xp-color)] mt-[2px] shrink-0">❖</span>
+              <span>Claim <button onClick={() => { onClose(); onTabChange('dungeons', 'quests'); }} className="font-bold underline text-[var(--gb-xp-color)] decoration-[var(--gb-xp-border)] hover:opacity-80">Quests</button> & <button onClick={() => { onClose(); onTabChange('dungeons', 'achievements'); }} className="font-bold underline text-[var(--gb-xp-color)] decoration-[var(--gb-xp-border)] hover:opacity-80">Achievements</button></span>
             </li>
           </ul>
         </div>
@@ -473,15 +473,15 @@ export const GuideBookModal: React.FC<GuideBookModalProps> = ({
       <div className="w-full h-full paper-texture p-4 sm:p-8 flex flex-col pb-12 sm:pb-16 relative shadow-[inset_10px_0_20px_rgba(0,0,0,0.06)] transition-colors duration-300 overflow-y-auto hide-scrollbar">
         <div className="absolute left-0 top-0 bottom-0 w-8 bg-[var(--gb-spine-r)] pointer-events-none" />
         <div className="bg-[var(--gb-accent-bg)] p-3 sm:p-5 rounded-xl border border-[var(--gb-accent-border)] shadow-inner mb-auto mt-4 transition-colors duration-300">
-          <h3 className="font-bold text-emerald-600 mb-2 sm:mb-3 uppercase tracking-wider font-serif text-lg border-b border-[var(--gb-border)] pb-2 transition-colors duration-300">Pro Tip: Customization</h3>
+          <h3 className="font-bold text-[var(--gb-xp-color)] mb-2 sm:mb-3 uppercase tracking-wider font-serif text-lg border-b border-[var(--gb-border)] pb-2 transition-colors duration-300">Pro Tip: Customization</h3>
           <p className="text-sm md:text-base text-[var(--gb-body)] leading-relaxed mb-4 font-sans transition-colors duration-300">
             Configure your level-up rewards to match your progression style!
           </p>
           <div className="flex flex-col gap-2 sm:gap-3">
-            <button onClick={() => { onClose(); navigateToSettings('dev', 'setting-dev'); }} className="text-left w-full p-2 sm:p-3 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-600 text-sm md:text-base font-serif font-bold transition-all shadow-sm">
-              Go to Settings &gt; Developer<br/><span className="font-normal font-sans text-xs sm:text-sm opacity-80 mt-1 block">Adjust base XP rates and formula.</span>
+            <button onClick={() => { onClose(); navigateToSettings('timer', 'setting-time-based'); }} className="text-left w-full p-2 sm:p-3 rounded-lg bg-[var(--gb-xp-bg)] hover:opacity-90 border border-[var(--gb-xp-border)] text-[var(--gb-xp-color)] text-sm md:text-base font-serif font-bold transition-all shadow-sm">
+              Go to Settings &gt; Timer<br/><span className="font-normal font-sans text-xs sm:text-sm opacity-80 mt-1 block">Adjust base XP rates and formula.</span>
             </button>
-            <button onClick={() => { onClose(); navigateToSettings('level', 'setting-milestones'); }} className="text-left w-full p-2 sm:p-3 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-600 text-sm md:text-base font-serif font-bold transition-all shadow-sm">
+            <button onClick={() => { onClose(); navigateToSettings('level', 'setting-milestones'); }} className="text-left w-full p-2 sm:p-3 rounded-lg bg-[var(--gb-xp-bg)] hover:opacity-90 border border-[var(--gb-xp-border)] text-[var(--gb-xp-color)] text-sm md:text-base font-serif font-bold transition-all shadow-sm">
               Go to Settings &gt; Level Rewards<br/><span className="font-normal font-sans text-xs sm:text-sm opacity-80 mt-1 block">Add/remove level-up gifts (e.g., loot).</span>
             </button>
           </div>
@@ -628,10 +628,32 @@ export const GuideBookModal: React.FC<GuideBookModalProps> = ({
     </>
   );
 
+  const getCloseButtonClass = () => {
+    const base = "absolute w-10 h-10 bg-slate-800 text-slate-300 hover:text-white rounded-full flex items-center justify-center shadow-xl hover:bg-rose-500 transition-colors border-2 border-[#3a2e22] z-[10000]";
+    if (isMobile) {
+      return `${base} top-3 right-3`;
+    }
+    if (pageIndex === 0) {
+      return `${base} top-5 right-5`;
+    }
+    if (pageIndex >= 14) {
+      return `${base} top-5 right-[calc(50%+1.5rem)]`;
+    }
+    return `${base} top-5 right-5`;
+  };
+
   return createPortal(
-    <div className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm flex items-center justify-center pt-14 pb-4 pl-4 pr-16 sm:p-4">
       {/* Container */}
       <div className={`relative w-full h-[85vh] max-w-[calc(85vh/1.414)] sm:max-w-[calc(85vh*1.414)] mx-auto transition-transform duration-500 ease-in-out ${(!isMobile && pageIndex === 0) ? '-translate-x-1/4' : (!isMobile && pageIndex >= 16) ? 'translate-x-1/4' : 'translate-x-0'}`}>
+        
+        {/* Close button top right (Anchored to the book pages to move dynamically) */}
+        <button 
+          onClick={onClose}
+          className={getCloseButtonClass()}
+        >
+          <X className="w-5 h-5" />
+        </button>
         
         {/* Book Background base layer (3D Split) */}
         <div className="absolute inset-0 pointer-events-none z-0" style={{ perspective: 1500 }}>
@@ -773,11 +795,11 @@ export const GuideBookModal: React.FC<GuideBookModalProps> = ({
         {/* Bookmarks (Tabs) on the right edge */}
         <div className={`absolute right-0 top-8 z-[5] flex flex-col gap-2 translate-x-full transition-all duration-300 ${(!isMobile && pageIndex >= 16) ? 'opacity-0 pointer-events-none -translate-x-full' : 'opacity-100'}`}>
             {[
-              { id: 0, icon: <Compass size={16} />, color: 'bg-sky-600', text: 'text-[#f4ecd8]', target: 2 },
-              { id: 1, icon: <Package size={16} />, color: 'bg-rose-600', text: 'text-[#f4ecd8]', target: 3 },
-              { id: 2, icon: <HandCoins size={16} />, color: 'bg-[#c9a66b]', text: 'text-[#3a2e22]', target: 5 },
-              { id: 3, icon: <HandTarget size={16} />, color: 'bg-[#7d8b75]', text: 'text-[#f4ecd8]', target: 6 },
-              { id: 4, icon: <Network size={16} />, color: 'bg-[#737c95]', text: 'text-[#f4ecd8]', target: 7 },
+              { id: 0, icon: <Compass size={isMobile ? 20 : 16} />, color: 'bg-sky-600', text: 'text-[#f4ecd8]', target: 2 },
+              { id: 1, icon: <Package size={isMobile ? 20 : 16} />, color: 'bg-rose-600', text: 'text-[#f4ecd8]', target: 3 },
+              { id: 2, icon: <HandCoins size={isMobile ? 20 : 16} />, color: 'bg-[#c9a66b]', text: 'text-[#3a2e22]', target: 5 },
+              { id: 3, icon: <HandTarget size={isMobile ? 20 : 16} />, color: 'bg-[#7d8b75]', text: 'text-[#f4ecd8]', target: 6 },
+              { id: 4, icon: <Network size={isMobile ? 20 : 16} />, color: 'bg-[#737c95]', text: 'text-[#f4ecd8]', target: 7 },
             ].map((tab, idx) => {
                const targetChapter = tab.target;
                let isActive = false;
@@ -792,10 +814,10 @@ export const GuideBookModal: React.FC<GuideBookModalProps> = ({
                    key={tab.id}
                    onClick={() => goToChapter(targetChapter)}
                    className={`
-                     p-3 sm:p-4 rounded-r-xl border-y-2 border-r-2 border-[#3a2e22] flex items-center justify-center
+                     p-2.5 sm:p-4 rounded-r-xl border-y-2 border-r-2 border-[#3a2e22] flex items-center justify-center
                      transition-all origin-left
                      ${tab.color} ${tab.text} shadow-lg
-                     ${isActive ? 'w-10 sm:w-16 z-20 shadow-xl' : 'w-8 sm:w-12 hover:w-10 sm:hover:w-14 z-10 opacity-90'}
+                     ${isActive ? 'w-12 sm:w-16 z-20 shadow-xl' : 'w-10 sm:w-12 sm:hover:w-14 z-10 opacity-90'}
                    `}
                    title={`Go to chapter ${idx + 1}`}
                  >
@@ -806,14 +828,6 @@ export const GuideBookModal: React.FC<GuideBookModalProps> = ({
         </div>
         
       </div>
-      
-      {/* Close button top right (Fixed to Screen) */}
-      <button 
-        onClick={onClose}
-        className="fixed top-4 right-4 sm:top-8 sm:right-8 w-10 h-10 bg-slate-800 text-slate-300 hover:text-white rounded-full flex items-center justify-center shadow-xl hover:bg-rose-500 transition-colors border-2 border-[#3a2e22] z-[10000]"
-      >
-        <X className="w-5 h-5" />
-      </button>
 
     </div>,
     document.body

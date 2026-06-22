@@ -375,11 +375,12 @@ const processPushQueue = async (client: any) => {
           }), { urgency: 'high', TTL: subTTL });
         } catch (err: any) {
           const bodyMsg = err.body ? (typeof err.body === 'string' ? err.body : JSON.stringify(err.body)) : '';
-          console.error(`Push failed for user:`, err.message);
           
           if (err.statusCode === 410 || err.statusCode === 404 || err.statusCode === 400 || err.statusCode === 401 || err.statusCode === 403 || bodyMsg.includes('VapidPkHashMismatch')) {
-            console.warn(`Removing invalid subscription for user due to error: ${err.message}`);
+            // Expected cleanup error, silently remove invalid subscription
             await client.sRem(`scholar_push_subs_${task.secretCode}`, subStr);
+          } else {
+            console.error(`Push failed for user:`, err.message);
           }
         }
       }
@@ -397,11 +398,12 @@ const processPushQueue = async (client: any) => {
           }), { urgency: 'high', TTL: subTTL });
         } catch (err: any) {
           const bodyMsg = err.body ? (typeof err.body === 'string' ? err.body : JSON.stringify(err.body)) : '';
-          console.error(`Legacy push failed for user:`, err.message);
           
           if (err.statusCode === 410 || err.statusCode === 404 || err.statusCode === 400 || err.statusCode === 401 || err.statusCode === 403 || bodyMsg.includes('VapidPkHashMismatch')) {
-            console.warn(`Removing invalid legacy subscription for user due to error: ${err.message}`);
+            // Expected cleanup error, silently remove invalid subscription
             await client.del(`scholar_push_sub_${task.secretCode}`);
+          } else {
+            console.error(`Legacy push failed for user:`, err.message);
           }
         }
       }

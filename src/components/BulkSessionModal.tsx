@@ -101,10 +101,10 @@ export const BulkSessionModal: React.FC<BulkSessionModalProps> = ({
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="relative w-full max-w-lg bg-slate-900 border border-slate-800 rounded-[2.5rem] shadow-2xl overflow-hidden z-10 flex flex-col"
+          className="relative w-full max-w-lg max-h-[calc(100dvh-2rem)] bg-slate-900 border border-slate-800 rounded-[2.5rem] shadow-2xl z-10 flex flex-col"
         >
           {/* Header */}
-          <div className="p-6 pb-2">
+          <div className="p-6 pb-2 shrink-0">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-black text-white uppercase tracking-tighter italic pr-1">Bulk Manage Sessions</h3>
               <button onClick={onClose} className="p-2 text-slate-500 hover:text-white transition-colors bg-slate-800 rounded-full">
@@ -134,7 +134,7 @@ export const BulkSessionModal: React.FC<BulkSessionModalProps> = ({
             </div>
           </div>
 
-          <div className="p-6 space-y-6">
+          <div className="p-6 pt-4 pb-8 space-y-6 overflow-y-auto min-h-0 custom-scrollbar">
             {/* Time Range Section - Shared */}
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3">

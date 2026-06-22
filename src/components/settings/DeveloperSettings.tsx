@@ -205,7 +205,7 @@ export const DeveloperSettings: React.FC<DeveloperSettingsProps> = ({
   };
 
   return (
-    <div className="space-y-8">
+    <div id="setting-dev" className="space-y-8">
       {!isDevUnlocked ? (
         <div className="max-w-md mx-auto space-y-4 text-center py-12">
           <h3 className="text-xl font-bold text-white">Developer Mode Warning</h3>
@@ -703,7 +703,7 @@ export const DeveloperSettings: React.FC<DeveloperSettingsProps> = ({
               <button
                 onClick={() => setState(prev => ({ ...prev, customTimeEnabled: !prev.customTimeEnabled }))}
                 className={cn(
-                  "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
+                  "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors",
                   state.customTimeEnabled ? "bg-indigo-600" : "bg-slate-700"
                 )}
               >

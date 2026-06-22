@@ -259,6 +259,7 @@ export const Settings = React.memo<SettingsProps & { onOpenAstralArchives?: () =
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
 
   const [activeTab, setActiveTab ] = useState<string>(() => {
+    if (activeSection && activeSection !== 'menu') return activeSection;
     return localStorage.getItem('settings_last_view') || 'menu';
   });
 
@@ -301,9 +302,7 @@ export const Settings = React.memo<SettingsProps & { onOpenAstralArchives?: () =
   const setTabAndSave = (tab: string) => {
     setActiveTab(tab);
     localStorage.setItem('settings_last_view', tab);
-    if (tab !== 'menu') {
-      setActiveSection(tab as any);
-    }
+    setActiveSection(tab as any);
   };
 
   const currentCompartment = SETTINGS_COMPARTMENTS.find(c => c.id === activeTab);
@@ -620,7 +619,7 @@ export const Settings = React.memo<SettingsProps & { onOpenAstralArchives?: () =
                       <button
                         onClick={() => setState((prev: any) => ({ ...prev, gachaAllowOverlap: !prev.gachaAllowOverlap }))}
                         className={cn(
-                          "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
+                          "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors",
                           state.gachaAllowOverlap ? "bg-indigo-500" : "bg-slate-700"
                         )}
                       >

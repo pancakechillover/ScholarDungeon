@@ -2,7 +2,7 @@ import React, { useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { History, Clock, Trophy, Edit2, Trash2, Filter, Search, X, Check, SearchX, Calendar, Sword, ArrowUp, ArrowDown, ChevronUp, ChevronDown, Zap, Layers, Download } from 'lucide-react';
 import { StudySession, Dungeon, MajorDungeon, RewardCard, TimeSettings } from '../types';
-import { cn } from '../lib/utils';
+import { cn, getSessionEffectiveMinutes } from '../lib/utils';
 import { format, parseISO, isAfter, isBefore, startOfDay, endOfDay } from 'date-fns';
 import { SpinnerInput } from './SpinnerInput';
 import { DatePicker } from './DatePicker';
@@ -19,6 +19,7 @@ interface RecentSessionsProps {
   bulkDeleteSessions?: (data: { startTime: string, endTime: string }) => void;
   rewardPool: RewardCard[];
   timeSettings?: TimeSettings;
+  includeRestTimeInTasks?: boolean;
 }
 
 export const RecentSessions: React.FC<RecentSessionsProps> = ({
@@ -30,7 +31,8 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
   bulkCreateSessions,
   bulkDeleteSessions,
   rewardPool,
-  timeSettings
+  timeSettings,
+  includeRestTimeInTasks = false
 }) => {
   const [showPeriodicSplits, setShowPeriodicSplits] = useState(true);
   const [editingSession, setEditingSession] = useState<StudySession | null>(null);
@@ -171,11 +173,12 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
 
       // Duration Filter
       let matchesDuration = true;
+      const effectiveDuration = getSessionEffectiveMinutes(session, includeRestTimeInTasks);
       if (durationRange.min) {
-        matchesDuration = matchesDuration && session.duration >= parseInt(durationRange.min);
+        matchesDuration = matchesDuration && effectiveDuration >= parseInt(durationRange.min);
       }
       if (durationRange.max) {
-        matchesDuration = matchesDuration && session.duration <= parseInt(durationRange.max);
+        matchesDuration = matchesDuration && effectiveDuration <= parseInt(durationRange.max);
       }
 
       return matchesSearch && matchesDungeon && matchesDate && matchesDuration;
@@ -213,11 +216,11 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
 
   const stats = useMemo(() => {
     return {
-      totalTime: history.reduce((acc, s) => acc + s.duration, 0),
+      totalTime: history.reduce((acc, s) => acc + getSessionEffectiveMinutes(s, includeRestTimeInTasks), 0),
       totalGold: history.reduce((acc, s) => acc + s.coinsEarned, 0),
       totalXP: history.reduce((acc, s) => acc + s.xpEarned, 0),
     };
-  }, [history]);
+  }, [history, includeRestTimeInTasks]);
 
   const exportToCSV = useCallback(() => {
     // CSV Header
@@ -232,9 +235,9 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
         format(parseISO(session.timestamp), 'yyyy-MM-dd HH:mm'),
         majorDungeon?.name || '',
         dungeon?.name || 'Free Study',
-        session.focusDuration || 0,
+        session.focusDuration || session.duration || 0,
         session.restDuration || 0,
-        session.duration || 0,
+        getSessionEffectiveMinutes(session, includeRestTimeInTasks),
         session.rewardName || 'None',
         session.xpEarned,
         session.coinsEarned

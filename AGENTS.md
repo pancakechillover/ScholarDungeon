@@ -26,9 +26,9 @@ Whenever you complete a task or make changes to the application:
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v8.10.36
-- **Last Update Date:** 2026-06-20
-- **Last Update Time:** 23:59:59
+- **Current Version:** v8.10.63
+- **Last Update Date:** 2026-06-22
+- **Last Update Time:** 07:42:00
 
 ## Dark Themes Definition
 The following themes are considered "Dark Themes" and form the baseline for vibrant visual effects and high-contrast glowing elements:
@@ -53,6 +53,108 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 
 
 ## Task History
+- **v8.10.63 (2026-06-22):** Guide Book Close Button Dynamic Alignment
+  - *UI/UX:* Re-programmed the Close (X) button inside GuideBook. Bound the element's position dynamically inside the main book pages wrapper relative container instead of viewport-fixed, so it transitions smoothly alongside page folding translations.
+  - *UI/UX:* Programmed advanced adaptive coordinate rendering for spreads, positioning the button beautifully on the top-right of the visible Cover (right-hand page), inside pages, and the visible Back Cover (left-hand page) respectively to ensure flawless visual parity and zero out-of-bounds floating elements.
+
+- **v8.10.62 (2026-06-22):** Guide Book Theme Contrast Optimization
+  - *UI/UX:* Replaced hardcoded amber and emerald CSS color classes across the Guide Book (Pages 5, 8, 9, 10, 11, 12) with custom, theme-aware variables (`--gb-gold-*` and `--gb-xp-*`), completely resolving the poor readability issue in the "Forest" (green) theme.
+  - *UI/UX:* Enhanced button styling on info cards with fluid hover states, correct decoration lines, and custom color mappings that beautifully invert on both Light and Dark dynamic systems.
+
+- **v8.10.61 (2026-06-22):** Guide Book Visual & Route Optimization
+  - *UI/UX:* Repaired critical word-wrapping and layout misalignment issues across all Guide Book instructional pages by explicitly bounding icon indicators and descriptive text elements under protected flex-item containers.
+  - *Feature:* Updated outdated settings routing references specifically under "PRO TIP" sections, properly redirecting players to the new "Timer" configuration panel instead of the legacy "Developer" suite.
+
+- **v8.10.60 (2026-06-21):** Mobile Export Layout Scrolling and Code Compile Fixes
+  - *Mobile UI:* Re-engineered the Controls container layout inside the Export Image modal. Converted rigid shrink-0 margins into a flex-1 shrink-0 scrollable pane on mobile viewports, permitting seamless access and scrolling to all hidden knobs, aspect ratio toggles, and Save buttons.
+  - *Architecture:* Cleaned up legacy compilation inconsistencies. Properly imported centralized helper functions and resolved type mismatch anomalies across system dialogue handlers.
+
+- **v8.10.59 (2026-06-21):** Export Image Rendering Fidelity Optimization
+  - *Rendering:* Re-programmed the html-to-image engine export parameters, eliminating `skipFonts` constraints to guarantee pixel-perfect WYSIWYG text rendering that correctly respects flex layout geometries and prevents italic banner text truncations (`RECO...`).
+  - *UI/UX:* Injected a uniform, high-fidelity 32px safe-zone padding directly into the final exported snapshot canvas matrix, yielding a beautiful, frame-ready aesthetic that entirely eliminates cramped edge-collisions on both statistics and diary image exports.
+
+- **v8.10.58 (2026-06-21):** Export Image Mobile Feature Optimization
+  - *Feature:* Re-programmed the image generation engine to strictly enforce a realistic 800px minimum viewport width constraint under mobile environments. Resolves text truncation and right-side layout cropping issues across exported statistics.
+  - *UI/UX:* Re-structured the Export Image modal layout separating a dedicated persistent mobile header to instantly expose exit controls overriding the default stacked flex order. Guarantees top-down logical clarity without forcing users to scroll past the preview to read the title.
+
+- **v8.10.57 (2026-06-21):** Gacha Mobile Header Layout Optimization
+  - *UI/UX:* Re-programmed the Skip Animation button layout inside the Gacha result modal. Center-aligns the button under the subtitle on space-constrained mobile viewports, resolving text overlapping/collision issues on narrow screens while keeping its top-right absolute alignment on desktop displays.
+
+- **v8.10.56 (2026-06-21):** Gacha Mobile View & Layout Optimization
+  - *UI/UX:* Re-engineered single reward focus card bounds to expand size gracefully on narrow screens, giving individual draws an immersive premium aesthetic.
+  - *UI/UX:* Remapped legacy high-contrast custom glowing box shadows on the primary Claim button to a standard theme-safe drop-shadow model, completely resolving the hardware-accelerated off-axis offset blob rendering glitch.
+  - *UI/UX:* Enabled structural shrink-0 preservation on primary action buttons checkmark icon to avoid any structural flex-shrinking distortions in responsive grid viewports.
+
+- **v8.10.55 (2026-06-21):** Quest Board & Achievements Mobile Optimization
+  - *UI/UX:* Re-engineered Quest and Achievement card layouts with fluid responsive margins and paddings, avoiding squashed content and text overflows.
+  - *UI/UX:* Re-programmed titles to flow seamlessly onto their own line on narrow smartphone screens, letting badges and tags wrap gracefully underneath.
+  - *UI/UX:* Standardized checkmark indicator bounds with structural flex shrink preservation and customized theme-matching inline numeric progress pills (`quest.progress/quest.target`) visible on mobile screens.
+
+- **v8.10.54 (2026-06-21):** Guide Book Mobile Ratio Reversion
+  - *UI/UX:* Reverted the layout size ratio of the mobile Guide Book modal screen back to its previous dynamic proportional sizing settings, restoring visual parity.
+
+- **v8.10.53 (2026-06-21):** Guide Book Mobile Sizing and Bookmark Icon Optimization
+  - *UI/UX:* Re-programmed the Guide Book modal layout to scale beautifully inside a perfect 3:4 portrait view constraint using native CSS `aspect-[3/4]` combined with `h-auto` and bounding box safety alignments under mobile viewports.
+  - *UI/UX:* Enlarged the chapter-selecting bookmark buttons from small footprints to bold padded targets keeping Lucide icons sized to 20px on mobile screens, vastly enhancing hand touch accuracy and visual clarity.
+
+- **v8.10.52 (2026-06-21):** Guide Book Mobile Layout and Close Button Optimization
+  - *UI/UX:* Re-programmed the Guide Book modal outer padding, leaving a customized right-hand gutter space strictly on mobile viewports so chapter tags do not crop off the screen edge in portrait orientation.
+  - *UI/UX:* Relocated the Close (X) button to sit directly on the top-right margins of the book relative container on mobile screens, avoiding floating viewport overlaps.
+
+- **v8.10.51 (2026-06-21):** Reward Pool Mobile Header Optimization
+  - *UI/UX:* Re-designed the Reward Pool Management header configuration, replacing rigid line container rows with a dynamic mobile-responsive multi-line structure that flows, wraps, and aligns beautifully under high-density narrow screens, preventing text or control button overflows permanently.
+
+- **v8.10.50 (2026-06-21):** Mobile Settings Toggle Switch Layout Fix
+  - *UI/UX:* Unified all settings toggle components globally with `shrink-0` bounds protection preventing the interactive button capsule from structurally collapsing and rendering switch elements out of bounds on extremely narrow viewports (such as mobile screens displaying long text layouts).
+
+- **v8.10.49 (2026-06-21):** Dungeon Expedition Mobile Overlap Fix
+  - *UI/UX:* Re-engineered the Dungeon Expedition inner task container layout replacing strict inline inline-block alignments with a native `flex-wrap` and column-to-row scaling hybrid. This permanently eliminates nasty horizontal overlapping issues between tags, dates, and rewards on compact smartphone viewports.
+
+- **v8.10.48 (2026-06-21):** Dashboard DDL Horizon Theme Refinement
+  - *UI/UX:* Re-engineered Expedition Horizon DDL active day cards replacing aggressive dark purple fills with a cohesive, translucent `bg-indigo-500/10` tint mapping seamlessly to both Dark and native Light (slate-100 inverted) dimensions.
+
+- **v8.10.47 (2026-06-21):** Global Time Calculation Unification
+  - *Architecture:* Centralized all time-duration calculations globally utilizing the strict getSessionEffectiveMinutes function across all modules (Heatmaps, Export, Recent Sessions, Modals, Daily Overviews).
+  - *Bug Fix:* Eliminated disparate focus vs raw duration edge cases securing absolute identical data parity across all analytics, successfully respecting includeRestTimeInTasks state configurations consistently.
+
+- **v8.10.46 (2026-06-21):** Weekly Pie Chart Statistical Consistency
+  - *Architecture:* Synchronized data inputs for the Weekly Pie Chart (Donut) avoiding timezone overlaps, strictly inheriting processed assignedDate arrays from the Weekly Bar unified stats engine.
+  - *Bug Fix:* Corrected 6-day off-by-one interval bounds in Donut Chart ensuring Sunday sessions are fully tracked and mapped gracefully under precise custom-assigned time slots.
+
+- **v8.10.45 (2026-06-21):** Push Notification Error Log Optomization
+  - *Architecture:* Silenced terminal output for expected 401/410 push notification expiration endpoints, keeping the backend stdout clean while silently removing stale offline devices.
+
+- **v8.10.44 (2026-06-21):** Data Consistency on Session Editing
+  - *Architecture:* Re-programmed `updateSession` to fully recalculate derived game state (active XP, level down rollbacks, coins, custom daily streaks, and dungeon totalFocusTime) when users modify historical time periods or switch active objective categorizations.
+  - *Feature:* Prevented automatic reward re-issuance on edited completions to avoid reward loop token mining out of trivial historic modifications.
+
+- **v8.10.43 (2026-06-21):** Data Consistency on Session Deletion
+  - *Architecture:* Re-programmed `deleteSession` and `bulkDeleteSessions` to fully reverse derived game state (active XP, level down rollbacks, coins, custom daily streaks, and dungeon totalFocusTime).
+  - *Feature:* Integrated deep automatic reward reversals, stripping items, coins, and talent points initially rewarded if deleting history causes a completed objective dungeon to drop back into active status.
+
+- **v8.10.42 (2026-06-21):** Mobile Modal Scrolling Alignment
+  - *UI/UX:* Re-programmed Bulk Manage Sessions modal constraints by strictly enforcing dynamic view height cutoffs (`max-h-[calc(100dvh-2rem)]`) combined with smooth inner vertical scrolling, fully adapting the container to narrow mobile dimensions without layout lock.
+
+- **v8.10.41 (2026-06-21):** Bulk Logic Refinements
+  - *Architecture:* Re-programmed bulkCreateSessions to adhere to Plan A: Bulk added sessions now act purely as historical tracking points and do not independently generate game rewards.
+  - *Architecture:* Re-programmed bulkDeleteSessions to intelligently subtract derived XP, coins, and objectives correctly when deleting organically rewarded authentic sessions.
+
+- **v8.10.40 (2026-06-20):** Snapshot Comparison Engine
+  - *Feature:* Upgraded the local backup restore payload to display a side-by-side data comparison between the current memory and the selected snapshot before overwriting.
+  - *UI/UX:* Renamed "LOCAL MEMORY SNAPSHOTS" strictly to "SNAPSHOTS" for a minimalist, cleaner settings interface.
+
+- **v8.10.39 (2026-06-21):** Local Memory Snapshots
+  - *Feature:* Added an intuitive Local Memory Snapshots feature under Cloud Sync Settings to hold up to 10 latest local state backups directly in the browser's persistent storage.
+  - *UI/UX:* Integrated a sleek, matching dark slate and emerald management panel listing exact save timestamps, current levels, and quick restore capabilities.
+
+- **v8.10.38 (2026-06-21):** Cloud Save History Serverless Endpoint Fix
+  - *Bug Fix:* Re-programmed `/api/sync.ts` serverless function to correctly support path-based routing for history lookup and backup generation.
+  - *Architecture:* Ported Redis backup list truncation and storage quota constraints to the serverless sync handler ensuring database parity.
+
+- **v8.10.37 (2026-06-20):** Explore Current Build Collapse Fix
+  - *Bug Fix:* Resolved critical layout collapse of the Current Build card on narrow-height widescreen environments.
+  - *UI/UX:* Replaced flex-1 style on the Current Build card with shrink-0, preserving proportional heights and borders across all viewport sizes.
+
 - **v8.10.36 (2026-06-20):** Explore Viewport Strict Height Enforcements
   - *Architecture:* Removed `overflow-hidden` constraints allowing normal page scrollability for historical panels gracefully without collapsing the grid.
   - *UI/UX:* Upgraded CSS Grid parameters replacing stretch intrinsic heights with exact viewport offset coordinates (`calc(100dvh-12rem)`). Enforced the Timer module stays perfectly vertically balanced within the fold bounding limits regardless of active tall secondary content triggering the scrollbar natively on the right column.

@@ -31,7 +31,7 @@ export const WeeklyPieChart: React.FC<Props> = ({ weekSessions, mode, includeRes
       
       const grouped: Record<string, number> = {};
       weekSessions.forEach(s => {
-        const d = new Date(s.timestamp);
+        const d = (s as any).assignedDate ? new Date((s as any).assignedDate) : new Date(s.timestamp);
         const dayName = days[getDay(d)];
         grouped[dayName] = (grouped[dayName] || 0) + getSessionEffectiveMinutes(s, includeRestTimeInTasks);
       });
@@ -44,17 +44,19 @@ export const WeeklyPieChart: React.FC<Props> = ({ weekSessions, mode, includeRes
         }))
         .filter(d => d.value > 0);
     } else {
-      // Time of day (Morning/Afternoon/Night)
+      // Time of day (Morning/Afternoon/Night/Other)
       const periodColors: Record<string, string> = {
         'Morning': '#fde047',
         'Afternoon': '#f97316',
-        'Night': '#6366f1'
+        'Night': '#6366f1',
+        'Other': '#94a3b8'
       };
       
       const grouped = {
         'Morning': 0,
         'Afternoon': 0,
-        'Night': 0
+        'Night': 0,
+        'Other': 0
       };
       
       weekSessions.forEach(s => {
@@ -64,7 +66,7 @@ export const WeeklyPieChart: React.FC<Props> = ({ weekSessions, mode, includeRes
           if (p.includes('morning')) grouped.Morning += duration;
           else if (p.includes('afternoon')) grouped.Afternoon += duration;
           else if (p.includes('night')) grouped.Night += duration;
-          else grouped.Morning += duration; 
+          else grouped.Other += duration; 
         } else {
           const h = new Date(s.timestamp).getHours();
           if (h >= 5 && h < 12) grouped.Morning += duration;
@@ -77,7 +79,7 @@ export const WeeklyPieChart: React.FC<Props> = ({ weekSessions, mode, includeRes
         .map(([name, value]) => ({ 
           name, 
           value,
-          color: periodColors[name as 'Morning' | 'Afternoon' | 'Night']
+          color: periodColors[name as 'Morning' | 'Afternoon' | 'Night' | 'Other']
         }))
         .filter(d => d.value > 0);
     }

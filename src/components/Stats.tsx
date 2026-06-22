@@ -1254,7 +1254,7 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
           activeDates.add(format(sessionDate, 'yyyy-MM-dd'));
           gold += (session.coinsEarned || 0);
           xp += (session.xpEarned || 0);
-          timeOrTasks += (session.duration || 0);
+          timeOrTasks += getSessionEffectiveMinutes(session, !!state.includeRestTimeInTasks);
        }
     });
 
@@ -1720,11 +1720,10 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
 
             {viewOpts.showWeeklyDonut && (
               <WeeklyPieChart 
-                weekSessions={history.filter(s => {
-                  const d = parseISO(s.timestamp || '');
-                  return isWithinInterval(d, {
+                weekSessions={processedHistory.filter(s => {
+                  return isWithinInterval(s.assignedDate, {
                     start: weekStart,
-                    end: addDays(weekStart, 6)
+                    end: weekEnd
                   });
                 })} 
                 mode={viewOpts.weeklyDonutMode || 'time_of_day'} 

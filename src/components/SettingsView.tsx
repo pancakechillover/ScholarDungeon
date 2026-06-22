@@ -9,8 +9,8 @@ interface SettingsViewProps {
   resetLootPool: () => void;
   addXP: (amount: number) => void;
   getNow: () => Date;
-  activeSection: 'general' | 'timer' | 'rewards' | 'shop' | 'gacha' | 'dev' | 'levelRewards' | 'about' | 'level' | 'merchant' | 'cloud' | 'calculator' | 'sage';
-  setActiveSection: (section: 'general' | 'timer' | 'rewards' | 'shop' | 'gacha' | 'dev' | 'levelRewards' | 'about' | 'level' | 'merchant' | 'cloud' | 'calculator' | 'sage') => void;
+  activeSection: 'menu' | 'general' | 'timer' | 'rewards' | 'shop' | 'gacha' | 'dev' | 'levelRewards' | 'about' | 'level' | 'merchant' | 'cloud' | 'calculator' | 'sage';
+  setActiveSection: (section: 'menu' | 'general' | 'timer' | 'rewards' | 'shop' | 'gacha' | 'dev' | 'levelRewards' | 'about' | 'level' | 'merchant' | 'cloud' | 'calculator' | 'sage') => void;
   onTabChange?: (tab: any) => void;
   onOpenAstralArchives?: () => void;
   triggerSyncCheck?: (forceModal?: boolean) => void;

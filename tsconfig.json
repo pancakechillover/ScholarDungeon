@@ -23,5 +23,10 @@
     "allowImportingTsExtensions": true,
     "noEmit": true,
     "types": ["vite/client"]
-  }
+  },
+  "exclude": [
+    "src/rewrite_force.mjs",
+    "node_modules",
+    "dist"
+  ]
 }

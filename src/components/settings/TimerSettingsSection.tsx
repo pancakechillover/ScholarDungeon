@@ -54,7 +54,7 @@ export const TimerSettingsSection = ({
           <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Time-Based Calculation</h4>
         </div>
 
-        <div className="space-y-4">
+        <div id="setting-time-based" className="space-y-4">
              <div className="p-4 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 space-y-4">
                <div>
                  <label className="text-xs font-bold text-indigo-400 uppercase tracking-widest">Standard Focus Duration (Minutes)</label>

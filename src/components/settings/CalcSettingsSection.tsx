@@ -156,6 +156,7 @@ export const CalcSettingsSection: React.FC<CalcSettingsProps> = ({ state, setSta
 
   return (
     <motion.div
+      id="setting-calculator"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       className="space-y-8"

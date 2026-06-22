@@ -1,25 +1,21 @@
 {
-  "version": "v8.6.5",
-  "date": "2026-06-05",
+  "version": "v8.10.63",
+  "date": "2026-06-22",
   "latestRelease": {
-    "version": "v8.6.5",
-    "date": "2026-06-05",
-    "time": "10:20:00",
-    "title": "Cloud Backend Global Restrictions & Invite Locks",
+    "version": "v8.10.63",
+    "date": "2026-06-22",
+    "time": "07:42:00",
+    "title": "Guide Book Close Button Dynamic Alignment",
     "items": [
       {
-        "category": "Architecture",
-        "description": "Redefined the isRedisUnlocked permission mechanism as an absolute, global gatekeeper against all Cloud Backend operations."
-      },
-      {
-        "category": "Feature",
-        "description": "Added synchronous locked state walls blocking automatic Redis polling, push notification manual saves, WebDAV proxy, and Developer mode push tests unless the global Invite Code is verified."
+        "category": "UI/UX",
+        "description": "Moved the Close (X) button relative to the book pages container to automatically follow folding translations."
       },
       {
         "category": "UI/UX",
-        "description": "Replaced the primary Sanctum Plaza (Fellowship Interface) with a secure Locked Screen requiring a developer access invite code prior to granting any entry."
+        "description": "Engineered custom responsive alignment rules, positioning the button precisely over the top-right margins of Front Cover, standard spreads, and left-aligned Back Cover pages without horizontal drift."
       }
     ]
   },
-  "timestamp": 1780654735972
+  "timestamp": 1782114120000
 }

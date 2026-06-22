@@ -466,7 +466,7 @@ export const QuestManager = React.memo<QuestManagerProps>(({ quests, questHistor
         )}
       </AnimatePresence>
 
-      <div className="relative p-6 sm:p-10 rounded-2xl qb-board ">
+      <div className="relative p-3.5 sm:p-10 rounded-2xl qb-board ">
         {activeTab === 'history' ? (
           <div className="space-y-4">
             <div className="flex items-center gap-2 mb-6">
@@ -520,21 +520,21 @@ export const QuestManager = React.memo<QuestManagerProps>(({ quests, questHistor
                 quest={quest} 
                 isEditMode={isEditMode}
                 className={cn(
-                  "qb-card border rounded-lg p-5 flex items-center justify-between gap-4 group transition-all shadow-md relative",
+                  "qb-card border rounded-lg p-3.5 sm:p-5 flex items-center justify-between gap-2.5 sm:gap-4 group transition-all shadow-md relative",
                   quest.completed ? "opacity-80 grayscale-[0.4]" : "hover:shadow-xl hover:-translate-y-1"
                 )}
               >
-                <div className="flex items-center gap-4 flex-1 min-w-0">
+                <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
                   <div className={cn(
-                    "w-12 h-12 rounded-lg flex items-center justify-center border shrink-0 shadow-sm transition-colors",
+                    "w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center border shrink-0 shadow-sm transition-colors",
                     quest.completed ? "qb-success" : "qb-dark-box"
                   )}>
-                    {quest.completed ? <CheckCircle2 size={24} /> : (quest.isAchievement ? <Trophy size={24} /> : <Target size={24} />)}
+                    {quest.completed ? <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6" /> : (quest.isAchievement ? <Trophy className="w-5 h-5 sm:w-6 sm:h-6" /> : <Target className="w-5 h-5 sm:w-6 sm:h-6" />)}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <h4 className="font-bold text-base leading-tight truncate">{quest.title}</h4>
-                      <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-1">
+                      <h4 className="font-bold text-sm sm:text-base leading-tight truncate">{quest.title}</h4>
+                      <div className="flex flex-wrap items-center gap-1 shrink-0">
                         <div className="flex items-center gap-1 px-1.5 py-0.5 rounded qb-tag text-[9px] font-bold uppercase tracking-tighter border">
                           <Clock size={10} />
                           {getCycleLabel(quest.type)}
@@ -552,9 +552,9 @@ export const QuestManager = React.memo<QuestManagerProps>(({ quests, questHistor
                         })()}
                       </div>
                     </div>
-                    <p className="qb-card-desc font-handwriting text-sm font-bold leading-tight line-clamp-2">{quest.description}</p>
+                    <p className="qb-card-desc font-handwriting text-xs sm:text-sm font-bold leading-tight line-clamp-2">{quest.description}</p>
                     
-                    <div className="flex flex-wrap items-center gap-3 mt-2">
+                    <div className="flex flex-wrap items-center gap-2 mt-2">
                       {(quest.rewards || [quest.reward]).map((reward, ridx) => (
                         <div key={ridx} className="flex items-center gap-1 px-2 py-0.5 rounded qb-tag border text-[10px] font-black shadow-sm">
                           {reward.type === 'coins' ? <Coins size={10} className="text-amber-600" /> : 
@@ -568,15 +568,15 @@ export const QuestManager = React.memo<QuestManagerProps>(({ quests, questHistor
                   </div>
                 </div>
                 
-                <div className="flex items-center justify-end gap-3 shrink-0">
-                  <div className="hidden sm:flex items-center gap-2">
-                    <div className="h-1.5 w-20 qb-progress-bg rounded-full overflow-hidden">
+                <div className="flex items-center justify-end gap-2.5 sm:gap-3 shrink-0">
+                  <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                    <div className="hidden sm:block h-1.5 w-20 qb-progress-bg rounded-full overflow-hidden">
                       <div 
                         className={cn("h-full transition-all duration-500", quest.completed ? "qb-progress-fill-done" : "qb-progress-fill")}
                         style={{ width: `${Math.min(100, (quest.progress / quest.target) * 100)}%` }}
                       />
                     </div>
-                    <span className="text-[10px] font-black qb-progress-text tabular-nums">{quest.progress}/{quest.target}</span>
+                    <span className="text-[10px] font-black qb-progress-text tabular-nums bg-black/5 dark:bg-white/5 py-0.5 px-1.5 rounded-md border border-black/5 dark:border-white/5">{quest.progress}/{quest.target}</span>
                   </div>
                   
                   {isEditMode && (
@@ -607,18 +607,18 @@ export const QuestManager = React.memo<QuestManagerProps>(({ quests, questHistor
                     {quest.completed && !quest.claimed ? (
                       <button
                         onClick={() => onClaimReward(quest.id)}
-                        className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-black text-[10px] uppercase tracking-widest transition-all shadow-lg hover:-rotate-1 active:scale-95 flex items-center gap-2"
+                        className="px-3 py-1.5 sm:px-4 sm:py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-black text-[9px] sm:text-[10px] uppercase tracking-widest transition-all shadow-lg hover:-rotate-1 active:scale-95 flex items-center gap-1 sm:gap-2 shrink-0"
                       >
-                        <Gift size={14} />
+                        <Gift className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
                         Claim
                       </button>
                     ) : (quest.completed && quest.claimed) ? (
-                      <span className="flex items-center w-6 justify-end">
-                        <CheckSquare size={24} className="qb-checkbox-checked opacity-80" />
+                      <span className="flex items-center w-5 sm:w-6 justify-end">
+                        <CheckSquare className="qb-checkbox-checked opacity-80 w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
                       </span>
                     ) : (
-                      <span className="flex items-center w-6 justify-end opacity-20">
-                        <Square size={24} className="qb-checkbox-empty" />
+                      <span className="flex items-center w-5 sm:w-6 justify-end opacity-20">
+                        <Square className="qb-checkbox-empty w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
                       </span>
                     )}
                   </div>
