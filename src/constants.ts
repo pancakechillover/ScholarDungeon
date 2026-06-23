@@ -38,94 +38,173 @@ export const DEFAULT_QUESTS: Quest[] = [
 ];
 
 export const INITIAL_REWARD_POOL: RewardCard[] = [
-  // COMMON
-  { id: 'lucky_penny', name: 'Lucky Penny', description: 'Gain 1 Gold Coin', rarity: 'common', type: 'coins', amount: 1, weight: 100 },
-  { id: 'copper_bag', name: 'Copper Bag', description: 'Gain 3 Gold Coins', rarity: 'common', type: 'coins', amount: 3, weight: 60 },
-  { id: 'small_wallet', name: 'Small Wallet', description: 'Gain 5 Gold Coins', rarity: 'common', type: 'coins', amount: 5, weight: 40 },
-  { id: 'energy_drink', name: 'Energy Drink', description: 'Next XP +20%', rarity: 'common', type: 'item', itemType: 'xp_bonus_percent', amount: 20, weight: 70 },
-  { id: 'lucky_charm', name: 'Lucky Charm', description: 'Next Coins +20%', rarity: 'common', type: 'item', itemType: 'coin_bonus_percent', amount: 20, weight: 70 },
-  { id: 'coffee_bean', name: 'Coffee Bean', description: 'Next XP +10%', rarity: 'common', type: 'item', itemType: 'xp_bonus_percent', amount: 10, weight: 85 },
-  { id: 'bookmark', name: 'Bookmark', description: 'Next Coins +10%', rarity: 'common', type: 'item', itemType: 'coin_bonus_percent', amount: 10, weight: 85 },
-  { 
-    id: 'game_break', 
-    name: 'Game Break', 
-    description: '10 min gaming break', 
-    rarity: 'common', 
-    type: 'text', 
-    weight: 50, 
-    limitCount: 3, 
-    limitPeriodDays: 1 
+  // ===== Common: 50 total =====
+  {
+    id: 'lucky_penny',
+    name: 'Lucky Penny',
+    description: 'Gain 1 Gold Coin',
+    rarity: 'common',
+    type: 'coins',
+    amount: 1,
+    weight: 16.67
   },
-  { 
-    id: 'chocolate', 
-    name: 'Chocolate', 
-    description: 'Eat a small snack', 
-    rarity: 'common', 
-    type: 'text', 
-    weight: 50, 
-    limitCount: 3, 
-    limitPeriodDays: 1 
+  {
+    id: 'scribbled_note',
+    name: 'Scribbled Note',
+    description: 'Gain 10 XP',
+    rarity: 'common',
+    type: 'xp',
+    amount: 10,
+    weight: 16.67
   },
-  { 
-    id: 'fresh_air', 
-    name: 'Fresh Air', 
-    description: '10 min walking break', 
-    rarity: 'common', 
-    type: 'text', 
-    weight: 50, 
-    limitCount: 1, 
-    limitPeriodDays: 1 
-  },
-  { 
-    id: 'fruit_bowl', 
-    name: 'Fruit Bowl', 
-    description: 'Eat some fresh fruit', 
-    rarity: 'common', 
-    type: 'text', 
-    weight: 50, 
-    limitCount: 1, 
-    limitPeriodDays: 1 
+  {
+    id: 'one_song_pass',
+    name: 'One Song Pass',
+    description: 'Listen to one song as a short reward before your next task',
+    rarity: 'common',
+    type: 'text',
+    weight: 16.66,
+    limitCount: 3,
+    limitPeriodDays: 1
   },
 
-  // RARE
-  { id: 'double_xp', name: 'Double Experience', description: 'Double XP next task', rarity: 'rare', type: 'item', itemType: 'double_xp', amount: 100, weight: 25 },
-  { id: 'focus_pot', name: 'Focus Potion', description: 'Double Coins next task', rarity: 'rare', type: 'item', itemType: 'double_coin', amount: 100, weight: 25 },
-  { 
-    id: 'music_pass', 
-    name: 'Music Pass', 
-    description: 'Listen to music next task', 
-    rarity: 'rare', 
-    type: 'text', 
-    weight: 30, 
-    limitCount: 2, 
-    limitPeriodDays: 1 
+  // ===== Uncommon: 25 total =====
+  {
+    id: 'two_coppers',
+    name: 'Two Coppers',
+    description: 'Gain 2 Gold Coins',
+    rarity: 'uncommon',
+    type: 'coins',
+    amount: 2,
+    weight: 8.33
+  },
+  {
+    id: 'study_gem',
+    name: 'Study Gem',
+    description: 'Gain 20 XP',
+    rarity: 'uncommon',
+    type: 'xp',
+    amount: 20,
+    weight: 8.33
+  },
+  {
+    id: 'page_marker',
+    name: 'Page Marker',
+    description: 'Next Coins +5%',
+    rarity: 'uncommon',
+    type: 'item',
+    itemType: 'coin_bonus_percent',
+    amount: 5,
+    weight: 8.34
   },
 
-  // EPIC
-  { id: 'talent_shard', name: 'Talent Shard', description: 'Talent scroll piece (1/3)', rarity: 'epic', type: 'item', itemType: 'talent_shard', amount: 1, weight: 12 },
-  { 
-    id: 'milk_tea', 
-    name: 'Milk Tea', 
-    description: 'Enjoy a cup of Milk Tea', 
-    rarity: 'epic', 
-    type: 'text', 
-    weight: 5, 
-    limitCount: 1, 
-    limitPeriodDays: 1 
+  // ===== Rare: 15 total =====
+  {
+    id: 'copper_bag',
+    name: 'Copper Bag',
+    description: 'Gain 3 Gold Coins',
+    rarity: 'rare',
+    type: 'coins',
+    amount: 3,
+    weight: 5
+  },
+  {
+    id: 'tiny_scroll',
+    name: 'Tiny Scroll',
+    description: 'Gain 30 XP',
+    rarity: 'rare',
+    type: 'xp',
+    amount: 30,
+    weight: 5
+  },
+  {
+    id: 'coffee_bean',
+    name: 'Coffee Bean',
+    description: 'Next XP +10%',
+    rarity: 'rare',
+    type: 'item',
+    itemType: 'xp_bonus_percent',
+    amount: 10,
+    weight: 5
   },
 
-  // LEGENDARY
-  { 
-    id: 'death_gold', 
-    name: 'Death Defying Medal', 
-    description: 'Prevent one streak break', 
-    rarity: 'legendary', 
-    type: 'item', 
-    itemType: 'death_defying_medal', 
-    amount: 1, 
-    weight: 1, 
-    limitCount: 1, 
-    limitPeriodDays: 1 
+  // ===== Epic: 8 total =====
+  {
+    id: 'small_wallet',
+    name: 'Small Wallet',
+    description: 'Gain 5 Gold Coins',
+    rarity: 'epic',
+    type: 'coins',
+    amount: 5,
+    weight: 2.67
+  },
+  {
+    id: 'bookmark',
+    name: 'Bookmark',
+    description: 'Next Coins +10%',
+    rarity: 'epic',
+    type: 'item',
+    itemType: 'coin_bonus_percent',
+    amount: 10,
+    weight: 2.67
+  },
+  {
+    id: 'five_minute_scroll',
+    name: 'Five-Minute Scroll',
+    description: 'Take a timed 5-minute scroll break, then return to your next task',
+    rarity: 'epic',
+    type: 'text',
+    weight: 2.66,
+    limitCount: 2,
+    limitPeriodDays: 1
+  },
+
+  // ===== Legendary: 1.5 total =====
+  {
+    id: 'talent_shard',
+    name: 'Talent Shard',
+    description: 'Talent scroll piece (1/3)',
+    rarity: 'legendary',
+    type: 'item',
+    itemType: 'talent_shard',
+    amount: 1,
+    weight: 0.75,
+    limitCount: 3,
+    limitPeriodDays: 3
+  },
+  {
+    id: 'death_gold',
+    name: 'Death Defying Medal',
+    description: 'Prevent one streak break',
+    rarity: 'legendary',
+    type: 'item',
+    itemType: 'death_defying_medal',
+    amount: 1,
+    weight: 0.75,
+    limitCount: 1,
+    limitPeriodDays: 3
+  },
+
+  // ===== Mythic: 0.5 total =====
+  {
+    id: 'mini_game_token',
+    name: 'Mini Game Token',
+    description: 'Play one short game or a 5–10 minute mini-game session as a rare reward',
+    rarity: 'mythic',
+    type: 'text',
+    weight: 0.25,
+    limitCount: 1,
+    limitPeriodDays: 1
+  },
+  {
+    id: 'guilty_pleasure_coupon',
+    name: 'Guilty Pleasure Coupon',
+    description: 'Claim one small guilty pleasure, with a timer, then return to your quest',
+    rarity: 'mythic',
+    type: 'text',
+    weight: 0.25,
+    limitCount: 1,
+    limitPeriodDays: 7
   }
 ];
 
@@ -136,7 +215,7 @@ export const TALENTS: Talent[] = [
   { id: 'a3', name: 'Perfect Theory', description: 'Accumulate 4 hours of focus time. Yields (20 * Streak) XP. Streak caps at 10 days.', branch: 'A', tier: 3, cost: 3, effect: 'streak_xp', icon: 'Rocket', unlocked: false, active: false },
   
   // Branch B: Golden Law
-  { id: 'b1', name: 'Alchemy', description: 'Base coins +2 per task', branch: 'B', tier: 1, cost: 1, effect: 'coin_2', icon: 'Pickaxe', unlocked: false, active: false },
+  { id: 'b1', name: 'Alchemy', description: 'Base coins +15% per task', branch: 'B', tier: 1, cost: 1, effect: 'coin_15_perc', icon: 'Pickaxe', unlocked: false, active: false },
   { id: 'b2', name: 'Flow Experience β', description: 'Accumulate 8 hours of focus time in one day to claim 50 Coins.', branch: 'B', tier: 2, cost: 2, effect: 'daily_16_coin', icon: 'BrainCog', unlocked: false, active: false },
   { id: 'b3', name: 'Bounty Decree', description: 'Accumulate 4 hours of focus time. Yields (10 * Streak) Coins. Streak caps at 10 days.', branch: 'B', tier: 3, cost: 3, effect: 'streak_coin', icon: 'Goal', unlocked: false, active: false },
 

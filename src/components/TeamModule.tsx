@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { createPortal } from 'react-dom';
 import { 
-  Users, LogIn, Plus, X, MessageSquare, Activity, Crown, Clock, Target, Check, AlertCircle, RefreshCw, Send, Settings, User, UserCheck, Landmark,
+  Users, LogIn, Plus, X, MessageSquare, Activity, Crown, Clock, Target, Check, AlertCircle, RefreshCw, Send, Settings, User, UserCheck, UserX, Landmark,
   Cat, Dog, Ghost, Bot, Skull, Lock,
   BookOpen, Library, Coffee, Brain, ShieldHalf, Swords, Flame, Sparkles, Castle, Mountain
 } from 'lucide-react';
@@ -61,6 +61,43 @@ export const renderGuildIcon = (iconId: string | undefined, size: number = 24, c
   }
   return <Landmark size={size} className={className || "text-indigo-400"} />;
 };
+
+export function getTeamCycleState(team: Team) {
+  let cycleProgress = 0;
+  let memberProgress: Record<string, number> = {};
+
+  if (team.config.targetType === 'total_time' || !team.config.targetType) {
+    cycleProgress = team.members.reduce((acc, m) => acc + (m.totalFocusTime || 0), 0);
+    team.members.forEach(m => memberProgress[m.userId] = (m.totalFocusTime || 0));
+  } else {
+    const now = new Date();
+    const resetHour = parseInt(team.config.resetTime?.split(':')[0] || '0');
+    let start = new Date(now);
+    start.setHours(resetHour, 0, 0, 0);
+    if (now.getHours() < resetHour) start.setDate(start.getDate() - 1);
+    
+    if (team.config.targetType === 'weekly_time') {
+      const day = start.getDay();
+      start.setDate(start.getDate() - day + (day === 0 ? -6 : 1));
+    } else if (team.config.targetType === 'monthly_time') {
+      start.setDate(1);
+    } else if (team.config.targetType === 'yearly_time') {
+      start.setMonth(0, 1);
+    }
+    const currentCycleStart = start.getTime();
+
+    cycleProgress = team.members.reduce((acc, m) => {
+      let mProg = 0;
+      if (m.cycleTargetType === team.config.targetType && m.cycleStart === currentCycleStart && m.cycleFocusTime) {
+        mProg = m.cycleFocusTime;
+      }
+      memberProgress[m.userId] = mProg;
+      return acc + mProg;
+    }, 0);
+  }
+
+  return { cycleProgress, memberProgress };
+}
 
 export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
   const [view, setView] = useState<'lobby' | 'team'>(state.teamId ? 'team' : 'lobby');
@@ -472,7 +509,7 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
     );
     
     // Calc total progress
-    let totalProgress = team.members.reduce((acc, m) => acc + m.totalFocusTime, 0);
+    const { cycleProgress: totalProgress } = getTeamCycleState(team);
     const target = team.config.targetValue;
     const isCompleted = target > 0 && totalProgress >= target;
     const isCaptain = team.members.find(x => x.userId === team.myUserId)?.isCaptain;
@@ -613,8 +650,8 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
                         ) : null}
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-sm font-bold text-slate-300 flex items-center gap-1">
-                          {m.name} {m.isCaptain && <Crown size={10} className="text-amber-400" />}
+                        <span className="text-sm font-bold text-slate-300 flex items-center gap-1.5">
+                          {m.name} {m.isCaptain && <Crown size={12} className="text-amber-500" />}
                         </span>
                         <div className="flex items-center gap-1.5 mt-0.5">
                           {m.uniqueId && <span className="font-mono text-[9px] text-indigo-400/80 font-semibold">#{m.uniqueId.startsWith('SD-') ? m.uniqueId.replace('SD-', 'ID-') : m.uniqueId}</span>}
@@ -622,7 +659,29 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
                         </div>
                       </div>
                     </div>
-                    <span className="text-[10px] font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-full">Lv. {m.level || 1}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-full">Lv. {m.level || 1}</span>
+                      {isCaptain && m.userId !== team.myUserId && (
+                        <button 
+                           onClick={(e) => {
+                              e.stopPropagation();
+                              customConfirm("Are you sure you want to banish this member from the guild? Their stats will immediately be removed from today's Goal statistics.", async () => {
+                                 const identityCode = state.secretCode || getOrGenerateIdentity();
+                                 await fetch('/api/teams?action=kick', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ teamId: team.id, secretCode: identityCode, targetMemberId: m.userId })
+                                 });
+                                 fetchTeam();
+                              }, "Banish Member", "danger", "Banish");
+                           }}
+                           className="p-1.5 bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white rounded-md transition-all sm:opacity-50 sm:group-hover:opacity-100 opacity-100 flex"
+                           title="Kick out of Fellowship"
+                        >
+                           <UserX size={14} />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 )})}
               </div>
@@ -969,6 +1028,19 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
                  fetchTeam();
               }, "Banish Member", "danger", "Banish");
            }}
+           currentUserName={state.userName || 'Scholar'}
+           onReclaimCaptain={(targetId) => {
+              customConfirm("Are you sure this is your old account? Claiming it will restore your captaincy and delete the old duplicate entity.", async () => {
+                 const identityCode = state.secretCode || getOrGenerateIdentity();
+                 await fetch('/api/teams?action=reclaim', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ teamId: team.id, secretCode: identityCode })
+                 });
+                 setViewingProfile(null);
+                 fetchTeam();
+              }, "Reclaim Captain Account", "info", "Reclaim");
+           }}
         />
       )}
       
@@ -1231,7 +1303,7 @@ const CreateTeamModal = ({ onClose, onCreate }: any) => {
   )
 }
 
-const TeamMemberProfileModal = ({ member, onClose, isCurrentUserCaptain, isTargetSelf, onTransferCaptain, onKickMember }: { member: TeamMember, onClose: () => void, isCurrentUserCaptain?: boolean, isTargetSelf?: boolean, onTransferCaptain?: (targetId: string) => void, onKickMember?: (targetId: string) => void }) => {
+const TeamMemberProfileModal = ({ member, onClose, isCurrentUserCaptain, isTargetSelf, onTransferCaptain, onKickMember, onReclaimCaptain, currentUserName }: { member: TeamMember, onClose: () => void, isCurrentUserCaptain?: boolean, isTargetSelf?: boolean, onTransferCaptain?: (targetId: string) => void, onKickMember?: (targetId: string) => void, onReclaimCaptain?: (targetId: string) => void, currentUserName?: string }) => {
   if (!member) return null;
   return createPortal(
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
@@ -1243,7 +1315,9 @@ const TeamMemberProfileModal = ({ member, onClose, isCurrentUserCaptain, isTarge
             {renderAvatar(member.avatar, 40)}
           </div>
           
-          <h2 className="text-2xl font-black text-white italic tracking-tight">{member.name} {member.isCaptain && <span className="text-amber-500 text-base" title="Captain">♔</span>}</h2>
+          <h2 className="text-2xl font-black text-white italic tracking-tight flex items-center justify-center gap-2">
+            {member.name} {member.isCaptain && <Crown size={20} className="text-amber-500" title="Captain" />}
+          </h2>
           
           <div className="flex items-center gap-2 mt-2 flex-wrap justify-center font-mono">
             <div className="text-xs font-bold text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">
@@ -1296,6 +1370,17 @@ const TeamMemberProfileModal = ({ member, onClose, isCurrentUserCaptain, isTarge
               )}
             </div>
           )}
+          {!isCurrentUserCaptain && !isTargetSelf && member.isCaptain && member.name === (currentUserName || 'Scholar') && onReclaimCaptain && (
+             <div className="w-full mt-6 flex flex-col gap-2">
+               <button 
+                 onClick={() => onReclaimCaptain(member.userId)}
+                 className="w-full py-3 bg-cyan-500/10 border border-cyan-500/30 hover:bg-cyan-500 hover:text-white text-cyan-400 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all"
+               >
+                 Reclaim Captain Account
+               </button>
+               <span className="text-[10px] text-slate-500 leading-tight">If you lost your old cache but your name matches the captain perfectly, you can reclaim it.</span>
+             </div>
+          )}
         </div>
       </div>
     </div>,
@@ -1305,9 +1390,9 @@ const TeamMemberProfileModal = ({ member, onClose, isCurrentUserCaptain, isTarge
 
 const GoalDetailsModal = ({ team, onClose }: any) => {
   const target = team.config.targetValue;
-  const totalProgress = team.members.reduce((acc: number, m: any) => acc + m.totalFocusTime, 0);
+  const { cycleProgress: totalProgress, memberProgress } = getTeamCycleState(team);
   const isCompleted = target > 0 && totalProgress >= target;
-  const sortedMembers = [...team.members].sort((a,b) => b.totalFocusTime - a.totalFocusTime);
+  const sortedMembers = [...team.members].sort((a,b) => (memberProgress[b.userId] || 0) - (memberProgress[a.userId] || 0));
 
   return createPortal(
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md">
@@ -1363,7 +1448,7 @@ const GoalDetailsModal = ({ team, onClose }: any) => {
                     {renderAvatar(m.avatar, 14)}
                   </div>
                   <div className="flex-1 font-bold text-slate-300 text-sm truncate">{m.name}</div>
-                  <div className="font-bold text-indigo-400 tabular-nums">{m.totalFocusTime} <span className="text-[10px] text-slate-500">m</span></div>
+                  <div className="font-bold text-indigo-400 tabular-nums">{memberProgress[m.userId] || 0} <span className="text-[10px] text-slate-500">m</span></div>
                </div>
             ))}
           </div>
@@ -1707,8 +1792,8 @@ const PlazaModal = ({ onClose }: { onClose: () => void }) => {
 
 
 const DetailedGoalModal = ({ team, onClose }: { team: Team, onClose: () => void }) => {
-  const sortedMembers = [...team.members].sort((a, b) => b.totalFocusTime - a.totalFocusTime);
-  let totalProgress = team.members.reduce((acc, m) => acc + m.totalFocusTime, 0);
+  const { cycleProgress: totalProgress, memberProgress } = getTeamCycleState(team);
+  const sortedMembers = [...team.members].sort((a,b) => (memberProgress[b.userId] || 0) - (memberProgress[a.userId] || 0));
   const target = team.config.targetValue;
   const isCompleted = target > 0 && totalProgress >= target;
   
@@ -1842,7 +1927,7 @@ const DetailedGoalModal = ({ team, onClose }: { team: Team, onClose: () => void 
                          </div>
                          <div className="text-xs font-bold text-white clamp-1 truncate max-w-[80px]">{m.name}</div>
                        </div>
-                       <div className="text-xs font-black text-indigo-500 tabular-nums shrink-0">{m.totalFocusTime} <span className="text-[9px] text-slate-500">m</span></div>
+                       <div className="text-xs font-black text-indigo-500 tabular-nums shrink-0">{memberProgress[m.userId] || 0} <span className="text-[9px] text-slate-500">m</span></div>
                     </div>
                  ))}
                </div>

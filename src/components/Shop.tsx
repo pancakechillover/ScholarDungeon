@@ -23,6 +23,7 @@ interface ShopProps {
   onResetIchiban: (poolId: string) => void;
   onShowCoinGuide?: () => void;
   onSetActivePool?: (type: 'gacha' | 'ichiban', poolId: string) => void;
+  onOpenSettings?: () => void;
 }
 
 export const Shop = React.memo<ShopProps>(({ 
@@ -35,7 +36,8 @@ export const Shop = React.memo<ShopProps>(({
   onDrawGacha, 
   onResetIchiban, 
   onShowCoinGuide,
-  onSetActivePool 
+  onSetActivePool,
+  onOpenSettings 
 }) => {
   const [activeTab, setActiveTab] = useState<'shop' | 'gacha' | 'ichiban'>('shop');
   const [showProbabilities, setShowProbabilities] = useState(false);
@@ -57,6 +59,17 @@ export const Shop = React.memo<ShopProps>(({
         title="Merchant's Outpost"
         description="Exchange your hard-earned gold"
         icon={ShoppingBag}
+        action={
+          onOpenSettings ? (
+            <button
+              onClick={onOpenSettings}
+              className="p-2 sm:p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors shrink-0"
+              title="Merchant Settings"
+            >
+              <Settings size={20} />
+            </button>
+          ) : undefined
+        }
       >
         <div className="flex items-center gap-4 mt-4">
           <button 

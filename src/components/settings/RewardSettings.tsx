@@ -28,11 +28,11 @@ function urlBase64ToUint8Array(base64String: string) {
 }
 
 
-import { HelpCircle } from 'lucide-react';
+import { HelpCircle, Lock, Unlock } from 'lucide-react';
 import { RealtimeProbabilityModal } from './RealtimeProbabilityModal';
 import { RewardStatsModal } from './RewardStatsModal';
 
-export const RewardSettings = ({ pool, onUpdate, onReset, appState }: { pool: RewardCard[], onUpdate: (p: RewardCard[]) => void, onReset?: () => void, appState?: any }) => {
+export const RewardSettings = ({ pool, onUpdate, onReset, appState, onModeChange }: { pool: RewardCard[], onUpdate: (p: RewardCard[]) => void, onReset?: () => void, appState?: any, onModeChange?: (mode: 'fixed' | 'free') => void }) => {
   const [editing, setEditing] = useState<RewardCard | null>(null);
   const [showExpectedStats, setShowExpectedStats] = useState(false);
   const [showRealtimeProb, setShowRealtimeProb] = useState(false);
@@ -45,6 +45,8 @@ export const RewardSettings = ({ pool, onUpdate, onReset, appState }: { pool: Re
     type?: 'danger' | 'warning' | 'info';
     isAlert?: boolean;
   }>({ isOpen: false, title: '', message: '' });
+
+  const isFixedMode = appState?.rewardPoolMode === 'fixed';
 
   const handleSave = (card: RewardCard) => {
     if (
@@ -97,7 +99,41 @@ export const RewardSettings = ({ pool, onUpdate, onReset, appState }: { pool: Re
           )}
         </div>
         <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-          {onReset && (
+          {onModeChange && (
+            <button
+              onClick={() => {
+                if (isFixedMode) {
+                  setModalConfig({
+                    isOpen: true,
+                    title: "Unlock Loot Pool",
+                    message: "Switching to Free Mode allows you to add custom rewards, modify weights, and change rarities. Do you want to proceed?",
+                    confirmText: "Enter Free Mode",
+                    onConfirm: () => onModeChange('free')
+                  });
+                } else {
+                  setModalConfig({
+                    isOpen: true,
+                    title: "Lock Loot Pool",
+                    message: "Switching to Fixed Mode will enforce the default standard reward pool. Your current custom configurations will be preserved safely but disabled. Proceed?",
+                    confirmText: "Lock Pool",
+                    onConfirm: () => onModeChange('fixed')
+                  });
+                }
+              }}
+              className={cn(
+                "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs sm:text-sm font-bold transition-colors shrink-0 border",
+                isFixedMode 
+                  ? "bg-slate-800/80 hover:bg-slate-700/80 text-emerald-400 border-emerald-500/30" 
+                  : "bg-slate-800/80 hover:bg-slate-700/80 text-amber-400 border-amber-500/30"
+              )}
+              title={isFixedMode ? "Currently Fixed" : "Currently Free - Editable"}
+            >
+              {isFixedMode ? <Lock size={14} className="shrink-0" /> : <Unlock size={14} className="shrink-0" />}
+              <span className="truncate">{isFixedMode ? "Fixed Mode" : "Free Mode"}</span>
+            </button>
+          )}
+
+          {!isFixedMode && onReset && (
             <button 
               onClick={() => setModalConfig({
                 isOpen: true,
@@ -107,18 +143,20 @@ export const RewardSettings = ({ pool, onUpdate, onReset, appState }: { pool: Re
                 type: "warning",
                 onConfirm: onReset
               })}
-              className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs sm:text-sm font-bold transition-colors shrink-0"
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs sm:text-sm font-bold transition-colors shrink-0 border border-transparent"
               title="Reset to Defaults"
             >
               <RefreshCw size={14} className="shrink-0" /> <span className="truncate">Reset</span>
             </button>
           )}
-          <button 
-            onClick={() => setEditing({ id: Math.random().toString(36).substr(2, 9), name: '', description: '', rarity: 'common', type: 'text', weight: 10 })}
-            className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 bg-indigo-600 text-white rounded-lg text-xs sm:text-sm font-bold shadow-lg shadow-indigo-600/20 shrink-0"
-          >
-            <Plus size={14} className="shrink-0" /> <span className="truncate">Add Reward</span>
-          </button>
+          {!isFixedMode && (
+            <button 
+              onClick={() => setEditing({ id: Math.random().toString(36).substr(2, 9), name: '', description: '', rarity: 'common', type: 'text', weight: 10 })}
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 bg-indigo-600 text-white rounded-lg text-xs sm:text-sm font-bold shadow-lg shadow-indigo-600/20 shrink-0 border border-transparent"
+            >
+              <Plus size={14} className="shrink-0" /> <span className="truncate">Add Reward</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -186,6 +224,7 @@ export const RewardSettings = ({ pool, onUpdate, onReset, appState }: { pool: Re
                       )}
                     </td>
                     <td className="px-4 py-4">
+                    {!isFixedMode && (
                       <div className="flex justify-center gap-1">
                         <button onClick={() => setEditing(card)} className="p-1.5 text-slate-400 hover:text-indigo-400 hover:bg-slate-800 rounded-lg transition-colors focus:ring-2 focus:ring-indigo-500/50"><Edit2 size={14} /></button>
                         <button 
@@ -204,6 +243,19 @@ export const RewardSettings = ({ pool, onUpdate, onReset, appState }: { pool: Re
                           <Trash2 size={14} />
                         </button>
                       </div>
+                    )}
+                    {isFixedMode && card.type !== 'text' && (
+                      <div className="flex justify-center gap-1">
+                        <span className="p-1.5 text-slate-600">
+                          <Lock size={12} />
+                        </span>
+                      </div>
+                    )}
+                    {isFixedMode && card.type === 'text' && (
+                      <div className="flex justify-center gap-1">
+                        <button onClick={() => setEditing(card)} className="p-1.5 text-slate-400 hover:text-indigo-400 hover:bg-slate-800 rounded-lg transition-colors focus:ring-2 focus:ring-indigo-500/50"><Edit2 size={14} /></button>
+                      </div>
+                    )}
                     </td>
                   </tr>
                 );
@@ -300,10 +352,12 @@ export const RewardSettings = ({ pool, onUpdate, onReset, appState }: { pool: Re
                           ].map(r => (
                             <button
                               key={r.id}
+                              disabled={isFixedMode}
                               onClick={() => setEditing({...editing, rarity: r.id as Rarity})}
                               className={cn(
                                 "py-2 px-3 rounded-xl border-2 text-[10px] font-black uppercase tracking-tighter transition-all",
-                                editing.rarity === r.id ? r.color : "bg-slate-900/50 border-slate-800 text-slate-600 hover:border-slate-700"
+                                editing.rarity === r.id ? r.color : "bg-slate-900/50 border-slate-800 text-slate-600 hover:border-slate-700",
+                                isFixedMode && "opacity-50 cursor-not-allowed"
                               )}
                             >
                               {r.label}
@@ -318,7 +372,7 @@ export const RewardSettings = ({ pool, onUpdate, onReset, appState }: { pool: Re
                       <div className="space-y-4 flex flex-col flex-1">
                           <div className="space-y-1.5 shrink-0">
                             <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Type</label>
-                            <select value={editing.type} onChange={e => setEditing({...editing, type: e.target.value as any})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:border-indigo-500 transition-colors">
+                            <select disabled={isFixedMode} value={editing.type} onChange={e => setEditing({...editing, type: e.target.value as any})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:border-indigo-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                               <option value="coins">Coins</option>
                               <option value="xp">XP</option>
                               <option value="item">Advanced Item</option>
@@ -395,7 +449,7 @@ export const RewardSettings = ({ pool, onUpdate, onReset, appState }: { pool: Re
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-1.5">
                             <label className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider ml-1">Drop Weight</label>
-                            <SpinnerInput placeholder="Weight" value={editing.weight === undefined || editing.weight === null ? '' : editing.weight} onChange={(val) => setEditing({...editing, weight: typeof val === 'number' ? val : ('' as any)})} className="font-mono" />
+                            <SpinnerInput disabled={isFixedMode} placeholder="Weight" value={editing.weight === undefined || editing.weight === null ? '' : editing.weight} onChange={(val) => setEditing({...editing, weight: typeof val === 'number' ? val : ('' as any)})} className={cn("font-mono", isFixedMode && "opacity-50 cursor-not-allowed")} />
                           </div>
                           <div className="space-y-1.5 text-right flex flex-col justify-end">
                             <p className="text-[10px] text-slate-500 uppercase font-bold tracking-tighter">Current Probability</p>

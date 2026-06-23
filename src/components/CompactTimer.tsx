@@ -3,9 +3,9 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Sword, Coffee, Play, Pause, RotateCcw, SkipForward, Trophy, Zap, Coins } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { Dungeon } from '../types';
+import { useTimerStore } from '../hooks/useTimerStore';
 
 interface CompactTimerProps {
-  timeLeft: number; // Used as fallback or initial
   endTime: number | null;
   isActive: boolean;
   isResting: boolean;
@@ -68,7 +68,6 @@ const PIP_STYLE = `
 `;
 
 export const CompactTimer: React.FC<CompactTimerProps> = ({
-  timeLeft,
   endTime,
   isActive,
   isResting,
@@ -84,6 +83,7 @@ export const CompactTimer: React.FC<CompactTimerProps> = ({
   standardSessionMinutes
 }) => {
   const containerRef = React.useRef<HTMLDivElement>(null);
+  const { timeLeft } = useTimerStore();
   const [displayTime, setDisplayTime] = React.useState(timeLeft);
   const [showRewardSummary, setShowRewardSummary] = React.useState(false);
   const [showFocusPrompt, setShowFocusPrompt] = React.useState(false);

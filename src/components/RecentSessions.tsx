@@ -36,6 +36,7 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
 }) => {
   const [showPeriodicSplits, setShowPeriodicSplits] = useState(true);
   const [editingSession, setEditingSession] = useState<StudySession | null>(null);
+  const [expandedSessionId, setExpandedSessionId] = useState<string | null>(null);
   const [sessionToDelete, setSessionToDelete] = useState<StudySession | null>(null);
   const [viewingRewardName, setViewingRewardName] = useState<string | null>(null);
   const [showBulkModal, setShowBulkModal] = useState(false);
@@ -48,6 +49,20 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
     key: keyof StudySession | 'dungeon' | 'date'; 
     direction: 'asc' | 'desc' | null 
   }>({ key: 'date', direction: 'desc' });
+
+  // Extract all hashtags from history
+  const allHashtags = useMemo(() => {
+    const tags = new Set<string>();
+    history.forEach(session => {
+      if (session.note) {
+        const matches = session.note.match(/#[\w\u4e00-\u9fa5]+/g);
+        if (matches) {
+          matches.forEach(tag => tags.add(tag));
+        }
+      }
+    });
+    return Array.from(tags).sort();
+  }, [history]);
 
   const [columnWidths, setColumnWidths] = useState<Record<string, number>>(() => {
     const saved = localStorage.getItem('scholars_dungeon_column_widths');
@@ -157,7 +172,8 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
       const matchesSearch = 
         dungeonName.toLowerCase().includes(searchTerm.toLowerCase()) || 
         majorName.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        (session.rewardName?.toLowerCase().includes(searchTerm.toLowerCase()));
+        (session.rewardName?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (session.note?.toLowerCase().includes(searchTerm.toLowerCase()));
       
       const matchesDungeon = filterDungeon === 'all' || session.dungeonId === filterDungeon;
       
@@ -224,7 +240,7 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
 
   const exportToCSV = useCallback(() => {
     // CSV Header
-    const headers = ['Date', 'Major Dungeon', 'Dungeon Goal', 'Focus (min)', 'Rest (min)', 'Total (min)', 'Reward', 'XP Earned', 'Gold Earned'];
+    const headers = ['Date', 'Major Dungeon', 'Dungeon Goal', 'Focus (min)', 'Rest (min)', 'Total (min)', 'Reward', 'XP Earned', 'Gold Earned', 'Note'];
     
     // Data Rows
     const rows = filteredSessions.map(session => {
@@ -240,7 +256,8 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
         getSessionEffectiveMinutes(session, includeRestTimeInTasks),
         session.rewardName || 'None',
         session.xpEarned,
-        session.coinsEarned
+        session.coinsEarned,
+        session.note || ''
       ];
     });
 
@@ -339,20 +356,46 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
           >
             <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-4 space-y-4">
               <div className="flex flex-col md:flex-row gap-4">
-                <div className="flex-2 relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
-                  <input
-                    type="text"
-                    placeholder="Search goal or reward..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full bg-slate-800 border-none rounded-xl py-2 pl-10 pr-4 text-sm text-white focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
-                  />
+                <div className="flex-2 relative flex flex-col gap-2">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
+                    <input
+                      type="text"
+                      placeholder="Search goal, reward, or #hashtags..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full bg-slate-800 border-none rounded-xl py-2 pl-10 pr-4 text-sm text-white focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
+                    />
+                  </div>
+                  {allHashtags.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {allHashtags.map(tag => (
+                        <button
+                          key={tag}
+                          onClick={() => {
+                            if (searchTerm.includes(tag)) {
+                              setSearchTerm(searchTerm.replace(tag, '').trim());
+                            } else {
+                              setSearchTerm((searchTerm + ' ' + tag).trim());
+                            }
+                          }}
+                          className={cn(
+                            "px-2 py-1 text-xs rounded-md transition-colors",
+                            searchTerm.includes(tag)
+                              ? "bg-indigo-500/20 text-indigo-400 border border-indigo-500/30"
+                              : "bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white"
+                          )}
+                        >
+                          {tag}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <select
                   value={filterDungeon}
                   onChange={(e) => setFilterDungeon(e.target.value)}
-                  className="bg-slate-800 border-none rounded-xl py-2 px-4 text-sm text-white focus:ring-2 focus:ring-indigo-500 outline-none flex-1"
+                  className="bg-slate-800 border-none rounded-xl py-2 px-4 text-sm text-white focus:ring-2 focus:ring-indigo-500 outline-none flex-1 mt-0 md:mt-0"
                 >
                   <option value="all">All Dungeons</option>
                   <option value="free_study">Free Study</option>
@@ -626,9 +669,9 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
                     const majorDungeon = dungeon?.parentId ? majorDungeons.find(m => m.id === dungeon.parentId) : null;
                     
                     return (
+                      <React.Fragment key={segment.key}>
                       <motion.tr
                         layout
-                        key={segment.key}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -690,6 +733,13 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
                         <td className="px-3 sm:px-6 py-3 whitespace-nowrap text-center">
                           <div className="flex items-center justify-center gap-0.5 sm:gap-1">
                             <button
+                              onClick={() => setExpandedSessionId(expandedSessionId === session.id ? null : session.id)}
+                              className={cn("p-1.5 sm:p-2 hover:bg-slate-800 rounded-lg transition-all", expandedSessionId === session.id ? "text-indigo-400 bg-indigo-500/10" : "text-slate-500 hover:text-white")}
+                              title="Toggle Note"
+                            >
+                              <ChevronDown size={12} className={cn("transition-transform", expandedSessionId === session.id ? "rotate-180" : "rotate-0")} />
+                            </button>
+                            <button
                               onClick={() => setEditingSession(session)}
                               className="p-1.5 sm:p-2 text-slate-500 hover:text-white hover:bg-slate-800 rounded-lg transition-all"
                               title="Edit Session"
@@ -708,6 +758,35 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
                           </div>
                         </td>
                       </motion.tr>
+                      
+                      {expandedSessionId === session.id && (
+                        <motion.tr
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="bg-slate-900/80 border-t border-slate-800/50"
+                        >
+                          <td colSpan={6} className="px-6 py-4">
+                            <div className="flex items-start gap-3 w-full max-w-4xl mx-auto">
+                              <Edit2 size={14} className="text-slate-500 mt-1 shrink-0" />
+                              <div className="flex-1">
+                                <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Study Note</h4>
+                                <textarea
+                                  defaultValue={session.note || ''}
+                                  onBlur={(e) => {
+                                    if (e.target.value !== session.note) {
+                                      updateSession(session.id, { note: e.target.value });
+                                    }
+                                  }}
+                                  placeholder="Add notes, context, or #hashtags about this session..."
+                                  className="w-full bg-slate-950/50 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-300 focus:ring-2 focus:ring-indigo-500 outline-none resize-none placeholder:text-slate-700 min-h-[80px]"
+                                />
+                              </div>
+                            </div>
+                          </td>
+                        </motion.tr>
+                      )}
+                    </React.Fragment>
                     );
                   })}
                 </AnimatePresence>

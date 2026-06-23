@@ -10,6 +10,7 @@ import { createWorkerTimer } from '../lib/workerTimer';
 import { useBackgroundKeepAlive } from '../lib/keepAlive';
 import { generateRewardChoicesForSession } from '../lib/rewardLogic';
 import { playSound } from '../lib/sound';
+import { useTimerStore } from '../hooks/useTimerStore';
 
 interface TimerProps {
   currentDungeon: Dungeon | null;
@@ -27,6 +28,7 @@ interface TimerProps {
   onRewardSelect: (reward: RewardCard, sessionId: string) => void;
   onDeferReward: (session: StudySession, choices: RewardCard[]) => void;
   onUpdateChestItem?: (sessionId: string, newChoices: RewardCard[]) => void;
+  onSaveNote?: (sessionId: string, timestamp: number, duration: number, dungeonName: string, text: string) => void;
   setShowCoinRain: (show: boolean) => void;
   isFullscreen?: boolean;
   secretCode?: string;
@@ -47,8 +49,6 @@ interface TimerProps {
   isResting: boolean;
   setDuration: (val: number) => void;
   duration: number;
-  setTimeLeft: (val: number) => void;
-  timeLeft: number;
   setIsActive: (val: boolean) => void;
   isActive: boolean;
   setEndTime: (val: number | null) => void;
@@ -81,6 +81,7 @@ export const Timer = React.memo<TimerProps>(({
   onRewardSelect,
   onDeferReward,
   onUpdateChestItem,
+  onSaveNote,
   setShowCoinRain,
   isFullscreen = false,
   secretCode,
@@ -100,8 +101,6 @@ export const Timer = React.memo<TimerProps>(({
   isResting,
   setDuration,
   duration,
-  setTimeLeft,
-  timeLeft,
   setIsActive,
   isActive,
   setEndTime,
@@ -109,7 +108,9 @@ export const Timer = React.memo<TimerProps>(({
   critChance,
   critMultiplier
 }) => {
+  const { timeLeft, setTimeLeft } = useTimerStore();
   const [showRewards, setShowRewards] = useState<{ session: StudySession; choices: RewardCard[] } | null>(null);
+  const [studyNote, setStudyNote] = useState('');
   const [showTalentPopup, setShowTalentPopup] = useState<StudySession['triggeredTalents'] | null>(null);
   const [showFocusPrompt, setShowFocusPrompt] = useState(false);
   const [hasRerolled, setHasRerolled] = useState(false);
@@ -209,6 +210,18 @@ export const Timer = React.memo<TimerProps>(({
     }
     setSkipProgress(0);
   }, []);
+
+  const submitStudyNote = useCallback((session: StudySession) => {
+    if (studyNote.trim() && onSaveNote) {
+      onSaveNote(
+        session.id,
+        new Date(session.timestamp).getTime(),
+        session.duration,
+        currentDungeon?.name || 'Free Study',
+        studyNote.trim()
+      );
+    }
+  }, [studyNote, onSaveNote, currentDungeon?.name]);
 
   const handleComplete = useCallback((silent: boolean = false, overrideDuration?: number) => {
     if (completingRef.current) return;
@@ -748,7 +761,7 @@ export const Timer = React.memo<TimerProps>(({
                 </motion.div>
               </div>
 
-              <div className="flex flex-col sm:flex-row justify-center gap-3 md:gap-6 lg:gap-8 px-4">
+              <div className="flex flex-col sm:flex-row justify-center gap-3 md:gap-6 lg:gap-8 px-4 mb-4">
                 <motion.div 
                   initial={{ x: -20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
@@ -778,6 +791,22 @@ export const Timer = React.memo<TimerProps>(({
                 </motion.div>
               </div>
 
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7 }}
+                className="px-4 max-w-xl mx-auto w-full mb-6"
+              >
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 text-left">Study Note (Optional)</p>
+                <input
+                  type="text"
+                  value={studyNote}
+                  onChange={(e) => setStudyNote(e.target.value)}
+                  placeholder="e.g. Cleared chapter 1, grasped core concepts..."
+                  className="w-full bg-slate-900/50 backdrop-blur-md border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-indigo-500 transition-colors placeholder:text-slate-600 shadow-inner"
+                />
+              </motion.div>
+
               <div className="space-y-4 px-4 max-w-6xl mx-auto w-full">
                 <motion.div 
                   initial={{ opacity: 0 }}
@@ -789,7 +818,9 @@ export const Timer = React.memo<TimerProps>(({
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => {
+                        submitStudyNote(showRewards.session);
                         setShowRewards(null);
+                        setStudyNote('');
                       }}
                       className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 rounded-full font-bold uppercase text-[10px] md:text-xs hover:bg-emerald-600/30 transition-all"
                     >
@@ -858,6 +889,7 @@ export const Timer = React.memo<TimerProps>(({
                         onClick={() => {
                           triggerSimpleConfetti();
                           
+                          submitStudyNote(showRewards.session);
                           onRewardSelect(card, showRewards.session.id);
                           if (card.type === 'item' && card.itemType !== 'talent_shard' && card.itemType !== 'death_defying_medal') {
                             onInventoryAdd(card.id);
@@ -869,6 +901,7 @@ export const Timer = React.memo<TimerProps>(({
                           // Short delay to let the confetti pop before closing
                           setTimeout(() => {
                             setShowRewards(null);
+                            setStudyNote('');
                           }, 400);
                         }}
                         className={cn(

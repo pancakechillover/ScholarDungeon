@@ -702,7 +702,10 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
                 step="0.05"
                 value={soundVolume}
                 onChange={handleVolumeChange}
-                className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                className="w-full text-emerald-500 rounded-lg cursor-pointer transition-all"
+                style={{
+                  background: `linear-gradient(to right, currentColor ${soundVolume * 100}%, var(--color-slate-800, #1e293b) ${soundVolume * 100}%)`
+                }}
               />
             </div>
           )}

@@ -1,10 +1,12 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { StudySession, Dungeon, MajorDungeon } from '../types';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, startOfYear, eachMonthOfInterval, endOfYear, subDays } from 'date-fns';
 import { cn } from '../lib/utils';
-import { CalendarCheck2, ChevronLeft, ChevronRight, Check } from 'lucide-react';
+import { CalendarCheck2, ChevronLeft, ChevronRight, Check, Settings, X, Activity, Clock, Target } from 'lucide-react';
 import { AppState } from '../types';
 import { PopoverPortal } from './PopoverPortal';
+import { RoutineDetailModal } from './RoutineDetailModal';
 
 interface RoutineTrackerProps {
   history: StudySession[];
@@ -12,13 +14,17 @@ interface RoutineTrackerProps {
   majorDungeons?: MajorDungeon[];
   timeSettings?: AppState['timeSettings'];
   timezone?: string;
-  renderPopover?: (date: Date) => React.ReactNode;
+  renderPopover?: (date: Date, routineId: string, onClose?: () => void) => React.ReactNode;
+  hiddenRoutines?: string[];
+  onUpdateHiddenRoutines?: (hiddenIds: string[]) => void;
 }
 
-export const RoutineTracker: React.FC<RoutineTrackerProps> = ({ history, dungeons = [], majorDungeons = [], timeSettings, timezone, renderPopover }) => {
+export const RoutineTracker: React.FC<RoutineTrackerProps> = ({ history, dungeons = [], majorDungeons = [], timeSettings, timezone, renderPopover, hiddenRoutines = [], onUpdateHiddenRoutines }) => {
   const [activeTab, setActiveTab] = useState<'daily' | 'weekly' | 'monthly'>('daily');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedCell, setSelectedCell] = useState<{date: number, routineId: string, element?: HTMLElement} | null>(null);
+  const [isEditingVisibility, setIsEditingVisibility] = useState(false);
+  const [detailRoutineId, setDetailRoutineId] = useState<string | null>(null);
 
   useEffect(() => {
     const handleOutside = (e: MouseEvent | TouchEvent) => {
@@ -41,16 +47,20 @@ export const RoutineTracker: React.FC<RoutineTrackerProps> = ({ history, dungeon
       id: m.id,
       name: m.name,
       isMajor: true,
-      tier: 'major'
+      tier: 'major' as const
     }));
     const subs = (dungeons || []).filter(d => d.isRoutine && d.routineType === activeTab).map(d => ({
       id: d.id,
       name: d.name,
       isMajor: false,
-      tier: 'sub'
+      tier: 'sub' as const
     }));
     return [...majors, ...subs];
   }, [majorDungeons, dungeons, activeTab]);
+
+  const visibleRoutines = useMemo(() => {
+    return routines.filter(r => !hiddenRoutines.includes(r.id));
+  }, [routines, hiddenRoutines]);
 
   const handlePrev = () => {
     const newDate = new Date(currentDate);
@@ -83,7 +93,7 @@ export const RoutineTracker: React.FC<RoutineTrackerProps> = ({ history, dungeon
   const checkIns = useMemo(() => {
     const records: Record<string, Set<string>> = {}; 
     
-    routines.forEach(r => {
+    visibleRoutines.forEach(r => {
       records[r.id] = new Set();
     });
 
@@ -110,19 +120,21 @@ export const RoutineTracker: React.FC<RoutineTrackerProps> = ({ history, dungeon
 
       const key = activeTab === 'monthly' ? format(sessionDate, 'yyyy-MM') : format(sessionDate, 'yyyy-MM-dd');
 
-      const subDungeon = dungeons.find(d => d.id === session.dungeonId);
-      if (!subDungeon) return;
+      const isSubDungeon = dungeons.find(d => d.id === session.dungeonId);
+      const isMajorDungeon = majorDungeons && majorDungeons.find(m => m.id === session.dungeonId);
+      
+      if (!isSubDungeon && !isMajorDungeon) return;
 
-      if (records[subDungeon.id]) {
-        records[subDungeon.id].add(key);
+      if (records[session.dungeonId]) {
+        records[session.dungeonId].add(key);
       }
-      if (subDungeon.parentId && records[subDungeon.parentId]) {
-        records[subDungeon.parentId].add(key);
+      if (isSubDungeon && isSubDungeon.parentId && records[isSubDungeon.parentId]) {
+        records[isSubDungeon.parentId].add(key);
       }
     });
 
     return records;
-  }, [history, routines, currentDate, activeTab, dungeons]);
+  }, [history, visibleRoutines, currentDate, activeTab, dungeons, majorDungeons]);
 
   const dateLabel = activeTab === 'monthly' ? format(currentDate, 'yyyy') : format(currentDate, 'MMM yyyy');
 
@@ -174,17 +186,24 @@ export const RoutineTracker: React.FC<RoutineTrackerProps> = ({ history, dungeon
         </div>
       </div>
 
-      {routines.length === 0 ? (
+      {visibleRoutines.length === 0 ? (
         <div className="py-8 text-center border-t border-slate-800/50">
           <p className="text-sm font-medium text-slate-500 italic pr-1">No tracked {activeTab} routines active.</p>
         </div>
       ) : (
-        <div className="overflow-x-auto pb-4">
+        <div className="overflow-x-auto pb-4 custom-scrollbar">
           <table className="w-full text-left border-collapse min-w-[600px]">
             <thead>
               <tr>
-                <th className="sticky left-0 z-10 bg-slate-900 px-3 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-r border-slate-800 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.5)]">
-                  Task
+                <th 
+                  onClick={() => setIsEditingVisibility(true)}
+                  className="sticky left-0 z-10 bg-slate-900 px-3 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-r border-slate-800 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.5)] cursor-pointer hover:text-indigo-400 transition-colors"
+                  title="Configure task visibility"
+                >
+                  <div className="flex items-center gap-1 group">
+                    Task
+                    <Settings size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
                 </th>
                 {columns.map(col => {
                   const label = activeTab === 'monthly' ? format(col, 'MMM') : format(col, 'd');
@@ -209,9 +228,13 @@ export const RoutineTracker: React.FC<RoutineTrackerProps> = ({ history, dungeon
               </tr>
             </thead>
             <tbody>
-              {routines.map((routine, idx) => (
-                <tr key={routine.id} className={cn("group hover:bg-slate-800/20", idx !== routines.length - 1 ? "border-b border-slate-800/30" : "")}>
-                  <td className="sticky left-0 z-10 bg-slate-900 group-hover:bg-slate-800/80 px-3 py-2 text-sm font-bold text-slate-200 border-r border-slate-800 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.5)] whitespace-nowrap max-w-[200px] truncate" title={routine.name}>
+              {visibleRoutines.map((routine, idx) => (
+                <tr key={routine.id} className={cn("group hover:bg-slate-800/20", idx !== visibleRoutines.length - 1 ? "border-b border-slate-800/30" : "")}>
+                  <td 
+                    onClick={() => setDetailRoutineId(routine.id)}
+                    className="sticky left-0 z-10 bg-slate-900 group-hover:bg-slate-800/80 px-3 py-2 text-sm font-bold text-slate-200 border-r border-slate-800 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.5)] whitespace-nowrap max-w-[200px] truncate cursor-pointer hover:text-indigo-300 transition-colors" 
+                    title={routine.name}
+                  >
                     {routine.name}
                   </td>
                   {columns.map(col => {
@@ -238,10 +261,86 @@ export const RoutineTracker: React.FC<RoutineTrackerProps> = ({ history, dungeon
             </tbody>
           </table>
           
-          <PopoverPortal anchorElement={selectedCell?.element || null}>
-             {selectedCell?.date && renderPopover?.(new Date(selectedCell.date))}
+          <PopoverPortal anchorElement={selectedCell?.element || null} onClose={() => setSelectedCell(null)}>
+             {selectedCell?.date && renderPopover?.(new Date(selectedCell.date), selectedCell.routineId, () => setSelectedCell(null))}
           </PopoverPortal>
         </div>
+      )}
+
+      {isEditingVisibility && createPortal(
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <div className="bg-slate-900 rounded-3xl border border-slate-800 w-full max-w-sm overflow-hidden flex flex-col max-h-[80vh]">
+            <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-900">
+              <h3 className="font-bold text-slate-100 flex items-center gap-2">
+                <Settings size={18} className="text-indigo-400" />
+                Configure Tasks
+              </h3>
+              <button 
+                onClick={() => setIsEditingVisibility(false)}
+                className="text-slate-500 hover:text-slate-300 transition-colors p-1"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="p-4 overflow-y-auto flex-1 space-y-2 relative">
+              {routines.map(routine => {
+                const isHidden = hiddenRoutines.includes(routine.id);
+                return (
+                  <div key={routine.id} className="flex items-center justify-between p-3 rounded-xl bg-slate-800/30 border border-slate-800 flex-shrink-0">
+                    <span className={cn("font-medium text-sm truncate pr-2", isHidden ? "text-slate-500 line-through" : "text-slate-200")}>
+                      {routine.name}
+                    </span>
+                    <button
+                      onClick={() => {
+                        if (isHidden) {
+                          onUpdateHiddenRoutines?.(hiddenRoutines.filter(id => id !== routine.id));
+                        } else {
+                          onUpdateHiddenRoutines?.([...hiddenRoutines, routine.id]);
+                        }
+                      }}
+                      className={cn(
+                        "w-10 h-6 shrink-0 rounded-full transition-colors relative",
+                        !isHidden ? "bg-indigo-500" : "bg-slate-700"
+                      )}
+                    >
+                      <div className={cn(
+                        "absolute top-1 max-w-[16px] w-4 h-4 rounded-full transition-all flex items-center justify-center",
+                        !isHidden ? "right-1 bg-white" : "left-1 bg-slate-400"
+                      )} />
+                    </button>
+                  </div>
+                );
+              })}
+              {routines.length === 0 && (
+                <div className="text-center py-6 text-slate-500 text-sm">
+                  No routines found.
+                </div>
+              )}
+            </div>
+            
+            <div className="p-4 border-t border-slate-800 bg-slate-900 shrink-0">
+              <button 
+                onClick={() => setIsEditingVisibility(false)}
+                className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-all"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {detailRoutineId && (
+        <RoutineDetailModal
+          routineId={detailRoutineId}
+          history={history}
+          dungeons={dungeons}
+          majorDungeons={majorDungeons}
+          timezone={timezone}
+          onClose={() => setDetailRoutineId(null)}
+        />
       )}
     </div>
   );

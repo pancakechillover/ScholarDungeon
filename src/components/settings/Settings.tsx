@@ -57,7 +57,7 @@ const VersionGroup: React.FC<VersionGroupProps> = ({ group, logs, isInitialExpan
       >
         <div className="flex items-center gap-3">
           <Layers size={16} className={cn("transition-colors", isExpanded ? "text-indigo-400" : "text-slate-500")} />
-          <span className="text-sm font-black uppercase tracking-widest text-slate-200">Version 6.x Series</span>
+          <span className="text-sm font-black uppercase tracking-widest text-slate-200">Release {group}.x Series</span>
         </div>
         <div className="flex items-center gap-3">
           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">{logs.length} Updates</span>
@@ -721,6 +721,18 @@ export const Settings = React.memo<SettingsProps & { onOpenAstralArchives?: () =
                     
                     <div className="space-y-6 relative ml-3">
                       {(() => {
+                        if (RELEASE_HISTORY.length === 0) {
+                          return (
+                            <div className="flex flex-col items-center justify-center p-8 text-center space-y-3 bg-slate-900/40 rounded-2xl border border-slate-800">
+                              <History size={32} className="text-slate-700" />
+                              <div>
+                                <div className="text-slate-300 font-bold">No release history available yet</div>
+                                <div className="text-slate-500 text-xs mt-1">Check back later for future updates.</div>
+                              </div>
+                            </div>
+                          );
+                        }
+
                         // Group history by Minor Version (e.g., v4.5, v4.4)
                         const grouped = RELEASE_HISTORY.reduce((acc, log) => {
                           const parts = log.version.replace('v', '').split('.');

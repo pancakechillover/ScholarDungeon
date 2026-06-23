@@ -636,7 +636,7 @@ export const GuideBookModal: React.FC<GuideBookModalProps> = ({
     if (pageIndex === 0) {
       return `${base} top-5 right-5`;
     }
-    if (pageIndex >= 14) {
+    if (pageIndex >= 16) {
       return `${base} top-5 right-[calc(50%+1.5rem)]`;
     }
     return `${base} top-5 right-5`;

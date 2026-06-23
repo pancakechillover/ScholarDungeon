@@ -21,6 +21,7 @@ import { ImmersiveReflectionModal } from './ImmersiveReflectionModal';
 import { DatePicker } from './DatePicker';
 import { DailySessionsModal } from './DailySessionsModal';
 import { RoutineTracker } from './RoutineTracker';
+import { RoutineCellEditor } from './RoutineCellEditor';
 import { ShareRecordModal } from './ShareRecordModal';
 import { ViewSettingsModal } from './ViewSettingsModal';
 import { DailyPieChart } from './DailyPieChart';
@@ -44,6 +45,7 @@ interface StatsProps {
   onUpdateState?: (updates: Partial<AppState>) => void;
   updateSession?: (id: string, updates: Partial<StudySession>) => void;
   deleteSession?: (id: string) => void;
+  completeSession?: (dungeonId: string | null, duration: number, focusDuration?: number, restDuration?: number, customTimestamp?: number) => void;
   dungeons?: Dungeon[];
   majorDungeons?: MajorDungeon[];
   setShowStartOfDayModal?: (val: string | boolean) => void;
@@ -299,7 +301,7 @@ const CustomSleepTooltip = ({ active, payload }: any) => {
 };
 
 
-export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateState, updateSession, deleteSession, dungeons = [], majorDungeons = [], setShowStartOfDayModal }) => {
+export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateState, updateSession, deleteSession, completeSession, dungeons = [], majorDungeons = [], setShowStartOfDayModal }) => {
   const history = state.history;
   const dailyLogs = state.dailyLogs || {};
   const [showDailySessionsDate, setShowDailySessionsDate] = useState<Date | null>(null);
@@ -1744,9 +1746,23 @@ export const Stats = React.memo<StatsProps>(({ state, saveDailyLog, onUpdateStat
             majorDungeons={majorDungeons} 
             timeSettings={state.timeSettings}
             timezone={state.timezone}
-            renderPopover={(date) => (
+            hiddenRoutines={viewOpts.hiddenRoutines || []}
+            onUpdateHiddenRoutines={onUpdateState ? (ids) => onUpdateState({ statsViewOpts: { ...viewOpts, hiddenRoutines: ids } }) : undefined}
+            renderPopover={(date, routineId, onClose) => (
               <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 pointer-events-auto z-[100]">
-                {renderHeatmapPopover(date)?.props.children}
+                <RoutineCellEditor 
+                  date={date} 
+                  routineId={routineId} 
+                  history={state.history} 
+                  dungeons={dungeons} 
+                  majorDungeons={majorDungeons}
+                  onUpdateState={onUpdateState} 
+                  deleteSession={deleteSession} 
+                  completeSession={completeSession}
+                  timezone={state.timezone}
+                  timeSettings={state.timeSettings}
+                  onClose={onClose}
+                />
               </div>
             )}
           />

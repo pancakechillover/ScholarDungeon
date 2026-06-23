@@ -169,9 +169,9 @@ export const LevelRewardsSettings = ({ state, setState }: { state: any, setState
               const isCurrent = currentLevel === currentLvl;
               
               // Title levels boundary lines
-              const showDivider = nextLvl === 4 || nextLvl === 16 || nextLvl === 48;
+              const showDivider = nextLvl === 4 || nextLvl === 16 || nextLvl === 43;
               const titleName = getTitleForLevel(nextLvl);
-              const rankRange = nextLvl === 4 ? "4 - 15" : nextLvl === 16 ? "16 - 47" : "48+";
+              const rankRange = nextLvl === 4 ? "4 - 15" : nextLvl === 16 ? "16 - 42" : "43+";
 
               return (
                 <React.Fragment key={nextLvl}>

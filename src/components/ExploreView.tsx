@@ -47,8 +47,6 @@ interface ExploreViewProps {
   setIsTimerActive: (active: boolean) => void;
   isResting: boolean;
   setIsResting: (resting: boolean) => void;
-  timeLeft: number;
-  setTimeLeft: (time: number) => void;
   duration: number;
   setDuration: (dur: number) => void;
   endTime: number | null;
@@ -111,8 +109,6 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
   setIsTimerActive,
   isResting,
   setIsResting,
-  timeLeft,
-  setTimeLeft,
   duration,
   setDuration,
   endTime,
@@ -229,6 +225,39 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
   }, [isFullscreenExplore]);
 
   // Handle jump to recent sessions from Stats
+  const handleSaveNote = React.useCallback((sessionId: string, timestamp: number, duration: number, dungeonName: string, noteText: string) => {
+    if (!noteText.trim()) return;
+
+    // 1. Update the session with the note
+    updateSession(sessionId, { note: noteText });
+
+    // 2. Append to daily reflection
+    const studyDate = new Date(timestamp);
+    const dateStr = getSettlementDay(studyDate, state.timeSettings);
+    
+    setState(prev => {
+      const existingLog = prev.dailyLogs?.[dateStr];
+      const existingReflection = existingLog?.reflection || '';
+      
+      const timeStr = studyDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const appendText = `${timeStr} - ${duration}m - ${dungeonName} - ${noteText}`;
+      
+      const newReflection = existingReflection ? `${existingReflection}\n${appendText}` : appendText;
+      
+      return {
+        ...prev,
+        dailyLogs: {
+          ...(prev.dailyLogs || {}),
+          [dateStr]: {
+            ...(existingLog || {}),
+            rating: existingLog?.rating || 3,
+            reflection: newReflection
+          }
+        }
+      };
+    });
+  }, [state.timeSettings, updateSession, setState]);
+
   React.useEffect(() => {
     const handleJump = (e: any) => {
       const timestamp = e.detail;
@@ -373,6 +402,7 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
             ) || []
           }));
         }}
+        onSaveNote={handleSaveNote}
         setShowCoinRain={setShowCoinRain}
         isFullscreen={isFullscreenExplore}
         pipWindow={pipWindow}
@@ -392,8 +422,6 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
         isResting={isResting}
         setDuration={setDuration}
         duration={duration}
-        setTimeLeft={setTimeLeft}
-        timeLeft={timeLeft}
         setIsActive={setIsTimerActive}
         isActive={isTimerActive}
         setEndTime={setEndTime}

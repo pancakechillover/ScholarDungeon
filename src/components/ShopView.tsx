@@ -11,6 +11,7 @@ interface ShopViewProps {
   setDrawResult: (result: any) => void;
   openGuideBook: (chapter: number) => void;
   onSetActivePool?: (type: 'gacha' | 'ichiban', poolId: string) => void;
+  onOpenSettings?: () => void;
 }
 
 export const ShopView: React.FC<ShopViewProps> = ({ 
@@ -20,7 +21,8 @@ export const ShopView: React.FC<ShopViewProps> = ({
   resetIchibanPool, 
   setDrawResult,
   openGuideBook,
-  onSetActivePool
+  onSetActivePool,
+  onOpenSettings
 }) => {
   return (
     <motion.div
@@ -44,7 +46,9 @@ export const ShopView: React.FC<ShopViewProps> = ({
         }}
         onShowCoinGuide={() => openGuideBook(5)}
         onSetActivePool={onSetActivePool}
+        onOpenSettings={onOpenSettings}
       />
     </motion.div>
   );
 };
+

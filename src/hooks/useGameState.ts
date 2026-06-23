@@ -254,6 +254,7 @@ export function useGameState() {
           exampleContent: `### 🟢 Keep (What went well and should continue)\n- I woke up early and completed the most important task first.\n- Kept distractions to a minimum during the morning.\n\n### 🟡 Improve (What could be done better)\n- I could communicate my status more clearly to the team.\n- Need to take more consistent breaks to avoid afternoon fatigue.\n\n### 🔴 Stop (What didn't work and should stop)\n- Stop checking social media during small 5-minute breaks.\n- Stop agreeing to meetings that don't have an agenda.\n\n### 🔵 Start (What new things to try)\n- Start scheduling 15 minutes at the end of the day to plan tomorrow.\n- Start drinking a glass of water every hour.`
         }
       ],
+      rewardPoolMode: 'fixed',
       rewardPool: INITIAL_REWARD_POOL,
       shopItems: [
         { id: '1', name: 'Watch a Movie', price: 500, description: 'Treat yourself to a cinema experience' },
@@ -419,6 +420,33 @@ export function useGameState() {
         if (parsed.gachaPools && !parsed.activeIchibanPoolId) {
           const ichiban = parsed.gachaPools.find((p: any) => p.type === 'ichiban');
           if (ichiban) parsed.activeIchibanPoolId = ichiban.id;
+        }
+
+        // Migration: Reward Pool Mode 'fixed'
+        if (parsed.rewardPoolMode === undefined) {
+          parsed.rewardPoolMode = 'free';
+          if (parsed.rewardPool && parsed.rewardPool.length > 0) {
+            parsed.customRewardPool = parsed.rewardPool; // Preserve existing custom pool
+          }
+        }
+        
+        if (parsed.rewardPoolMode === 'fixed') {
+          // If the mode is strictly 'fixed', we override the `rewardPool` with the actual FIXED definitions,
+          // but we retain any user modifications to TEXT type rewards.
+          parsed.rewardPool = INITIAL_REWARD_POOL.map(initialItem => {
+            if (initialItem.type === 'text') {
+              const existing = (parsed.rewardPool || []).find((c: any) => c.id === initialItem.id);
+              if (existing) {
+                return { 
+                  ...existing, 
+                  type: 'text', 
+                  weight: initialItem.weight, 
+                  rarity: initialItem.rarity 
+                };
+              }
+            }
+            return initialItem;
+          });
         }
 
         // Migration: Theme Sync
@@ -1042,14 +1070,15 @@ export function useGameState() {
     }
   }, [dungeons, majorDungeons, addRewardToHistory, getNow, setState]);
 
-  const completeSession = useCallback((dungeonId: string | null, duration: number, focusDuration?: number, restDuration?: number) => {
-    let now = getNow();
+  const completeSession = useCallback((dungeonId: string | null, duration: number, focusDuration?: number, restDuration?: number, customTimestamp?: number) => {
+    const absoluteNow = customTimestamp ? new Date(customTimestamp) : getNow();
+    let localTimeRecord = new Date(absoluteNow);
     if (state.timezone) {
       try {
-        now = new Date(now.toLocaleString('en-US', { timeZone: state.timezone }));
+        localTimeRecord = new Date(absoluteNow.toLocaleString('en-US', { timeZone: state.timezone }));
       } catch (e) {}
     }
-    const todayStr = getSettlementDay(now, state.timeSettings);
+    const todayStr = getSettlementDay(localTimeRecord, state.timeSettings);
     
     // Calculate rewards
     let baseXP = 100;
@@ -1078,7 +1107,7 @@ export function useGameState() {
 
     // Apply talents
     if (state.activeTalents.includes('a1')) baseXP *= 1.1; // Mind Lubrication
-    if (state.activeTalents.includes('b1')) baseCoins += 2; // Alchemy
+    if (state.activeTalents.includes('b1')) baseCoins *= 1.15; // Alchemy
     
     // Critical Intuition
     let isCrit = false;
@@ -1123,8 +1152,8 @@ export function useGameState() {
       duration,
       focusDuration,
       restDuration,
-      timestamp: now.toISOString(),
-      coinsEarned: Math.floor(baseCoins),
+      timestamp: absoluteNow.toISOString(),
+      coinsEarned: Math.ceil(baseCoins),
       xpEarned: Math.floor(baseXP),
       isCrit
     };
@@ -1147,12 +1176,12 @@ export function useGameState() {
         lastStudyDate: todayStr,
         streak: newStreak,
         dailySessions: prev.dailySessions + addedProgress,
-        coins: prev.coins + Math.floor(baseCoins),
+        coins: prev.coins + Math.ceil(baseCoins),
         inventory: [], // Clear inventory after session
         doubleXpActive: false, // Reset active buffs
         doubleGoldActive: false, // Reset active buffs
         shopItems: newShopItems
-      }, 'coins', Math.floor(baseCoins), 'Study Session Reward');
+      }, 'coins', Math.ceil(baseCoins), 'Study Session Reward');
 
       // Process Quests
       if (newState.quests) {

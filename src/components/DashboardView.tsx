@@ -33,7 +33,8 @@ import {
   Edit2,
   Settings as SettingsIcon,
   Sun,
-  ArrowRight
+  ArrowRight,
+  BookMarked
 } from 'lucide-react';
 import { format, startOfMonth, startOfWeek, endOfMonth, endOfWeek, eachDayOfInterval, isSameMonth, isToday, isSameDay, subDays, addDays } from 'date-fns';
 import ReactMarkdown from 'react-markdown';
@@ -577,24 +578,70 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
           </div>
 
-          <div className="bg-slate-900 rounded-3xl border border-slate-800 p-6">
-            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                <BookOpen size={16} /> Guides
-            </h3>
-            <div className="space-y-2">
-              <button onClick={() => openGuideBook(2)} className="w-full flex items-center gap-3 p-3 rounded-xl bg-slate-950/50 hover:bg-slate-800 transition-colors border border-slate-800/50 text-xs text-slate-300">
+          <div 
+            role="button"
+            tabIndex={0}
+            onClick={() => openGuideBook(0)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                openGuideBook(0);
+              }
+            }}
+            className="w-full text-left bg-slate-900 rounded-3xl border border-slate-800 p-6 hover:border-indigo-500/30 hover:shadow-[0_0_20px_rgba(99,102,241,0.1)] hover:-translate-y-1 cursor-pointer transition-all group overflow-hidden relative"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                  <BookMarked size={16} /> Guides
+              </h3>
+              <div className="w-8 h-8 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center transition-opacity shrink-0">
+                <BookOpen size={16} />
+              </div>
+            </div>
+            <div className="space-y-2 relative z-10">
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openGuideBook(2);
+                }} 
+                className="w-full flex items-center gap-3 p-3 rounded-xl bg-slate-950/50 hover:bg-slate-800 transition-colors border border-slate-800/50 text-xs text-slate-300"
+              >
                   <Compass size={16} className="text-sky-400" /> Sanctum Map
               </button>
-              <button onClick={() => openGuideBook(3)} className="w-full flex items-center gap-3 p-3 rounded-xl bg-slate-950/50 hover:bg-slate-800 transition-colors border border-slate-800/50 text-xs text-slate-300">
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openGuideBook(3);
+                }} 
+                className="w-full flex items-center gap-3 p-3 rounded-xl bg-slate-950/50 hover:bg-slate-800 transition-colors border border-slate-800/50 text-xs text-slate-300"
+              >
                   <Package size={16} className="text-rose-400" /> Sanctum Items
               </button>
-              <button onClick={() => openGuideBook(5)} className="w-full flex items-center gap-3 p-3 rounded-xl bg-slate-950/50 hover:bg-slate-800 transition-colors border border-slate-800/50 text-xs text-slate-300">
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openGuideBook(5);
+                }} 
+                className="w-full flex items-center gap-3 p-3 rounded-xl bg-slate-950/50 hover:bg-slate-800 transition-colors border border-slate-800/50 text-xs text-slate-300"
+              >
                   <Coins size={16} className="text-amber-400" /> Gold Coins
               </button>
-              <button onClick={() => openGuideBook(6)} className="w-full flex items-center gap-3 p-3 rounded-xl bg-slate-950/50 hover:bg-slate-800 transition-colors border border-slate-800/50 text-xs text-slate-300">
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openGuideBook(6);
+                }} 
+                className="w-full flex items-center gap-3 p-3 rounded-xl bg-slate-950/50 hover:bg-slate-800 transition-colors border border-slate-800/50 text-xs text-slate-300"
+              >
                   <BookOpen size={16} className="text-indigo-400" /> XP & Leveling
               </button>
-              <button onClick={() => openGuideBook(7)} className="w-full flex items-center gap-3 p-3 rounded-xl bg-slate-950/50 hover:bg-slate-800 transition-colors border border-slate-800/50 text-xs text-slate-300">
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openGuideBook(7);
+                }} 
+                className="w-full flex items-center gap-3 p-3 rounded-xl bg-slate-950/50 hover:bg-slate-800 transition-colors border border-slate-800/50 text-xs text-slate-300"
+              >
                   <Zap size={16} className="text-[var(--gb-talent-color)]" /> Talent System
               </button>
             </div>

@@ -44,7 +44,7 @@ export const CalcSettingsSection: React.FC<CalcSettingsProps> = ({ state, setSta
 
     // Evaluate active talents for average baseline session
     if (state.activeTalents.includes('a1')) baseXP = Math.floor(baseXP * 1.1);
-    if (state.activeTalents.includes('b1')) baseCoins += 2;
+    if (state.activeTalents.includes('b1')) baseCoins *= 1.15;
 
     const critChance = state.devModeEnabled ? (state.devCritChance ?? 0.05) : 0.05;
     const critMult = state.devModeEnabled ? (state.devCritMultiplier ?? 5) : 5;
@@ -299,7 +299,7 @@ export const CalcSettingsSection: React.FC<CalcSettingsProps> = ({ state, setSta
                     <div className="flex justify-between items-center text-[11px]">
                       <span className="text-slate-500 font-bold uppercase tracking-wider">Talent Gold (B1)</span>
                       <span className={cn("font-mono", state.activeTalents.includes('b1') ? "text-emerald-400" : "text-slate-600")}>
-                        {state.activeTalents.includes('b1') ? "+2" : "+0"}
+                        {state.activeTalents.includes('b1') ? "+15%" : "+0"}
                       </span>
                     </div>
                     <div className="flex justify-between items-center text-[11px]">

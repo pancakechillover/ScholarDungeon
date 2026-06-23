@@ -52,6 +52,7 @@ import { CloudSyncModal } from './components/CloudSyncModal';
 import { SplashScreen } from './components/SplashScreen';
 import { CompactTimer } from './components/CompactTimer';
 import { UpdateChecker } from './components/UpdateChecker';
+import { useTimerStore } from './hooks/useTimerStore';
 import { renderAvatar } from './components/TeamModule';
 
 const isTalentLevel = (lvl: number) => {
@@ -119,10 +120,6 @@ function App() {
     const saved = localStorage.getItem('timer_endTime');
     return saved ? parseInt(saved, 10) : null;
   });
-  const [timerTimeLeft, setTimerTimeLeft] = useState(() => {
-    const saved = localStorage.getItem('timer_timeLeft');
-    return saved ? parseInt(saved, 10) : 25 * 60;
-  });
 
   const [pipVictorySummary, setPipVictorySummary] = useState<{ xp: number, coins: number, ts: number } | null>(null);
 
@@ -156,9 +153,8 @@ function App() {
     } else {
       localStorage.removeItem('timer_endTime');
     }
-    localStorage.setItem('timer_timeLeft', timerTimeLeft.toString());
     localStorage.setItem('timer_presets', JSON.stringify(timerPresets));
-  }, [focusDuration, restDuration, enableRest, isLooping, loopTarget, loopCount, isResting, duration, isTimerActive, timerEndTime, timerTimeLeft, timerPresets]);
+  }, [focusDuration, restDuration, enableRest, isLooping, loopTarget, loopCount, isResting, duration, isTimerActive, timerEndTime, timerPresets]);
 
   const addTimerPreset = (focus: number, rest: number) => {
     if (!timerPresets.find(p => p.focus === focus && p.rest === rest)) {
@@ -175,7 +171,7 @@ function App() {
     setRestDuration(rest);
     setIsResting(false);
     setDuration(focus);
-    setTimerTimeLeft(focus * 60);
+    useTimerStore.getState().setTimeLeft(focus * 60);
     setIsTimerActive(false);
     setTimerEndTime(null);
   };
@@ -815,9 +811,9 @@ function App() {
       breakdown.push({ source: 'Talent: Mind Lubrication', xpEffect: '+10%' });
     }
     if (state.activeTalents.includes('b1')) {
-      minCoins += 2;
-      maxCoins += 2;
-      breakdown.push({ source: 'Talent: Alchemy', coinEffect: '+2' });
+      minCoins *= 1.15;
+      maxCoins *= 1.15;
+      breakdown.push({ source: 'Talent: Alchemy', coinEffect: '+15%' });
     }
     if (state.activeTalents.includes('c3')) {
       const critChance = state.devModeEnabled ? (state.devCritChance ?? 0.05) : 0.05;
@@ -850,7 +846,7 @@ function App() {
       }
     });
 
-    return { xp: Math.floor(xp), minCoins: Math.floor(minCoins), maxCoins: Math.floor(maxCoins), breakdown };
+    return { xp: Math.floor(xp), minCoins: Math.ceil(minCoins), maxCoins: Math.ceil(maxCoins), breakdown };
   }, [state.devModeEnabled, state.devBaseXP, state.devXpMode, state.devMinXP, state.devMaxXP, state.devCoinMode, state.devBaseCoins, state.devMinCoins, state.devMaxCoins, state.activeTalents, state.dailySessions, state.streak, state.inventory, state.rewardPool]);
 
   const finalizeMajorDungeon = (id: string) => {
@@ -1098,16 +1094,16 @@ function App() {
         setLoopCount(0);
       }
       setIsTimerActive(true);
-      setTimerEndTime(Date.now() + timerTimeLeft * 1000);
+      setTimerEndTime(Date.now() + useTimerStore.getState().timeLeft * 1000);
     }
-  }, [isTimerActive, isResting, isLooping, loopTarget, loopCount, timerTimeLeft]);
+  }, [isTimerActive, isResting, isLooping, loopTarget, loopCount]);
 
   const resetTimerPip = useCallback(() => {
     setIsTimerActive(false);
     setTimerEndTime(null);
     setIsResting(false);
     setDuration(focusDuration);
-    setTimerTimeLeft(focusDuration * 60);
+    useTimerStore.getState().setTimeLeft(focusDuration * 60);
     setLoopCount(0);
   }, [focusDuration]);
 
@@ -1124,7 +1120,6 @@ function App() {
 
       {pipWindow && createPortal(
         <CompactTimer 
-          timeLeft={timerTimeLeft}
           endTime={timerEndTime}
           isActive={isTimerActive}
           isResting={isResting}
@@ -1562,8 +1557,6 @@ function App() {
                  setIsTimerActive={setIsTimerActive}
                  isResting={isResting}
                  setIsResting={setIsResting}
-                 timeLeft={timerTimeLeft}
-                 setTimeLeft={setTimerTimeLeft}
                  duration={duration}
                  setDuration={setDuration}
                  endTime={timerEndTime}
@@ -1693,6 +1686,10 @@ function App() {
                   setShowGuideBook(true);
                 }}
                 onSetActivePool={setActivePool}
+                onOpenSettings={() => {
+                  setActiveTab('settings');
+                  setActiveSettingsSection('merchant');
+                }}
               />
             )}
 
@@ -1703,6 +1700,7 @@ function App() {
                 onUpdateState={(update) => setState(s => ({ ...s, ...update }))}
                 updateSession={updateSession}
                 deleteSession={deleteSession}
+                completeSession={completeSession}
                 dungeons={dungeons}
                 majorDungeons={majorDungeons}
                 setShowStartOfDayModal={setShowStartOfDayModal}

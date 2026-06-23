@@ -322,16 +322,51 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // POST: Log Event / Progress
     if (method === 'POST' && action === 'event') {
-       const { teamId, type, content, duration } = req.body;
+       const { teamId, type, content, duration, sessionTimestamp } = req.body;
        
        // safely handle duration parsing
        const timeVal = duration !== undefined ? Number(duration) : 0;
        
        if (timeVal > 0) {
+          const teamData = await client.hGetAll(`scholar_team:${teamId}`);
           const memberStr = await client.hGet(`scholar_team:${teamId}:members`, userId);
-          if (memberStr) {
+          if (memberStr && teamData) {
              const m = JSON.parse(memberStr);
              m.totalFocusTime = (m.totalFocusTime || 0) + timeVal;
+             
+             // Evaluate cycle limits
+             const targetType = teamData.config_targetType || 'total_time';
+             if (targetType === 'total_time') {
+                m.cycleFocusTime = m.totalFocusTime;
+                m.cycleStart = 0;
+                m.cycleTargetType = 'total_time';
+             } else {
+                const ts = sessionTimestamp || Date.now();
+                const now = new Date(ts);
+                const resetHour = parseInt(teamData.config_resetTime?.split(':')[0] || '0');
+                let start = new Date(now);
+                start.setHours(resetHour, 0, 0, 0);
+                if (now.getHours() < resetHour) start.setDate(start.getDate() - 1);
+                
+                if (targetType === 'weekly_time') {
+                  const day = start.getDay();
+                  start.setDate(start.getDate() - day + (day === 0 ? -6 : 1));
+                } else if (targetType === 'monthly_time') {
+                  start.setDate(1);
+                } else if (targetType === 'yearly_time') {
+                  start.setMonth(0, 1);
+                }
+                
+                const cycleStart = start.getTime();
+                if (m.cycleStart === cycleStart && m.cycleTargetType === targetType) {
+                   m.cycleFocusTime = (m.cycleFocusTime || 0) + timeVal;
+                } else {
+                   m.cycleFocusTime = timeVal;
+                   m.cycleStart = cycleStart;
+                   m.cycleTargetType = targetType;
+                }
+             }
+
              await client.hSet(`scholar_team:${teamId}:members`, userId, JSON.stringify(m));
           }
        }
@@ -545,6 +580,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
        }
        
        await client.hDel(`scholar_team:${teamId}:members`, userId);
+       await client.hIncrBy(`scholar_team:${teamId}`, 'memberCount', -1);
        
        // Clean up if it was the last non-captain member (though captain can't leave without disbanding, so this is just general cleanup)
        await client.lPush(`scholar_team:${teamId}:events`, JSON.stringify({
@@ -594,11 +630,52 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
        if (targetMember.isCaptain) return res.status(400).json({ error: 'Cannot banish the captain' });
 
        await client.hDel(`scholar_team:${teamId}:members`, targetMemberId);
+       await client.hIncrBy(`scholar_team:${teamId}`, 'memberCount', -1);
        
        await client.lPush(`scholar_team:${teamId}:events`, JSON.stringify({
           id: crypto.randomUUID(), type: 'kick', content: `${member.name} banished ${targetMember.name} from the guild.`, timestamp: Date.now()
        }));
        
+       return res.json({ success: true });
+    }
+
+    // POST: Reclaim
+    if (method === 'POST' && action === 'reclaim') {
+       const { teamId } = req.body;
+       const memberStr = await client.hGet(`scholar_team:${teamId}:members`, userId);
+       if (!memberStr) return res.status(403).json({ error: 'Not member' });
+       const member = JSON.parse(memberStr);
+
+       const allMembersData = await client.hGetAll(`scholar_team:${teamId}:members`);
+       let currentCaptainId: string | null = null;
+       let currentCaptain: any = null;
+
+       for (const [mId, mStr] of Object.entries(allMembersData)) {
+          const m = JSON.parse(mStr);
+          if (m.isCaptain) {
+             currentCaptainId = mId;
+             currentCaptain = m;
+             break;
+          }
+       }
+       
+       if (currentCaptain && currentCaptainId !== userId) {
+          if (currentCaptain.name === member.name) {
+             currentCaptain.isCaptain = false;
+             member.isCaptain = true;
+             
+             await client.hDel(`scholar_team:${teamId}:members`, currentCaptainId);
+             await client.hIncrBy(`scholar_team:${teamId}`, 'memberCount', -1);
+             await client.hSet(`scholar_team:${teamId}:members`, userId, JSON.stringify(member));
+             
+             await client.lPush(`scholar_team:${teamId}:events`, JSON.stringify({
+                id: crypto.randomUUID(), type: 'system', content: `${member.name} reclaimed their abandoned captain account.`, timestamp: Date.now()
+             }));
+             return res.json({ success: true });
+          } else {
+             return res.status(403).json({ error: 'Name must exactly match the current captain to reclaim.' });
+          }
+       }
        return res.json({ success: true });
     }
 

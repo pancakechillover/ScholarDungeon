@@ -18,13 +18,13 @@ export const RewardStatsModal = ({ pool, appState, onClose }: { pool: RewardCard
   const maxBaseCoinsRaw = isRandomCoins ? (appState?.devMaxCoins ?? 15) : (appState?.devBaseCoins ?? 10);
   const avgBaseCoinsRaw = (minBaseCoinsRaw + maxBaseCoinsRaw) / 2;
 
-  const baseCoinsMin = minBaseCoinsRaw + (b1Active ? 2 : 0);
-  const baseCoinsMaxRaw = maxBaseCoinsRaw + (b1Active ? 2 : 0);
+  const baseCoinsMin = Math.ceil(minBaseCoinsRaw * (b1Active ? 1.15 : 1));
+  const baseCoinsMaxRaw = Math.ceil(maxBaseCoinsRaw * (b1Active ? 1.15 : 1));
   const baseCoinsMax = c3Active ? (baseCoinsMaxRaw * critMult) : baseCoinsMaxRaw;
 
-  // Expected Value calculation combining base range, alchemy (+2), and critical intuition expected mult
+  // Expected Value calculation combining base range, alchemy (*1.15), and critical intuition expected mult
   const expectedCritMult = c3Active ? (1 - critChance + critChance * critMult) : 1;
-  const expectedBaseCoins = (avgBaseCoinsRaw + (b1Active ? 2 : 0)) * expectedCritMult;
+  const expectedBaseCoins = Math.ceil(avgBaseCoinsRaw * (b1Active ? 1.15 : 1)) * expectedCritMult;
 
   const totalWeight = pool.reduce((s, c) => s + (c.weight || 0), 0) || 1;
   let directCoinsAvg = 0;
@@ -106,7 +106,7 @@ export const RewardStatsModal = ({ pool, appState, onClose }: { pool: RewardCard
             </div>
 
             <div className="bg-slate-950/50 rounded-xl p-3 text-xs font-mono text-slate-400 space-y-1">
-              <div className="flex justify-between"><span>Base Calculation {b1Active?'(+2 Alchemy)':''} {c3Active?'(Crit Mode)':''}:</span> <span className="text-white">{expectedBaseCoins.toFixed(2)}</span></div>
+              <div className="flex justify-between"><span>Base Calculation {b1Active?'(+15% Alchemy)':''} {c3Active?'(Crit Mode)':''}:</span> <span className="text-white">{expectedBaseCoins.toFixed(2)}</span></div>
               <div className="flex justify-between"><span>Pool Direct Drops:</span> <span className="text-white">+{directCoinsAvg.toFixed(2)}</span></div>
               <div className="flex justify-between border-b border-slate-800 pb-1 mb-1"><span>Pool Item Multipliers:</span> <span className="text-white">+{bonusCoinsAvg.toFixed(2)}</span></div>
               <div className="flex justify-between text-amber-400 font-bold pt-1"><span>Total Expected = </span> <span>{totalExpectedCoins.toFixed(2)}</span></div>

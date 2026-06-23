@@ -52,7 +52,7 @@ export function getTitleForLevel(level: number): string {
     return 'Novice';
   } else if (level >= 4 && level < 16) {
     return 'Veteran';
-  } else if (level >= 16 && level < 48) {
+  } else if (level >= 16 && level < 43) {
     return 'Master';
   } else {
     return 'Grandmaster';

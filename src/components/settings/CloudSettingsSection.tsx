@@ -993,7 +993,10 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
                 step="1"
                 value={debounceSeconds}
                 onChange={(e) => setState(s => ({ ...s, autoSyncDebounceSeconds: parseInt(e.target.value) }))}
-                className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                className="w-full text-indigo-500 rounded-lg cursor-pointer transition-all mt-2"
+                style={{
+                  background: `linear-gradient(to right, currentColor ${((debounceSeconds - 3) / 57) * 100}%, var(--color-slate-800, #1e293b) ${((debounceSeconds - 3) / 57) * 100}%)`
+                }}
               />
             </div>
           )}
@@ -1016,7 +1019,10 @@ export const CloudSettingsSection: React.FC<CloudSettingsSectionProps> = ({
                 step="1"
                 value={intervalMinutes}
                 onChange={(e) => setState(s => ({ ...s, autoSyncIntervalMinutes: parseInt(e.target.value) }))}
-                className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                className="w-full text-indigo-500 rounded-lg cursor-pointer transition-all mt-2"
+                style={{
+                  background: `linear-gradient(to right, currentColor ${((intervalMinutes - 1) / 59) * 100}%, var(--color-slate-800, #1e293b) ${((intervalMinutes - 1) / 59) * 100}%)`
+                }}
               />
             </div>
           )}

@@ -273,6 +273,8 @@ export interface AppState {
   includeRestTimeInTasks?: boolean;
   pendingRewardChest?: { session: StudySession; choices: RewardCard[]; }[];
   // Editable Pools
+  rewardPoolMode?: 'fixed' | 'free'; // Added
+  customRewardPool?: RewardCard[]; // Added to preserve user's free pool
   rewardPool: RewardCard[];
   shopItems: ShopItem[];
   gachaPools: GachaPool[];
@@ -374,6 +376,7 @@ export interface AppState {
     showHeatmap?: boolean;
     dailyDonutMode?: '24h' | 'compact';
     weeklyDonutMode?: 'time_of_day' | 'day_of_week';
+    hiddenRoutines?: string[];
   };
 }
 
@@ -388,6 +391,7 @@ export interface StudySession {
   xpEarned: number;
   rewardName?: string;
   rewardIcon?: string;
+  note?: string;
   isCrit?: boolean;
   period?: string;
   assignedDateStr?: string;
@@ -406,6 +410,9 @@ export interface TeamMember {
   level?: number;
   joinedAt: number;
   totalFocusTime: number; // minutes contributed
+  cycleFocusTime?: number; // minutes contributed in the current active cycle limit
+  cycleStart?: number; // timestamp representing the start of the current cycle bounds
+  cycleTargetType?: string; // targetType at the time cycleFocusTime was incremented
   isCaptain: boolean;
   lastActive?: number;
   uniqueId?: string; // Short permanent identifier

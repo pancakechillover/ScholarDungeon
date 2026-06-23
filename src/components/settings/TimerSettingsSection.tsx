@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { RewardCard, ShopItem, GachaPool, Rarity } from '../../types';
-import { INITIAL_GACHA } from '../../constants';
+import { INITIAL_GACHA, INITIAL_REWARD_POOL } from '../../constants';
 import { Plus, Trash2, Save, Edit2, X, ChevronRight, Coins, Zap, Sparkles, Trophy, Timer as TimerIcon, Package, Flame, AlertTriangle, Scroll, Volume2, VolumeX, Sun, Moon, Settings as SettingsIcon, ShoppingBag, Trees, Waves, Database, Download, Upload, Target, Gift, User, Sword, Eye, Palette, Check, Bell, BellOff, RefreshCw, Key, Layers, Sunrise, Cloud, CloudSun, Lollipop, Wrench, History, Ticket } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { APP_VERSION, LAST_UPDATE_DATE, RELEASE_HISTORY } from '../../version';
@@ -422,7 +422,32 @@ export const TimerSettingsSection = ({
 
       {/* Rewards Management Section */}
       <div className="space-y-6 pt-10 border-t border-slate-800">
-        <RewardSettings pool={rewardPool} appState={state} onUpdate={onUpdateRewards} onReset={onResetRewards} />
+        <RewardSettings 
+          pool={state.rewardPool} 
+          appState={state} 
+          onUpdate={(newPool) => setState((prev: any) => ({ 
+            ...prev, 
+            rewardPool: newPool, // Keep backward compatibility
+            customRewardPool: prev.rewardPoolMode === 'free' ? newPool : prev.customRewardPool 
+          }))} 
+          onReset={onResetRewards} 
+          onModeChange={(mode) => setState((prev: any) => {
+            if (mode === 'fixed') {
+              const mergedFixedPool = INITIAL_REWARD_POOL.map(initialItem => {
+                if (initialItem.type === 'text') {
+                  const existing = prev.rewardPool.find((c: any) => c.id === initialItem.id);
+                  if (existing) {
+                    return { ...existing, type: 'text', weight: initialItem.weight, rarity: initialItem.rarity };
+                  }
+                }
+                return initialItem;
+              });
+              return { ...prev, rewardPoolMode: 'fixed', customRewardPool: prev.rewardPoolMode === 'free' ? prev.rewardPool : prev.customRewardPool, rewardPool: mergedFixedPool };
+            } else {
+              return { ...prev, rewardPoolMode: 'free', rewardPool: prev.customRewardPool || prev.rewardPool };
+            }
+          })}
+        />
       </div>
     </div>
   );

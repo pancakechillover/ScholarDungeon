@@ -9,6 +9,7 @@ interface StatsViewProps {
   onUpdateState?: (updates: Partial<AppState>) => void;
   updateSession?: (id: string, updates: Partial<StudySession>) => void;
   deleteSession?: (id: string) => void;
+  completeSession?: (dungeonId: string | null, duration: number, focusDuration?: number, restDuration?: number, customTimestamp?: number) => void;
   dungeons?: Dungeon[];
   majorDungeons?: MajorDungeon[];
   setShowStartOfDayModal?: (val: string | boolean) => void;
@@ -20,6 +21,7 @@ export const StatsView: React.FC<StatsViewProps> = ({
   onUpdateState, 
   updateSession, 
   deleteSession,
+  completeSession,
   dungeons,
   majorDungeons,
   setShowStartOfDayModal
@@ -38,6 +40,7 @@ export const StatsView: React.FC<StatsViewProps> = ({
         onUpdateState={onUpdateState}
         updateSession={updateSession}
         deleteSession={deleteSession}
+        completeSession={completeSession}
         dungeons={dungeons}
         majorDungeons={majorDungeons}
         setShowStartOfDayModal={setShowStartOfDayModal}
