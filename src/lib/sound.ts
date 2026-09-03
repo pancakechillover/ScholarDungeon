@@ -16,7 +16,7 @@ export const initAudio = () => {
   }
 };
 
-type SoundType = 'success' | 'reward' | 'gacha' | 'redeem' | 'click' | 'levelUp' | 'pageTurn';
+type SoundType = 'success' | 'reward' | 'gacha' | 'redeem' | 'click' | 'levelUp' | 'pageTurn' | 'pop' | 'error';
 
 export const playSound = (type: SoundType, volume: number = 0.5, enabled: boolean = true) => {
   if (!enabled || volume <= 0) return;
@@ -56,6 +56,24 @@ export const playSound = (type: SoundType, volume: number = 0.5, enabled: boolea
   gain.connect(audioCtx.destination);
 
   switch (type) {
+    case 'pop':
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(300, t);
+      osc.frequency.exponentialRampToValueAtTime(100, t + 0.05);
+      gain.gain.setValueAtTime(v * 0.3, t);
+      gain.gain.exponentialRampToValueAtTime(0.01, t + 0.05);
+      osc.start(t);
+      osc.stop(t + 0.05);
+      break;
+    case 'error':
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(200, t);
+      osc.frequency.linearRampToValueAtTime(100, t + 0.15);
+      gain.gain.setValueAtTime(v * 0.1, t);
+      gain.gain.exponentialRampToValueAtTime(0.01, t + 0.15);
+      osc.start(t);
+      osc.stop(t + 0.15);
+      break;
     case 'click':
       osc.type = 'sine';
       osc.frequency.setValueAtTime(600, t);

@@ -229,6 +229,12 @@ export function useGameState() {
       defaultMarkdownEnabled: true,
       standardSessionMinutes: 25,
       includeRestTimeInTasks: true,
+      efficiencyRatingConfig: {
+        autoCalculateOnOpen: true,
+        maxDistractionsPerHour: 10,
+        completionRateWeight: 70,
+        focusQualityWeight: 30,
+      },
       requireFocusConfirmation: false,
       timerBannerCompactMode: false,
       timerSkipVictoryMode: 'none',
@@ -1070,7 +1076,7 @@ export function useGameState() {
     }
   }, [dungeons, majorDungeons, addRewardToHistory, getNow, setState]);
 
-  const completeSession = useCallback((dungeonId: string | null, duration: number, focusDuration?: number, restDuration?: number, customTimestamp?: number) => {
+  const completeSession = useCallback((dungeonId: string | null, duration: number, focusDuration?: number, restDuration?: number, customTimestamp?: number, distractions?: { internal: number; external: number; unavoidable: number }) => {
     const absoluteNow = customTimestamp ? new Date(customTimestamp) : getNow();
     let localTimeRecord = new Date(absoluteNow);
     if (state.timezone) {
@@ -1152,6 +1158,7 @@ export function useGameState() {
       duration,
       focusDuration,
       restDuration,
+      distractions,
       timestamp: absoluteNow.toISOString(),
       coinsEarned: Math.ceil(baseCoins),
       xpEarned: Math.floor(baseXP),
@@ -1348,6 +1355,9 @@ export function useGameState() {
         setState(s => ({
           ...s,
           talentPoints: s.talentPoints + addedTalentPoints,
+          todayTodos: (s.todayTodos || []).map(todo => 
+            todo.dungeonId === d.id ? { ...todo, completed: true } : todo
+          ),
           lastCompletionRewards: {
             dungeonName: d.name,
             type: 'dungeon',
@@ -1477,6 +1487,9 @@ export function useGameState() {
     setState(s => ({
       ...s,
       talentPoints: s.talentPoints + addedTalentPoints,
+      todayTodos: (s.todayTodos || []).map(todo => 
+        todo.dungeonId === d.id ? { ...todo, completed: true } : todo
+      ),
       lastCompletionRewards: {
         dungeonName: d.name,
         type: 'dungeon',

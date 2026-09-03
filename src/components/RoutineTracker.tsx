@@ -261,7 +261,7 @@ export const RoutineTracker: React.FC<RoutineTrackerProps> = ({ history, dungeon
             </tbody>
           </table>
           
-          <PopoverPortal anchorElement={selectedCell?.element || null} onClose={() => setSelectedCell(null)}>
+          <PopoverPortal anchorElement={selectedCell?.element || null}>
              {selectedCell?.date && renderPopover?.(new Date(selectedCell.date), selectedCell.routineId, () => setSelectedCell(null))}
           </PopoverPortal>
         </div>

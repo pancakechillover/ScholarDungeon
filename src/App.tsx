@@ -99,6 +99,14 @@ function App() {
     }
   }, []);
 
+  useEffect(() => {
+    const handleNavToExplore = () => {
+      setActiveTab('explore');
+    };
+    window.addEventListener('nav-to-explore', handleNavToExplore);
+    return () => window.removeEventListener('nav-to-explore', handleNavToExplore);
+  }, []);
+
   const [activeSettingsSection, setActiveSettingsSection] = useState<'menu' | 'general' | 'timer' | 'rewards' | 'shop' | 'gacha' | 'dev' | 'levelRewards' | 'about' | 'level' | 'merchant' | 'cloud' | 'calculator' | 'sage'>('menu');
 
   const canPip = 'documentPictureInPicture' in window && window.self === window.top;
@@ -235,10 +243,10 @@ function App() {
     if (!isTimerActive) {
       if (isResting) {
         setDuration(safeRest);
-        setTimerTimeLeft(safeRest * 60);
+        useTimerStore.getState().setTimeLeft(safeRest * 60);
       } else {
         setDuration(safeFocus);
-        setTimerTimeLeft(safeFocus * 60);
+        useTimerStore.getState().setTimeLeft(safeFocus * 60);
       }
     }
   };
@@ -1083,7 +1091,27 @@ function App() {
     }
   }, [appReady, state.timeSettings?.night.end]); // Run after app loads
 
-  const handleSplashComplete = useCallback(() => setAppReady(true), []);
+  // Determine if Start of the Day prompt should trigger upon startup
+  const shouldShowStartOfDayOnStartup = useMemo(() => {
+    if (!state.enableStartOfDayPrompt) return false;
+    if (!state.lastStartOfDayPrompt) return true;
+    let now = new Date();
+    if (state.timezone) {
+      try {
+        const str = now.toLocaleString('en-US', { timeZone: state.timezone });
+        now = new Date(str);
+      } catch (e) {}
+    }
+    const todayStr = getSettlementDay(now, state.timeSettings);
+    return state.lastStartOfDayPrompt !== todayStr;
+  }, [state.enableStartOfDayPrompt, state.lastStartOfDayPrompt, state.timezone, state.timeSettings]);
+
+  const handleSplashComplete = useCallback(() => {
+    setAppReady(true);
+    if (shouldShowStartOfDayOnStartup) {
+      setShowStartOfDayModal(true);
+    }
+  }, [shouldShowStartOfDayOnStartup]);
 
   const toggleTimerPip = useCallback(() => {
     if (isTimerActive) {
@@ -1115,7 +1143,14 @@ function App() {
   return (
     <>
       <AnimatePresence>
-        {!appReady && <SplashScreen key="splash" onComplete={handleSplashComplete} />}
+        {!appReady && (
+          <SplashScreen 
+            key="splash" 
+            variant={shouldShowStartOfDayOnStartup ? 'sunrise' : 'default'}
+            theme={state.theme}
+            onComplete={handleSplashComplete} 
+          />
+        )}
       </AnimatePresence>
 
       {pipWindow && createPortal(
@@ -1477,6 +1512,7 @@ function App() {
                 state={state}
                 setState={setState}
                 dungeons={dungeons}
+                majorDungeons={majorDungeons}
                 currentDungeon={currentDungeon || null}
                 setActiveTab={setActiveTab}
                 setShowDailySummary={setShowDailySummary}
@@ -1749,6 +1785,7 @@ function App() {
           <StartOfDayModal
             state={state}
             dungeons={dungeons}
+            majorDungeons={majorDungeons}
             initialDateStr={typeof showStartOfDayModal === 'string' ? showStartOfDayModal : undefined}
             repairStreak={repairStreak}
             onUpdateState={(update) => setState(s => ({ ...s, ...update }))}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StudySession, Dungeon, AppState } from '../types';
+import { StudySession, Dungeon, AppState, MajorDungeon } from '../types';
 import { cn } from '../lib/utils';
 import { Check, X, Clock, Trash2 } from 'lucide-react';
 import { format, isSameDay, subDays } from 'date-fns';
@@ -84,7 +84,6 @@ export const RoutineCellEditor = ({
     const newSession: StudySession = {
       id: "SD-" + Math.random().toString(36).substr(2, 9).toUpperCase(),
       dungeonId: routineId,
-      startTime: targetTimestamp - mins * 60 * 1000,
       timestamp: new Date(targetTimestamp).toISOString(),
       duration: mins,
       coinsEarned: 0,

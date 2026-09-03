@@ -651,7 +651,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
        let currentCaptain: any = null;
 
        for (const [mId, mStr] of Object.entries(allMembersData)) {
-          const m = JSON.parse(mStr);
+          const m = JSON.parse(mStr as string);
           if (m.isCaptain) {
              currentCaptainId = mId;
              currentCaptain = m;

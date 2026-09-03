@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { Sword, Play, Pause, RotateCcw, SkipForward, Trophy, Coins, Zap, Scroll, Flame, Settings2, RefreshCw, Coffee, Maximize, Sparkles, Clock } from 'lucide-react';
+import { Sword, Play, Pause, RotateCcw, SkipForward, Trophy, Coins, Zap, Scroll, Flame, Settings2, RefreshCw, Coffee, Maximize, Sparkles, Clock, Brain, Wind } from 'lucide-react';
 import { TreasureChestIcon } from './icons/TreasureChestIcon';
 import { RewardCard, StudySession, Dungeon } from '../types';
 import { cn } from '../lib/utils';
@@ -21,7 +21,7 @@ interface TimerProps {
   history: StudySession[];
   standardSessionMinutes?: number;
   pendingRewardChest?: { session: StudySession; choices: RewardCard[]; }[];
-  onComplete: (duration: number, focusDuration?: number, restDuration?: number) => StudySession | null;
+  onComplete: (duration: number, focusDuration?: number, restDuration?: number, distractions?: { internal: number; external: number; unavoidable: number }) => StudySession | null;
   onRestComplete?: () => void;
   onInventoryAdd: (id: string) => void;
   onReroll: () => void;
@@ -108,7 +108,7 @@ export const Timer = React.memo<TimerProps>(({
   critChance,
   critMultiplier
 }) => {
-  const { timeLeft, setTimeLeft } = useTimerStore();
+  const { timeLeft, setTimeLeft, distractions, setDistractions } = useTimerStore();
   const [showRewards, setShowRewards] = useState<{ session: StudySession; choices: RewardCard[] } | null>(null);
   const [studyNote, setStudyNote] = useState('');
   const [showTalentPopup, setShowTalentPopup] = useState<StudySession['triggeredTalents'] | null>(null);
@@ -286,7 +286,8 @@ export const Timer = React.memo<TimerProps>(({
       // Finished focus
       const actualFocusDuration = overrideDuration !== undefined ? overrideDuration : focusDuration;
       const actualDuration = overrideDuration !== undefined ? overrideDuration : duration;
-      const session = onComplete(actualDuration, actualFocusDuration, restDuration);
+      const session = onComplete(actualDuration, actualFocusDuration, restDuration, distractions);
+      setDistractions({ internal: 0, external: 0, unavoidable: 0 });
       if (session) {
         const generated = generateRewardChoicesForSession(session, {
           rewardPool,
@@ -383,15 +384,22 @@ export const Timer = React.memo<TimerProps>(({
 
   useEffect(() => {
     let worker: Worker | null = null;
+    let isDone = false;
     
     const checkTime = () => {
-      if (!isActive || !endTime) return;
+      if (!isActive || !endTime || isDone) return;
       const now = Date.now();
       const remaining = Math.max(0, Math.ceil((endTime - now) / 1000));
       
       setTimeLeft(remaining);
       
       if (remaining === 0) {
+        isDone = true;
+        if (worker) {
+          worker.postMessage({ command: 'stop' });
+          worker.terminate();
+          worker = null;
+        }
         setIsActive(false);
         setEndTime(null);
         
@@ -401,12 +409,15 @@ export const Timer = React.memo<TimerProps>(({
 
     if (isActive && endTime) {
       checkTime(); // Check immediately
-      worker = createWorkerTimer();
-      worker.onmessage = checkTime;
-      worker.postMessage({ command: 'start', interval: 1000 });
+      if (!isDone) {
+        worker = createWorkerTimer();
+        worker.onmessage = checkTime;
+        worker.postMessage({ command: 'start', interval: 1000 });
+      }
     }
     
     return () => {
+      isDone = true;
       if (worker) {
         worker.postMessage({ command: 'stop' });
         worker.terminate();
@@ -515,6 +526,7 @@ export const Timer = React.memo<TimerProps>(({
     setDuration(focusDuration);
     setTimeLeft(focusDuration * 60);
     setLoopCount(0);
+    setDistractions({ internal: 0, external: 0, unavoidable: 0 });
   };
 
   const formatTime = (seconds: number) => {
@@ -523,105 +535,107 @@ export const Timer = React.memo<TimerProps>(({
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const showDistractionControls = !isResting;
+
   return (
-    <div className="relative flex flex-col items-center justify-center gap-4 sm:gap-6 lg:gap-8 w-full h-full min-h-0 flex-1">
+    <div className="relative flex flex-col items-center justify-center gap-4 sm:gap-6 lg:gap-8 w-full h-full min-h-0 flex-1 select-none">
       {/* Timer Display */}
       <div className="relative flex-1 min-h-0 w-full flex items-center justify-center max-w-[280px] sm:max-w-[360px] lg:max-w-[420px] xl:max-w-[480px] max-h-[280px] sm:max-h-[360px] lg:max-h-[420px] xl:max-h-[480px]">
         <div className="relative w-full h-full aspect-square max-w-full max-h-full">
           <svg viewBox="0 0 320 320" className="w-full h-full transform -rotate-90">
-          <circle
-            cx="160"
-            cy="160"
-            r="150"
-            stroke="currentColor"
-            strokeWidth="8"
-            fill="transparent"
-            className="text-slate-800"
-          />
-          <motion.circle
-            cx="160"
-            cy="160"
-            r="150"
-            stroke="currentColor"
-            strokeWidth="8"
-            fill="transparent"
-            strokeDasharray={2 * Math.PI * 150}
-            initial={{ strokeDashoffset: -(2 * Math.PI * 150) * (1 - timeLeft / ((duration || 25) * 60)) }}
-            animate={{ strokeDashoffset: -(2 * Math.PI * 150) * (1 - timeLeft / ((duration || 25) * 60)) }}
-            className={isResting ? "text-emerald-500" : "text-indigo-500"}
-          />
-        </svg>
-        <div className="absolute inset-x-0 top-[20%] flex flex-col items-center justify-end z-10 pointer-events-none pb-2">
-          {isLooping && (
-             <span className="bg-slate-900/80 backdrop-blur-sm border border-slate-700/50 px-3 py-1 rounded-full text-xs font-bold text-slate-300">
-               {loopCount}/{loopTarget > 0 ? loopTarget : '∞'} loops
-             </span>
-          )}
-        </div>
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <div 
-            className={cn(
-              "font-black font-mono text-white tracking-tighter flex items-center justify-center",
-              isFullscreen ? "text-6xl sm:text-7xl md:text-[5rem]" : "text-6xl sm:text-7xl lg:text-7xl"
+            <circle
+              cx="160"
+              cy="160"
+              r="150"
+              stroke="currentColor"
+              strokeWidth="8"
+              fill="transparent"
+              className="text-slate-800"
+            />
+            <motion.circle
+              cx="160"
+              cy="160"
+              r="150"
+              stroke="currentColor"
+              strokeWidth="8"
+              fill="transparent"
+              strokeDasharray={2 * Math.PI * 150}
+              initial={{ strokeDashoffset: -(2 * Math.PI * 150) * (1 - timeLeft / ((duration || 25) * 60)) }}
+              animate={{ strokeDashoffset: -(2 * Math.PI * 150) * (1 - timeLeft / ((duration || 25) * 60)) }}
+              className={isResting ? "text-emerald-500" : "text-indigo-500"}
+            />
+          </svg>
+          <div className="absolute inset-x-0 top-[20%] flex flex-col items-center justify-end z-10 pointer-events-none pb-2">
+            {isLooping && (
+               <span className="bg-slate-900/80 backdrop-blur-sm border border-slate-700/50 px-3 py-1 rounded-full text-xs font-bold text-slate-300">
+                 {loopCount}/{loopTarget > 0 ? loopTarget : '∞'} loops
+               </span>
             )}
-          >
-            {formatTime(timeLeft).split('').map((char, i) => (
-              <span
-                key={i}
-                className="inline-block"
-              >
-                {char}
-              </span>
-            ))}
           </div>
-          <div className={cn(
-              "font-bold uppercase tracking-widest text-xs mt-2 flex items-center gap-1",
-              isResting ? "text-emerald-500" : "text-indigo-400"
-            )}>
-            {(() => {
-              const statusText = (isResting ? (isActive ? 'Resting...' : 'Ready to Rest') : (isActive ? 'Exploring...' : 'Ready to Delve'));
-              const charArray = statusText.split('');
-              const totalItems = charArray.length + 1; // +1 for the icon
-              const animationDuration = 0.6;
-              const repeatDelay = (totalItems - 1) * animationDuration;
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <div 
+              className={cn(
+                "font-black font-mono text-white tracking-tighter flex items-center justify-center",
+                isFullscreen ? "text-6xl sm:text-7xl md:text-[5rem]" : "text-6xl sm:text-7xl lg:text-7xl"
+              )}
+            >
+              {formatTime(timeLeft).split('').map((char, i) => (
+                <span
+                  key={i}
+                  className="inline-block"
+                >
+                  {char}
+                </span>
+              ))}
+            </div>
+            <div className={cn(
+                "font-bold uppercase tracking-widest text-xs mt-2 flex items-center gap-1",
+                isResting ? "text-emerald-500" : "text-indigo-400"
+              )}>
+              {(() => {
+                const statusText = (isResting ? (isActive ? 'Resting...' : 'Ready to Rest') : (isActive ? 'Exploring...' : 'Ready to Delve'));
+                const charArray = statusText.split('');
+                const totalItems = charArray.length + 1; // +1 for the icon
+                const animationDuration = 0.6;
+                const repeatDelay = (totalItems - 1) * animationDuration;
 
-              return (
-                <>
-                  <motion.span
-                    animate={isActive ? { y: [0, -8, 0] } : { y: 0 }}
-                    transition={{
-                      duration: animationDuration,
-                      repeat: isActive ? Infinity : 0,
-                      ease: "easeInOut",
-                      delay: 0,
-                      repeatDelay: repeatDelay
-                    }}
-                    className="inline-block mr-1"
-                  >
-                    {isResting ? <Coffee size={14} /> : <Sword size={14} />}
-                  </motion.span>
-                  {charArray.map((char, i) => (
+                return (
+                  <>
                     <motion.span
-                      key={i}
                       animate={isActive ? { y: [0, -8, 0] } : { y: 0 }}
                       transition={{
                         duration: animationDuration,
                         repeat: isActive ? Infinity : 0,
                         ease: "easeInOut",
-                        delay: (i + 1) * animationDuration, // Delay based on its position in sequence
+                        delay: 0,
                         repeatDelay: repeatDelay
                       }}
-                      className="inline-block"
+                      className="inline-block mr-1"
                     >
-                      {char}
+                      {isResting ? <Coffee size={14} /> : <Sword size={14} />}
                     </motion.span>
-                  ))}
-                </>
-              );
-            })()}
+                    {charArray.map((char, i) => (
+                      <motion.span
+                        key={i}
+                        animate={isActive ? { y: [0, -8, 0] } : { y: 0 }}
+                        transition={{
+                          duration: animationDuration,
+                          repeat: isActive ? Infinity : 0,
+                          ease: "easeInOut",
+                          delay: (i + 1) * animationDuration, // Delay based on its position in sequence
+                          repeatDelay: repeatDelay
+                        }}
+                        className="inline-block"
+                      >
+                        {char}
+                      </motion.span>
+                    ))}
+                  </>
+                );
+              })()}
+            </div>
           </div>
         </div>
-      </div>
       </div>
 
       {/* Controls */}
@@ -674,6 +688,67 @@ export const Timer = React.memo<TimerProps>(({
           <SkipForward size={24} className={cn("relative z-10 transition-transform", skipProgress > 0 && "scale-110 text-indigo-400")} />
         </button>
       </div>
+
+      {/* Distraction Controls */}
+      {showDistractionControls && (
+        <motion.div 
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col items-center gap-1 shrink-0 z-20"
+        >
+          <span className="text-[9px] md:text-[10px] text-slate-500 uppercase tracking-widest font-bold">Distractions</span>
+          <div className="flex items-center space-x-1.5 md:space-x-2 bg-slate-900/80 backdrop-blur-md p-1 md:p-1.5 rounded-full border border-slate-800 shadow-xl">
+            <button 
+              onClick={() => {
+                playSound('click', 0.5, true);
+                setDistractions(d => ({ ...d, internal: d.internal + 1 }));
+              }}
+              className="w-[86px] sm:w-[96px] md:w-[106px] py-1.5 md:py-2 bg-slate-800 hover:bg-indigo-600/20 text-slate-300 hover:text-indigo-400 rounded-full text-[10px] md:text-xs transition-colors flex items-center justify-center gap-1 md:gap-1.5 shrink-0 whitespace-nowrap"
+              title="Internal: Distracted by your own thoughts"
+            >
+              <Brain size={13} className="shrink-0" />
+              <span>Internal</span>
+              {distractions.internal > 0 && (
+                <span className="w-3.5 h-3.5 md:w-4.5 md:h-4.5 flex items-center justify-center bg-indigo-500/20 text-indigo-400 rounded-full text-[8px] md:text-[9px] font-bold shrink-0">
+                  {distractions.internal}
+                </span>
+              )}
+            </button>
+            <button 
+              onClick={() => {
+                playSound('pop', 0.5, true);
+                setDistractions(d => ({ ...d, external: d.external + 1 }));
+              }}
+              className="w-[86px] sm:w-[96px] md:w-[106px] py-1.5 md:py-2 bg-slate-800 hover:bg-orange-600/20 text-slate-300 hover:text-orange-400 rounded-full text-[10px] md:text-xs transition-colors flex items-center justify-center gap-1 md:gap-1.5 shrink-0 whitespace-nowrap"
+              title="External: Interrupted by environment"
+            >
+              <Wind size={13} className="shrink-0" />
+              <span>External</span>
+              {distractions.external > 0 && (
+                <span className="w-3.5 h-3.5 md:w-4.5 md:h-4.5 flex items-center justify-center bg-orange-500/20 text-orange-400 rounded-full text-[8px] md:text-[9px] font-bold shrink-0">
+                  {distractions.external}
+                </span>
+              )}
+            </button>
+            <button 
+              onClick={() => {
+                playSound('error', 0.5, true);
+                setDistractions(d => ({ ...d, unavoidable: d.unavoidable + 1 }));
+              }}
+              className="w-[114px] sm:w-[126px] md:w-[138px] py-1.5 md:py-2 bg-slate-800 hover:bg-red-600/20 text-slate-300 hover:text-red-400 rounded-full text-[10px] md:text-xs transition-colors flex items-center justify-center gap-1 md:gap-1.5 shrink-0 whitespace-nowrap"
+              title="Unavoidable: Forced to interrupt"
+            >
+              <Zap size={13} className="shrink-0" />
+              <span>Unavoidable</span>
+              {distractions.unavoidable > 0 && (
+                <span className="w-3.5 h-3.5 md:w-4.5 md:h-4.5 flex items-center justify-center bg-red-500/20 text-red-400 rounded-full text-[8px] md:text-[9px] font-bold shrink-0">
+                  {distractions.unavoidable}
+                </span>
+              )}
+            </button>
+          </div>
+        </motion.div>
+      )}
 
       {/* Timer Settings UI removed from here - moved to TimerSettings.tsx */}
 

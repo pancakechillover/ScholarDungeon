@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { History, Clock, Trophy, Edit2, Trash2, Filter, Search, X, Check, SearchX, Calendar, Sword, ArrowUp, ArrowDown, ChevronUp, ChevronDown, Zap, Layers, Download } from 'lucide-react';
+import { History, Clock, Trophy, Edit2, Trash2, Filter, Search, X, Check, SearchX, Calendar, Sword, ArrowUp, ArrowDown, ChevronUp, ChevronDown, Zap, Layers, Download, Brain, Wind } from 'lucide-react';
 import { StudySession, Dungeon, MajorDungeon, RewardCard, TimeSettings } from '../types';
 import { cn, getSessionEffectiveMinutes } from '../lib/utils';
 import { format, parseISO, isAfter, isBefore, startOfDay, endOfDay } from 'date-fns';
@@ -707,6 +707,24 @@ export const RecentSessions: React.FC<RecentSessionsProps> = ({
                                <span className="text-slate-500"> + </span>
                                <span className="text-emerald-400">{session.restDuration || 0} min</span>
                              </div>
+                              {session.distractions && (session.distractions.internal > 0 || session.distractions.external > 0 || session.distractions.unavoidable > 0) && (
+                                <div className="mt-1 flex items-center justify-center gap-1 opacity-80" title={`Total Distractions: ${(session.distractions.internal || 0) + (session.distractions.external || 0) + (session.distractions.unavoidable || 0)}`}>
+                                 <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 flex items-center gap-0.5 font-bold font-mono">
+                                   <span className="text-rose-400">{(() => {
+                                     const totalDist = (session.distractions.internal || 0) + (session.distractions.external || 0) + (session.distractions.unavoidable || 0);
+                                     const durMins = Math.max(1, (session.focusDuration || session.duration || 1));
+                                     const rate = totalDist / durMins;
+                                     return rate < 0.1 ? rate.toFixed(2) : (rate >= 10 ? Math.round(rate).toString() : rate.toFixed(1));
+                                   })()}</span>
+                                   <span className="text-slate-400 font-sans font-normal text-[8.5px]">/min</span>
+                                 </span>
+                                 <div className="flex items-center gap-0.5 ml-1">
+                                   {session.distractions.internal > 0 && <span className="flex items-center gap-0.5 text-[9px] text-indigo-400 bg-indigo-500/10 px-1 py-0.5 rounded" title="Internal"><Brain size={10} />{session.distractions.internal}</span>}
+                                   {session.distractions.external > 0 && <span className="flex items-center gap-0.5 text-[9px] text-orange-400 bg-orange-500/10 px-1 py-0.5 rounded" title="External"><Wind size={10} />{session.distractions.external}</span>}
+                                   {session.distractions.unavoidable > 0 && <span className="flex items-center gap-0.5 text-[9px] text-rose-400 bg-rose-500/10 px-1 py-0.5 rounded" title="Unavoidable"><Zap size={10} />{session.distractions.unavoidable}</span>}
+                                 </div>
+                               </div>
+                             )}
                            </div>
                         </td>
                         <td className="px-3 sm:px-6 py-4 text-center">

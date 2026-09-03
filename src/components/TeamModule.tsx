@@ -1316,7 +1316,7 @@ const TeamMemberProfileModal = ({ member, onClose, isCurrentUserCaptain, isTarge
           </div>
           
           <h2 className="text-2xl font-black text-white italic tracking-tight flex items-center justify-center gap-2">
-            {member.name} {member.isCaptain && <Crown size={20} className="text-amber-500" title="Captain" />}
+            {member.name} {member.isCaptain && <span title="Captain"><Crown size={20} className="text-amber-500" /></span>}
           </h2>
           
           <div className="flex items-center gap-2 mt-2 flex-wrap justify-center font-mono">
