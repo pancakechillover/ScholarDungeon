@@ -40,9 +40,9 @@ We now separate updates into **Preview Updates** (预览更新) and **Official U
 - **Theme-Aware Colors & Minimalist UI:** We have 6 different theme colors. Every color choice (especially backgrounds, progress bars, or buttons) MUST consider all themes to maintain a minimalist and premium aesthetic. Avoid thick, flashy, or hardcoded colors like `bg-emerald-500` which may look jarring or "rough" (粗率) in certain themes. Rely on theme-aware colors (`indigo-300`, `indigo-400`, `indigo-500`, `indigo-600`) or neutral slate colors with opacity. DO NOT use `indigo-200` or `indigo-700`+ for primary themed elements, as they will appear in the default blue color across all themes.
 
 ## Current Status
-- **Current Version:** v9.3.38
+- **Current Version:** v9.3.39
 - **Last Update Date:** 2026-09-11
-- **Last Update Time:** 00:05:00
+- **Last Update Time:** 16:46:33
 
 ## Dark Themes Definition
 The following themes are considered "Dark Themes" and form the baseline for vibrant visual effects and high-contrast glowing elements:
@@ -69,6 +69,13 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
 ## Task History
 > Detailed task history is archived and maintained in `TaskHistory.md` (retaining at most the 3 most recent entries).
 
+- **v9.3.39 (2026-09-11):** WebDAV Proxy SSRF Guard Hardening, Shared API Helpers & Zero-Dependency Test Suite
+  - *SSRF Guard Rewrite:* Replaced prefix-based host matching in `api/shared/webdavSecurity.ts` with proper CIDR arithmetic. The previous guard was bypassed by six classes of internal address — `[::1]`, `[::]`, `[::ffff:127.0.0.1]`, `100.64.0.0/10` (CGNAT), `198.18.0.0/15` and `192.0.0.0/24` — because `URL.hostname` keeps the brackets on IPv6 literals, defeating both the exact-match and `startsWith` checks. Added `::ffff:0:0/96` and `64:ff9b::/96` unwrapping, `.local` / `.internal` suffix rejection, and a best-effort DNS lookup.
+  - *WebDAV Helper Deduplication:* `api/webdav/proxy.ts` now imports the shared guard instead of carrying a private inline copy, so the Vercel route and the `server.ts` development mirror enforce identical rules. The previously dead `resolveAndValidateHostname` stub is now implemented through a lazily imported `node:dns/promises` that cannot break cold start.
+  - *Resilient Redis Reads:* Added `api/shared/json.ts` and routed `api/sync.ts` / `api/teams.ts` through it, so a corrupt or partially written save blob degrades to a fallback instead of returning HTTP 500.
+  - *PWA Precache Guard Restored:* Fixed `maximumFileSizeToCacheInBytes` in `vite.config.ts`, which read `6000000 * 1024 * 1024` (roughly 6 TB) and therefore never enforced any limit.
+  - *Zero-Dependency Test Suite:* Added `tests/` (29 cases, run with `npm test`) on Node's built-in test runner with native TypeScript stripping — no test framework or config required. Also repaired a double-encoded em dash in `vite.config.ts` and synced the `package.json` version to the app version.
+
 - **v9.3.38 (2026-09-11):** Guild / Fellowship Team Goal Real-Time Focus Time Aggregation & Cycle Synchronization
   - *Centralized Cycle State Engine:* Created `/src/lib/teamUtils.ts` with standardized cycle date boundaries (`getCycleBounds`), cycle unique keys (`getCycleKey`), and user total / cycle focus accumulators (`calculateUserTotalFocus`, `calculateUserCycleFocus`, `getTeamCycleState`) with fallback calculation matching study session history and rest time preferences.
   - *Full-Stack Member Progress Synchronization:* Synchronized user total and cycle focus time from study session completion broadcasts (`useGameState.ts`) and polling headers (`x-user-total-focus`, `x-user-cycle-focus`, `x-user-cycle-key`, `x-user-target-type` in `TeamModule.tsx`), persisting updated member stats seamlessly into Redis backend storage.
@@ -78,8 +85,3 @@ Due to inconsistencies in Web Push delivery in various environments (Iframes, PW
   - *Multi-Line Content Paste Expansion:* Added clipboard handler to automatically decompose multi-line pasted text into individual rows and position cursor at the tail of pasted block.
   - *Line-End Forward Delete Merging:* Enabled `Delete` key at the end of a line to smoothly merge subsequent rows into the active line.
   - *Escape Quick Preview & Typography Polish:* Enabled `Esc` to instantly blur active line and preview complete rendered markdown; optimized rich rendering of bold (`**`), italic (`*`), and strikethrough (`~~`).
-
-- **v9.3.36 (2026-09-10):** Markdown Sub-List Indentation & Tab Navigation Hierarchy
-  - *Full Second-Level Sub-List Support:* Enhanced `Tab` and `Shift + Tab` key handlers to automatically indent and outdent list items (`- `, `1. `, `- [ ] `) by 2 spaces at the beginning of the line regardless of cursor position within the line.
-  - *Nested Multi-Level Markdown Live Rendering:* Non-active lines with leading indentations render as proper second-level hierarchical lists (nested hollow circle bullets, sub-alphabet numbers, and indented task checkboxes).
-  - *Smart Multi-Level List Continuation & Exit:* Pressing `Enter` on a sub-list item automatically maintains indentation; pressing `Enter` on an empty sub-list item automatically outdents one level before exiting.
