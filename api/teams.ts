@@ -1,15 +1,7 @@
 import { createClient } from 'redis';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import crypto from 'crypto';
-
-function safeJsonParse<T>(value: any, fallback: T): T {
-  if (!value) return fallback;
-  try {
-    return JSON.parse(value);
-  } catch (e) {
-    return fallback;
-  }
-}
+import { safeJsonParse } from './shared/json';
 
 function getCycleKeyServer(targetType = 'total_time', resetTimeStr = '00:00', date: Date = new Date()): string {
   if (targetType === 'total_time' || !targetType) return 'total';

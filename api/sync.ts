@@ -1,5 +1,13 @@
 import { createClient } from 'redis';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { safeJsonParse } from './shared/json';
+
+/** Shape of the save blob exchanged with the client. */
+interface SyncPayload {
+  lastUpdated?: string;
+  savedByDeviceCode?: string;
+  [key: string]: unknown;
+}
 
 // Initialize Redis client lazily to reuse connection in serverless environment
 let redisClient: any = null;
@@ -45,7 +53,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       
       const historyKey = `scholar_sync_${secretCode}_history`;
       const historyRaw = await client.get(historyKey);
-      const historyList = historyRaw ? JSON.parse(historyRaw.toString()) : [];
+      const historyList = safeJsonParse<unknown[]>(historyRaw, []);
       
       return res.status(200).json({ success: true, history: historyList });
     }
@@ -74,7 +82,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       const cloudDataRaw = await client.get(key);
-      const cloudData = cloudDataRaw ? JSON.parse(cloudDataRaw.toString()) : null;
+      const cloudData = safeJsonParse<SyncPayload | null>(cloudDataRaw, null);
 
       // If no localData is provided, this is a FETCH request
       if (!localData) {
@@ -101,7 +109,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (cloudData && cloudData.lastUpdated && cloudData.lastUpdated !== localData.lastUpdated) {
           const historyKey = `${key}_history`;
           const historyRaw = await client.get(historyKey);
-          let historyList = historyRaw ? JSON.parse(historyRaw.toString()) : [];
+          let historyList = safeJsonParse<SyncPayload[]>(historyRaw, []);
           // Insert at beginning
           historyList.unshift(cloudData);
           // Keep only last 3
