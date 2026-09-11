@@ -15,7 +15,10 @@ export default defineConfig(({mode}) => {
         srcDir: 'src',
         filename: 'sw.ts',
         injectManifest: {
-          maximumFileSizeToCacheInBytes: 6000000 * 1024 * 1024
+          // 6 MiB. This used to be `6000000 * 1024 * 1024` (roughly 6 TB), which
+          // silently disabled the precache size guard. Raise it if the build
+          // starts warning about a chunk that is too large to precache.
+          maximumFileSizeToCacheInBytes: 6 * 1024 * 1024
         },
         registerType: 'autoUpdate',
         devOptions: {
@@ -69,8 +72,8 @@ export default defineConfig(({mode}) => {
       },
     },
     server: {
-      // HMR is disabled in AI Studio via DISABLE_HMR env var.
-      // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
+      // HMR is disabled in AI Studio via the DISABLE_HMR env var.
+      // Do not modify — file watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR === 'true' ? false : { clientPort: 443 },
     },
   };
