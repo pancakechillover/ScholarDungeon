@@ -30,8 +30,8 @@ const getRedisClient = async () => {
 
 // ── Validation & rate limiting ────────────────────────────────────────────
 
-/** Accepts the legacy base36 codes (26 chars) and the new UUID codes (36 chars). */
-const SECRET_CODE_PATTERN = /^[A-Za-z0-9-]{16,64}$/;
+/** Accepts short legacy codes (e.g. GoogleTest, 10 chars), base36 codes (26 chars) and UUID codes (36 chars). */
+const SECRET_CODE_PATTERN = /^[A-Za-z0-9-]{8,64}$/;
 
 function isValidSecretCode(value: unknown): value is string {
   return typeof value === 'string' && SECRET_CODE_PATTERN.test(value);
