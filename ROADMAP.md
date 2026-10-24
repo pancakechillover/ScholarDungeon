@@ -1,0 +1,304 @@
+# ROADMAP
+
+> Scholar's Dungeon 的维护路线图。按风险分级，不按心情排序。
+>
+> 最后盘点：2026-10-23 · 对应版本 v9.3.39 · 分支 `hardening-and-dedup`
+
+---
+
+## 0. 这份文档怎么用
+
+- 每一项都有 **ID**（如 `P0-1`）、**验收标准** 和 checkbox。做完一项勾一项，不要凭记忆。
+- 优先级判断标准只有一条：**改晚了会损失什么**。不是"想不想做"。
+- `P0` / `P1` 是护栏，`P2` 是拆房子。**护栏没建好之前不要动 P2**，否则只会把混乱换个地方藏。
+- 新增想法先写进第 9 节的"待评估"，不要直接插队。
+
+---
+
+## 1. 当前状态快照（2026-10-23 实测）
+
+| 指标                         | 实测值                                            | 判定   |
+| -------------------------- | ---------------------------------------------- | ---- |
+| `tsconfig.json` 的 `strict` | 未开启（无任何严格性开关）                                  | P1-2 |
+| `any` / `as any`           | 304 处                                          | P2-5 |
+| 空 `catch {}`               | 45 处                                           | P4-1 |
+| `console.log`              | 29 处                                           | P4-1 |
+| ESLint / Prettier          | 无                                              | P1-1 |
+| CI（`.github/workflows`）    | 无                                              | P1-3 |
+| 测试文件                       | 3 个（`json` / `webdavProxy` / `webdavSecurity`） | P1-5 |
+| React ErrorBoundary        | 0 处                                            | P0-1 |
+| 数据 schema 版本号              | 无                                              | P0-2 |
+| 依赖声明一致性                    | `framer-motion` 被 import 但不在 `package.json`    | P0-3 |
+| 路由                         | 0 处（无 router / hash / pushState）               | P1-4 |
+| `App.tsx`                  | 2238 行                                         | P2-1 |
+| `useGameState.ts`          | 2772 行                                         | P2-2 |
+| 数据模型                       | 34 个（`types.ts`，554 行）                         | —    |
+| 源文件                        | 138 个，孤儿组件 1 个（`modals/RewardModal.tsx`）       | P4-1 |
+
+**结构性问题（不是死代码，是归属混乱）**
+
+| 模块                     | 行数   | 现在挂在哪                            |
+| ---------------------- | ---- | -------------------------------- |
+| 公会 `TeamModule`        | 1941 | Sanctum 页面内（无独立入口）               |
+| 工位打卡 `WorkstationView` | 1197 | Explore 页面内                      |
+| 日志 `JournalView`       | 1146 | Record 页面内，靠 `localStorage` 布尔切换 |
+
+目录与挂载互相矛盾：`journal/` 被 `record/` 引用，`workstation/` 被 `expedition/` 引用，`guild/` 被 `dashboard/` 引用。
+
+---
+
+## 2. 分级标准
+
+| 级别     | 含义            | 时间窗   |
+| ------ | ------------- | ----- |
+| **P0** | 会丢数据、会白屏、会泄露  | 本周    |
+| **P1** | 不做的话每次改代码都在裸奔 | 两周内   |
+| **P2** | 架构债，拖慢所有后续开发  | 一至两个月 |
+| **P3** | 三端体验一致性       | 按需    |
+| **P4** | 打磨，随时可做       | 有空    |
+
+---
+
+## 3. P0 · 本周必须清
+
+### P0-1 · 加错误兜底（ErrorBoundary）
+
+- [ ] **现状**：全项目 0 处 ErrorBoundary。任一组件抛错 → 整页白屏，用户数据还在但什么都看不到。
+- [ ] **做法**：
+  1. 新建 `src/components/common/ErrorBoundary.tsx`（class 组件，实现 `getDerivedStateFromError` + `componentDidCatch`）。
+  2. 兜底 UI 提供三个动作：重新加载、回到 Sanctum、导出存档 JSON。
+  3. 包两层：`main.tsx` 顶层一层，`App.tsx` 每个 L1 页面各一层（单页崩不拖垮全局）。
+- [ ] **验收**：在某个 View 里临时 `throw new Error('test')`，页面显示兜底 UI 且能导出数据；移除后恢复正常。
+- [ ] **预估**：0.5 天
+- [ ] 完成
+
+### P0-2 · 数据版本号与迁移入口
+
+- [ ] **现状**：`AppState` 有 34 个模型、49 个 localStorage key，但**没有 schema 版本号**。只有奖励卡类型的一次性补丁（`useGameState.ts:334`）。改动字段定义，老用户数据会静默丢字段或直接崩。
+- [ ] **做法**：
+  1. `AppState` 增加 `schemaVersion: number`。
+  2. 新建 `src/lib/migrations.ts`，导出 `migrate(raw: unknown): AppState`，内部按版本号顺序执行，每步是纯函数。
+  3. 所有读存档的入口（localStorage、云同步、Google Drive 导入、WebDAV 导入）统一走 `migrate`。
+  4. 迁移失败时保留原始数据到 `__backup_raw` key，不要覆盖。
+- [ ] **验收**：把 `schemaVersion` 改成旧值 + 删掉一个新字段，刷新后能自动补齐且不报错；故意写入损坏 JSON，能保留备份并提示。
+- [ ] **预估**：1 天
+- [ ] 完成
+
+### P0-3 · 依赖声明与包管理器统一
+
+- [ ] **现状**：`src/components/settings/CloudHistoryModal.tsx` import 了 `framer-motion`，但 `package.json` 里只有 `motion`。npm 靠提升传递依赖掩盖了问题，pnpm 严格模式直接白屏。`package-lock.json` 存在但从未与 `package.json` 对齐。
+- [ ] **做法**：
+  1. 统一用 `motion/react`（全项目其他 20+ 处都是），不新增依赖。
+  2. 选定唯一包管理器并写进 `packageManager` 字段。当前安装实测：npm 在本机 Windows 上 14 分钟未完成，pnpm 3 分 58 秒。
+  3. 删除另一个 lock 文件，避免两个来源打架。
+- [ ] **验收**：删掉 `node_modules` 后全新安装 + `npm run build` 一次通过；`git grep framer-motion src/` 无结果。
+- [ ] **预估**：0.5 天
+- [x] 修掉 import（2026-10-23，改 `motion/react`）
+- [ ] 统一 lock 文件与 `packageManager` 字段
+
+### P0-4 · 云同步限流与口令校验
+
+- [ ] **现状**：`api/sync.ts` 把 `secretCode` 直接拼进 Redis key（`scholar_sync_${secretCode}`）。无限流、无格式校验。口令由 `Math.random().toString(36)` 生成，约 26 位，暴力枚举不现实，但：
+  - 无限流，一个客户端可以刷爆 300 人配额；
+  - 未校验字符，异常输入会污染 key 空间；
+  - `Math.random` 非密码学安全。
+- [ ] **做法**：
+  1. 服务端校验 `^[A-Za-z0-9]{16,64}$`，不合法直接 400。
+  2. 基于 Redis 做 IP 维度限流（如 60 秒 20 次），超限返回 429。
+  3. 前端改用 `crypto.getRandomValues` 生成口令。
+  4. 配额统计改为按真实用户计数，避免同人多口令占位。
+- [ ] **验收**：脚本连发 30 次请求，超过阈值后返回 429；提交含 `*`、空格的 secretCode 返回 400。
+- [ ] **预估**：1 天
+- [ ] 完成
+
+### P0-5 · 发布标记与回滚点
+
+- [ ] **现状**：线上版本与本地提交无法对应，出问题只能靠猜。
+- [ ] **做法**：每次部署前 `git tag v<version>`（版本号已在 `package.json`），推送 tag。`src/version.ts` 与 tag 保持同源。
+- [ ] **验收**：`git tag` 能列出最近 5 个线上版本，任一 tag 可单独 checkout 并构建。
+- [ ] **预估**：0.2 天
+- [ ] 完成
+
+---
+
+## 4. P1 · 两周内（基础设施）
+
+### P1-1 · ESLint + Prettier
+
+- [ ] **现状**：完全没有。45 处空 `catch {}`、29 处 `console.log` 都是无人约束的产物。
+- [ ] **做法**：ESLint flat config + `@typescript-eslint` + `react-hooks` 插件；Prettier 只负责格式。先只对 `src/` 和 `api/` 开启，**规则从宽到严**，第一版只开 `no-unused-vars`、`no-empty`、`react-hooks/rules-of-hooks`。
+- [ ] **验收**：`npm run lint` 可跑通；新增一条违反 `react-hooks` 的代码会被拦下。
+- [ ] **预估**：0.5 天
+- [ ] 完成
+
+### P1-2 · TypeScript 严格性渐进开启
+
+- [ ] **现状**：`tsconfig.json` 一个严格性开关都没开。
+- [ ] **做法**：分三步，每步单独提交、单独跑通构建。
+  1. `noUnusedLocals`、`noUnusedParameters`（先处理明显死代码）
+  2. `noImplicitReturns`、`noFallthroughCasesInSwitch`
+  3. `strict: true`（`noImplicitAny` 是最大头，304 处 `any` 需要逐目录清）
+- [ ] **验收**：每步 `npm run typecheck` 零错误。
+- [ ] **预估**：第 1-2 步各 0.5 天；第 3 步 3-5 天
+- [ ] 完成
+
+### P1-3 · CI：typecheck + test + build
+
+- [ ] **现状**：没有任何自动检查。P0-3 那个白屏问题，一次构建就能拦住。
+- [ ] **做法**：`.github/workflows/ci.yml`，PR 与 push 到非默认分支时触发：装依赖（pnpm，带缓存）→ `typecheck` → `test` → `build`。失败即阻断。
+- [ ] **验收**：故意提交一个类型错误，PR 上 CI 变红。
+- [ ] **预估**：0.5 天
+- [ ] 完成
+
+### P1-4 · hash 路由 + 页面注册表
+
+- [ ] **现状**：全项目 0 处路由。页面切换靠 `useState` 布尔与 `activeTab`，所以：
+  - 刷新回到首页；
+  - 移动端按返回键直接退出应用；
+  - 新功能没有"位置"可放，只能再加一个开关。
+- [ ] **做法**：
+  1. `src/useHashRoute.ts`（约 20 行，监听 `hashchange`，不引入依赖）。
+  2. `src/routes.ts` 页面注册表，每页声明 `{ level, parent, label, shell }`。
+  3. 导航、面包屑、返回栈全部从注册表推导，不再手写在 `App.tsx`。
+  4. URL 形如 `#/sanctum`、`#/records/journal`、`#/quests/d/<id>`。
+- [ ] **验收**：任意页面刷新不丢失；手机返回键退回上一层；直接粘贴 `#/records/journal` 能打开对应页。
+- [ ] **预估**：1.5 天
+- [ ] 完成
+
+### P1-5 · 关键路径测试
+
+- [ ] **现状**：3 个测试文件，只覆盖 JSON 解析与 WebDAV 安全。
+- [ ] **做法**：补三块（用 Node 内置 `node:test`，不装框架）：
+  1. 奖励结算：连续专注、倍率卡、上限截断；
+  2. 云同步冲突：本地/云端时间戳与设备号的各种组合；
+  3. 计时器状态机：开始/暂停/休息/循环/跨天。
+- [ ] **验收**：以上三块各 ≥5 个用例，`npm test` 全绿。
+- [ ] **预估**：2 天
+- [ ] 完成
+
+---
+
+## 5. P2 · 架构（护栏建好之后）
+
+### P2-1 · 拆 `App.tsx`（2238 行）
+
+按 L1 页面拆出容器组件；跨层数据用 context 替代 prop drilling（`ExploreView` 当前单组件接 60+ props）。
+
+- [ ] **验收**：`App.tsx` < 400 行，无单个组件接收超过 20 个 props。
+- [ ] 完成
+
+### P2-2 · 拆 `useGameState.ts`（2772 行）
+
+拆为 `useTimerStore` / `useRewardStore` / `useQuestStore` / `useSyncStore`，共享底层持久化。
+
+- [ ] **验收**：单文件 < 600 行，状态改动不再互相牵连。
+- [ ] 完成
+
+### P2-3 · 目录对齐导航
+
+`journal/` → `records/`，`workstation/` → `focus/`，`guild/` 提升为独立模块，`expedition/` 只保留真正的远征逻辑。
+
+- [ ] **验收**：目录层级与导航层级一一对应，`grep` 不再出现跨模块反向引用。
+- [ ] 完成
+
+### P2-4 · 统一 `PageShell` / `SegmentedTabs`
+
+替掉 `showTodayView`、`showJournalView`、`showSageConsult` 等所有布尔切换。桌面渲染 tab 行，移动渲染横滑分段控件，同一份代码。
+
+- [ ] 完成
+
+### P2-5 · 清理 304 处 `any`
+
+配合 P1-2 第 3 步，按目录推进，每目录一次提交。
+
+- [ ] 完成
+
+---
+
+## 6. P3 · 三端体验
+
+### P3-1 · 端判断拆成两个维度
+
+- [ ] **现状**：`App.tsx:117` 的 `isDesktop = !('ontouchstart' in window)`，触屏 Windows 笔记本被判成移动端，iPad 永远拿不到桌面布局。
+- [ ] **做法**：`viewport`（compact / medium / wide，按宽度）+ `input`（touch / pointer，按 `(hover: hover)`），两者正交。删除所有 `if (isMobile)` 式的组件分支，布局差异交给 CSS 断点。
+- [ ] **验收**：Chromium 触摸模拟 + iPad 尺寸下，布局符合预期且不出现双套 UI。
+- [ ] 完成
+
+### P3-2 · iOS PWA 适配
+
+安全区、下拉回弹、安装引导、`sw.ts` 的 `skipWaiting()` 造成的资源错配（建议改为提示用户刷新）。
+
+- [ ] 完成
+
+### P3-3 · 移动端导航取舍
+
+底部 5 项：Sanctum / Focus / Quests / Growth / Records。Guild 走 Sanctum 顶部未读入口，Settings 走头像菜单。桌面端 7 项全展开。
+
+- [ ] 完成
+
+### P3-4 · 首屏性能
+
+路由级代码分包、长列表虚拟化、图片压缩、bundle 体积预算。
+
+- [ ] 完成
+
+---
+
+## 7. P4 · 打磨
+
+- **P4-1** 清理 45 处空 `catch {}`（至少加 `console.warn` 或上报）与 29 处 `console.log`；删除孤儿组件 `modals/RewardModal.tsx`
+- **P4-2** 重写 README（技术栈写错、功能缺一半、安装步骤会把人坑死）
+- **P4-3** 键盘可达性与焦点管理
+- **P4-4** 错误上报（接 Sentry 或自建端点），替代现在的静默失败
+
+---
+
+## 8. 30 天执行顺序
+
+| 周     | 任务             | 产出             |
+| ----- | -------------- | -------------- |
+| 第 1 周 | P0-1 ~ P0-5    | 敢放心改数据结构，崩了能兜住 |
+| 第 2 周 | P1-1 ~ P1-3    | 每次提交自动被检查      |
+| 第 3 周 | P1-4 + P1-5    | "新功能放哪"有标准答案   |
+| 第 4 周 | P2-3 目录对齐 + 复盘 | 目录与导航一致，只记一套   |
+
+**第 4 周之前不要碰 P2-1 / P2-2。** 护栏没建好就拆主组件，只会把混乱换个位置。
+
+---
+
+## 9. 待评估（不插队）
+
+想法先记这里，等当前优先级清完再评估：
+
+- （留空）
+
+---
+
+## 10. 变更记录
+
+| 日期         | 变更                         |
+| ---------- | -------------------------- |
+| 2026-10-23 | 首次建立。基于当日代码实测数据完成 P0–P4 分级 |
+
+---
+
+## 附录 A · 盘点方法（可复现）
+
+以下命令可在项目根目录重跑，用于验证快照是否过期：
+
+```bash
+# 类型严格性
+grep -E '"strict"|"noImplicit|"noUnused' tsconfig*.json
+
+# any 数量
+grep -rhoE ":\s*any\b|as any" src/ api/ --include=*.ts --include=*.tsx | wc -l
+
+# 空 catch
+grep -rhoE "catch\s*(\([^)]*\))?\s*\{\s*\}" src/ --include=*.ts --include=*.tsx | wc -l
+
+# 核心文件规模
+wc -l src/App.tsx src/hooks/*.ts
+
+# 路由使用情况（应为 0）
+grep -rn "react-router\|location.hash\|pushState" src/ | wc -l
+```
