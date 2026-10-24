@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import React, { useState, useEffect } from 'react';
+import { motion } from 'motion/react';
 import { createPortal } from 'react-dom';
 import { 
-  Users, LogIn, Plus, X, MessageSquare, Activity, Crown, Clock, Target, Check, AlertCircle, RefreshCw, Send, Settings, User, UserCheck, UserX, Landmark, ArrowDown,
+  Users, LogIn, Plus, X, Activity, Crown, Clock, Target, Check, AlertCircle, RefreshCw, Send, Settings, User, UserCheck, UserX, Landmark,
   Cat, Dog, Ghost, Bot, Skull, Lock,
   BookOpen, Library, Coffee, Brain, ShieldHalf, Swords, Flame, Sparkles, Castle, Mountain
 } from 'lucide-react';

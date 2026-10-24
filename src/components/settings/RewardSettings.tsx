@@ -1,4 +1,4 @@
-import _React, { useState } from 'react';
+import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { RewardCard, Rarity } from '../../types';

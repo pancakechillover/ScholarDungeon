@@ -14,7 +14,7 @@
     "lint": "eslint src api server.ts",
     "format": "prettier --write \"src/**/*.{ts,tsx}\" \"api/**/*.ts\"",
     "typecheck": "tsc --noEmit",
-    "test": "echo \"No tests yet (P1-5)\"; exit 0"
+    "test": "node --test"
   },
   "overrides": {
     "node-domexception": "npm:domexception@^4.0.0"
