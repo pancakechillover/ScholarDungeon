@@ -580,7 +580,8 @@ export function useGameState() {
       activeGachaPoolId: 'standard_gacha',
       activeIchibanPoolId: 'ichiban_1',
       sagePrompts: DEFAULT_SAGE_PROMPTS,
-      workstationLocations: ['Home', 'Lab', 'Library']
+      workstationLocations: ['Home', 'Lab', 'Library'],
+      account: null
     };
 
     const { parsed } = parseSave(saved);
@@ -1008,10 +1009,9 @@ export function useGameState() {
     setState(prev => processXP(prev, amount));
   }, []);
 
-  const _addShards = useCallback((amount: number) => {
+useCallback((amount: number) => {
     setState(prev => processShards(prev, amount));
-  }, []);
-
+  }, []);;
   const addCoins = useCallback((amount: number, reason: string = 'Added Coins') => {
     setState(prev => {
       const newState = processTransaction(prev, 'coins', amount, reason);
@@ -1484,9 +1484,9 @@ export function useGameState() {
     }
 
     // Broadcast focus session to Guild Team
-    if (state.teamId && (state.secretCode || state.userUniqueId)) {
+    if (state.teamId && (state.account?.userId || state.secretCode || state.userUniqueId)) {
       const finalDuration = Math.max(1, Math.round(sessionDurationVal));
-      let identityCode = state.secretCode;
+      let identityCode = state.account?.userId || state.secretCode;
       if (!identityCode && typeof window !== 'undefined') {
         try {
           identityCode = localStorage.getItem('team_identity_code') || '';
@@ -1507,6 +1507,7 @@ export function useGameState() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...(state.account?.token ? { Authorization: `Bearer ${state.account.token}` } : {}),
           'x-secret-code': identityCode || '',
           'x-user-name': encodeURIComponent(state.userName || 'Scholar'),
           'x-user-avatar': state.userAvatar || 'User',
@@ -1642,12 +1643,10 @@ export function useGameState() {
 
   const drawGacha = useCallback((poolId: string, amount: number = 1) => {
     let pullResults: { item: string; rarity: string; poolType: 'gacha' | 'ichiban', color?: string }[] = [];
-    let _success = false;
 
     setState(prev => {
       const pool = prev.gachaPools.find(p => p.id === poolId);
       if (!pool || prev.coins < pool.cost * amount) return prev;
-      const _poolType = pool.type;
 
       let newCoins = prev.coins;
       let newPools = [...prev.gachaPools];
@@ -1745,7 +1744,6 @@ export function useGameState() {
 
       newPools = newPools.map(p => p.id === poolId ? currentPool : p);
       pullResults = results;
-      _success = true;
 
       const expectedCost = prev.coins - newCoins;
 
@@ -2460,16 +2458,12 @@ export function useGameState() {
   }, []);
 
   const moveDungeonItem = useCallback((itemId: string, newParentId: string | null) => {
-    let _isSubMovingToRoot = false;
     let newSubAsMajor: MajorDungeon | null = null;
-    let _isMajorMovingToSub = false;
-    let _newMajorAsSub: Dungeon | null = null;
     
     const isSub = dungeons.find(d => d.id === itemId);
     
     if (newParentId === null) {
       if (isSub) {
-        _isSubMovingToRoot = true;
         newSubAsMajor = {
           id: isSub.id,
           name: isSub.name,

@@ -33,6 +33,7 @@ interface TimerProps {
   setShowCoinRain: (show: boolean) => void;
   isFullscreen?: boolean;
   secretCode?: string;
+  authToken?: string;
   userName?: string;
   pushEnabled?: boolean;
   _onTogglePip?: () => void;
@@ -72,14 +73,14 @@ export const Timer = React.memo<TimerProps>(({
   rewardPool, 
   activeTalents,
   timerSkipVictoryMode,
-  _dailyRerollUsed,
-  _history,
+  _dailyRerollUsed: __dailyRerollUsed,
+  _history: __history,
   standardSessionMinutes,
   pendingRewardChest,
   onComplete, 
   onRestComplete,
   onInventoryAdd,
-  _onReroll,
+  _onReroll: __onReroll,
   onRewardSelect,
   onDeferReward,
   onUpdateChestItem,
@@ -87,11 +88,12 @@ export const Timer = React.memo<TimerProps>(({
   setShowCoinRain,
   isFullscreen = false,
   secretCode,
+  authToken,
   userName,
   pushEnabled,
-  _onTogglePip,
+  _onTogglePip: __onTogglePip,
   requireFocusConfirmation = false,
-  _pipWindow,
+  _pipWindow: __pipWindow,
   focusDuration,
   restDuration,
   enableRest,
@@ -166,14 +168,19 @@ export const Timer = React.memo<TimerProps>(({
 
   // Push Notification Scheduling
   useEffect(() => {
-    if (!pushEnabled || !secretCode) return;
+    if (!pushEnabled || (!secretCode && !authToken)) return;
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...(authToken ? { Authorization: `Bearer ${authToken}` } : {})
+    };
 
     if (isActive && endTime) {
       const delayMinutes = (endTime - Date.now()) / (60 * 1000);
       if (delayMinutes > 0.1) { // Only schedule if more than 6 seconds left
         fetch('/api/push/schedule', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify({
             secretCode,
             delayMinutes,
@@ -186,11 +193,11 @@ export const Timer = React.memo<TimerProps>(({
     } else {
       fetch('/api/push/cancel', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ secretCode })
       }).catch(err => console.debug('Push cancel skipped or failed:', err));
     }
-  }, [isActive, endTime, pushEnabled, secretCode, isResting]);
+  }, [isActive, endTime, pushEnabled, secretCode, authToken, isResting]);
 
   const handleRewardSelection = useCallback((card: RewardCard | null, session: StudySession) => {
     if (card) {
@@ -517,9 +524,6 @@ export const Timer = React.memo<TimerProps>(({
     }
   }, [cancelSkipCharge]);
 
-  const _canPip = 'documentPictureInPicture' in window && window.self === window.top;
-  const _isPWA = window.matchMedia('(display-mode: standalone)').matches;
-  const _isDesktop = !('ontouchstart' in window);
 
   const toggleTimer = () => {
     if (isActive) {
@@ -552,7 +556,6 @@ export const Timer = React.memo<TimerProps>(({
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const _showDistractionControls = !isResting;
 
   return (
     <div className={cn(

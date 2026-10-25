@@ -8,20 +8,6 @@ import { cn } from '../../lib/utils';
 import { SETTINGS_SEARCH_INDEX } from './SettingsSearchIndex';
 
 // Helper to convert VAPID key
-function _urlBase64ToUint8Array(base64String: string) {
-  const padding = '='.repeat((4 - base64String.length % 4) % 4);
-  const base64 = (base64String + padding)
-    .replace(/-/g, '+')
-    .replace(/_/g, '/');
-
-  const rawData = window.atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
-
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i);
-  }
-  return outputArray;
-}
 
 
 import { TimerSettingsSection } from './TimerSettingsSection';
@@ -181,9 +167,9 @@ const SETTINGS_COMPARTMENTS = [
   },
   {
     id: 'cloud' as const,
-    title: 'Cloud Archives',
-    desc: 'Sync game progression and manage JSON backups.',
-    icon: Cloud,
+    title: 'Data Management',
+    desc: 'Cloud sync, Scholar Passport, snapshots, and JSON backups.',
+    icon: Database,
     borderColor: 'hover:border-blue-500',
     iconColor: 'text-blue-400',
     bgColor: 'bg-blue-300/10 border-blue-500/20'
@@ -486,7 +472,7 @@ export const Settings = React.memo<SettingsProps & { onOpenAstralArchives?: () =
             {/* Sub-Contents rendering */}
             <div>
               {activeTab === 'general' && (
-                <GeneralSettings state={state} setState={setState} setShowClearConfirm={setShowClearConfirm} />
+                <GeneralSettings state={state} setState={setState} />
               )}
               {activeTab === 'timer' && (
                 <TimerSettingsSection 
@@ -507,6 +493,7 @@ export const Settings = React.memo<SettingsProps & { onOpenAstralArchives?: () =
                   triggerSyncCheck={triggerSyncCheck}
                   isSyncing={isSyncing}
                   hasUnsyncedChanges={hasUnsyncedChanges}
+                  setShowClearConfirm={setShowClearConfirm}
                 />
               )}
               {(activeTab === 'level' || activeTab === 'levelRewards') && (
@@ -801,7 +788,7 @@ export const Settings = React.memo<SettingsProps & { onOpenAstralArchives?: () =
                   <div className="flex items-start gap-3 p-3 bg-indigo-500/5 rounded-xl border border-indigo-500/10">
                     <Cloud size={16} className="text-indigo-400 mt-0.5 shrink-0" />
                     <p className="text-[11px] text-slate-400 leading-normal">
-                      Note: This only affects the data stored on this device. Your <span className="text-indigo-300 font-bold">Cloud Archives</span> in the Astral Archives will remain untouched.
+                      Note: This only affects the data stored on this device. Your <span className="text-indigo-300 font-bold">Cloud Archives</span> in your Scholar Passport will remain untouched.
                     </p>
                   </div>
                   

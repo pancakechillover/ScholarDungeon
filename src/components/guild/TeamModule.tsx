@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'motion/react';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { createPortal } from 'react-dom';
 import { 
   Users, LogIn, Plus, X, Activity, Crown, Clock, Target, Check, AlertCircle, RefreshCw, Send, Settings, User, UserCheck, UserX, Landmark,
-  Cat, Dog, Ghost, Bot, Skull, Lock,
+  Cat, Dog, Ghost, Bot, Skull, Lock, ArrowDown,
   BookOpen, Library, Coffee, Brain, ShieldHalf, Swords, Flame, Sparkles, Castle, Mountain
 } from 'lucide-react';
 import { AppState, Team, TeamMessage, TeamEvent, TeamMember } from '../../types';
@@ -13,6 +13,7 @@ import { getTeamCycleState, calculateUserTotalFocus, calculateUserCycleFocus, ge
 interface TeamModuleProps {
   state: AppState;
   setState: React.Dispatch<React.SetStateAction<AppState>>;
+  onRequirePassportAuth?: (message?: string) => void;
 }
 
 export const renderAvatar = (avatarValue: string | undefined, size: number = 14) => {
@@ -62,7 +63,47 @@ export const renderGuildIcon = (iconId: string | undefined, size: number = 24, c
 
 export { getTeamCycleState };
 
-export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
+export const formatChatDate = (timestamp: number): string => {
+  const date = new Date(timestamp);
+  const now = new Date();
+  
+  const isSameDay = (d1: Date, d2: Date) => 
+    d1.getFullYear() === d2.getFullYear() &&
+    d1.getMonth() === d2.getMonth() &&
+    d1.getDate() === d2.getDate();
+
+  const yesterday = new Date(now);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  if (isSameDay(date, now)) {
+    return 'Today';
+  }
+  if (isSameDay(date, yesterday)) {
+    return 'Yesterday';
+  }
+  if (date.getFullYear() === now.getFullYear()) {
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+};
+
+export const formatChatTime = (timestamp: number): string => {
+  return new Date(timestamp).toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true
+  });
+};
+
+export const isSameChatDay = (ts1: number, ts2: number): boolean => {
+  const d1 = new Date(ts1);
+  const d2 = new Date(ts2);
+  return d1.getFullYear() === d2.getFullYear() &&
+    d1.getMonth() === d2.getMonth() &&
+    d1.getDate() === d2.getDate();
+};
+
+export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState, onRequirePassportAuth }) => {
   const [view, setView] = useState<'lobby' | 'team'>(state.teamId ? 'team' : 'lobby');
   const [lobbyTeams, setLobbyTeams] = useState<any[]>([]);
   const [team, setTeam] = useState<Team | null>(state.lastTeamData?.team || null);
@@ -71,6 +112,70 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'chat' | 'events'>('chat');
   const [chatInput, setChatInput] = useState('');
+  
+  // Chat scroll and unread tracking
+  const chatScrollRef = useRef<HTMLDivElement>(null);
+  const [isAtBottom, setIsAtBottom] = useState(true);
+  const isAtBottomRef = useRef(true);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const prevMessagesCountRef = useRef(messages.length);
+
+  const handleChatScroll = () => {
+    const el = chatScrollRef.current;
+    if (!el) return;
+    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    const atBottom = distanceFromBottom <= 40;
+    setIsAtBottom(atBottom);
+    isAtBottomRef.current = atBottom;
+    if (atBottom) {
+      setUnreadCount(0);
+    }
+  };
+
+  const scrollToBottom = (smooth = true) => {
+    if (chatScrollRef.current) {
+      chatScrollRef.current.scrollTo({
+        top: chatScrollRef.current.scrollHeight,
+        behavior: smooth ? 'smooth' : 'auto'
+      });
+    }
+    setIsAtBottom(true);
+    isAtBottomRef.current = true;
+    setUnreadCount(0);
+  };
+
+  useEffect(() => {
+    if (messages.length > prevMessagesCountRef.current) {
+      const diff = messages.length - prevMessagesCountRef.current;
+      if (isAtBottomRef.current) {
+        requestAnimationFrame(() => {
+          if (chatScrollRef.current) {
+            chatScrollRef.current.scrollTo({
+              top: chatScrollRef.current.scrollHeight,
+              behavior: 'smooth'
+            });
+          }
+        });
+        setUnreadCount(0);
+      } else {
+        setUnreadCount(prev => prev + diff);
+      }
+    }
+    prevMessagesCountRef.current = messages.length;
+  }, [messages]);
+
+  useEffect(() => {
+    if (activeTab === 'chat' && chatScrollRef.current) {
+      requestAnimationFrame(() => {
+        if (chatScrollRef.current) {
+          chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
+          setIsAtBottom(true);
+          isAtBottomRef.current = true;
+          setUnreadCount(0);
+        }
+      });
+    }
+  }, [activeTab]);
   
   // Create / Settings Modal
   const [showCreate, setShowCreate] = useState(false);
@@ -168,7 +273,8 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
 
       const res = await fetch(`/api/teams?id=${state.teamId}`, {
         headers: {
-          'x-secret-code': state.secretCode || '',
+          ...(state.account?.token ? { Authorization: `Bearer ${state.account.token}` } : {}),
+          'x-secret-code': state.account?.userId || state.secretCode || '',
           'x-user-name': encodeURIComponent(state.userName || 'Scholar'),
           'x-user-avatar': state.userAvatar || 'User',
           'x-user-bio': encodeURIComponent(state.userBio || ''),
@@ -210,6 +316,7 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
   }, [state.teamId]);
 
   const getOrGenerateIdentity = () => {
+    if (state.account?.userId) return state.account.userId;
     if (state.secretCode) return state.secretCode;
     let newCode;
     try {
@@ -221,7 +328,27 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
     return newCode;
   };
 
+  const getTeamAuthHeaders = (): Record<string, string> => ({
+    'Content-Type': 'application/json',
+    ...(state.account?.token ? { Authorization: `Bearer ${state.account.token}` } : {})
+  });
+
+  const isAuthenticated = Boolean(state.account?.token && state.account?.userId);
+
+  const ensurePassportAuth = (promptMsg: string): boolean => {
+    if (isAuthenticated) return true;
+    if (onRequirePassportAuth) {
+      onRequirePassportAuth(promptMsg);
+    } else {
+      customAlert(promptMsg, 'Scholar Passport Required');
+    }
+    return false;
+  };
+
   const joinTeam = async (id: string) => {
+    if (!ensurePassportAuth('Please sign in to your Scholar Passport first to join a guild.')) {
+      return;
+    }
     const identityCode = getOrGenerateIdentity();
     const targetType = 'total_time';
     const userTotalFocus = calculateUserTotalFocus(state.history, state.includeRestTimeInTasks);
@@ -232,7 +359,7 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
     try {
       const res = await fetch('/api/teams?action=join', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getTeamAuthHeaders(),
         body: JSON.stringify({ 
           teamId: id, 
           secretCode: identityCode,
@@ -270,7 +397,7 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
     try {
       const res = await fetch('/api/teams?action=handle_applicant', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getTeamAuthHeaders(),
         body: JSON.stringify({
           teamId: state.teamId,
           secretCode: identityCode,
@@ -312,11 +439,12 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
       timestamp: Date.now()
     };
     setMessages(prev => [fakeMessage, ...prev]);
+    scrollToBottom(true);
 
     try {
       const res = await fetch('/api/teams?action=message', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getTeamAuthHeaders(),
         body: JSON.stringify({ 
           teamId: state.teamId, 
           secretCode: identityCode,
@@ -356,7 +484,7 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
     try {
       const res = await fetch('/api/teams?action=settings', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getTeamAuthHeaders(),
         body: JSON.stringify({ 
           teamId: state.teamId, 
           secretCode: identityCode,
@@ -380,7 +508,7 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
      try {
        await fetch('/api/teams?action=vote', {
          method: 'POST',
-         headers: { 'Content-Type': 'application/json' },
+         headers: getTeamAuthHeaders(),
          body: JSON.stringify({ 
            teamId: state.teamId, 
            secretCode: identityCode, 
@@ -407,18 +535,22 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
         </button>
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <button 
-            onClick={() => setShowJoin(true)}
+            onClick={() => {
+              if (!ensurePassportAuth('Please sign in to your Scholar Passport first to join a guild.')) {
+                return;
+              }
+              setShowJoin(true);
+            }}
             className="flex-1 sm:flex-none justify-center px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1.5"
           >
             <LogIn size={14} /> Join Guild
           </button>
           <button 
             onClick={() => {
-              if (!state.isRedisUnlocked) {
-                setShowUnlockModal(true);
-              } else {
-                setShowCreate(true);
+              if (!ensurePassportAuth('Please sign in to your Scholar Passport first to create a guild.')) {
+                return;
               }
+              setShowCreate(true);
             }}
             className="flex-1 sm:flex-none justify-center px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1.5"
           >
@@ -640,10 +772,10 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
                            onClick={(e) => {
                               e.stopPropagation();
                               customConfirm("Are you sure you want to banish this member from the guild? Their stats will immediately be removed from today's Goal statistics.", async () => {
-                                 const identityCode = state.secretCode || getOrGenerateIdentity();
+                                 const identityCode = getOrGenerateIdentity();
                                  await fetch('/api/teams?action=kick', {
                                     method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
+                                    headers: getTeamAuthHeaders(),
                                     body: JSON.stringify({ 
                                       teamId: team.id, 
                                       secretCode: identityCode, 
@@ -759,59 +891,146 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
                </div>
             )}
             
-            <div className="flex-1 overflow-y-auto p-4 custom-scrollbar flex flex-col-reverse">
-              {activeTab === 'chat' ? (
-                <div className="space-y-4 flex flex-col justify-end">
-                  {messages.slice().reverse().map(m => {
-                    const isMe = m.userId === team?.myUserId;
-                    const senderMember = team?.members?.find(member => member.userId === m.userId);
-                    const rawId = senderMember?.uniqueId || (isMe ? state.userUniqueId : null);
-                    const senderUniqueId = rawId ? (rawId.startsWith('SD-') ? rawId.replace('SD-', 'ID-') : rawId) : null;
-                    return (
-                      <div key={m.id} className={cn("flex flex-col w-full", isMe ? "items-end" : "items-start")}>
-                        <div className={cn("flex items-end gap-2", isMe ? "flex-row-reverse" : "flex-row")}>
-                          <div className="w-8 h-8 rounded-full bg-slate-800 overflow-hidden shrink-0 translate-y-1 flex items-center justify-center">
-                            {renderAvatar(m.avatar, 14)}
-                          </div>
-                          <div className={cn("flex flex-col", isMe ? "items-end" : "items-start")}>
-                            <div className={cn("flex items-center gap-2 mb-1", isMe ? "flex-row-reverse" : "flex-row")}>
-                              <span className="text-xs font-bold text-slate-400">
-                                {m.name} {senderUniqueId ? `(${senderUniqueId})` : ''}
+            <div className="relative flex-1 min-h-0 flex flex-col overflow-hidden">
+              <div 
+                ref={chatScrollRef}
+                onScroll={handleChatScroll}
+                className="flex-1 overflow-y-auto p-4 custom-scrollbar flex flex-col"
+              >
+                {activeTab === 'chat' ? (
+                  <div className="flex flex-col space-y-1 pb-2">
+                    {([...messages].sort((a, b) => a.timestamp - b.timestamp)).map((m, idx, sortedArr) => {
+                      const isMe = m.userId === team?.myUserId;
+                      const senderMember = team?.members?.find(member => member.userId === m.userId);
+                      const rawId = senderMember?.uniqueId || (isMe ? state.userUniqueId : null);
+                      const senderUniqueId = rawId ? (rawId.startsWith('SD-') ? rawId.replace('SD-', 'ID-') : rawId) : null;
+                      
+                      const prevMsg = idx > 0 ? sortedArr[idx - 1] : null;
+                      const showDateDivider = !prevMsg || !isSameChatDay(m.timestamp, prevMsg.timestamp);
+                      const timeGapMs = prevMsg ? m.timestamp - prevMsg.timestamp : 0;
+                      const showTimeDivider = !showDateDivider && prevMsg && timeGapMs >= 5 * 60 * 1000;
+                      const isConsecutive = !showDateDivider && !showTimeDivider && prevMsg && prevMsg.userId === m.userId;
+
+                      return (
+                        <React.Fragment key={m.id}>
+                          {/* Centered Date Badge */}
+                          {showDateDivider && (
+                            <div className="flex items-center justify-center my-3 select-none">
+                              <div className="px-3 py-0.5 rounded-full text-[11px] font-semibold bg-slate-800/80 text-slate-400 border border-slate-700/60 shadow-xs backdrop-blur-xs">
+                                {formatChatDate(m.timestamp)}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Centered Smart Time Interval Divider (> 5 min) */}
+                          {showTimeDivider && (
+                            <div className="flex items-center justify-center my-2 select-none">
+                              <span className="text-[10px] font-mono text-slate-400">
+                                {formatChatTime(m.timestamp)}
                               </span>
-                              <span className="text-[9px] text-slate-600">{new Date(m.timestamp).toLocaleTimeString()}</span>
                             </div>
-                            <div className={cn(
-                              "text-sm p-3 rounded-2xl w-fit max-w-[280px] break-words",
-                              isMe ? "bg-indigo-600 text-white rounded-br-none" : "bg-slate-800 text-slate-300 rounded-bl-none border border-slate-700/50"
-                            )}>
-                              {m.content}
-                            </div>
+                          )}
+
+                          {/* Message Row */}
+                          <div className={cn("flex flex-col w-full", isMe ? "items-end" : "items-start", isConsecutive ? "mt-1" : "mt-3")}>
+                            {isConsecutive ? (
+                              /* Grouped consecutive message from same sender */
+                              <div className={cn(
+                                "flex items-center gap-2 group",
+                                isMe ? "flex-row-reverse mr-10" : "flex-row ml-10"
+                              )}>
+                                <div className={cn(
+                                  "text-sm p-2.5 sm:p-3 rounded-2xl w-fit max-w-[280px] sm:max-w-[340px] break-words transition-colors shadow-xs",
+                                  isMe 
+                                    ? "bg-indigo-600 text-white rounded-r-md" 
+                                    : "bg-slate-800 text-slate-300 rounded-l-md border border-slate-700/50"
+                                )}>
+                                  {m.content}
+                                </div>
+                                <span className="opacity-0 group-hover:opacity-100 transition-opacity text-[9px] text-slate-500 font-mono select-none shrink-0 px-1">
+                                  {formatChatTime(m.timestamp)}
+                                </span>
+                              </div>
+                            ) : (
+                              /* First message in group with avatar and header */
+                              <div className={cn("flex items-end gap-2", isMe ? "flex-row-reverse" : "flex-row")}>
+                                <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700/50 overflow-hidden shrink-0 translate-y-1 flex items-center justify-center shadow-xs">
+                                  {renderAvatar(m.avatar, 14)}
+                                </div>
+                                <div className={cn("flex flex-col", isMe ? "items-end" : "items-start")}>
+                                  <div className={cn("flex items-center gap-2 mb-1", isMe ? "flex-row-reverse" : "flex-row")}>
+                                    <span className="text-xs font-bold text-slate-300">
+                                      {m.name} {senderUniqueId ? <span className="text-[10px] text-slate-500 font-mono font-normal">({senderUniqueId})</span> : ''}
+                                    </span>
+                                    <span className="text-[9px] text-slate-500 font-mono">{formatChatTime(m.timestamp)}</span>
+                                  </div>
+                                  <div className={cn(
+                                    "text-sm p-2.5 sm:p-3 rounded-2xl w-fit max-w-[280px] sm:max-w-[340px] break-words shadow-xs",
+                                    isMe 
+                                      ? "bg-indigo-600 text-white rounded-br-none" 
+                                      : "bg-slate-800 text-slate-300 rounded-bl-none border border-slate-700/50"
+                                  )}>
+                                    {m.content}
+                                  </div>
+                                </div>
+                              </div>
+                            )}
                           </div>
+                        </React.Fragment>
+                      );
+                    })}
+                    {messages.length === 0 && (
+                      <div className="text-center text-slate-500 my-auto py-12 text-sm italic">
+                        No messages yet. Send a message to greet your fellowship!
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {events.map((e, idx) => (
+                      <div key={idx} className="flex items-start gap-3">
+                        <div className={cn("w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5", 
+                          e.type === 'join' ? "bg-emerald-500/20 text-emerald-400" :
+                          e.type === 'focus' ? "bg-indigo-500/20 text-indigo-400" :
+                          "bg-amber-500/20 text-amber-400"
+                        )}>
+                          {e.type === 'focus' ? <Activity size={10} /> : e.type === 'join' ? <LogIn size={10} /> : <Target size={10} />}
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-xs font-medium text-slate-300">{e.content}</span>
+                          <span className="text-[9px] text-slate-500 font-mono">{new Date(e.timestamp).toLocaleString()}</span>
                         </div>
                       </div>
-                    );
-                  })}
-                  {messages.length === 0 && <div className="text-center text-slate-600 mt-auto mb-auto text-sm">No messages yet.</div>}
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {events.map((e, idx) => (
-                    <div key={idx} className="flex items-start gap-3">
-                      <div className={cn("w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5", 
-                        e.type === 'join' ? "bg-emerald-500/20 text-emerald-400" :
-                        e.type === 'focus' ? "bg-indigo-500/20 text-indigo-400" :
-                        "bg-amber-500/20 text-amber-400"
-                      )}>
-                        {e.type === 'focus' ? <Activity size={10} /> : e.type === 'join' ? <LogIn size={10} /> : <Target size={10} />}
+                    ))}
+                    {events.length === 0 && (
+                      <div className="text-center text-slate-500 my-auto py-12 text-sm italic">
+                        No events recorded yet.
                       </div>
-                      <div className="flex flex-col">
-                        <span className="text-xs font-medium text-slate-300">{e.content}</span>
-                        <span className="text-[9px] text-slate-600">{new Date(e.timestamp).toLocaleString()}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Floating Scroll to Bottom / Unread Pill */}
+              <AnimatePresence>
+                {activeTab === 'chat' && !isAtBottom && (
+                  <motion.button
+                    initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                    transition={{ duration: 0.15 }}
+                    onClick={() => scrollToBottom(true)}
+                    className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-slate-800/95 hover:bg-slate-700/95 text-indigo-400 border border-indigo-500/30 shadow-lg shadow-black/40 backdrop-blur-md transition-all active:scale-95 cursor-pointer select-none"
+                  >
+                    <ArrowDown size={13} className={cn("shrink-0", unreadCount > 0 && "animate-bounce text-indigo-300")} />
+                    <span>
+                      {unreadCount > 0 
+                        ? `${unreadCount} new ${unreadCount === 1 ? 'message' : 'messages'}`
+                        : 'Scroll to bottom'}
+                    </span>
+                  </motion.button>
+                )}
+              </AnimatePresence>
             </div>
             
             {activeTab === 'chat' && (
@@ -874,7 +1093,7 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
                 const identityCode = getOrGenerateIdentity();
                 await fetch('/api/teams?action=leave', {
                   method: 'POST',
-                  headers: {'Content-Type': 'application/json'},
+                  headers: getTeamAuthHeaders(),
                   body: JSON.stringify({ teamId: team.id, secretCode: identityCode, userName: state.userName || 'Scholar', userUniqueId: state.userUniqueId || '' })
                 });
                 setState(s => ({ ...s, teamId: undefined }));
@@ -950,7 +1169,7 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
 
              const res = await fetch('/api/teams?action=create', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getTeamAuthHeaders(),
                 body: JSON.stringify({
                    name: cfg.name,
                    description: cfg.description,
@@ -995,10 +1214,10 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
            isTargetSelf={viewingProfile === team.myUserId || (!!state.userUniqueId && team.members.find(m => m.userId === viewingProfile)?.uniqueId === state.userUniqueId)}
            onTransferCaptain={(targetId) => {
               customConfirm("Are you sure you want to transfer guild leadership? You will become a regular member.", async () => {
-                 const identityCode = state.secretCode || getOrGenerateIdentity();
+                 const identityCode = getOrGenerateIdentity();
                  await fetch('/api/teams?action=transfer', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: getTeamAuthHeaders(),
                     body: JSON.stringify({ 
                       teamId: team.id, 
                       secretCode: identityCode, 
@@ -1012,10 +1231,10 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
            }}
            onKickMember={(targetId) => {
               customConfirm("Are you sure you want to banish this member from the guild?", async () => {
-                 const identityCode = state.secretCode || getOrGenerateIdentity();
+                 const identityCode = getOrGenerateIdentity();
                  await fetch('/api/teams?action=kick', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: getTeamAuthHeaders(),
                     body: JSON.stringify({ 
                       teamId: team.id, 
                       secretCode: identityCode, 
@@ -1032,10 +1251,10 @@ export const TeamModule: React.FC<TeamModuleProps> = ({ state, setState }) => {
            currentUserName={state.userName || 'Scholar'}
            onReclaimCaptain={(_targetId) => {
               customConfirm("Are you sure this is your old account? Claiming it will restore your captaincy and delete the old duplicate entity.", async () => {
-                 const identityCode = state.secretCode || getOrGenerateIdentity();
+                 const identityCode = getOrGenerateIdentity();
                  await fetch('/api/teams?action=reclaim', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: getTeamAuthHeaders(),
                     body: JSON.stringify({ 
                       teamId: team.id, 
                       secretCode: identityCode,
@@ -1137,36 +1356,36 @@ const CreateTeamModal = ({ onClose, onCreate }: any) => {
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-slate-900 border border-indigo-500/30 shadow-[0_0_50px_rgba(99,102,241,0.15)] rounded-3xl p-6 sm:p-8 max-w-2xl w-full relative overflow-hidden my-auto"
+        className="bg-slate-900 border border-indigo-500/30 shadow-[0_0_50px_rgba(99,102,241,0.15)] rounded-3xl p-5 sm:p-7 max-w-lg md:max-w-3xl w-full relative overflow-hidden my-auto"
       >
-        <button onClick={onClose} className="absolute top-6 right-6 text-slate-500 hover:text-white transition-colors bg-slate-800/50 p-2 rounded-full z-20">
+        <button onClick={onClose} className="absolute top-5 right-5 text-slate-500 hover:text-white transition-colors bg-slate-800/50 p-2 rounded-full z-20">
           <X size={20}/>
         </button>
         
-        <div className="flex items-center gap-4 mb-6 relative z-10">
-          <div className="w-14 h-14 bg-slate-950 text-indigo-400 flex items-center justify-center rounded-2xl border border-indigo-500/50 shadow-[0_0_15px_rgba(99,102,241,0.3)] shrink-0">
-            <Landmark size={28} />
+        <div className="flex items-center gap-3.5 mb-5 relative z-10">
+          <div className="w-12 h-12 bg-slate-950 text-indigo-400 flex items-center justify-center rounded-2xl border border-indigo-500/50 shadow-[0_0_15px_rgba(99,102,241,0.3)] shrink-0">
+            <Landmark size={24} />
           </div>
           <div>
-            <h3 className="text-2xl font-black text-white uppercase tracking-tighter">Found a Guild</h3>
+            <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-tighter">Found a Guild</h3>
             <p className="text-xs text-slate-400 font-medium tracking-tight mt-0.5">Gather scholars under one banner and forge your legacy.</p>
           </div>
         </div>
          
         {error && (
-          <div className="mb-6 p-4 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-xl text-sm flex items-start gap-3">
-            <AlertCircle size={16} className="shrink-0 mt-0.5" />
+          <div className="mb-4 p-3.5 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-xl text-xs flex items-start gap-2.5">
+            <AlertCircle size={15} className="shrink-0 mt-0.5" />
             <span>{error}</span>
           </div>
         )}
 
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
           {/* Left Column: Identity */}
-          <div className="space-y-6">
+          <div className="space-y-4">
             <h4 className="text-sm font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-2">
               <Landmark size={16} className="text-indigo-400" /> Guild Identity
             </h4>
-            <div className="space-y-4">
+            <div className="space-y-3.5">
               <div>
                 <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-1 mb-1 block">Guild Icon</label>
                 <div className="flex flex-wrap gap-2">
@@ -1285,10 +1504,10 @@ const CreateTeamModal = ({ onClose, onCreate }: any) => {
           </div>
         </div>
         
-        <div className="mt-10 relative z-10 flex gap-4 xl:w-1/2 xl:ml-auto">
+        <div className="mt-6 pt-4 border-t border-slate-800/80 relative z-10 flex gap-3 md:w-1/2 md:ml-auto">
           <button 
              onClick={onClose} 
-             className="w-1/3 py-3.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition-colors tracking-widest text-sm"
+             className="w-1/3 py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition-colors tracking-widest text-xs"
           >
             CANCEL
           </button>
@@ -1394,93 +1613,6 @@ const TeamMemberProfileModal = ({ member, onClose, isCurrentUserCaptain, isTarge
   );
 };
 
-const _GoalDetailsModal = ({ team, state, onClose }: any) => {
-  const target = team.config.targetValue;
-  const userTotalFocus = state ? calculateUserTotalFocus(state.history, state.includeRestTimeInTasks) : undefined;
-  const userCycleFocus = state ? calculateUserCycleFocus(state.history, team.config.targetType, team.config.resetTime, state.includeRestTimeInTasks) : undefined;
-  const { cycleProgress: totalProgress, memberProgress } = getTeamCycleState(team, state ? {
-    cycleFocus: userCycleFocus,
-    totalFocus: userTotalFocus,
-    userId: team.myUserId,
-    uniqueId: state.userUniqueId
-  } : undefined);
-  const isCompleted = target > 0 && totalProgress >= target;
-  const sortedMembers = [...team.members].sort((a,b) => (memberProgress[b.userId] || 0) - (memberProgress[a.userId] || 0));
-
-  return createPortal(
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md">
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 max-w-lg w-full relative overflow-hidden shadow-2xl">
-        <button onClick={onClose} className="absolute top-6 right-6 text-slate-500 hover:text-white transition-colors z-20"><X size={24}/></button>
-
-        {isCompleted && (
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-emerald-500/20 blur-[100px] rounded-full" />
-          </div>
-        )}
-
-        <div className="relative z-10 flex flex-col items-center">
-          <div className={cn("w-20 h-20 rounded-2xl flex items-center justify-center mb-6 shadow-xl", isCompleted ? "bg-emerald-500/20 text-emerald-400 border-2 border-emerald-500/50" : "bg-indigo-500/20 text-indigo-400 border-2 border-indigo-500/50")}>
-            <Target size={40} />
-          </div>
-          
-          <h2 className="text-3xl font-black text-white tracking-tighter uppercase mb-2">
-             {{'daily_time': 'Daily Goal', 'weekly_time': 'Weekly Goal', 'monthly_time': 'Monthly Goal', 'yearly_time': 'Yearly Goal', 'total_time': 'Total Goal'}[team.config.targetType as string] || 'Total Goal'}
-          </h2>
-          <p className="text-sm text-slate-400 mb-8">{isCompleted ? 'The guild has triumphed over its target.' : 'Every minute of focus brings the guild closer.'}</p>
-
-          <div className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-6 mb-8 text-center relative overflow-hidden">
-            <div className="flex justify-center items-end gap-2 mb-4">
-              <span className={cn("text-6xl font-black tabular-nums tracking-tighter leading-none", isCompleted ? "text-emerald-400 drop-shadow-[0_0_15px_rgba(16,185,129,0.4)]" : "text-white")}>
-                {totalProgress}
-              </span>
-              <span className="text-xl font-bold text-slate-500 mb-2">/ {target} <span className="text-sm uppercase">min</span></span>
-            </div>
-            <div className="w-full h-5 bg-slate-800 rounded-full overflow-hidden shadow-inner">
-              <div 
-                className={cn("h-full transition-all duration-1000 ease-out relative", isCompleted ? "bg-emerald-500" : "bg-gradient-to-r from-indigo-500 to-purple-500")}
-                style={{ width: `${Math.min(100, (totalProgress / Math.max(1, target)) * 100)}%` }}
-              >
-                 <div className="absolute inset-0 bg-white/20 w-full animate-[pulse_2s_ease-in-out_infinite]" />
-              </div>
-            </div>
-            <div className="mt-4 flex justify-between items-center text-xs font-bold uppercase tracking-widest text-slate-500">
-               <span>0%</span>
-               <span>{Math.round(Math.min(100, (totalProgress / Math.max(1, target)) * 100))}%</span>
-            </div>
-          </div>
-
-          <div className="w-full flex justify-between items-center mb-4">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Top Contributors</span>
-          </div>
-
-          <div className="w-full space-y-3 max-h-48 overflow-y-auto custom-scrollbar pr-2 mb-6">
-            {sortedMembers.map((m: any, idx: number) => (
-               <div key={m.userId} className="flex items-center gap-4 p-3 bg-slate-800/30 rounded-xl border border-slate-800/50">
-                  <div className="w-6 text-center font-black text-slate-600 italic">#{idx + 1}</div>
-                  <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center overflow-hidden">
-                    {renderAvatar(m.avatar, 14)}
-                  </div>
-                  <div className="flex-1 font-bold text-slate-300 text-sm truncate">{m.name}</div>
-                  <div className="font-bold text-indigo-400 tabular-nums">{memberProgress[m.userId] || 0} <span className="text-[10px] text-slate-500">m</span></div>
-               </div>
-            ))}
-          </div>
-          
-          {team.config.rewardContent && (
-             <div className="w-full p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-start gap-4">
-               <div className="text-amber-500 mt-1"><Crown size={24} /></div>
-               <div className="flex-1 text-left">
-                 <div className="text-[10px] font-bold text-amber-500/70 uppercase tracking-widest mb-1">Guild Reward Unlocked</div>
-                 <div className="text-sm font-bold text-amber-400">{team.config.rewardContent}</div>
-               </div>
-             </div>
-          )}
-        </div>
-      </div>
-    </div>,
-    document.body
-  );
-};
 
 const SettingsModal = ({ team, onClose, onSave, isCaptain, onLeave }: any) => {
   const [cfg, setCfg] = useState({ 
@@ -1499,27 +1631,27 @@ const SettingsModal = ({ team, onClose, onSave, isCaptain, onLeave }: any) => {
 
   return createPortal(
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto">
-       <div className="bg-slate-900 border-2 border-slate-800 rounded-3xl p-6 sm:p-8 max-w-4xl w-full relative my-auto">
-         <button onClick={onClose} className="absolute top-6 right-6 text-slate-500 hover:text-white bg-slate-800/50 p-2 rounded-full transition-colors z-20"><X size={20}/></button>
+       <div className="bg-slate-900 border-2 border-slate-800 rounded-3xl p-5 sm:p-7 max-w-lg md:max-w-4xl w-full relative my-auto">
+         <button onClick={onClose} className="absolute top-5 right-5 text-slate-500 hover:text-white bg-slate-800/50 p-2 rounded-full transition-colors z-20"><X size={20}/></button>
          
-         <div className="flex items-center gap-4 mb-8">
-           <div className="w-14 h-14 bg-slate-800 text-slate-300 flex items-center justify-center rounded-2xl border-2 border-slate-700 shrink-0">
-             <Settings size={28} />
+         <div className="flex items-center gap-3.5 mb-5">
+           <div className="w-12 h-12 bg-slate-800 text-slate-300 flex items-center justify-center rounded-2xl border-2 border-slate-700 shrink-0">
+             <Settings size={24} />
            </div>
            <div>
-             <h3 className="text-3xl font-black text-white uppercase tracking-tighter">Guild Settings</h3>
-             <p className="text-sm text-slate-400 font-medium tracking-tight mt-1">Manage configuration, policy, and goals.</p>
+             <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-tighter">Guild Settings</h3>
+             <p className="text-xs text-slate-400 font-medium tracking-tight mt-0.5">Manage configuration, policy, and goals.</p>
            </div>
          </div>
          
-         <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 relative z-10">
+         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
            {/* Left Column: Identity & Access */}
-           <div className="space-y-6">
+           <div className="space-y-4">
              <h4 className="text-sm font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-2">
                <Landmark size={16} className="text-indigo-400" /> Identity & Access
              </h4>
              
-             <div className="space-y-4">
+             <div className="space-y-3.5">
                {isCaptain && (
                  <div>
                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-1 mb-1 block">Guild Icon</label>
@@ -1586,12 +1718,12 @@ const SettingsModal = ({ team, onClose, onSave, isCaptain, onLeave }: any) => {
            </div>
 
            {/* Right Column: Goals & Authority */}
-           <div className="space-y-6">
+           <div className="space-y-4">
              <h4 className="text-sm font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-2">
-               <Target size={16} className="text-emerald-400" /> Goal Configuration
+               <Target size={16} className="text-indigo-400" /> Goal Configuration
              </h4>
              
-             <div className="space-y-4">
+             <div className="space-y-3.5">
                <div>
                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-1 mb-1 block">Goal Setting Authority</label>
                  <select 
@@ -1676,23 +1808,23 @@ const SettingsModal = ({ team, onClose, onSave, isCaptain, onLeave }: any) => {
            </div>
          </div>
          
-         <div className="mt-10 flex flex-col xl:flex-row gap-4 items-center justify-between border-t border-slate-800 pt-6">
+         <div className="mt-6 flex flex-col md:flex-row gap-3 items-center justify-between border-t border-slate-800 pt-4">
            <button 
              onClick={() => onLeave(isCaptain)}
-             className="w-full xl:w-auto py-3 px-6 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 font-bold text-xs rounded-xl transition-colors border border-rose-500/20 flex items-center justify-center gap-2 font-sans tracking-widest uppercase"
+             className="w-full md:w-auto py-2.5 px-5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 font-bold text-xs rounded-xl transition-colors border border-rose-500/20 flex items-center justify-center gap-2 font-sans tracking-widest uppercase"
            >
              <LogIn size={14} className="rotate-180" />
              {isCaptain ? "Disband Guild" : "Leave Guild"}
            </button>
 
-           <div className="flex gap-4 w-full xl:w-auto">
-             <button onClick={onClose} className="w-1/3 xl:w-auto xl:px-8 py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition-colors text-sm tracking-widest overflow-hidden">
+           <div className="flex gap-3 w-full md:w-auto">
+             <button onClick={onClose} className="w-1/3 md:w-auto md:px-6 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition-colors text-xs tracking-widest overflow-hidden">
                {(!isCaptain && team.config.permission !== 'unanimous') ? "CLOSE" : "CANCEL"}
              </button>
              {(isCaptain || team.config.permission === 'unanimous') && (
                <button onClick={() => onSave(cfg)} className={cn(
-                 "w-2/3 xl:w-auto xl:px-8 py-3 text-white font-bold rounded-xl transition-colors font-sans text-sm tracking-widest whitespace-nowrap shadow-lg",
-                 isCaptain ? "bg-indigo-600 hover:bg-indigo-500 shadow-indigo-600/30" : "bg-emerald-600 hover:bg-emerald-500 shadow-emerald-600/30"
+                 "w-2/3 md:w-auto md:px-6 py-2.5 text-white font-bold rounded-xl transition-colors font-sans text-xs tracking-widest whitespace-nowrap shadow-lg",
+                 "bg-indigo-600 hover:bg-indigo-500 shadow-indigo-600/30"
                )}>
                  {isCaptain ? "SAVE ALL CHANGES" : "PROPOSE CHANGES"}
                </button>

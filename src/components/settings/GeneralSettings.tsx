@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { MOOD_OPTIONS, DEFAULT_ENABLED_MOODS } from '../../constants';
-import { Trash2, AlertTriangle, Volume2, VolumeX, Sun, Moon, Smile, Trees, Waves, Database, Download, Upload, Target, Gift, Eye, Palette, Check, Bell, BellOff, RefreshCw, Sunrise, CloudSun, Lollipop, History, Globe, ShieldCheck, CalendarCheck, Clock } from 'lucide-react';
-import { CURRENT_SCHEMA_VERSION, PRE_MIGRATION_BACKUP_KEY, backupRaw } from '../../lib/migrations';
+import { Trash2, Volume2, VolumeX, Sun, Moon, Smile, Trees, Waves, Target, Gift, Eye, Palette, Check, Bell, BellOff, RefreshCw, Sunrise, CloudSun, Lollipop, History, Globe, CalendarCheck, Clock, MapPin, Settings2 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { playSound } from '../../lib/sound';
 import { ConfirmModal } from '../modals/ConfirmModal';
 import { SpinnerInput } from '../common/SpinnerInput';
 import { TimePicker } from '../common/TimePicker';
-import { scrubExportData } from '../../utils/exportScrubber';
+import { ManageLocationsModal } from '../workstation/ManageLocationsModal';
+import { LocationIcon } from '../workstation/LocationIcon';
+import { getMaxWorkstationSessionMinutes, getWorkstationLocations } from '../../lib/workstationUtils';
 
 // Helper to convert VAPID key
 function urlBase64ToUint8Array(base64String: string) {
@@ -28,7 +29,8 @@ function urlBase64ToUint8Array(base64String: string) {
 
 import { ActivityTimeSettings } from './ActivityTimeSettings';
 
-export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { state: any, setState: (fn: (prev: any) => any) => void, setShowClearConfirm: (show: boolean) => void }) => {
+export const GeneralSettings = ({ state, setState }: { state: any, setState: (fn: (prev: any) => any) => void }) => {
+  const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const [modalConfig, setModalConfig] = useState<{ 
     isOpen: boolean; 
     title: string; 
@@ -333,106 +335,6 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
     }
   };
 
-  const handleExport = (includeSensitiveData: boolean = true) => {
-    if (includeSensitiveData) {
-      setModalConfig({
-        isOpen: true,
-        title: "Full Export Warning",
-        message: "This full export will include all your personal information, including your unique user ID and active cloud sync credentials. Are you sure you want to proceed?",
-        confirmText: "Export Full Data",
-        onConfirm: () => executeExport(true)
-      });
-    } else {
-      executeExport(false);
-    }
-  };
-
-  const executeExport = (includeSensitiveData: boolean = true) => {
-    const fullLocalStorage: Record<string, string> = {};
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key) {
-        fullLocalStorage[key] = localStorage.getItem(key) || '';
-      }
-    }
-
-    let dataToExport: any = {
-      ...state,
-      dungeons: JSON.parse(localStorage.getItem('scholars_dungeon_state_dungeons') || '[]'),
-      majorDungeons: JSON.parse(localStorage.getItem('scholars_dungeon_state_major_dungeons') || '[]'),
-      fullLocalStorage
-    };
-
-    if (!includeSensitiveData) {
-      dataToExport = scrubExportData(dataToExport);
-    }
-
-    const filename = includeSensitiveData ? "scholars_dungeon_full_save.json" : "scholars_dungeon_safe_save.json";
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dataToExport));
-    const downloadAnchorNode = document.createElement('a');
-    downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", filename);
-    document.body.appendChild(downloadAnchorNode);
-    downloadAnchorNode.click();
-    downloadAnchorNode.remove();
-    
-    setModalConfig(prev => ({ ...prev, isOpen: false }));
-  };
-
-  const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const importedData = JSON.parse(e.target?.result as string);
-        if (importedData && typeof importedData === 'object') {
-          // Extract state and dungeon data
-          const { dungeons, majorDungeons, fullLocalStorage, ...importedState } = importedData;
-          
-          // Keep the current save so a mistaken import can still be undone by hand
-          const currentRaw = localStorage.getItem('scholars_dungeon_state');
-          if (currentRaw) backupRaw(currentRaw, PRE_MIGRATION_BACKUP_KEY);
-
-          if (fullLocalStorage) {
-            Object.keys(fullLocalStorage).forEach(key => {
-              if (key !== 'scholars_dungeon_device_code') {
-                localStorage.setItem(key, fullLocalStorage[key]);
-              }
-            });
-          } else {
-            localStorage.setItem('scholars_dungeon_state', JSON.stringify({ ...importedState, schemaVersion: CURRENT_SCHEMA_VERSION }));
-            if (dungeons) localStorage.setItem('scholars_dungeon_state_dungeons', JSON.stringify(dungeons));
-            if (majorDungeons) localStorage.setItem('scholars_dungeon_state_major_dungeons', JSON.stringify(majorDungeons));
-          }
-          
-          window.location.reload();
-        } else {
-          setModalConfig({
-            isOpen: true,
-            title: "Import Error",
-            message: "Invalid save file format.",
-            confirmText: "Close",
-            type: "danger",
-            isAlert: true
-          });
-        }
-      } catch (error) {
-        setModalConfig({
-          isOpen: true,
-          title: "Import Failure",
-          message: "Error parsing save file or invalid JSON.",
-          confirmText: "Close",
-          type: "danger",
-          isAlert: true
-        });
-        console.error(error);
-      }
-    };
-    reader.readAsText(file);
-  };
-
   const resetPushState = async () => {
     setModalConfig({
       isOpen: true,
@@ -715,6 +617,125 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
 
       <div className="space-y-6 pt-6 border-t border-slate-800">
         <ActivityTimeSettings state={state} setState={setState} />
+      </div>
+
+      <div id="setting-workstation" className="space-y-6 pt-6 border-t border-slate-800">
+        <div className="space-y-2">
+          <div className="flex items-center gap-2.5 text-indigo-400">
+            <MapPin size={20} />
+            <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Workstation Check-in</h4>
+          </div>
+          <p className="text-[10px] text-slate-500 italic leading-relaxed pr-1">
+            Configure the maximum single-session auto-checkout limit and manage your desk locations.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Auto-Cutoff Limit Card */}
+          <div className="p-4 bg-slate-900/50 rounded-2xl border border-slate-800 space-y-4 flex flex-col justify-between">
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-widest text-slate-300">
+                  Auto-Cutoff Duration
+                </span>
+                <span className="text-xs font-mono font-black text-indigo-400">
+                  {Math.round(getMaxWorkstationSessionMinutes(state) / 60)}h ({getMaxWorkstationSessionMinutes(state)}m)
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-500 leading-relaxed">
+                Automatically checks out and saves the interval if a workstation session runs longer than this limit.
+              </p>
+            </div>
+
+            <div className="space-y-3 pt-1">
+              <div className="grid grid-cols-5 gap-1.5">
+                {[2, 4, 6, 8, 12].map((hr) => {
+                  const mins = hr * 60;
+                  const isSelected = getMaxWorkstationSessionMinutes(state) === mins;
+                  return (
+                    <button
+                      key={hr}
+                      type="button"
+                      onClick={() => setState((prev) => ({ ...prev, workstationMaxSessionMinutes: mins }))}
+                      className={cn(
+                        'py-1.5 rounded-xl text-xs font-bold border transition-all',
+                        isSelected
+                          ? 'bg-indigo-600 text-white border-indigo-500 shadow-sm'
+                          : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
+                      )}
+                    >
+                      {hr}h
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="flex items-center justify-between bg-slate-950/60 px-3 py-2 rounded-xl border border-slate-800">
+                <span className="text-xs font-bold text-slate-400">Custom Hours:</span>
+                <SpinnerInput
+                  value={Math.max(1, Math.round(getMaxWorkstationSessionMinutes(state) / 60))}
+                  onChange={(val) => {
+                    const hours = typeof val === 'number' ? Math.max(1, Math.min(24, val)) : 4;
+                    setState((prev) => ({ ...prev, workstationMaxSessionMinutes: hours * 60 }));
+                  }}
+                  min={1}
+                  max={24}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Check-in Locations Card */}
+          <div className="p-4 bg-slate-900/50 rounded-2xl border border-slate-800 space-y-4 flex flex-col justify-between">
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-widest text-slate-300">
+                  Check-In Locations
+                </span>
+                <span className="text-xs font-mono font-bold text-slate-500">
+                  {getWorkstationLocations(state).length} configured
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-500 leading-relaxed">
+                Customize the desk, lab, or library locations available in your top-bar workstation menu.
+              </p>
+            </div>
+
+            <div className="space-y-3 pt-1">
+              <div className="flex flex-wrap gap-1.5">
+                {getWorkstationLocations(state).map((loc) => (
+                  <span
+                    key={loc}
+                    className="px-2.5 py-1 rounded-xl bg-slate-950 border border-slate-800 text-xs font-bold text-slate-300 flex items-center gap-1.5"
+                  >
+                    <LocationIcon
+                      locName={loc}
+                      customIcons={state.workstationLocationIcons}
+                      size={12}
+                    />
+                    <span>{loc}</span>
+                  </span>
+                ))}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsLocationModalOpen(true)}
+                className="w-full py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-bold flex items-center justify-center gap-2 transition-colors"
+              >
+                <Settings2 size={14} className="text-indigo-400" />
+                <span>Manage Locations & Icons</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <ManageLocationsModal
+          isOpen={isLocationModalOpen}
+          onClose={() => setIsLocationModalOpen(false)}
+          state={state}
+          setState={setState}
+        />
       </div>
 
       <div className="space-y-6 pt-6 border-t border-slate-800">
@@ -1112,84 +1133,6 @@ export const GeneralSettings = ({ state, setState, setShowClearConfirm }: { stat
         </div>
       </div>
 
-      <div id="setting-data-management" className="space-y-6 pt-6 border-t border-slate-800">
-        <div className="flex items-center gap-2.5 text-blue-400 mb-6 pb-2">
-          <Database size={20} />
-          <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Data Management</h4>
-        </div>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="p-6 bg-slate-900/50 rounded-2xl border border-slate-800 space-y-4">
-            <div className="flex items-center justify-between text-white font-bold">
-              <div className="flex items-center gap-3">
-                <Download size={20} className="text-blue-400" />
-                Export Data
-              </div>
-            </div>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Save your progress to a file. <b>Safe Export</b> removes sync passwords and your device nickname.
-            </p>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={() => handleExport(false)}
-                className="px-3 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-all text-[11px] uppercase tracking-wider flex items-center justify-center gap-2 group"
-              >
-                <ShieldCheck size={14} className="text-blue-400 group-hover:scale-110 transition-transform" />
-                Safe Export
-              </button>
-              <button
-                onClick={() => handleExport(true)}
-                className="px-3 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-all text-[11px] uppercase tracking-wider flex items-center justify-center gap-2 group"
-              >
-                <Database size={14} className="text-indigo-400 group-hover:scale-110 transition-transform" />
-                Full Export
-              </button>
-            </div>
-          </div>
-
-          <div className="p-6 bg-slate-900/50 rounded-2xl border border-slate-800 space-y-4">
-            <div className="flex items-center gap-3 text-white font-bold">
-              <Upload size={20} className="text-blue-400" />
-              Import Data
-            </div>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Restore your progress from a previously exported file.
-            </p>
-            <input
-              type="file"
-              accept=".json,application/json"
-              onChange={handleImport}
-              className="hidden"
-              id="import-data"
-            />
-            <label
-              htmlFor="import-data"
-              className="w-full px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-all text-sm cursor-pointer flex items-center justify-center"
-            >
-              Import JSON
-            </label>
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-6 pt-6 border-t border-slate-800">
-        <div className="flex items-center gap-2.5 text-red-400 mb-6 pb-2">
-          <AlertTriangle size={20} />
-          <h4 className="text-lg font-bold uppercase tracking-widest pr-1">Danger Zone</h4>
-        </div>
-        <div className="space-y-4">
-          <p className="text-xs text-slate-400 leading-relaxed font-medium">
-            Clearing all data will reset your progress, inventory, and settings. This action is irreversible.
-          </p>
-          <button
-            onClick={() => setShowClearConfirm(true)}
-            className="w-full sm:w-auto px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2"
-          >
-            <Trash2 size={16} />
-            Clear All Data
-          </button>
-        </div>
-      </div>
       <ConfirmModal 
         isOpen={modalConfig.isOpen}
         onClose={() => setModalConfig({ ...modalConfig, isOpen: false })}

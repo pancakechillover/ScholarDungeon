@@ -2,10 +2,9 @@
 
 ![Scholar's Dungeon](https://img.shields.io/badge/Status-Active-success)
 ![License](https://img.shields.io/badge/License-MIT-blue)
-![React](https://img.shields.io/badge/React-19-blue)
+![React](https://img.shields.io/badge/React-18-blue)
 ![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue)
 ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-Styled-blue)
-![Tests](https://img.shields.io/badge/Tests-node%3Atest-success)
 
 ## 📖 About The Project
 
@@ -71,8 +70,8 @@ To get the best experience without burning out or breaking the game economy, we 
 - **[React 18](https://reactjs.org/)**: UI Library
 - **[Vite](https://vitejs.dev/)**: Fast build tool and development server
 - **[TypeScript](https://www.typescriptlang.org/)**: Static typing for robust code
-- **[Tailwind CSS 4](https://tailwindcss.com/)**: Utility-first CSS framework for styling
-- **[Motion](https://motion.dev/)**: For fluid, physics-based animations (the library formerly published as Framer Motion)
+- **[Tailwind CSS](https://tailwindcss.com/)**: Utility-first CSS framework for styling
+- **[Framer Motion](https://www.framer.com/motion/)**: For fluid, physics-based animations
 - **[Lucide React](https://lucide.dev/)**: Beautiful, consistent icon set
 
 ### Backend & Infrastructure
@@ -84,16 +83,16 @@ To get the best experience without burning out or breaking the game economy, we 
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js **v22.18 or higher** — the test suite uses Node's built-in TypeScript type stripping and `node:test`, so no test framework needs to be installed.
+- Node.js (v18 or higher)
 - npm or yarn
-- A Redis instance (local or cloud, e.g., Upstash, Vercel KV). Optional for pure UI work, but required for cloud sync, fellowships and push notifications.
+- A running Redis instance (Local or Cloud, e.g., Upstash, Vercel KV)
 
 ### Installation
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/pancakechillover/ScholarDungeon.git
-   cd ScholarDungeon
+   git clone https://github.com/yourusername/scholars-dungeon.git
+   cd scholars-dungeon
    ```
 
 2. **Install dependencies**
@@ -102,11 +101,11 @@ To get the best experience without burning out or breaking the game economy, we 
    ```
 
 3. **Environment Setup**
-   Copy the example file and fill in what you need:
-   ```bash
-   cp .env.example .env
+   Create a `.env` file in the root directory and add your Redis connection URL:
+   ```env
+   # .env
+   REDIS_URL=redis://default:your_password@your_redis_host:port
    ```
-   `.env.example` lists every supported variable — `REDIS_URL` for cloud sync, `GEMINI_API_KEY` for the AI features, `OAUTH_CLIENT_ID` / `OAUTH_CLIENT_SECRET` for Google Drive backup, and the `VAPID_*` keys for push notifications.
 
 4. **Run the development server**
    ```bash
@@ -119,14 +118,6 @@ To get the best experience without burning out or breaking the game economy, we 
 npm run build
 npm start
 ```
-
-### Type Checking & Tests
-```bash
-npm run typecheck   # tsc --noEmit
-npm test            # node --test
-```
-
-The test suite runs on Node's built-in runner, so there is no test framework to install and no separate config to maintain. Suites live in `tests/` and cover the security-sensitive server helpers, including the SSRF guard used by the WebDAV proxy.
 
 ---
 
@@ -141,10 +132,7 @@ The test suite runs on Node's built-in runner, so there is no test framework to 
 │   ├── App.tsx           # Main application component
 │   ├── main.tsx          # React entry point
 │   └── index.css         # Global styles and Tailwind configuration
-├── api/                  # Vercel serverless routes (sync, teams, push, webdav, google)
-│   └── shared/           # Helpers reused across routes (SSRF guard, JSON parsing)
-├── tests/                # Node test-runner suites (npm test)
-├── server.ts             # Express backend server — local mirror of the api/ routes
+├── server.ts             # Express backend server and Redis API logic
 ├── package.json          # Project dependencies and scripts
 └── vite.config.ts        # Vite configuration
 ```
@@ -152,7 +140,7 @@ The test suite runs on Node's built-in runner, so there is no test framework to 
 ---
 
 ## 🤝 Contributing
-Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/pancakechillover/ScholarDungeon/issues).
+Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/yourusername/scholars-dungeon/issues).
 
 ## 📄 License
 This project is licensed under the MIT License.

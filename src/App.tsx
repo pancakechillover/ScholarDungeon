@@ -39,21 +39,24 @@ import { GachaResultModal } from './components/shop/GachaResultModal';
 import { BulkClaimModal } from './components/modals/BulkClaimModal';
 import { useGameState } from './hooks/useGameState';
 import { useCloudSync } from './hooks/useCloudSync';
+import { useAuth } from './hooks/useAuth';
 import { useWorkstation } from './hooks/useWorkstation';
 import { triggerSimpleConfetti } from './lib/effects';
 import { cn, getXPForLevel, getSettlementDay, getTitleForLevel } from './lib/utils';
 import { playSound } from './lib/sound';
 import { Dungeon, MajorDungeon, DungeonReward, AppState, ActiveWorkstationSession } from './types';
 import { CloudSyncModal } from './components/settings/CloudSyncModal';
+import { ScholarPassportModal } from './components/settings/ScholarPassportModal';
 import { SplashScreen } from './components/common/SplashScreen';
 import { CompactTimer } from './components/dashboard/CompactTimer';
+import { PipDutyRail } from './components/workstation/PipDutyRail';
 import { UpdateChecker } from './components/common/UpdateChecker';
 import { useHistoryRoute } from './hooks/useHistoryRoute';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { useTimerStore } from './hooks/useTimerStore';
 import { renderAvatar } from './components/guild/TeamModule';
 import { WorkstationTimeoutModal, WorkstationTimeoutInfo } from './components/modals/WorkstationTimeoutModal';
-import { MAX_WORKSTATION_SESSION_MS } from './lib/workstationUtils';
+import { getMaxWorkstationSessionMinutes } from './lib/workstationUtils';
 import { parseISO, isValid } from 'date-fns';
 
 const isTalentLevel = (lvl: number) => {
@@ -283,6 +286,9 @@ function App() {
   const [showDailySummary, setShowDailySummary] = useState(false);
   const [showStartOfDayModal, setShowStartOfDayModal] = useState<string | boolean>(false);
   const [showCloudSync, setShowCloudSync] = useState(false);
+  const [passportInitialTab, setPassportInitialTab] = useState<'login' | 'register'>('login');
+  const [passportPromptMessage, setPassportPromptMessage] = useState<string | null>(null);
+  const [showLegacyCloudModal, setShowLegacyCloudModal] = useState(false);
   const [isFullscreenExplore, setIsFullscreenExplore] = useState(false);
 
   // Global timer check to pop to explore tab and fullscreen when timer completes
@@ -349,6 +355,16 @@ function App() {
   } = useGameState();
 
   const {
+    authLoading,
+    authError,
+    setAuthError,
+    register,
+    login,
+    logout,
+    migrateLegacy
+  } = useAuth({ state, onUpdateState: setState });
+
+  const {
     isSyncing,
     isVerifying,
     syncError,
@@ -397,7 +413,8 @@ function App() {
         try {
           const res = await fetch(`/api/teams?id=${state.teamId}`, {
             headers: {
-              'x-secret-code': state.secretCode || '',
+              ...(state.account?.token ? { Authorization: `Bearer ${state.account.token}` } : {}),
+              'x-secret-code': state.account?.userId || state.secretCode || '',
               'x-user-name': encodeURIComponent(state.userName || 'Scholar'),
               'x-user-level': (state.level || 1).toString(),
               'x-user-avatar': state.userAvatar || '🎓',
@@ -430,13 +447,13 @@ function App() {
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [state.teamId, activeTab, state.secretCode, state.userName]);
+  }, [state.teamId, activeTab, state.account?.token, state.account?.userId, state.secretCode, state.userName]);
 
-  // Workstation Active Session 4-Hour Limit Check & State
+  // Workstation Active Session Auto-Cutoff Limit Check & State
   const [workstationTimeoutInfo, setWorkstationTimeoutInfo] = useState<WorkstationTimeoutInfo | null>(null);
   const isHandlingWorkstationTimeoutRef = useRef(false);
 
-  const { closeTimedOutSession } = useWorkstation({
+  const { closeTimedOutSession, updateIntervalEndTime } = useWorkstation({
     state,
     setState,
     syncToCloud,
@@ -446,13 +463,15 @@ function App() {
     const active = state.activeWorkstationSession;
     if (!active || !active.startTime) return;
 
+    const maxSessionMs = getMaxWorkstationSessionMinutes(state) * 60 * 1000;
+
     const checkWorkstationTimeout = () => {
       if (isHandlingWorkstationTimeoutRef.current) return;
       const start = parseISO(active.startTime);
       if (!isValid(start)) return;
 
       const elapsedMs = Date.now() - start.getTime();
-      if (elapsedMs >= MAX_WORKSTATION_SESSION_MS) {
+      if (elapsedMs >= maxSessionMs) {
         isHandlingWorkstationTimeoutRef.current = true;
 
         const completed = closeTimedOutSession('Home');
@@ -464,6 +483,7 @@ function App() {
 
         setWorkstationTimeoutInfo({
           id: completed.id,
+          dateStr: completed.date,
           location: completed.location || 'Home',
           startTime: completed.startTime,
           endTime: completed.endTime,
@@ -480,7 +500,7 @@ function App() {
     checkWorkstationTimeout();
     const interval = setInterval(checkWorkstationTimeout, 1000);
     return () => clearInterval(interval);
-  }, [state.activeWorkstationSession, state.timeSettings, closeTimedOutSession]);
+  }, [state.activeWorkstationSession, state.timeSettings, state.workstationMaxSessionMinutes, closeTimedOutSession]);
 
   const handleContinueWorkstationSession = (location: string, note?: string) => {
     const startISO = new Date().toISOString();
@@ -542,7 +562,7 @@ function App() {
 
   React.useEffect(() => {
     const stripVolatile = (s: typeof state) => {
-      const { lastUpdated, syncHistory, pushSubscription, ...rest } = s as any;
+      const { lastUpdated, syncHistory, pushSubscription, account, ...rest } = s as any;
       return rest;
     };
     
@@ -564,7 +584,7 @@ function App() {
       
       setHasUnsyncedChanges(true);
 
-      const isCloudSyncConfigured = !!state.secretCode || state.syncProvider === 'WebDAV' || state.syncProvider === 'Google Drive';
+      const isCloudSyncConfigured = !!state.account?.token || !!state.secretCode || state.syncProvider === 'WebDAV' || state.syncProvider === 'Google Drive';
 
       if (!isCloudSyncConfigured || state.autoSyncMode === 'manual' || !isInitialSyncCheckDone) {
         return; // Don't auto-upload yet, but dirty state is saved
@@ -604,7 +624,7 @@ function App() {
 
   // If initial check completes and we have unsynced changes, run auto-sync
   React.useEffect(() => {
-    const isCloudSyncConfigured = !!state.secretCode || state.syncProvider === 'WebDAV' || state.syncProvider === 'Google Drive';
+    const isCloudSyncConfigured = !!state.account?.token || !!state.secretCode || state.syncProvider === 'WebDAV' || state.syncProvider === 'Google Drive';
     if (!isCloudSyncConfigured || !isInitialSyncCheckDone || !hasUnsyncedChanges || state.autoSyncMode === 'manual') {
       return;
     }
@@ -640,7 +660,7 @@ function App() {
   }, [isInitialSyncCheckDone]);
 
   React.useEffect(() => {
-    const isCloudSyncConfigured = !!state.secretCode || state.syncProvider === 'WebDAV' || state.syncProvider === 'Google Drive';
+    const isCloudSyncConfigured = !!state.account?.token || !!state.secretCode || state.syncProvider === 'WebDAV' || state.syncProvider === 'Google Drive';
 
     const handleVisibilityChange = () => {
       if (document.hidden && hasUnsyncedChanges && isCloudSyncConfigured && state.autoSyncMode !== 'manual') {
@@ -686,7 +706,7 @@ function App() {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [hasUnsyncedChanges, state.secretCode, state.syncProvider, syncToCloud, isInitialSyncCheckDone, checkCloudSync]);
+  }, [hasUnsyncedChanges, state.account?.token, state.secretCode, state.syncProvider, syncToCloud, isInitialSyncCheckDone, checkCloudSync]);
 
   React.useEffect(() => {
     if (state.theme) {
@@ -756,10 +776,11 @@ function App() {
     }
   }, [isSyncing, state.level]);
 
-  // Sync Push Subscription to server whenever secretCode or pushEnabled changes
+  // Sync Push Subscription to server whenever account, secretCode, or pushEnabled changes
   useEffect(() => {
     const syncPushSubscription = async () => {
-      if (state.pushEnabled && state.secretCode && !isSyncingPush) {
+      const pushIdentity = state.account?.userId || state.secretCode;
+      if (state.pushEnabled && pushIdentity && !isSyncingPush) {
         setIsSyncingPush(true);
         try {
           const registration = await navigator.serviceWorker.getRegistration();
@@ -769,9 +790,12 @@ function App() {
               if (import.meta.env.DEV) console.log('Push sync: Syncing subscription');
               const res = await fetch('/api/push/subscribe', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                  'Content-Type': 'application/json',
+                  ...(state.account?.token ? { Authorization: `Bearer ${state.account.token}` } : {})
+                },
                 body: JSON.stringify({
-                  secretCode: state.secretCode,
+                  secretCode: pushIdentity,
                   subscription
                 })
               });
@@ -796,7 +820,7 @@ function App() {
     if (appReady) {
       syncPushSubscription();
     }
-  }, [state.pushEnabled, state.secretCode, appReady]);
+  }, [state.pushEnabled, state.account?.token, state.account?.userId, state.secretCode, appReady]);
 
   const handlePurchase = useCallback((itemId: string) => {
     if (import.meta.env.DEV) console.log('Purchasing item:', itemId);
@@ -845,7 +869,6 @@ function App() {
     setIsEditingProfile(false);
   };
 
-  const _currentLevelUp = showLevelUp?.[0];
 
   const openProfile = () => {
     setEditName(state.userName || 'Scholar');
@@ -1066,7 +1089,6 @@ function App() {
     });
   };
 
-  const _progressToNextLevel = (state.xp / getXPForLevel(state.level)) * 100;
 
   const unclaimedQuestsCount = state.quests.filter(q => !q.isAchievement && q.completed && !q.claimed).length;
   const unclaimedAchievementsCount = state.quests.filter(q => q.isAchievement && q.completed && !q.claimed).length;
@@ -1084,11 +1106,11 @@ function App() {
 
   useEffect(() => {
     if (appReady) {
-      if (state.syncProvider === 'Google Drive' || state.syncProvider === 'WebDAV' || state.secretCode) {
+      if (state.syncProvider === 'Google Drive' || state.syncProvider === 'WebDAV' || state.account?.token || state.secretCode) {
         checkCloudSync(false, true);
       }
     }
-  }, [appReady, state.syncProvider, !!state.secretCode]);
+  }, [appReady, state.syncProvider, !!state.account?.token, !!state.secretCode]);
 
   useEffect(() => {
     // Check and reset routine major dungeons
@@ -1260,7 +1282,13 @@ function App() {
       </AnimatePresence>
 
       {pipWindow && createPortal(
-        <CompactTimer 
+        <PipDutyRail
+          pipWindow={pipWindow}
+          state={state}
+          setState={setState}
+          syncToCloud={syncToCloud}
+        >
+        <CompactTimer
           endTime={timerEndTime}
           isActive={isTimerActive}
           isResting={isResting}
@@ -1277,7 +1305,7 @@ function App() {
           onRewardSelect={(reward, sessionId) => {
             useTimerStore.getState().setActiveRewardSession(null);
             selectReward(reward, sessionId);
-            if (state.secretCode) {
+            if (state.account?.token || state.secretCode) {
               syncToCloud(false, undefined, 'Manual');
             }
           }}
@@ -1297,6 +1325,7 @@ function App() {
             setTimerEndTime(Date.now() + focusDuration * 60 * 1000);
           }}
         />,
+        </PipDutyRail>,
         pipWindow.document.body
       )}
 
@@ -1446,6 +1475,42 @@ function App() {
               state={state}
               setState={setState}
               syncToCloud={syncToCloud}
+              onOpenDeskLog={() => {
+                try {
+                  localStorage.setItem('record_showJournalView', 'false');
+                } catch {}
+                if (!(state.statsViewOpts?.showWorkstationTracker ?? true)) {
+                  setState((prev) => ({
+                    ...prev,
+                    statsViewOpts: { ...(prev.statsViewOpts || {}), showWorkstationTracker: true },
+                  }));
+                }
+                setActiveTab('stats');
+                setTimeout(() => {
+                  const el = document.getElementById('workstation-section');
+                  if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    el.classList.add(
+                      'ring-2',
+                      'ring-indigo-500',
+                      'ring-offset-2',
+                      'ring-offset-slate-950',
+                      'transition-all',
+                      'duration-500'
+                    );
+                    setTimeout(
+                      () =>
+                        el.classList.remove(
+                          'ring-2',
+                          'ring-indigo-500',
+                          'ring-offset-2',
+                          'ring-offset-slate-950'
+                        ),
+                      1600
+                    );
+                  }
+                }, 220);
+              }}
             />
           </div>
 
@@ -1502,7 +1567,7 @@ function App() {
             </div>
 
             {/* Cloud Status */}
-            {(state.secretCode || state.syncProvider) && (
+            {(state.account?.token || state.secretCode || state.syncProvider) && (
               <button 
                 onClick={() => checkCloudSync(true)}
                 disabled={isSyncing || isVerifying}
@@ -1520,7 +1585,7 @@ function App() {
                   <RefreshCw size={14} className={isSyncing || isVerifying ? "animate-spin" : ""} />
                 </div>
                 {hasUnsyncedChanges && (
-                  <span className="absolute -top-1 -right-1 flex h-2 w-2">
+                  <span className="absolute -bottom-0.5 -right-0.5 flex h-2 w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500 border border-slate-900"></span>
                   </span>
@@ -1607,12 +1672,12 @@ function App() {
                 >
                   {renderAvatar(state.userAvatar, 16)}
                 </button>
-                {(state.secretCode || state.syncProvider) && (hasUnsyncedChanges || isSyncing || isVerifying || syncError) && (
+                {(state.account?.token || state.secretCode || state.syncProvider) && (hasUnsyncedChanges || isSyncing || isVerifying || syncError) && (
                   <button
                     onClick={(e) => { e.stopPropagation(); checkCloudSync(true); }}
                     disabled={isSyncing || isVerifying}
                     className={cn(
-                      "absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full flex items-center justify-center border-2 border-slate-900 z-10 transition-all",
+                      "absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full flex items-center justify-center border-2 border-slate-900 z-10 transition-all",
                       hasUnsyncedChanges 
                         ? "bg-amber-500 hover:bg-amber-400 text-slate-900" 
                         : isSyncing || isVerifying 
@@ -1719,6 +1784,10 @@ function App() {
                         }
                       }, 250);
                   }
+                }}
+                onRequirePassportAuth={(msg) => {
+                  setPassportPromptMessage(msg || 'Please sign in to your Scholar Passport first.');
+                  setShowCloudSync(true);
                 }}
               />
             )}
@@ -1874,6 +1943,8 @@ function App() {
             {activeTab === 'stats' && (
               <StatsView 
                 state={state} 
+                setState={setState}
+                syncToCloud={syncToCloud}
                 saveDailyLog={saveDailyLog} 
                 onUpdateState={(update) => setState(s => ({ ...s, ...update }))}
                 updateSession={updateSession}
@@ -1982,6 +2053,11 @@ function App() {
           setGuideInitialPage(chapter);
           setShowGuideBook(true);
         }}
+        onOpenPassport={(tab) => {
+          setPassportInitialTab(tab);
+          setShowCloudSync(true);
+        }}
+        onLogout={logout}
       />
 
       <AnimatePresence>
@@ -2037,14 +2113,50 @@ function App() {
       )}
       <CoinRain active={showCoinRain} onComplete={() => setShowCoinRain(false)} />
 
-      {/* Cloud Sync Modal */}
+      {/* Scholar Passport Modal (Primary Unified Account & Cloud Sync UI) */}
+      <AnimatePresence>
+        {(showCloudSync || ((!!syncCheckResult || !!syncError) && !showLegacyCloudModal && state.syncProvider !== 'Google Drive' && state.syncProvider !== 'WebDAV')) && (
+          <ScholarPassportModal
+            isOpen={true}
+            onClose={() => {
+              setShowCloudSync(false);
+              setPassportPromptMessage(null);
+              if (syncCheckResult) setSyncCheckResult(null);
+              if (syncError) setSyncError(null);
+            }}
+            state={state}
+            authLoading={authLoading}
+            authError={authError}
+            setAuthError={setAuthError}
+            onLogin={login}
+            onRegister={register}
+            onLogout={logout}
+            onMigrateLegacy={migrateLegacy}
+            isSyncing={isSyncing}
+            isVerifying={isVerifying}
+            syncError={syncError}
+            setSyncError={setSyncError}
+            syncCheckResult={syncCheckResult}
+            onSyncNow={() => syncToCloud(false, undefined, 'Manual')}
+            onVerify={() => checkCloudSync(true)}
+            onResolveConflict={resolveConflict}
+            onCancelConflict={() => setSyncCheckResult(null)}
+            onDeleteCloudData={deleteCloudData}
+            promptMessage={passportPromptMessage}
+            onClearPromptMessage={() => setPassportPromptMessage(null)}
+            initialTab={passportInitialTab}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Legacy Cloud Sync Modal (Google Drive, WebDAV, or raw legacy Secret Code fallback) */}
       {createPortal(
         <AnimatePresence>
-          {(showCloudSync || syncCheckResult || syncError) && (
+          {(showLegacyCloudModal || ((!!syncCheckResult || !!syncError) && (state.syncProvider === 'Google Drive' || state.syncProvider === 'WebDAV'))) && (
             <CloudSyncModal
-              isOpen={showCloudSync || !!syncCheckResult || !!syncError}
+              isOpen={true}
               onClose={() => {
-                setShowCloudSync(false);
+                setShowLegacyCloudModal(false);
                 if (syncCheckResult) setSyncCheckResult(null);
                 if (syncError) setSyncError(null);
               }}
@@ -2127,12 +2239,25 @@ function App() {
         getNextTalentLevel={getNextTalentLevel}
       />
 
-      {/* Workstation 4-Hour Timeout Prompt Modal */}
+      {/* Workstation Auto-Cutoff Timeout Prompt Modal */}
       <WorkstationTimeoutModal 
         isOpen={!!workstationTimeoutInfo}
         info={workstationTimeoutInfo}
         onContinue={handleContinueWorkstationSession}
         onDismiss={handleDismissWorkstationTimeout}
+        onAdjustEndTime={updateIntervalEndTime}
+        onOpenSettings={() => {
+          setActiveTab('settings');
+          setActiveSettingsSection('general');
+          setTimeout(() => {
+            const el = document.getElementById('setting-workstation');
+            if (el) {
+              el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              el.classList.add('ring-2', 'ring-indigo-500', 'ring-offset-2', 'ring-offset-slate-900', 'transition-all', 'duration-500');
+              setTimeout(() => el.classList.remove('ring-2', 'ring-indigo-500', 'ring-offset-2', 'ring-offset-slate-900'), 1500);
+            }
+          }, 250);
+        }}
         theme={state.theme}
       />
 

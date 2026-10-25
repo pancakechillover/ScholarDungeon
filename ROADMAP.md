@@ -2,7 +2,23 @@
 
 > Scholar's Dungeon 的维护路线图。按风险分级，不按心情排序。
 >
-> 最后盘点：2026-10-23 · 对应版本 v9.3.39 · 分支 `hardening-and-dedup`
+> 最后盘点：2026-10-23 · 应用版本 v9.3.39 · 开发仓库 `Rougue2`（`main` 分支）
+>
+> **开发约定**：新功能在 `Rougue2` 开发，稳定后同步回 `ScholarDungeon`。
+>
+> **版本号规则**（改完代码、准备部署前必须升）
+>
+> 单一真源是 `src/version.ts` 的 `APP_VERSION`，`public/version.json` 由 `npm run build` 自动生成，不要手改。
+>
+> | 改动类型               | 升哪一位                           | 示例                |
+> | ------------------ | ------------------------------ | ----------------- |
+> | 修 bug、重构、样式，对外行为不变 | patch                          | v9.3.39 → v9.3.40 |
+> | 新增功能               | minor，并在 `RELEASE_HISTORY` 加一条 | v9.3.40 → v9.4.0  |
+> | 数据模型不兼容变更          | major                          | v9.x → v10.0.0    |
+>
+> `package.json` 的 `version` 已与 `APP_VERSION` 统一（9.3.40），不要让它再脱节。
+>
+> **不升版本号的后果不是"不规范"，而是功能失效**：`UpdateChecker` 轮询 `/version.json`，只有 `version !== APP_VERSION` 时才弹更新提示。版本号不变，PWA 用户会永远停在旧版本。
 
 ---
 
@@ -35,6 +51,16 @@
 | 数据模型                       | 34 个（`types.ts`，554 行）                         | —    |
 | 源文件                        | 138 个，孤儿组件 1 个（`modals/RewardModal.tsx`）       | P4-1 |
 
+**与 ScholarDungeon 的已知差异**（2026-10-23 实测，不影响开发）
+
+Rougue2 缺三项，后续顺手补齐：
+
+- `tests/` 目录（3 个测试文件）
+- `api/shared/json.ts`（`safeJsonParse`，Redis 脏数据容错）
+- WebDAV 的 `resolveAndValidateHostname`（DNS 解析后二次校验，防域名指向内网）
+
+另：`api/webdav/proxy.ts` 里内联了一份与 `api/shared/webdavSecurity.ts` 重复的校验代码，改一处漏一处，做 P0-3 时一并去重。
+
 **结构性问题（不是死代码，是归属混乱）**
 
 | 模块                     | 行数   | 现在挂在哪                            |
@@ -44,6 +70,21 @@
 | 日志 `JournalView`       | 1146 | Record 页面内，靠 `localStorage` 布尔切换 |
 
 目录与挂载互相矛盾：`journal/` 被 `record/` 引用，`workstation/` 被 `expedition/` 引用，`guild/` 被 `dashboard/` 引用。
+
+---
+
+## 1.1 需求映射：你的想法落在哪
+
+| 你的需求                            | 编号       | 级别 | 前置依赖       | 预估    |
+| ------------------------------- | -------- | -- | ---------- | ----- |
+| 工位打卡按钮进 PiP + 顶栏                | **P1-6** | P1 | 无          | 1.5 天 |
+| Expedition 升级 + 任务标签系统联动 Record | **P2-6** | P2 | P0-2（数据迁移） | 3–4 天 |
+| 打卡 Routine 系统优化                 | **P2-7** | P2 | P0-2（数据迁移） | 5–7 天 |
+
+**为什么打卡排 P1、另两个排 P2**
+
+- 打卡进 PiP 看似是加按钮，实际要先收掉**三处重复的打卡逻辑**（`App.tsx:442`、`WorkstationHeaderControls.tsx:68`、`WorkstationModal.tsx:91`）。不收掉就直接加，等于制造第四份副本。所以它同时是债务清理，排 P1。
+- 标签系统和 Routine 重构都要改数据结构。**没有 P0-2 的版本号和迁移入口就动模型，老用户存档会在下次更新时静默丢字段**，而且无法回滚。所以它们排在 P0-2 之后，自然落在 P2。
 
 ---
 
@@ -70,7 +111,11 @@
   3. 包两层：`main.tsx` 顶层一层，`App.tsx` 每个 L1 页面各一层（单页崩不拖垮全局）。
 - [ ] **验收**：在某个 View 里临时 `throw new Error('test')`，页面显示兜底 UI 且能导出数据；移除后恢复正常。
 - [ ] **预估**：0.5 天
-- [ ] 完成
+- [x] **完成（2026-10-23）**
+  - `main.tsx` 顶层包一层；`App.tsx` 页面区包一层（`key={activeTab}`，切页自动重置）
+  - 兜底 UI：Try again / Reload the app / Export my data + 可展开 Technical details
+  - 实测：注入崩溃后侧边栏与顶栏照常可用，只有页面区显示兜底；清除条件后恢复
+  - ⚠️ 顺带发现项目**未安装 `@types/react`**，React 类型全是 any；已在 ErrorBoundary 里用 `declare props/setState/context/forceUpdate` 绕过，记入 P0-3
 
 ### P0-2 · 数据版本号与迁移入口
 
@@ -166,7 +211,11 @@
   3. `strict: true`（`noImplicitAny` 是最大头，304 处 `any` 需要逐目录清）
 - [ ] **验收**：每步 `npm run typecheck` 零错误。
 - [ ] **预估**：第 1-2 步各 0.5 天；第 3 步 3-5 天
-- [ ] 完成
+- [ ] **状态：2026-10-23 评估完成，需要专项清理会话**
+  - 步骤 1（noUnusedLocals/Parameters）：开启后 **736 处**（86 文件），其中大量为未使用的解构 props（App.tsx 从 useGameState 解构后未用）。codemod（eslint-plugin-unused-imports --fix + ts-morph 改名）清掉了约 600 处 import 与参数，但 ts-morph 的 rename 会误伤**同名跨文件解构属性**（useGameState 返回对象的简写属性被连带改名），引发 TS2304，已回滚
+  - 步骤 2（noImplicitReturns 等）：开启后 **33 处 TS7030**（server.ts 占 11），均为真实代码卫生问题，修复需逐函数确认，约 1-1.5 小时
+  - 步骤 3（strict）：304 处 any，3-5 天
+  - **建议**：单独安排 1-2 个完整 session，先 git add 中间快照再跑 codemod，用 `removeWithComma` 而非文本拼接；ESLint 的 unused-imports --fix 可复用（本次已验证有效）
 
 ### P1-3 · CI：typecheck + test + build
 
@@ -207,6 +256,7 @@
     - CDP 实测 7 项：直达 / 刷新 / 导航 / back / 非法路径回落 / 老书签迁移 / API 路由不受影响（/api/stats 200）
   - **待深化**：`routes.ts` 页面注册表（面包屑、子路由如 `/quests/d/<id>`）留待后续；当前 8 个页面都是平级一级路由，暂无子路由需求
 
+
 ### P1-5 · 关键路径测试
 
 - [ ] **现状**：3 个测试文件，只覆盖 JSON 解析与 WebDAV 安全。
@@ -216,6 +266,24 @@
   3. 计时器状态机：开始/暂停/休息/循环/跨天。
 - [ ] **验收**：以上三块各 ≥5 个用例，`npm test` 全绿。
 - [ ] **预估**：2 天
+- [ ] 完成
+
+### P1-6 · 工位打卡统一入口（顶栏状态图标）
+
+- [x] **第一步：收口**（2026-10-23 完成）—— 新建 `useWorkstation`，替换 4 处重复实现（HeaderControls / Modal / View / App 超时 effect）
+- [x] **第二步：顶栏状态图标**（2026-10-23 完成）—— `WorkstationStatusChip.tsx`
+  - 图标复用用户自己的地点图标（`resolveLocationIconOption` + `state.workstationLocationIcons`）
+  - 灰色 = 未计时；彩色 = 计时中
+  - 点击：未计时 → 弹出地点选择；计时中 → 直接结束打卡
+  - 宽屏（`lg` 以上）在图标右侧显示**当日工位总时长**，不论是否在计时都显示
+  - 位置：顶栏 XP 进度条之后、资源图标之前
+- [x] **移除 Explore 顶部重复控件** —— `PageHeader` 的 action 已删除，Check In / Desk Log 不再出现在 Explore
+- [ ] ~~PiP 状态条~~ **已放弃**（用户决定：PiP 保持现有简洁布局）
+- [ ] **待定**：`WorkstationView`（完整工位页）和 `Desk Log` 弹窗目前**没有入口**，等待确定放置位置
+  - 2026-10-23 尝试过在 Record 页 Routine Tracker 后面加一张 Workstation 卡片（`stats/StatsWorkstationSection.tsx`）
+  - 两版设计均被否，**已从 Record 撤下**，`Stats.tsx` 已恢复原状
+  - 组件文件保留但未挂载，作为参考实现；重新启用需在 `Stats.tsx` 里加回一行引用
+- [ ] **验收**：顶栏图标灰色 → 点选地点 → 变彩色；再点 → 结束并写入 `workstationLogs`；宽屏显示当日总时长 —— 已用 CDP 实测通过
 - [ ] 完成
 
 ---
@@ -253,6 +321,43 @@
 
 配合 P1-2 第 3 步，按目录推进，每目录一次提交。
 
+- [ ] 完成
+
+### P2-6 · 任务标签系统（联动 Record + Expedition 升级）
+
+- [ ] **现状**：`Dungeon` / `MajorDungeon` / `TodayTodo` / `StudySession` **全都没有 tags 字段**。Record 只能按时间、副本、来源统计。Expedition 是「AI 生成计划 → 落成主副本 + 子副本」（`App.tsx:1688`），产物没有任何分类信息。
+- [ ] **数据模型**：
+  1. `AppState` 增加 `tags: Tag[]` 注册表（`{ id, name, color, archived }`）。
+  2. `Dungeon` / `MajorDungeon` / `TodayTodo` 增加 `tags?: string[]`。
+  3. **`StudySession` 增加 `tags?: string[]`，在结算那一刻快照标签。** 只存 `dungeonId` 会导致改标签后历史统计全部漂移，这条不能省。
+- [ ] **Record 联动**：
+  1. 饼图增加「按标签」维度（复用现有 `DailyPieChart` / `WeeklyPieChart`）。
+  2. 顶部筛选：时间范围 × 标签多选，两个维度正交。
+  3. Journal 按标签聚合。
+- [ ] **Expedition 升级**：
+  1. 生成计划时把**已有标签列表**喂给 AI，要求优先复用，避免「学习 / 学习 / 自习」这种同义词分裂。
+  2. 计划预览界面可编辑标签。
+  3. 任务树按标签着色。
+- [ ] **验收**：给两个副本打上不同标签，完成会话后在 Record 能按标签筛出各自的时长；修改副本标签后，历史统计**不变**。
+- [ ] **预估**：3–4 天
+- [ ] 完成
+
+### P2-7 · Routine 系统重构
+
+- [ ] **现状（四个具体问题）**：
+  1. Routine 复用 `Dungeon` 实体（`types.ts:56-58` 的 `isRoutine` + `routineType`），一个结构两种语义。
+  2. `routineType` 只有 `'daily' | 'weekly' | 'monthly'`，**不支持"每周一三五"**。
+  3. 完成判定靠关联的 `StudySession` 反推，**没有独立打卡动作**——不打番茄钟就等于没做。
+  4. 浏览在 Record（`Stats.tsx:1066`），编辑却要去 Dungeon 编辑，入口分裂。
+- [ ] **做法**：
+  1. 独立 `Routine` 实体：`{ id, title, schedule, targetMinutes?, linkedDungeonId?, tags?, archived }`。
+  2. `schedule` 支持：每天 / 每周指定星期几 / 每月指定日期 / 每周 N 次。
+  3. 新增 `RoutineCompletion`：`{ date, routineId, source: 'manual' | 'session' }`，两种都算完成。
+  4. Sanctum 今日待办显示「今天该做的例行」，支持一键勾选。
+  5. 迁移：现有 `isRoutine` 的 Dungeon 自动转成 Routine，保留 id 关联。
+- [ ] **验收**：能建一个"每周一三五"的例行；不打番茄钟也能手动勾选完成；Record 里能看到连续完成天数。
+- [ ] **预估**：5–7 天
+- [ ] **前置**：P0-2 必须先完成
 - [ ] 完成
 
 ---
@@ -295,16 +400,22 @@
 
 ---
 
-## 8. 30 天执行顺序
+## 8. 执行顺序（约 8 周）
 
-| 周     | 任务             | 产出             |
-| ----- | -------------- | -------------- |
-| 第 1 周 | P0-1 ~ P0-5    | 敢放心改数据结构，崩了能兜住 |
-| 第 2 周 | P1-1 ~ P1-3    | 每次提交自动被检查      |
-| 第 3 周 | P1-4 + P1-5    | "新功能放哪"有标准答案   |
-| 第 4 周 | P2-3 目录对齐 + 复盘 | 目录与导航一致，只记一套   |
+| 周       | 任务                            | 产出             |
+| ------- | ----------------------------- | -------------- |
+| 第 1 周   | P0-1 ~ P0-5                   | 敢放心改数据结构，崩了能兜住 |
+| 第 2 周   | P1-1 ~ P1-3                   | 每次提交自动被检查      |
+| 第 3 周   | P1-4 + P1-5                   | "新功能放哪"有标准答案   |
+| 第 4 周   | **P1-6 打卡统一入口**               | 你的第一个需求落地      |
+| 第 5–6 周 | **P2-6 标签系统 + Expedition 升级** | Record 能按标签看数据 |
+| 第 7–8 周 | **P2-7 Routine 重构**           | 例行任务有独立模型      |
+| 之后      | P2-1 / P2-2 拆大文件、P2-3 目录对齐、P3 | —              |
 
-**第 4 周之前不要碰 P2-1 / P2-2。** 护栏没建好就拆主组件，只会把混乱换个位置。
+**两个原则：**
+
+1. **第 4 周之前不要碰 P2-1 / P2-2。** 护栏没建好就拆主组件，只会把混乱换个位置。
+2. **功能（P2-6 / P2-7）排在拆大文件之前。** 功能有明确验收标准，拆文件没有用户可见收益。先把能用的东西做出来，再处理"代码不够漂亮"。
 
 ---
 

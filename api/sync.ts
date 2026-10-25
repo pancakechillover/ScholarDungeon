@@ -1,13 +1,6 @@
 import { createClient } from 'redis';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { safeJsonParse } from './shared/json';
-
-/** Shape of the save blob exchanged with the client. */
-interface SyncPayload {
-  lastUpdated?: string;
-  savedByDeviceCode?: string;
-  [key: string]: unknown;
-}
+import { verifyBearerToken } from './auth';
 
 // Initialize Redis client lazily to reuse connection in serverless environment
 let redisClient: any = null;
@@ -30,11 +23,24 @@ const getRedisClient = async () => {
 
 // ── Validation & rate limiting ────────────────────────────────────────────
 
-/** Accepts short legacy codes (e.g. GoogleTest, 10 chars), base36 codes (26 chars) and UUID codes (36 chars). */
-const SECRET_CODE_PATTERN = /^[A-Za-z0-9-]{8,64}$/;
+/** Accepts legacy base36 codes, UUID codes, and unified usr_<uuid> IDs. */
+const SECRET_CODE_PATTERN = /^[A-Za-z0-9_-]{8,64}$/;
 
 function isValidSecretCode(value: unknown): value is string {
   return typeof value === 'string' && SECRET_CODE_PATTERN.test(value);
+}
+
+function getStorageKeys(identity: string, isUnifiedUser: boolean): { saveKey: string; historyKey: string } {
+  if (isUnifiedUser || identity.startsWith('usr_')) {
+    return {
+      saveKey: `scholar_user:${identity}:save`,
+      historyKey: `scholar_user:${identity}:save_history`,
+    };
+  }
+  return {
+    saveKey: `scholar_sync_${identity}`,
+    historyKey: `scholar_sync_${identity}_history`,
+  };
 }
 
 const RATE_LIMIT_WINDOW_S = 60;
@@ -83,50 +89,58 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
-    // Reject malformed secret codes before touching Redis, so validation works
-    // even when the backend is degraded.
+    // 1. Check unified Bearer session token first
+    const verifiedSession = await verifyBearerToken(client, req.headers.authorization);
+
+    // 2. Fallback to legacy secretCode in body
     const { secretCode: submittedCode } = body || {};
-    if (submittedCode !== undefined && !isValidSecretCode(submittedCode)) {
+    if (!verifiedSession && submittedCode !== undefined && !isValidSecretCode(submittedCode)) {
       return res.status(400).json({ error: "Invalid secret code format" });
     }
 
+    const activeIdentity = verifiedSession ? verifiedSession.userId : submittedCode;
+    const isUnified = Boolean(verifiedSession) || (typeof activeIdentity === 'string' && activeIdentity.startsWith('usr_'));
+
     // Check if history is requested
     if (path?.endsWith('/history')) {
-      const { secretCode } = body || {};
-      if (!isValidSecretCode(secretCode)) return res.status(400).json({ error: "Invalid secret code format" });
+      if (!isValidSecretCode(activeIdentity)) {
+        return res.status(400).json({ error: "Authentication or valid secret code required" });
+      }
       
-      const historyKey = `scholar_sync_${secretCode}_history`;
+      const { historyKey } = getStorageKeys(activeIdentity, isUnified);
       const historyRaw = await client.get(historyKey);
-      const historyList = safeJsonParse<unknown[]>(historyRaw, []);
+      const historyList = historyRaw ? JSON.parse(historyRaw.toString()) : [];
       
       return res.status(200).json({ success: true, history: historyList });
     }
 
     if (req.method === 'POST') {
-      const { secretCode, localData, forceOverwrite } = body || {};
-      if (!isValidSecretCode(secretCode)) return res.status(400).json({ error: "Invalid secret code format" });
+      const { localData, forceOverwrite } = body || {};
+      if (!isValidSecretCode(activeIdentity)) {
+        return res.status(400).json({ error: "Authentication or valid secret code required" });
+      }
 
-      const key = `scholar_sync_${secretCode}`;
+      const { saveKey, historyKey } = getStorageKeys(activeIdentity, isUnified);
 
       // Capacity limits / Prune expired BEFORE check
       const fifteenDaysAgoMs = Date.now() - 15 * 24 * 3600 * 1000;
       await client.zRemRangeByScore('scholar_active_users', 0, fifteenDaysAgoMs);
 
       // Track user active
-      await client.zAdd('scholar_active_users', { score: Date.now(), value: secretCode });
+      await client.zAdd('scholar_active_users', { score: Date.now(), value: activeIdentity });
 
       // Enforce 300 users limit
       const userCount = await client.zCard('scholar_active_users');
       if (userCount > 300) {
-        const rank = await client.zRank('scholar_active_users', secretCode);
-        if (rank >= 300) {
-          await client.zRem('scholar_active_users', secretCode);
+        const rank = await client.zRank('scholar_active_users', activeIdentity);
+        if (rank !== null && rank >= 300) {
+          await client.zRem('scholar_active_users', activeIdentity);
           return res.status(403).json({ error: "Capacity Full: Multi-device sync is capped at 300 registered users in the free tier quota. Try again later when inactive slots clear up." });
         }
       }
 
-      const cloudDataRaw = await client.get(key);
-      const cloudData = safeJsonParse<SyncPayload | null>(cloudDataRaw, null);
+      const cloudDataRaw = await client.get(saveKey);
+      const cloudData = cloudDataRaw ? JSON.parse(cloudDataRaw.toString()) : null;
 
       // If no localData is provided, this is a FETCH request
       if (!localData) {
@@ -151,9 +165,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       
       // Save backup history (up to 3 recent copies)
       if (cloudData && cloudData.lastUpdated && cloudData.lastUpdated !== localData.lastUpdated) {
-          const historyKey = `${key}_history`;
           const historyRaw = await client.get(historyKey);
-          let historyList = safeJsonParse<SyncPayload[]>(historyRaw, []);
+          let historyList = historyRaw ? JSON.parse(historyRaw.toString()) : [];
           // Insert at beginning
           historyList.unshift(cloudData);
           // Keep only last 3
@@ -161,17 +174,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           await client.set(historyKey, JSON.stringify(historyList));
       }
 
-      await client.set(key, JSON.stringify(localData));
+      await client.set(saveKey, JSON.stringify(localData));
       return res.status(200).json({ success: true, cloudData: localData });
     } 
     
     if (req.method === 'DELETE') {
-      const { secretCode } = body || {};
-      if (!isValidSecretCode(secretCode)) return res.status(400).json({ error: "Invalid secret code format" });
+      if (!isValidSecretCode(activeIdentity)) {
+        return res.status(400).json({ error: "Authentication or valid secret code required" });
+      }
       
-      const key = `scholar_sync_${secretCode}`;
-      await client.del(key);
-      await client.del(`${key}_history`);
+      const { saveKey, historyKey } = getStorageKeys(activeIdentity, isUnified);
+      await client.del(saveKey);
+      await client.del(historyKey);
       return res.status(200).json({ success: true });
     }
 

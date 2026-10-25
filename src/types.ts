@@ -384,6 +384,7 @@ export interface AppState {
   activeWorkstationSession?: ActiveWorkstationSession | null;
   workstationLocations?: string[];
   workstationLocationIcons?: Record<string, string>;
+  workstationMaxSessionMinutes?: number;
   limitedMentalEffort?: boolean;
   // Custom Time Mocking
   customTimeEnabled?: boolean;
@@ -412,6 +413,7 @@ export interface AppState {
     showWeeklyBar?: boolean;
     showWeeklyDonut?: boolean;
     showRoutineTracker?: boolean;
+    showWorkstationTracker?: boolean;
     showSleepTracker?: boolean;
     showHeatmap?: boolean;
     dailyDonutMode?: '24h' | 'compact';
@@ -422,10 +424,37 @@ export interface AppState {
   };
 
   /**
+   * Unified Scholar Account state (null or undefined when in Guest Mode).
+   */
+  account?: ScholarAccount | null;
+
+  /**
    * Version of the persisted save format. Absent means the save predates
    * versioning (treated as v0). See src/lib/migrations.ts.
    */
   schemaVersion?: number;
+}
+
+export interface ScholarAccount {
+  userId: string;
+  username: string;
+  displayName?: string;
+  token: string;
+  createdAt?: string;
+  lastLoginAt?: string;
+  lastSyncedAt?: string | null;
+  teamId?: string;
+  boundOldCode?: string;
+}
+
+export interface LegacyMigrationSummary {
+  saveMigrated: boolean;
+  historyMigrated: boolean;
+  activeUserDeduplicated: boolean;
+  migratedTeamIds: string[];
+  pushSubscriptionsMigrated: number;
+  pushTasksRewritten: number;
+  pushTaskRefMigrated: boolean;
 }
 
 export interface StudySession {
