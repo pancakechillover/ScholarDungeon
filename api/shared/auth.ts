@@ -1,28 +1,23 @@
 /**
  * Session-token helpers shared by the serverless API routes.
  *
- * These live outside `api/` function entry points on purpose. Every `.ts` file
- * directly under `api/` is built as its own Vercel function, so importing one
- * entry file from another bundles a second copy of a function handler and, in
- * this project, failed at invocation time with FUNCTION_INVOCATION_FAILED for
- * /api/sync, /api/teams and /api/push while /api/auth itself stayed healthy.
- * `api/shared/` is not treated as a function directory, so it is safe to import
- * from any route (that is how shared/json.ts and shared/webdavSecurity.ts are
- * already used).
+ * Two constraints shaped this file, both learned the hard way on Vercel:
+ *
+ * 1. It must live outside `api/` function entry points. Every `.ts` directly
+ *    under `api/` is built as its own Vercel function, so importing one entry
+ *    from another fails while the module graph loads (FUNCTION_INVOCATION_FAILED
+ *    on /api/sync, /api/teams and /api/push while /api/auth stayed healthy).
+ *    `api/shared/` is not a function directory, which is why shared/json.ts and
+ *    shared/webdavSecurity.ts can be imported from any route.
+ *
+ * 2. It must not import a Node builtin at module scope. webdavSecurity.ts
+ *    documents the same trap for `node:dns`: a top-level import crashed the
+ *    Vercel Node sandbox during cold start. A top-level `import crypto` here
+ *    failed the deployment outright, so every crypto call below loads the
+ *    module lazily inside the function that needs it.
  */
-import crypto from 'crypto';
 
 const TOKEN_ID_PATTERN = /^[a-f0-9]{64}$/;
-
-/** Local copy so this module does not depend on which shared helpers exist. */
-function safeJsonParse<T>(value: unknown, fallback: T): T {
-  if (!value || typeof value !== 'string') return fallback;
-  try {
-    return JSON.parse(value) as T;
-  } catch {
-    return fallback;
-  }
-}
 
 /** Sliding session lifetime; refreshed on every successful verification. */
 export const SESSION_TTL_SECONDS = 30 * 24 * 3600;
@@ -34,6 +29,16 @@ export interface VerifiedSession {
   token: string;
   issuedAt: number;
   expiresAt: number;
+}
+
+/** Local copy so this module never depends on another shared helper's shape. */
+function safeJsonParse<T>(value: unknown, fallback: T): T {
+  if (!value || typeof value !== 'string') return fallback;
+  try {
+    return JSON.parse(value) as T;
+  } catch {
+    return fallback;
+  }
 }
 
 /**
@@ -52,17 +57,29 @@ export function getRegistrationSecret(): string | null {
   return secret;
 }
 
+type NodeCrypto = typeof import('crypto');
+
+async function loadCrypto(): Promise<NodeCrypto> {
+  const mod: any = await import('crypto');
+  return (mod?.default ?? mod) as NodeCrypto;
+}
+
 /**
  * Constant-time string comparison via SHA-256 digests so length differences
  * never leak timing or throw RangeError in crypto.timingSafeEqual.
  */
-export function constantTimeCompare(a: string, b: string): boolean {
+export async function constantTimeCompare(a: string, b: string): Promise<boolean> {
+  const crypto = await loadCrypto();
   const digestA = crypto.createHash('sha256').update(a, 'utf8').digest();
   const digestB = crypto.createHash('sha256').update(b, 'utf8').digest();
   return crypto.timingSafeEqual(digestA, digestB);
 }
 
-export function signSessionToken(tokenId: string, authTokenSecret: string): string {
+export async function signSessionToken(
+  tokenId: string,
+  authTokenSecret: string
+): Promise<string> {
+  const crypto = await loadCrypto();
   const signature = crypto
     .createHmac('sha256', authTokenSecret)
     .update(tokenId, 'utf8')
@@ -70,13 +87,17 @@ export function signSessionToken(tokenId: string, authTokenSecret: string): stri
   return `${tokenId}.${signature}`;
 }
 
-export function verifySignedToken(rawToken: string, authTokenSecret: string): string | null {
+export async function verifySignedToken(
+  rawToken: string,
+  authTokenSecret: string
+): Promise<string | null> {
   if (!rawToken || typeof rawToken !== 'string') return null;
   const parts = rawToken.trim().split('.');
   if (parts.length !== 2) return null;
   const [tokenId, signature] = parts;
   if (!TOKEN_ID_PATTERN.test(tokenId) || !TOKEN_ID_PATTERN.test(signature)) return null;
 
+  const crypto = await loadCrypto();
   const expectedSig = crypto
     .createHmac('sha256', authTokenSecret)
     .update(tokenId, 'utf8')
@@ -112,7 +133,7 @@ export async function verifyBearerToken(
   const token = extractBearerToken(authHeader);
   if (!token) return null;
 
-  const tokenId = verifySignedToken(token, authTokenSecret);
+  const tokenId = await verifySignedToken(token, authTokenSecret);
   if (!tokenId) return null;
 
   const sessionKey = `scholar_session:${tokenId}`;
