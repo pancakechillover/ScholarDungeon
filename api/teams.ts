@@ -1,7 +1,7 @@
 import { createClient } from 'redis';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import crypto from 'crypto';
-import { verifyBearerToken } from './auth';
+import { verifyBearerToken } from './shared/auth';
 
 function safeJsonParse<T>(value: any, fallback: T): T {
   if (!value) return fallback;
