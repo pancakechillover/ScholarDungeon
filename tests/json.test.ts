@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { safeJsonParse } from '../api/shared/json.ts';
+import { safeJsonParse } from '../api/_shared/json.ts';
 
 test('safeJsonParse parses a valid payload', () => {
   assert.deepEqual(safeJsonParse('{"a":1,"b":[2,3]}', null), { a: 1, b: [2, 3] });

@@ -7,7 +7,7 @@
  *    under `api/` is built as its own Vercel function, so importing one entry
  *    from another fails while the module graph loads (FUNCTION_INVOCATION_FAILED
  *    on /api/sync, /api/teams and /api/push while /api/auth stayed healthy).
- *    `api/shared/` is not a function directory, which is why shared/json.ts and
+ *    `api/_shared/` is not a function directory, which is why shared/json.ts and
  *    shared/webdavSecurity.ts can be imported from any route.
  *
  * 2. It must not import a Node builtin at module scope. webdavSecurity.ts

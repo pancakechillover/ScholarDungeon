@@ -5,11 +5,11 @@ import {
   validateWebDavBodySize,
   validateWebDavMethod,
   validateWebDavUrl,
-} from '../shared/webdavSecurity';
+} from '../_shared/webdavSecurity';
 
 /**
  * WebDAV proxy used by the browser client to reach third-party WebDAV servers
- * without hitting CORS. The SSRF guard lives in `../shared/webdavSecurity` so
+ * without hitting CORS. The SSRF guard lives in `../_shared/webdavSecurity` so
  * the Express development mirror in `server.ts` applies the exact same rules.
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {

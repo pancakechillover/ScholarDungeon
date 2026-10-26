@@ -40,15 +40,18 @@ function createResponse(): FakeResponse {
  */
 async function loadProxyHandler() {
   const entry = path.join(repoRoot, 'api', 'webdav', 'proxy.ts');
-  const shared = pathToFileURL(path.join(repoRoot, 'api', 'shared', 'webdavSecurity.ts')).href;
+  const shared = pathToFileURL(path.join(repoRoot, 'api', '_shared', 'webdavSecurity.ts')).href;
 
   const source = await readFile(entry, 'utf8');
+  // Accept either directory name: Vercel ignores `_`-prefixed folders when
+  // generating functions, so the shared helpers live in api/_shared/.
+  const importRe = /from '(\.\.\/_?shared\/webdavSecurity)'/;
   assert.ok(
-    source.includes("from '../shared/webdavSecurity'"),
+    importRe.test(source),
     'proxy.ts must import the shared security module',
   );
 
-  const rewritten = source.replace("'../shared/webdavSecurity'", `'${shared}'`);
+  const rewritten = source.replace(importRe, `from '${shared}'`);
   const dir = await mkdtemp(path.join(tmpdir(), 'sd-proxy-'));
   const file = path.join(dir, 'proxy.ts');
   await writeFile(file, rewritten, 'utf8');

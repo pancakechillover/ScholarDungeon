@@ -6,7 +6,7 @@ import {
   validateWebDavBodySize,
   validateWebDavMethod,
   validateWebDavUrl,
-} from '../api/shared/webdavSecurity.ts';
+} from '../api/_shared/webdavSecurity.ts';
 
 /**
  * These cases are the regression net for the SSRF guard. The pre-existing
