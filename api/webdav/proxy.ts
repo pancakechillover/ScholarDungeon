@@ -5,7 +5,7 @@ import {
   validateWebDavBodySize,
   validateWebDavMethod,
   validateWebDavUrl,
-} from '../_shared/webdavSecurity';
+} from '../_shared/webdavSecurity.js';
 
 /**
  * WebDAV proxy used by the browser client to reach third-party WebDAV servers

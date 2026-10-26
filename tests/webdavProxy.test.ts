@@ -43,9 +43,10 @@ async function loadProxyHandler() {
   const shared = pathToFileURL(path.join(repoRoot, 'api', '_shared', 'webdavSecurity.ts')).href;
 
   const source = await readFile(entry, 'utf8');
-  // Accept either directory name: Vercel ignores `_`-prefixed folders when
-  // generating functions, so the shared helpers live in api/_shared/.
-  const importRe = /from '(\.\.\/_?shared\/webdavSecurity)'/;
+  // Accept either directory name and an optional .js extension: Vercel skips
+  // `_`-prefixed folders when generating functions (so helpers live in
+  // api/_shared/), and its Node ESM runtime needs the extension spelled out.
+  const importRe = /from '(\.\.\/_?shared\/webdavSecurity)(?:\.js)?'/;
   assert.ok(
     importRe.test(source),
     'proxy.ts must import the shared security module',
