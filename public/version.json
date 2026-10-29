@@ -1,37 +1,21 @@
 {
-  "version": "v9.6.18",
+  "version": "v9.6.19",
   "date": "2026-10-30",
   "latestRelease": {
-    "version": "v9.6.18",
+    "version": "v9.6.19",
     "date": "2026-10-30",
-    "time": "00:06:00",
-    "title": "Version 9.6.18: One Session, One Tag",
+    "time": "00:17:00",
+    "title": "Version 9.6.19: Stocking a Shelf from the Shelf",
     "items": [
       {
-        "category": "Record",
-        "description": "A session now carries a single tag. Tag Breakdown credited the full duration of a session to every tag on it, so a session with three tags was counted three times: the card reported 19h30m of focus while its donut claimed 29h, and each tag's share was divided by the inflated sum — a tag worth 40% of your time read as 28%."
+        "category": "Merchant",
+        "description": "The + Stock button on an empty shelf slot opens the item editor right there. It used to send you to Settings → Merchant and leave you to find the New Item button yourself."
       },
       {
-        "category": "Record",
-        "description": "Picking a tag in the session editor replaces the previous one instead of adding to it, and picking the current tag clears it. Dungeons and the batch tag action work the same way."
-      },
-      {
-        "category": "Record",
-        "description": "Sessions saved before this change keep their stored tag ids untouched. Only the first one counts now, so old history adds up immediately; re-tagging a session rewrites it to a single id."
-      },
-      {
-        "category": "Record",
-        "description": "Tag shares are a percentage of the time actually focused now, and the minutes in the list add up to the total printed in the donut."
-      },
-      {
-        "category": "Record",
-        "description": "All Time no longer wears a meaningless date, and its arrows are disabled instead of quietly dropping the view back to 7 Days."
-      },
-      {
-        "category": "Record",
-        "description": "The section follows your configured timezone, and a page left open across the day boundary now notices the new day instead of holding yesterday."
+        "category": "Merchant",
+        "description": "That editor is now one shared dialog, so a new item started from the shelf and one started from settings are the same form with the same fields and the same price check."
       }
     ]
   },
-  "timestamp": 1793290188904
+  "timestamp": 1793290595833
 }

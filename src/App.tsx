@@ -2155,6 +2155,7 @@ function App() {
                   setShowGuideBook(true);
                 }}
                 onSetActivePool={setActivePool}
+                onUpdateShopItems={(items) => setState(prev => ({ ...prev, shopItems: items }))}
                 onOpenSettings={() => {
                   setActiveTab('settings');
                   setActiveSettingsSection('merchant');

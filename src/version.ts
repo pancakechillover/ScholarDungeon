@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v9.6.18';
+export const APP_VERSION = 'v9.6.19';
 export const LAST_UPDATE_DATE = '2026-10-30';
-export const LAST_UPDATE_TIME = '00:06:00';
+export const LAST_UPDATE_TIME = '00:17:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,16 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v9.6.19',
+    date: '2026-10-30',
+    time: '00:17:00',
+    title: 'Version 9.6.19: Stocking a Shelf from the Shelf',
+    items: [
+      { category: 'Merchant', description: 'The + Stock button on an empty shelf slot opens the item editor right there. It used to send you to Settings → Merchant and leave you to find the New Item button yourself.' },
+      { category: 'Merchant', description: 'That editor is now one shared dialog, so a new item started from the shelf and one started from settings are the same form with the same fields and the same price check.' }
+    ]
+  },
   {
     version: 'v9.6.18',
     date: '2026-10-30',
