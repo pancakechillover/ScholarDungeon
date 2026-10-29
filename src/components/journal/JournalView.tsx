@@ -936,11 +936,15 @@ export const JournalView: React.FC<JournalViewProps> = ({
                           </div>
 
                           {/* Single-Click WYSIWYG MarkdownEditor */}
+                          {/* The box has a height of its own — the viewport minus the
+                              chrome above and below it — so a long entry scrolls inside
+                              instead of stretching the tome and pushing the page footer
+                              off-screen. */}
                           <MarkdownEditor
                             value={reflection}
                             onChange={handleReflectionChange}
                             placeholder={`Write your reflection for ${format(selectedDate, 'MMM do')}...`}
-                            className="flex-1 h-full min-h-[340px]"
+                            className="h-[calc(100dvh-23.5rem)] min-h-[340px]"
                           />
                         </div>
 

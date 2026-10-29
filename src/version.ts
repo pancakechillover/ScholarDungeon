@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v9.6.14';
+export const APP_VERSION = 'v9.6.15';
 export const LAST_UPDATE_DATE = '2026-10-29';
-export const LAST_UPDATE_TIME = '22:24:00';
+export const LAST_UPDATE_TIME = '22:35:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,16 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v9.6.15',
+    date: '2026-10-29',
+    time: '22:35:00',
+    title: 'Version 9.6.15: The Journal Page Keeps Its Shape',
+    items: [
+      { category: 'Journal', description: 'The reflection box on the journal page now holds a fixed writing area. A long entry used to stretch the page taller and taller, pushing the footer and the page-turn controls out of view; the text now scrolls inside the box instead.' },
+      { category: 'Journal', description: 'A short entry still fills the page as before, so the open-book spread keeps its proportions on an ordinary day.' }
+    ]
+  },
   {
     version: 'v9.6.14',
     date: '2026-10-29',
