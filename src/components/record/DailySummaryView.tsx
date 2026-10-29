@@ -27,6 +27,7 @@ import { cn, getSessionEffectiveMinutes, formatDuration, getDayStartHour, getSet
 import { getEffectiveTargetFocusMinutes } from '../../lib/workstationUtils';
 import { playSound } from '../../lib/sound';
 import { AppState, Dungeon, MajorDungeon } from '../../types';
+import { useAutosave } from '../../hooks/useAutosave';
 
 import { EfficiencyDetailsModal } from './EfficiencyDetailsModal';
 import { MoodSelector } from '../common/MoodSelector';
@@ -45,10 +46,10 @@ interface DailySummaryViewProps {
 }
 
 export const DailySummaryView: React.FC<DailySummaryViewProps> = ({ state, dungeons, majorDungeons, onClose, onNavigateToStats, onOpenJournal, onSave, onUpdateState }) => {
-  const [rating, setRating] = useState(() => Number(localStorage.getItem('scholar_rating_draft')) || 0);
-  const [reflection, setReflection] = useState(() => localStorage.getItem('scholar_reflection_draft') || '');
-  const [mood, setMood] = useState(() => localStorage.getItem('scholar_mood_draft') || '');
-  const [title, setTitle] = useState(() => localStorage.getItem('scholar_title_draft') || '');
+  const [rating, setRating] = useState(0);
+  const [reflection, setReflection] = useState('');
+  const [mood, setMood] = useState('');
+  const [title, setTitle] = useState('');
   const [isStatsExpanded, setIsStatsExpanded] = useState(true);
 
   // Efficiency Calculation State
@@ -111,23 +112,13 @@ export const DailySummaryView: React.FC<DailySummaryViewProps> = ({ state, dunge
 
   // End applyFormat
 
-  React.useEffect(() => {
-    localStorage.setItem('scholar_reflection_draft', reflection);
-  }, [reflection]);
-
-  React.useEffect(() => {
-    localStorage.setItem('scholar_rating_draft', rating.toString());
-  }, [rating]);
-
-  React.useEffect(() => {
-    if (mood) localStorage.setItem('scholar_mood_draft', mood);
-    else localStorage.removeItem('scholar_mood_draft');
-  }, [mood]);
-
-  React.useEffect(() => {
-    if (title) localStorage.setItem('scholar_title_draft', title);
-    else localStorage.removeItem('scholar_title_draft');
-  }, [title]);
+  // Autosave replaces the old per-field draft keys, which were one shared set
+  // for every date: yesterday's unsaved text used to open tonight, and the real
+  // save only happened on "Save & Rest".
+  const { markDirty, status: saveStatus } = useAutosave(
+    [rating, reflection, mood, title],
+    () => onSave(today.dateString, rating, reflection, mood, title)
+  );
 
   const dailyStats = useMemo(() => {
     const ts = state.timeSettings || {
@@ -486,7 +477,7 @@ export const DailySummaryView: React.FC<DailySummaryViewProps> = ({ state, dunge
             </h3>
             <MoodSelector
               value={mood}
-              onChange={(m) => setMood(m || "")}
+              onChange={(m) => { setMood(m || ""); markDirty(); }}
               enabledMoods={state.enabledMoods}
               variant="wrap"
             />
@@ -537,7 +528,7 @@ export const DailySummaryView: React.FC<DailySummaryViewProps> = ({ state, dunge
                 ) : (
                   <StarRating
                     value={rating}
-                    onChange={setRating}
+                    onChange={(v) => { setRating(v); markDirty(); }}
                     size="lg"
                   />
                 )}
@@ -557,7 +548,7 @@ export const DailySummaryView: React.FC<DailySummaryViewProps> = ({ state, dunge
                   <input
                     type="text"
                     value={title}
-                    onChange={(e) => setTitle(e.target.value)}
+                    onChange={(e) => { setTitle(e.target.value); markDirty(); }}
                     placeholder={format(parseISO(today.dateString), 'MMM dd')}
                     className="w-full bg-transparent text-xs sm:text-sm font-bold text-slate-200 placeholder:text-slate-300 placeholder:font-bold outline-none hover:bg-slate-800/40 focus:bg-slate-800/60 px-2 py-1 rounded-lg border border-transparent focus:border-indigo-500/50 transition-all truncate"
                     title="Journal Title (Click to customize)"
@@ -565,7 +556,7 @@ export const DailySummaryView: React.FC<DailySummaryViewProps> = ({ state, dunge
                   {title && (
                     <button
                       type="button"
-                      onClick={() => setTitle('')}
+                      onClick={() => { setTitle(''); markDirty(); }}
                       className="p-1 text-slate-500 hover:text-slate-300 rounded transition-colors shrink-0"
                       title="Reset to default date title"
                     >
@@ -574,9 +565,15 @@ export const DailySummaryView: React.FC<DailySummaryViewProps> = ({ state, dunge
                   )}
                 </div>
               </div>
+              {saveStatus !== 'idle' && (
+                <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 shrink-0">
+                  {saveStatus === 'saving' ? 'Saving…' : 'Saved'}
+                </span>
+              )}
+
               <ReflectionHeaderControls
                 reflection={reflection}
-                onSelectTemplate={setReflection}
+                onSelectTemplate={(text) => { setReflection(text); markDirty(); }}
                 templates={state.reflectionTemplates}
                 onUpdateTemplates={(templates) => onUpdateState?.({ reflectionTemplates: templates })}
                 autoLoadTemplateId={state.autoLoadTemplateId}
@@ -588,18 +585,13 @@ export const DailySummaryView: React.FC<DailySummaryViewProps> = ({ state, dunge
                   });
                 }}
                 onOpenImmersive={() => {
-                  localStorage.removeItem('scholar_reflection_draft');
-                  localStorage.removeItem('scholar_rating_draft');
-                  localStorage.removeItem('scholar_mood_draft');
-                  localStorage.removeItem('scholar_mood_score_draft');
-                  localStorage.removeItem('scholar_title_draft');
                   onSave(today.dateString, rating, reflection, mood, title);
                   onClose();
                   onOpenJournal?.(today.dateString);
                 }}
                 showCopy={true}
                 showImportExport={true}
-                onImportReflection={setReflection}
+                onImportReflection={(text) => { setReflection(text); markDirty(); }}
                 exportFileName={`reflection-${today.dateString}.md`}
               />
             </div>
@@ -607,7 +599,7 @@ export const DailySummaryView: React.FC<DailySummaryViewProps> = ({ state, dunge
             {/* Single Markdown Editor Pane (Regular Modal View) */}
             <MarkdownEditor 
               value={reflection}
-              onChange={setReflection}
+              onChange={(v) => { setReflection(v); markDirty(); }}
               placeholder="Write down your thoughts, achievements, or what you learned today... (Markdown shortcuts supported)"
               className="flex-1 h-full min-h-[300px]"
             />
@@ -615,11 +607,6 @@ export const DailySummaryView: React.FC<DailySummaryViewProps> = ({ state, dunge
 
           <button
             onClick={() => {
-              localStorage.removeItem('scholar_reflection_draft');
-              localStorage.removeItem('scholar_rating_draft');
-              localStorage.removeItem('scholar_mood_draft');
-              localStorage.removeItem('scholar_mood_score_draft');
-              localStorage.removeItem('scholar_title_draft');
               onSave(today.dateString, rating, reflection, mood, title);
               onNavigateToStats();
             }}

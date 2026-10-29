@@ -1,21 +1,29 @@
 {
-  "version": "v9.6.13",
+  "version": "v9.6.14",
   "date": "2026-10-29",
   "latestRelease": {
-    "version": "v9.6.13",
+    "version": "v9.6.14",
     "date": "2026-10-29",
-    "time": "21:52:00",
-    "title": "Version 9.6.13: A Quieter Edit Session Header",
+    "time": "22:24:00",
+    "title": "Version 9.6.14: The Day Pages Write as You Type",
     "items": [
       {
-        "category": "Record",
-        "description": "The total-duration pill next to the Edit Session title is gone. The two inputs below it already show Focus and Rest time, so the pill only repeated their sum."
+        "category": "Journal",
+        "description": "The reflection on the day-open and day-close pages now saves itself about a second after you stop typing, and a small Saving / Saved note appears beside the section header. Previously the text lived only in the page, so pressing Back, switching tabs or closing the window threw it away unless you had reached the button at the bottom."
       },
       {
-        "category": "Record",
-        "description": "The objective picker no longer repeats the target icon that already sits beside the \"Dungeon Objective\" label. The objective name now starts at the left edge of the field."
+        "category": "Journal",
+        "description": "Leaving the page flushes the pending write first, so the last few keystrokes before you close it still land."
+      },
+      {
+        "category": "Journal",
+        "description": "A template that fills the reflection automatically is not saved until you touch it. Opening a day with nothing written used to risk storing the blank template as if it were your own text."
+      },
+      {
+        "category": "Journal",
+        "description": "The day-close page no longer keeps one shared draft for every date. Unsaved text from one evening used to reappear on the next one; the page now reads what that particular day actually stored."
       }
     ]
   },
-  "timestamp": 1793282411030
+  "timestamp": 1793283958698
 }

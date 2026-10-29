@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v9.6.13';
+export const APP_VERSION = 'v9.6.14';
 export const LAST_UPDATE_DATE = '2026-10-29';
-export const LAST_UPDATE_TIME = '21:52:00';
+export const LAST_UPDATE_TIME = '22:24:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,18 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v9.6.14',
+    date: '2026-10-29',
+    time: '22:24:00',
+    title: 'Version 9.6.14: The Day Pages Write as You Type',
+    items: [
+      { category: 'Journal', description: 'The reflection on the day-open and day-close pages now saves itself about a second after you stop typing, and a small Saving / Saved note appears beside the section header. Previously the text lived only in the page, so pressing Back, switching tabs or closing the window threw it away unless you had reached the button at the bottom.' },
+      { category: 'Journal', description: 'Leaving the page flushes the pending write first, so the last few keystrokes before you close it still land.' },
+      { category: 'Journal', description: 'A template that fills the reflection automatically is not saved until you touch it. Opening a day with nothing written used to risk storing the blank template as if it were your own text.' },
+      { category: 'Journal', description: 'The day-close page no longer keeps one shared draft for every date. Unsaved text from one evening used to reappear on the next one; the page now reads what that particular day actually stored.' }
+    ]
+  },
   {
     version: 'v9.6.13',
     date: '2026-10-29',
