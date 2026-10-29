@@ -2,7 +2,7 @@ import { MarkdownEditor } from "../common/MarkdownEditor";
 import React, { useState, useRef, useMemo, useEffect, useCallback } from 'react';
 import { 
 
-  format, subDays, addDays, parseISO, isValid, isToday
+  format, subDays, addDays, parseISO, isValid
 } from 'date-fns';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -14,7 +14,7 @@ import {
   Compass, Bookmark, BookmarkCheck, Trash2, Calendar, X
 } from 'lucide-react';
 import { AppState, Dungeon, MajorDungeon } from '../../types';
-import { cn, getSessionEffectiveMinutes } from '../../lib/utils';
+import { cn, getSessionEffectiveMinutes, getSettlementDay, isSettlementToday, getDayStartHour } from '../../lib/utils';
 import { DurationText } from '../common/DurationText';
 import { getEffectiveTargetFocusMinutes } from '../../lib/workstationUtils';
 import { DatePicker } from '../common/DatePicker';
@@ -47,12 +47,7 @@ export const JournalView: React.FC<JournalViewProps> = ({
   const getInitialPeakDate = () => {
     if (initialDate && isValid(initialDate)) return initialDate;
 
-    const ts = state.timeSettings || {
-      morning: { start: 8, end: 12 },
-      afternoon: { start: 14, end: 18 },
-      night: { start: 20, end: 24 }
-    };
-    
+    // Single source of truth: today's settlement label decides the date to open on
     let now = new Date();
     if (state.timezone) {
       try {
@@ -62,14 +57,9 @@ export const JournalView: React.FC<JournalViewProps> = ({
         console.error("Timezone error:", e);
       }
     }
-    
-    const hour = now.getHours();
-    if (ts.night.start > ts.night.end && hour < ts.night.end) {
-      return subDays(now, 1);
-    } else if (hour < ts.morning.start) {
-      return subDays(now, 1);
-    }
-    return now;
+
+    const [y, m, d] = getSettlementDay(now, state.timeSettings).split('-').map(Number);
+    return new Date(y, m - 1, d);
   };
 
   const [selectedDate, setSelectedDate] = useState<Date>(getInitialPeakDate());
@@ -420,8 +410,11 @@ export const JournalView: React.FC<JournalViewProps> = ({
     };
   };
 
-  // Date boundaries for header subtitle display (aligned with Agenda & Workstation)
-  const borderHour = state.timeSettings?.morning?.start ?? 8;
+  // Date boundaries for header subtitle display (aligned with Agenda & Workstation).
+  // The hour comes from getDayStartHour, not from the morning block directly: a
+  // night period that crosses midnight is what actually opens the day, so taking
+  // morning.start showed 04:00 for a day that really begins at 03:00.
+  const borderHour = getDayStartHour(state.timeSettings);
   const viewStartTime = useMemo(() => {
     const st = new Date(selectedDate);
     st.setHours(borderHour, 0, 0, 0);
@@ -589,7 +582,7 @@ export const JournalView: React.FC<JournalViewProps> = ({
                 <span className="text-slate-400">{format(viewStartTime, 'HH:mm')}</span>
                 <span className="opacity-40">→</span>
                 <span className="text-slate-500">
-                  {format(viewEndTime, 'MM/dd')} {ts.night.end === 24 ? '24:00' : format(viewEndTime, 'HH:mm')}
+                  {format(viewEndTime, 'MM/dd')} {format(viewEndTime, 'HH:mm')}
                 </span>
               </div>
             </div>
@@ -600,16 +593,17 @@ export const JournalView: React.FC<JournalViewProps> = ({
                   value={selectedDateStr}
                   onChange={(val) => val && setSelectedDate(parseISO(val))}
                   indicators={dateIndicators}
+                  timeSettings={state.timeSettings}
                   nav={{
                     onPrev: () => navigateDay('prev'),
                     onNext: () => navigateDay('next'),
-                    onToday: () => setSelectedDate(new Date()),
+                    onToday: () => setSelectedDate(parseISO(getSettlementDay(new Date(), state.timeSettings))),
                     size: 'md',
                   }}
                 >
                   <div className="px-2.5 text-xs font-bold text-slate-200 whitespace-nowrap min-w-[96px] text-center hover:bg-slate-800/70 rounded-xl h-8 transition-colors flex items-center justify-center cursor-pointer gap-1.5">
                     <Calendar size={13} className="text-indigo-400" />
-                    <span>{isToday(selectedDate) ? 'Today' : format(selectedDate, 'MMM do')}</span>
+                    <span>{isSettlementToday(selectedDate, state.timeSettings) ? 'Today' : format(selectedDate, 'MMM do')}</span>
                   </div>
                 </DatePicker>
               </div>

@@ -26,7 +26,7 @@ import {
 } from 'lucide-react';
 import { TimePicker } from '../common/TimePicker';
 import { AppState, Dungeon, MajorDungeon, TodayTodo } from '../../types';
-import { cn, sortAgendaTodos, getSettlementDay, getDungeonHierarchyStats, getTierProgressColor } from '../../lib/utils';
+import { cn, sortAgendaTodos, getSettlementDay, getDayStartHour, getDungeonHierarchyStats, getTierProgressColor } from '../../lib/utils';
 import { ConfirmModal } from '../modals/ConfirmModal';
 import { ExpeditionSelect } from '../common/ExpeditionSelect';
 import { ReflectionHeaderControls } from '../common/ReflectionHeaderControls';
@@ -166,38 +166,23 @@ export const StartOfDayView: React.FC<StartOfDayViewProps> = ({
     }
 
     const currentHour = now.getHours();
+    const startHour = getDayStartHour(ts);
 
-    let startDate = new Date(now);
-    startDate.setHours(ts.morning.start, 0, 0, 0);
-    let endDate = new Date(now);
-    
-    let nightEndHour = ts.night.end;
-    let daysToadd = 0;
-    if (ts.night.end < ts.night.start) {
-        nightEndHour = ts.night.end;
-        daysToadd = 1;
-    } else if (ts.night.end === 24) {
-        nightEndHour = 0;
-        daysToadd = 1;
-    }
-    
-    endDate.setHours(nightEndHour, 0, 0, 0);
-    endDate.setDate(endDate.getDate() + daysToadd);
+    // One boundary decides both ends, so the period is always exactly a day long.
+    // It used to open at morning.start and close at night.end, which under the
+    // default settings produced a 16-hour window that started at 08:00 and ended
+    // at midnight.
+    const startDate = new Date(now);
+    startDate.setHours(startHour, 0, 0, 0);
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + 1);
 
-    if (currentHour < ts.morning.start && !initialDateStr) {
+    if (currentHour < startHour && !initialDateStr) {
         startDate.setDate(startDate.getDate() - 1);
         endDate.setDate(endDate.getDate() - 1);
     }
 
-    const formatDate = (d: Date, is24: boolean = false) => {
-      if (is24) {
-        const prev = new Date(d);
-        prev.setDate(prev.getDate() - 1);
-        const mo = (prev.getMonth() + 1).toString().padStart(2, '0');
-        const da = prev.getDate().toString().padStart(2, '0');
-        const m = d.getMinutes().toString().padStart(2, '0');
-        return `${mo}/${da} 24:${m}`;
-      }
+    const formatDate = (d: Date) => {
       const mo = (d.getMonth() + 1).toString().padStart(2, '0');
       const da = d.getDate().toString().padStart(2, '0');
       const h = d.getHours().toString().padStart(2, '0');
@@ -207,7 +192,7 @@ export const StartOfDayView: React.FC<StartOfDayViewProps> = ({
 
     return {
       dateString: initialDateStr || getSettlementDay(now, ts),
-      settlementPeriod: `${formatDate(startDate)} - ${formatDate(endDate, ts.night.end === 24)}`
+      settlementPeriod: `${formatDate(startDate)} - ${formatDate(endDate)}`
     };
   }, [state, initialDateStr]);
   

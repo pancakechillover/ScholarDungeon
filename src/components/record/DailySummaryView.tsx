@@ -23,7 +23,7 @@ import {
   SlidersHorizontal,
   Calculator
 } from 'lucide-react';
-import { cn, getSessionEffectiveMinutes, formatDuration } from '../../lib/utils';
+import { cn, getSessionEffectiveMinutes, formatDuration, getDayStartHour, getSettlementDay } from '../../lib/utils';
 import { getEffectiveTargetFocusMinutes } from '../../lib/workstationUtils';
 import { playSound } from '../../lib/sound';
 import { AppState, Dungeon, MajorDungeon } from '../../types';
@@ -59,12 +59,6 @@ export const DailySummaryView: React.FC<DailySummaryViewProps> = ({ state, dunge
   const hasInitializedFromLog = useRef(false);
 
   const today = useMemo(() => {
-    const ts = state.timeSettings || {
-      morning: { start: 8, end: 12 },
-      afternoon: { start: 14, end: 18 },
-      night: { start: 20, end: 24 }
-    };
-
     const getYMD = (d: Date) => {
       const year = d.getFullYear();
       const month = (d.getMonth() + 1).toString().padStart(2, '0');
@@ -82,42 +76,23 @@ export const DailySummaryView: React.FC<DailySummaryViewProps> = ({ state, dunge
       }
     }
 
-    const currentHour = now.getHours();
+    // Single source of truth: the settlement label decides the day, the border hour decides the window.
+    const ts = state.timeSettings;
+    const borderHour = getDayStartHour(ts);
+    const settlementDay = getSettlementDay(now, ts);
+    const [sy, sm, sd] = settlementDay.split('-').map(Number);
+    const startDate = new Date(sy, sm - 1, sd, borderHour, 0, 0, 0);
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + 1);
 
-    // Start with today's morning
-    let startDate = new Date(now);
-    startDate.setHours(ts.morning.start, 0, 0, 0);
-
-    let endDate = new Date(now);
-    
-    // If the night block spans midnight, the 'end' date needs to be the next day relative to the morning start.
-    let nightEndHour = ts.night.end;
-    let daysToadd = 0;
-    if (ts.night.end < ts.night.start) {
-        nightEndHour = ts.night.end;
-        daysToadd = 1;
-    } else if (ts.night.end === 24) {
-        nightEndHour = 0;
-        daysToadd = 1;
-    }
-    
-    endDate.setHours(nightEndHour, 0, 0, 0);
-    endDate.setDate(endDate.getDate() + daysToadd);
-
-    // If we are currently before the morning start, we belong to the previous day's settlement period
-    if (currentHour < ts.morning.start) {
-        startDate.setDate(startDate.getDate() - 1);
-        endDate.setDate(endDate.getDate() - 1);
-    }
-
-    const formatDate = (d: Date, is24: boolean = false) => {
-      if (is24) {
+    const formatDate = (d: Date, asEnd: boolean = false) => {
+      // A window ending exactly at midnight reads better as "MM/DD 24:00" than the next day's 00:00
+      if (asEnd && d.getHours() === 0 && d.getMinutes() === 0) {
         const prev = new Date(d);
         prev.setDate(prev.getDate() - 1);
         const mo = (prev.getMonth() + 1).toString().padStart(2, '0');
         const da = prev.getDate().toString().padStart(2, '0');
-        const m = d.getMinutes().toString().padStart(2, '0');
-        return `${mo}/${da} 24:${m}`;
+        return `${mo}/${da} 24:00`;
       }
       const mo = (d.getMonth() + 1).toString().padStart(2, '0');
       const da = d.getDate().toString().padStart(2, '0');
@@ -128,7 +103,7 @@ export const DailySummaryView: React.FC<DailySummaryViewProps> = ({ state, dunge
 
     return {
       dateString: getYMD(startDate),
-      settlementPeriod: `${formatDate(startDate)} - ${formatDate(endDate, ts.night.end === 24)}`
+      settlementPeriod: `${formatDate(startDate)} - ${formatDate(endDate, true)}`
     };
   }, [state.timeSettings, state.timezone]);
 
@@ -161,33 +136,7 @@ export const DailySummaryView: React.FC<DailySummaryViewProps> = ({ state, dunge
       night: { start: 20, end: 24 }
     };
 
-    const getYMD = (d: Date) => {
-      const year = d.getFullYear();
-      const month = (d.getMonth() + 1).toString().padStart(2, '0');
-      const day = d.getDate().toString().padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    };
-
-    const getAssignedDate = (date: Date) => {
-      const hour = date.getHours();
-      
-      
-      // Night span midnight check
-      if (ts.night.start > ts.night.end && hour < ts.night.end) {
-        const yesterday = new Date(date);
-        yesterday.setDate(yesterday.getDate() - 1);
-        return getYMD(yesterday);
-      }
-      
-      // Before morning start check
-      if (hour < ts.morning.start) {
-        const yesterday = new Date(date);
-        yesterday.setDate(yesterday.getDate() - 1);
-        return getYMD(yesterday);
-      }
-
-      return getYMD(date);
-    };
+    const getAssignedDate = (date: Date) => getSettlementDay(date, ts);
 
     const sessionsToday = state.history.filter(s => getAssignedDate(new Date(s.timestamp)) === today.dateString);
     const rewardsToday = state.rewardHistory.filter(r => getAssignedDate(new Date(r.timestamp)) === today.dateString);

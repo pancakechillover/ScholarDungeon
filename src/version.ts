@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v9.6.1';
+export const APP_VERSION = 'v9.6.11';
 export const LAST_UPDATE_DATE = '2026-10-29';
-export const LAST_UPDATE_TIME = '01:35:00';
+export const LAST_UPDATE_TIME = '20:31:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,113 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v9.6.11',
+    date: '2026-10-29',
+    time: '20:31:00',
+    title: 'Version 9.6.11: Every Screen Starts the Day at the Same Hour',
+    items: [
+      { category: 'Record', description: 'The daily report, the Sanctum overview, the day-open screen and the focus limit now open the day at the same hour your peak periods do. They had each been reading the morning block start, which is not where the day begins when a night block runs past midnight.' },
+      { category: 'Record', description: 'The daily report header no longer stretches its range to the night block end. On the default peaks it claimed a 16-hour day; it now shows the full 24 hours it actually covers.' },
+      { category: 'Record', description: 'The Stats and Journal screens now open on the day that is still in progress when you check in at dawn, instead of the day that has only just begun.' },
+      { category: 'Record', description: 'Sessions, rewards, completed goals, quests and achievements on the daily report are filed by the same rule as everywhere else, so a 02:00 session stops landing on tomorrow.' },
+      { category: 'Focus', description: 'The daily goal limit resets at your real day boundary. A night owl who hit the limit before dawn is no longer handed a fresh allowance while the same day is still running.' }
+    ]
+  },
+  {
+    version: 'v9.6.10',
+    date: '2026-10-29',
+    time: '20:19:00',
+    title: 'Version 9.6.10: The Journal Header Reads the Same Clock',
+    items: [
+      { category: 'Record', description: 'The date range under the Journal title now starts where your day starts. It showed the morning block opened the day even when a night block crossing midnight was what actually did it.' },
+      { category: 'Record', description: 'The end of that range now reads the clock instead of a hardcoded 24:00, which claimed the day finished at midnight while it actually ran until the next morning.' }
+    ]
+  },
+  {
+    version: 'v9.6.9',
+    date: '2026-10-29',
+    time: '20:05:00',
+    title: 'Version 9.6.9: One Answer to "Which Day Is It"',
+    items: [
+      { category: 'Record', description: 'Every place that says "Today" now uses the same day boundary your peak periods define. At 01:00 the date header on the daily report, the ring on the calendar, and the Today highlight on the Sanctum all point at the day still in progress instead of the one that has barely started.' },
+      { category: 'Record', description: 'A session started at 01:00 now lights up the calendar cell of the day it is filed under. It used to light the next cell, so opening that cell showed an empty day.' },
+      { category: 'Vault', description: 'The reward log time filter follows the same boundary. At 01:00, "Today" covers the session still running rather than restarting at midnight.' },
+      { category: 'Record', description: 'The 24-hour clock view now starts and ends where your day does, so the ring lines up with the totals beside it.' }
+    ]
+  },
+  {
+    version: 'v9.6.8',
+    date: '2026-10-29',
+    time: '19:20:00',
+    title: 'Version 9.6.8: Your Model Key Stays Where You Typed It',
+    items: [
+      { category: 'Sage', description: 'The API key you enter for your own model is no longer uploaded with your save to the cloud. It stays on the device where you entered it, like your login token and your WebDAV password already did.' },
+      { category: 'Sage', description: 'The catch: your key no longer follows you to a second device. Each device now holds its own key, so a new phone or browser asks for it once. Restoring a cloud save on the device that already has the key leaves it alone.' },
+      { category: 'Sync', description: 'Editing a key no longer marks the save as out of date, because the key is not part of what gets compared against the cloud copy.' }
+    ]
+  },
+  {
+    version: 'v9.6.7',
+    date: '2026-10-29',
+    time: '18:40:00',
+    title: 'Version 9.6.7: The Reward Log Says What It Keeps',
+    items: [
+      { category: 'Vault', description: 'The All Rewards page now says the log keeps its 500 most recent entries — once under the page title and once at the foot of the table — so a trimmed history reads as a rule rather than a surprise.' }
+    ]
+  },
+  {
+    version: 'v9.6.6',
+    date: '2026-10-29',
+    time: '18:20:00',
+    title: 'Version 9.6.6: A Lighter Save',
+    items: [
+      { category: 'Data', description: 'The reward log is now capped at 500 entries, matching the transaction log beside it. It had never been trimmed and had grown to 1280 entries — a quarter of the entire save file, re-serialized on every single change.' },
+      { category: 'Data', description: 'Saving to local storage is grouped, so a burst of updates costs one write instead of one per update, and the last write is flushed before the tab closes. A full storage quota now reports itself in the console instead of leaving a blank page.' },
+      { category: 'Fellowship', description: 'The guild poll runs every 30 seconds and stops while the tab is in the background, instead of every 10 seconds regardless.' },
+      { category: 'Performance', description: 'Scroll and resize handlers measure once per frame. Dragging a window edge no longer forces dozens of layout reads per second across every open popover, picker and chart.' }
+    ]
+  },
+  {
+    version: 'v9.6.5',
+    date: '2026-10-29',
+    time: '18:00:00',
+    title: 'Version 9.6.5: Push and Sage Ask Who You Are',
+    items: [
+      { category: 'Reminders', description: 'Subscribing, scheduling and cancelling a reminder now require a signed-in account. Naming someone else\'s secret code used to be enough to schedule a notification on their device, wipe their subscriptions, or quietly receive their reminders too.' },
+      { category: 'Reminders', description: 'The scheduler endpoint no longer reports which reminders it delivered, so its reply can no longer be read as a list of user identities. It also accepts a CRON_SECRET, which locks it to your scheduler once that variable is set.' },
+      { category: 'Sage', description: 'The AI proxy that spends this deployment\'s Gemini key now requires a signed-in account. A personal API key entered in Settings keeps working without one.' }
+    ]
+  },
+  {
+    version: 'v9.6.4',
+    date: '2026-10-29',
+    time: '17:35:00',
+    title: 'Version 9.6.4: Legacy Migration Retired',
+    items: [
+      { category: 'Account', description: 'The endpoint that bound an old secret code to an account now answers that it is retired and does nothing. Nothing in the app called it any more, and the only thing it still did was let a stranger inherit an account by guessing its code.' },
+      { category: 'Account', description: 'Its supporting machinery is gone with it — the in-place guild list rewriter, the migration rate limits and the client hook behind the old card.' }
+    ]
+  },
+  {
+    version: 'v9.6.3',
+    date: '2026-10-29',
+    time: '16:04:00',
+    title: 'Version 9.6.3: Safer Legacy Migration',
+    items: [
+      { category: 'Account', description: 'Binding an older secret code to an account now requires that code to have been idle for 24 hours. A code that is still syncing on another device can no longer be claimed by a different account.' },
+      { category: 'Settings', description: 'Closing the account window within a second of signing in or copying your ID no longer leaves a pending check or update running afterwards.' }
+    ]
+  },
+  {
+    version: 'v9.6.2',
+    date: '2026-10-29',
+    time: '15:53:00',
+    title: 'Version 9.6.2: No More Legacy Migration Card',
+    items: [
+      { category: 'Account', description: 'The Legacy Secret Code Migration card is gone from the Scholar Passport. Accounts are created and signed in on this page alone.' }
+    ]
+  },
   {
     version: 'v9.6.1',
     date: '2026-10-29',

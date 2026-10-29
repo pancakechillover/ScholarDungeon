@@ -1,25 +1,33 @@
 {
-  "version": "v9.6.1",
+  "version": "v9.6.11",
   "date": "2026-10-29",
   "latestRelease": {
-    "version": "v9.6.1",
+    "version": "v9.6.11",
     "date": "2026-10-29",
-    "time": "01:35:00",
-    "title": "Version 9.6.1: Tighter Expedition Spacing",
+    "time": "20:31:00",
+    "title": "Version 9.6.11: Every Screen Starts the Day at the Same Hour",
     "items": [
       {
-        "category": "Dungeons",
-        "description": "A goal's tags are shown once, on the goal. Its tiers used to repeat every inherited tag as a second, dimmer pill, so a branch of five tiers read as five copies of the same label down the column."
+        "category": "Record",
+        "description": "The daily report, the Sanctum overview, the day-open screen and the focus limit now open the day at the same hour your peak periods do. They had each been reading the morning block start, which is not where the day begins when a night block runs past midnight."
       },
       {
-        "category": "Dungeons",
-        "description": "The tab bar sits against the header instead of floating below it, the filter bar hugs the list it filters, and the space between a goal's title and its progress and actions is tighter."
+        "category": "Record",
+        "description": "The daily report header no longer stretches its range to the night block end. On the default peaks it claimed a 16-hour day; it now shows the full 24 hours it actually covers."
       },
       {
-        "category": "Explore",
-        "description": "The gap between the page title and the timer is one step smaller, in line with the rest of the app."
+        "category": "Record",
+        "description": "The Stats and Journal screens now open on the day that is still in progress when you check in at dawn, instead of the day that has only just begun."
+      },
+      {
+        "category": "Record",
+        "description": "Sessions, rewards, completed goals, quests and achievements on the daily report are filed by the same rule as everywhere else, so a 02:00 session stops landing on tomorrow."
+      },
+      {
+        "category": "Focus",
+        "description": "The daily goal limit resets at your real day boundary. A night owl who hit the limit before dawn is no longer handed a fresh allowance while the same day is still running."
       }
     ]
   },
-  "timestamp": 1793207489712
+  "timestamp": 1793277065677
 }
