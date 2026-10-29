@@ -976,13 +976,13 @@ export const JournalView: React.FC<JournalViewProps> = ({
                     className={cn(
                       "w-11 h-9 rounded-r-md border border-l-0 shadow-sm flex items-center justify-center transition-all group relative",
                       isCurrentDateBookmarked 
-                        ? "bg-amber-500/15 border-amber-400/80 text-amber-400 translate-x-1 shadow-amber-500/10" 
-                        : "bg-slate-900/95 hover:bg-slate-850/95 border-slate-800 hover:border-slate-700 text-slate-400 hover:text-amber-400 hover:translate-x-0.5"
+                        ? "bg-indigo-500/15 border-indigo-400/80 text-indigo-400 translate-x-1 shadow-indigo-500/10" 
+                        : "bg-slate-900/95 hover:bg-slate-850/95 border-slate-800 hover:border-slate-700 text-slate-400 hover:text-indigo-400 hover:translate-x-0.5"
                     )}
                     title={isCurrentDateBookmarked ? "Remove Bookmark for this day" : "Bookmark this day"}
                   >
                     {isCurrentDateBookmarked ? (
-                      <BookmarkCheck size={16} className="fill-amber-400/30 text-amber-400" />
+                      <BookmarkCheck size={16} className="fill-indigo-400/30 text-indigo-400" />
                     ) : (
                       <Bookmark size={16} />
                     )}

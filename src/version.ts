@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v9.6.15';
+export const APP_VERSION = 'v9.6.16';
 export const LAST_UPDATE_DATE = '2026-10-29';
-export const LAST_UPDATE_TIME = '22:35:00';
+export const LAST_UPDATE_TIME = '22:46:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,15 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v9.6.16',
+    date: '2026-10-29',
+    time: '22:46:00',
+    title: 'Version 9.6.16: The Bookmark Ribbon Joins the Palette',
+    items: [
+      { category: 'Journal', description: 'The bookmark button above the date tabs is indigo now, the colour the rest of the journal uses for anything selected. It had been amber, which stood out against every other accent on the page.' }
+    ]
+  },
   {
     version: 'v9.6.15',
     date: '2026-10-29',
