@@ -377,13 +377,13 @@ export const DailySummaryView: React.FC<DailySummaryViewProps> = ({ state, dunge
           {/* Left Column */}
           <div className="space-y-2.5 sm:space-y-3 flex flex-col lg:w-1/2 lg:flex-1 lg:h-full">
           {/* Daily Progress */}
-          <div className="bg-slate-950/50 rounded-2xl border border-slate-800 p-3.5 sm:p-4">
+          <div className="bg-slate-950/50 rounded-2xl border border-slate-800 p-3 sm:p-4">
             {(() => {
               const pomodoroDuration = (state.standardSessionMinutes || 25) + (state.standardRestMinutes || 5);
               const dailyGoalInMinutes = dailyStats.dailyGoal * pomodoroDuration;
               return (
                 <>
-                  <div className="flex items-center justify-between mb-2.5 px-1">
+                  <div className="flex items-center justify-between mb-2.5">
                     <h3 className="text-sm font-bold text-slate-300 flex items-center gap-2">
                       <Target size={16} className="text-indigo-400" /> Daily Progress
                     </h3>
@@ -402,8 +402,12 @@ export const DailySummaryView: React.FC<DailySummaryViewProps> = ({ state, dunge
             })()}
           </div>
 
-          {/* Summary Stats */}
-          <div className="space-y-2">
+          {/* Summary Stats
+              This section sits on the page rather than on a card, so the
+              transparent x-borders below stand in for the 1px border that
+              offsets the content of every neighbouring card — without them the
+              title icon lands a pixel left of the others. */}
+          <div className="space-y-2 px-3 sm:px-4 border-x border-transparent">
             <button 
               onClick={() => setIsStatsExpanded(!isStatsExpanded)}
               className="w-full flex items-center justify-between hover:text-white transition-colors group"

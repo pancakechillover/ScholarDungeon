@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v9.6.11';
+export const APP_VERSION = 'v9.6.12';
 export const LAST_UPDATE_DATE = '2026-10-29';
-export const LAST_UPDATE_TIME = '20:31:00';
+export const LAST_UPDATE_TIME = '21:42:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,16 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v9.6.12',
+    date: '2026-10-29',
+    time: '21:42:00',
+    title: 'Version 9.6.12: The Sections Line Up',
+    items: [
+      { category: 'Record', description: 'On the daily report the little icon beside each section title now sits on one vertical line. Daily Progress, Today\'s Record, Feelings and Efficiency each started at a slightly different inset, so the column of icons wobbled down the page.' },
+      { category: 'Record', description: 'Today\'s Record sits on the page itself rather than on a card, so its header and stat cards are now indented to match the content inside the cards around it.' }
+    ]
+  },
   {
     version: 'v9.6.11',
     date: '2026-10-29',
