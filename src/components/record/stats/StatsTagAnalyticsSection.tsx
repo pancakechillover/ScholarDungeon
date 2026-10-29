@@ -2,14 +2,14 @@ import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import { Tags, Clock, Layers, Zap } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { StudySession, Dungeon, MajorDungeon, Tag, TimeSettings } from '../../../types';
-import { getSessionEffectiveMinutes, getSessionSettlementDate, getSettlementDay, cn } from '../../../lib/utils';
+import { getSessionEffectiveMinutes, getSessionSettlementDate, getSessionDistractionCount, getSettlementDay, cn } from '../../../lib/utils';
 import { getSessionEffectiveTagIds, TAG_COLOR_STYLES } from '../../../lib/tags';
 import { TagBadge } from '../../common/TagBadge';
 import { DurationText } from '../../common/DurationText';
 import { TagSlicePopover } from './TagSlicePopover';
 import { PopoverPortal } from '../../common/PopoverPortal';
 import { DatePicker } from '../../common/DatePicker';
-import { parseISO, differenceInCalendarDays, format, subDays, addDays, isSameDay } from 'date-fns';
+import { parseISO, differenceInCalendarDays, format, subDays, addDays, isSameDay, startOfDay } from 'date-fns';
 
 interface StatsTagAnalyticsSectionProps {
   history: StudySession[];
@@ -17,7 +17,6 @@ interface StatsTagAnalyticsSectionProps {
   majorDungeons: MajorDungeon[];
   tags: Tag[];
   includeRestTimeInStats?: boolean;
-  standardRestMinutes?: number;
   timeSettings?: TimeSettings;
   dateIndicators?: Record<string, { highlight?: boolean; star?: boolean }>;
   now?: Date;
@@ -40,7 +39,6 @@ export const StatsTagAnalyticsSection: React.FC<StatsTagAnalyticsSectionProps> =
   majorDungeons,
   tags,
   includeRestTimeInStats = false,
-  standardRestMinutes = 5,
   timeSettings,
   dateIndicators,
   now
@@ -57,10 +55,14 @@ export const StatsTagAnalyticsSection: React.FC<StatsTagAnalyticsSectionProps> =
   const [selectedSlice, setSelectedSlice] = useState<number | null>(null);
   const [sliceAnchor, setSliceAnchor] = useState<{ x: number; y: number } | null>(null);
 
-  const anchorDate = useMemo(() => {
-    const settlementStr = getSettlementDay(tagDate, timeSettings);
-    return parseISO(settlementStr);
-  }, [tagDate, timeSettings]);
+  // `tagDate` already IS a settlement day: it is seeded from getSettlementDay()
+  // and every later write is either that value or a whole-day step from it, so
+  // it always arrives as date-only midnight. Running it through
+  // getSettlementDay() a second time reads hour 0 as "still before the day
+  // boundary" and subtracts another day — which put this whole section one day
+  // behind and made the Today button look dead (it set the right date, then the
+  // second conversion moved it back again).
+  const anchorDate = useMemo(() => startOfDay(tagDate), [tagDate]);
 
   const datePickerLabel = useMemo(() => {
     if (range === 'day') {
@@ -96,10 +98,16 @@ export const StatsTagAnalyticsSection: React.FC<StatsTagAnalyticsSectionProps> =
     let totalSessions = 0;
 
     for (const session of filteredSessions) {
-      const mins = getSessionEffectiveMinutes(session, includeRestTimeInStats, standardRestMinutes);
+      // Two arguments only, like every other call site. Passing the rest minutes
+      // here padded sessions that never recorded one, so this card counted more
+      // focus time than the daily report for the very same sessions.
+      const mins = getSessionEffectiveMinutes(session, includeRestTimeInStats);
       if (mins <= 0) continue;
 
-      const distCount = (Number(session.distractions?.internal) || 0) + (Number(session.distractions?.external) || 0);
+      // Was internal + external; unavoidable was missing, so a session with an
+      // unavoidable distraction read as "no distraction" here and as one in the
+      // daily report. The helper also copes with the older numeric shape.
+      const distCount = getSessionDistractionCount(session.distractions);
       uniqueTotalMinutesRaw += mins;
       totalDistractionsRaw += distCount;
       totalSessions += 1;
@@ -175,7 +183,7 @@ export const StatsTagAnalyticsSection: React.FC<StatsTagAnalyticsSectionProps> =
       totalSessions,
       overallDistractionsPerHour,
     };
-  }, [history, dungeons, majorDungeons, tags, range, anchorDate, includeRestTimeInStats, standardRestMinutes, timeSettings]);
+  }, [history, dungeons, majorDungeons, tags, range, anchorDate, includeRestTimeInStats, timeSettings]);
 
   // Selection drives the card, not hover: the stats page is used on tablets
   // too, and a hover-only affordance is unreachable there.
@@ -296,6 +304,7 @@ export const StatsTagAnalyticsSection: React.FC<StatsTagAnalyticsSectionProps> =
                 if (range === 'all') setRange('7d');
               }}
               indicators={dateIndicators}
+              timeSettings={timeSettings}
               className="text-xs font-bold text-slate-300 w-full sm:w-36 text-center hover:text-indigo-400 transition-colors py-1 inline-block whitespace-nowrap cursor-pointer"
               nav={{
                 onPrev: () => {

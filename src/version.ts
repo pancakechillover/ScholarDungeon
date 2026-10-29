@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v9.6.16';
+export const APP_VERSION = 'v9.6.17';
 export const LAST_UPDATE_DATE = '2026-10-29';
-export const LAST_UPDATE_TIME = '22:46:00';
+export const LAST_UPDATE_TIME = '22:52:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,18 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v9.6.17',
+    date: '2026-10-29',
+    time: '22:52:00',
+    title: 'Version 9.6.17: Tag Breakdown Reads the Same Day as the Rest of the App',
+    items: [
+      { category: 'Record', description: 'Tag Breakdown was a full day behind. Its anchor date ran the settlement-day conversion a second time on a value that had already been through it, and midnight reads as "before the day starts", so every window slid back one day: 7 Days showed Oct 22-28 on the 29th, the label never said Today, and the Today button appeared to do nothing.' },
+      { category: 'Record', description: 'Distracted per hour counted only internal and external interruptions, while the daily report counts unavoidable ones too. The same day read 1.3/h in one place and 0.7/h here. Older sessions that stored distractions as a plain number no longer lose their count either.' },
+      { category: 'Record', description: 'Focus time on this card was padded with a 5 minute rest for sessions that never recorded one, so its total could exceed the daily report for the same sessions. It now measures exactly like the rest of the app.' },
+      { category: 'Record', description: 'The calendar in its date picker now knows your day boundary, so at 01:00 the ring sits on the day that is still running.' }
+    ]
+  },
   {
     version: 'v9.6.16',
     date: '2026-10-29',
