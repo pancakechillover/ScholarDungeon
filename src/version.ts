@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v9.6.19';
+export const APP_VERSION = 'v9.7.0';
 export const LAST_UPDATE_DATE = '2026-10-30';
-export const LAST_UPDATE_TIME = '00:17:00';
+export const LAST_UPDATE_TIME = '00:22:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,20 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v9.7.0',
+    date: '2026-10-30',
+    time: '00:22:00',
+    title: 'Version 9.7.0: The Numbers Start Agreeing',
+    items: [
+      { category: 'Journal', description: 'The reflection on the day-open and day-close pages writes itself about a second after you stop typing, marked Saving then Saved. Pressing Back, switching tabs or closing the window no longer throws the text away.' },
+      { category: 'Journal', description: 'The journal\'s reflection box has a height of its own now. A long entry scrolls inside it instead of stretching the open book taller and taller and pushing the page-turn buttons off-screen.' },
+      { category: 'Record', description: 'Tag Breakdown was a full day behind, so its 7-day window never included today and its Today button looked dead. It reads the same day as everything else now.' },
+      { category: 'Record', description: 'A session belongs to one tag. Tag Breakdown used to credit a session\'s whole duration to every tag on it, which is why its own total read 18h30m while its donut claimed 26h30m and every share was divided by the inflated sum.' },
+      { category: 'Record', description: 'Distracted per hour counts unavoidable interruptions like the rest of the app, and focus time no longer gets padded with a rest the session never recorded.' },
+      { category: 'Merchant', description: 'The + Stock button on an empty shelf slot opens the item editor right there instead of sending you to Settings to hunt for it.' }
+    ]
+  },
   {
     version: 'v9.6.19',
     date: '2026-10-30',
