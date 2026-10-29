@@ -1,29 +1,37 @@
 {
-  "version": "v9.6.17",
-  "date": "2026-10-29",
+  "version": "v9.6.18",
+  "date": "2026-10-30",
   "latestRelease": {
-    "version": "v9.6.17",
-    "date": "2026-10-29",
-    "time": "22:52:00",
-    "title": "Version 9.6.17: Tag Breakdown Reads the Same Day as the Rest of the App",
+    "version": "v9.6.18",
+    "date": "2026-10-30",
+    "time": "00:06:00",
+    "title": "Version 9.6.18: One Session, One Tag",
     "items": [
       {
         "category": "Record",
-        "description": "Tag Breakdown was a full day behind. Its anchor date ran the settlement-day conversion a second time on a value that had already been through it, and midnight reads as \"before the day starts\", so every window slid back one day: 7 Days showed Oct 22-28 on the 29th, the label never said Today, and the Today button appeared to do nothing."
+        "description": "A session now carries a single tag. Tag Breakdown credited the full duration of a session to every tag on it, so a session with three tags was counted three times: the card reported 19h30m of focus while its donut claimed 29h, and each tag's share was divided by the inflated sum — a tag worth 40% of your time read as 28%."
       },
       {
         "category": "Record",
-        "description": "Distracted per hour counted only internal and external interruptions, while the daily report counts unavoidable ones too. The same day read 1.3/h in one place and 0.7/h here. Older sessions that stored distractions as a plain number no longer lose their count either."
+        "description": "Picking a tag in the session editor replaces the previous one instead of adding to it, and picking the current tag clears it. Dungeons and the batch tag action work the same way."
       },
       {
         "category": "Record",
-        "description": "Focus time on this card was padded with a 5 minute rest for sessions that never recorded one, so its total could exceed the daily report for the same sessions. It now measures exactly like the rest of the app."
+        "description": "Sessions saved before this change keep their stored tag ids untouched. Only the first one counts now, so old history adds up immediately; re-tagging a session rewrites it to a single id."
       },
       {
         "category": "Record",
-        "description": "The calendar in its date picker now knows your day boundary, so at 01:00 the ring sits on the day that is still running."
+        "description": "Tag shares are a percentage of the time actually focused now, and the minutes in the list add up to the total printed in the donut."
+      },
+      {
+        "category": "Record",
+        "description": "All Time no longer wears a meaningless date, and its arrows are disabled instead of quietly dropping the view back to 7 Days."
+      },
+      {
+        "category": "Record",
+        "description": "The section follows your configured timezone, and a page left open across the day boundary now notices the new day instead of holding yesterday."
       }
     ]
   },
-  "timestamp": 1793285536912
+  "timestamp": 1793290188904
 }

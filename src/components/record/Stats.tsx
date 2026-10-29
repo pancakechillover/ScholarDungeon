@@ -1065,6 +1065,7 @@ useRef<HTMLInputElement>(null);;useRef<HTMLInputElement>(null);;useRef<HTMLInput
           tags={state.tags || []}
           includeRestTimeInStats={!!state.includeRestTimeInTasks}
           timeSettings={state.timeSettings}
+          timezone={state.timezone}
           dateIndicators={dateIndicators}
         />
       )}

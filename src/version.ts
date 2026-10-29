@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v9.6.17';
-export const LAST_UPDATE_DATE = '2026-10-29';
-export const LAST_UPDATE_TIME = '22:52:00';
+export const APP_VERSION = 'v9.6.18';
+export const LAST_UPDATE_DATE = '2026-10-30';
+export const LAST_UPDATE_TIME = '00:06:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,20 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v9.6.18',
+    date: '2026-10-30',
+    time: '00:06:00',
+    title: 'Version 9.6.18: One Session, One Tag',
+    items: [
+      { category: 'Record', description: 'A session now carries a single tag. Tag Breakdown credited the full duration of a session to every tag on it, so a session with three tags was counted three times: the card reported 19h30m of focus while its donut claimed 29h, and each tag\'s share was divided by the inflated sum — a tag worth 40% of your time read as 28%.' },
+      { category: 'Record', description: 'Picking a tag in the session editor replaces the previous one instead of adding to it, and picking the current tag clears it. Dungeons and the batch tag action work the same way.' },
+      { category: 'Record', description: 'Sessions saved before this change keep their stored tag ids untouched. Only the first one counts now, so old history adds up immediately; re-tagging a session rewrites it to a single id.' },
+      { category: 'Record', description: 'Tag shares are a percentage of the time actually focused now, and the minutes in the list add up to the total printed in the donut.' },
+      { category: 'Record', description: 'All Time no longer wears a meaningless date, and its arrows are disabled instead of quietly dropping the view back to 7 Days.' },
+      { category: 'Record', description: 'The section follows your configured timezone, and a page left open across the day boundary now notices the new day instead of holding yesterday.' }
+    ]
+  },
   {
     version: 'v9.6.17',
     date: '2026-10-29',
