@@ -1,21 +1,21 @@
 {
-  "version": "v9.6.12",
+  "version": "v9.6.13",
   "date": "2026-10-29",
   "latestRelease": {
-    "version": "v9.6.12",
+    "version": "v9.6.13",
     "date": "2026-10-29",
-    "time": "21:42:00",
-    "title": "Version 9.6.12: The Sections Line Up",
+    "time": "21:52:00",
+    "title": "Version 9.6.13: A Quieter Edit Session Header",
     "items": [
       {
         "category": "Record",
-        "description": "On the daily report the little icon beside each section title now sits on one vertical line. Daily Progress, Today's Record, Feelings and Efficiency each started at a slightly different inset, so the column of icons wobbled down the page."
+        "description": "The total-duration pill next to the Edit Session title is gone. The two inputs below it already show Focus and Rest time, so the pill only repeated their sum."
       },
       {
         "category": "Record",
-        "description": "Today's Record sits on the page itself rather than on a card, so its header and stat cards are now indented to match the content inside the cards around it."
+        "description": "The objective picker no longer repeats the target icon that already sits beside the \"Dungeon Objective\" label. The objective name now starts at the left edge of the field."
       }
     ]
   },
-  "timestamp": 1793281444616
+  "timestamp": 1793282411030
 }

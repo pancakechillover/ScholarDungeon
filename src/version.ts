@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v9.6.12';
+export const APP_VERSION = 'v9.6.13';
 export const LAST_UPDATE_DATE = '2026-10-29';
-export const LAST_UPDATE_TIME = '21:42:00';
+export const LAST_UPDATE_TIME = '21:52:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,16 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v9.6.13',
+    date: '2026-10-29',
+    time: '21:52:00',
+    title: 'Version 9.6.13: A Quieter Edit Session Header',
+    items: [
+      { category: 'Record', description: 'The total-duration pill next to the Edit Session title is gone. The two inputs below it already show Focus and Rest time, so the pill only repeated their sum.' },
+      { category: 'Record', description: 'The objective picker no longer repeats the target icon that already sits beside the "Dungeon Objective" label. The objective name now starts at the left edge of the field.' }
+    ]
+  },
   {
     version: 'v9.6.12',
     date: '2026-10-29',
