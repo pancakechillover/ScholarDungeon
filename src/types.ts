@@ -463,16 +463,6 @@ export interface ScholarAccount {
   boundOldCode?: string;
 }
 
-export interface LegacyMigrationSummary {
-  saveMigrated: boolean;
-  historyMigrated: boolean;
-  activeUserDeduplicated: boolean;
-  migratedTeamIds: string[];
-  pushSubscriptionsMigrated: number;
-  pushTasksRewritten: number;
-  pushTaskRefMigrated: boolean;
-}
-
 export interface StudySession {
   id: string;
   dungeonId: string;
