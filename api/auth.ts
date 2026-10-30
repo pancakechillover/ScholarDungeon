@@ -313,7 +313,6 @@ async function buildAccountSummary(
     lastLoginAt: hash?.lastLoginAt || '',
     lastSyncedAt,
     teamId: hash?.teamId || '',
-    boundOldCode: hash?.boundOldCode || '',
   };
 }
 
@@ -751,7 +750,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           createdAt: nowIso,
           lastLoginAt: nowIso,
           teamId: '',
-          boundOldCode: '',
         };
 
         await client.hSet(`scholar_user:${newUserId}`, userRecord);
@@ -927,19 +925,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
       }
       return res.status(200).json({ success: true });
-    }
-
-    // ── 5. POST /api/auth?action=migrate_legacy ──────────────────────────
-    // Retired. This endpoint existed only to lift a legacy secret-code save
-    // into a Scholar Passport account. There are no such accounts left, so
-    // the only thing it still offered was a way to inherit someone else's
-    // save, guild role and push subscriptions by guessing their code.
-    // Answering 410 tells old clients it will not start working on retry.
-    if (method === 'POST' && action === 'migrate_legacy') {
-      return res.status(410).json({
-        error:
-          'Legacy secret code migration has been retired. Sign up or sign in with your Scholar Passport instead.',
-      });
     }
 
     return res.status(400).json({

@@ -460,7 +460,6 @@ export interface ScholarAccount {
   lastLoginAt?: string;
   lastSyncedAt?: string | null;
   teamId?: string;
-  boundOldCode?: string;
 }
 
 export interface StudySession {

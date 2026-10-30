@@ -67,7 +67,7 @@
 
 | Redis Key | 数据结构 | 说明 |
 | :--- | :--- | :--- |
-| `scholar_user:{userId}` | Hash | 用户基础资料：`username`, `passwordHash`, `salt`, `createdAt`, `lastLoginAt`, `teamId`, `boundOldCode` 等 |
+| `scholar_user:{userId}` | Hash | 用户基础资料：`username`, `passwordHash`, `salt`, `createdAt`, `lastLoginAt`, `teamId` 等 |
 | `scholar_user_lookup:{username}` | String | 用户名到 `userId` 的全局唯一索引映射（防止重名） |
 | `scholar_session:{token}` | String | 会话缓存，存储当前登录用户的 `userId` 及过期时间 (TTL) |
 | `scholar_user:{userId}:save` | Hash / String | 该账号绑定的最新云存档数据与版本元数据 |
@@ -93,9 +93,6 @@
   - 返回当前登录用户的身份、公会归属、云存档最新同步时间戳。
 - `POST /api/auth?action=logout`
   - 注销并清除当前 Session。
-- `POST /api/auth?action=migrate_legacy`
-  - 请求体：`{ secretCode }`
-  - 将旧 `scholar_sync_{secretCode}` 下的历史存档一键复制/挂载至当前登录用户的 `scholar_user:{userId}:save` 下。
 
 #### 2. 云存档接口升级 (`/api/sync.ts`)
 - 支持携带 `Authorization: Bearer <token>` 访问；

@@ -1,6 +1,6 @@
-export const APP_VERSION = 'v9.7.0';
+export const APP_VERSION = 'v9.7.1';
 export const LAST_UPDATE_DATE = '2026-10-30';
-export const LAST_UPDATE_TIME = '00:22:00';
+export const LAST_UPDATE_TIME = '17:20:00';
 
 export interface ReleaseLog {
   version: string;
@@ -11,6 +11,16 @@ export interface ReleaseLog {
 }
 
 export const RELEASE_HISTORY: ReleaseLog[] = [
+  {
+    version: 'v9.7.1',
+    date: '2026-10-30',
+    time: '17:20:00',
+    title: 'Version 9.7.1: Legacy Migration, Actually Gone',
+    items: [
+      { category: 'Security', description: 'The old secret-code account migration is gone for good. An earlier pass had stopped it from working but left the endpoint answering 410 and kept the field it used to store, so the client and the API still carried the name of a feature nobody should be able to call.' },
+      { category: 'Security', description: 'A Scholar Passport no longer reports the old code it was once tied to, because that field is no longer read, written or returned.' }
+    ]
+  },
   {
     version: 'v9.7.0',
     date: '2026-10-30',
